@@ -141,6 +141,7 @@ public static class GatewayRuntimeExtensions
         services.AddSingleton<IPluginRuntimeDomainManager, PluginRuntimeDomainManager>();
         services.AddSingleton<IPluginBindingMutationService, PluginBindingMutationService>();
         services.AddSingleton(provider => (PluginRuntimeDomainManager)provider.GetRequiredService<IPluginRuntimeDomainManager>());
+        services.AddSingleton<IPluginActivationPreviewService>(provider => provider.GetRequiredService<PluginRuntimeDomainManager>());
         services.AddHostedService<PluginRuntimeDomainInitializer>();
         services.AddSingleton<IPluginActivationState>(provider => provider.GetRequiredService<GatewayPluginManager>());
         services.AddSingleton<GatewayPluginExecutionPlanProvider>();

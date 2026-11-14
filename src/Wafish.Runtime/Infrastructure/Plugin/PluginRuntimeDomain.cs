@@ -248,7 +248,7 @@ public sealed class PluginRuntimeDomainInitializer(
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }
 
-public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IAsyncDisposable
+public sealed partial class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IAsyncDisposable
 {
     private static readonly object PipelineContinuationKey = new();
 

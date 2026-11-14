@@ -132,3 +132,7 @@ Build the Release solution first; this group launches the performance host binar
 `--allocation-pressure` measures cache, streaming compression, and differential snapshot writes.
 `--sample-deployment` verifies topology naming, Sonar readiness, and operator links.
 `--sample-contracts` verifies proxied sample endpoints, identity, trace correlation, health filters, and telemetry sources.
+
+Configuration preview and receipt checks: `dotnet run --project tests/Wafish.Regression -c Release -- --group configuration-changes`.
+Plugin preview checks: `dotnet run --project tests/Wafish.Regression -c Release -- --group plugin-preview`.
+These cover restart retries, rollback, activation failures, receipt limits, candidate cleanup, and unchanged active traffic.

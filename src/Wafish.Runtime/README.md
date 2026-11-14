@@ -98,3 +98,14 @@ The initial load merges stored history with accepted writes under the same lock.
 The merge preserves chronological eviction order and the 200-entry capacity.
 Readers cannot observe a partially rebuilt queue.
 Named fault schedules verify writes accepted during the blocked load.
+
+## Plugin activation previews
+
+`IPluginActivationPreviewService.PreviewAsync` prepares a candidate and reports plugin health and declared resource requirements.
+It disposes the candidate without publishing it or starting background resources.
+The active domain and its request leases remain unchanged.
+Missing plugins and failed preparation, probes, or disposal produce an unsuccessful report.
+A null health result means the plugin has no health probe. Readiness does not guarantee external dependency availability.
+Health probes must be read-only and honor cancellation. Constructors and configuration callbacks must not start resources.
+Preview waits for cooperative cancellation before releasing candidate ownership.
+Input is limited to 1,000 distinct plugin IDs.

@@ -13,6 +13,8 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Activation previews dispose candidates without publishing domains or starting background resources.
+
 - Merge lazy audit history with accepted writes before enforcing its capacity. Keep reader snapshots atomic.
 
 - Join accepted audit writes before disposal. Stop resource reconciliation before shutdown cleanup.
