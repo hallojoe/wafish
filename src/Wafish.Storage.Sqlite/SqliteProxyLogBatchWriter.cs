@@ -66,19 +66,20 @@ internal sealed class SqliteProxyLogBatchWriter
 
     public HashSet<string> MetaColumns => _metaColumns;
 
-    public async Task WriteBatchAsync(
+    public async Task<ProxyLogQuotaResult> WriteBatchAsync(
         IReadOnlyList<ProxyLogMetaEntity> metaEntries,
         IReadOnlyList<ProxyLogBodyEntity?> bodyEntries,
-        CancellationToken ct)
+        CancellationToken ct, ProxyLogQuota? quota = null)
     {
+        if (quota is { MetadataBytes: < 0 } or { BodyBytes: < 0 }) throw new ArgumentOutOfRangeException(nameof(quota));
         if (metaEntries.Count != bodyEntries.Count)
         {
             throw new ArgumentException("Meta and body entry counts must match.");
         }
 
-        if (metaEntries.Count == 0)
+        if (metaEntries.Count == 0 && quota is null)
         {
-            return;
+            return new(0, 0, 0, 0);
         }
 
         await using var conn = await _connections.CreateConnectionAsync(ct);
@@ -106,7 +107,10 @@ internal sealed class SqliteProxyLogBatchWriter
                 await bodyCmd.ExecuteNonQueryAsync(ct);
             }
 
+            var quotaResult = quota is null ? new ProxyLogQuotaResult(0, 0, 0, 0)
+                : await SqliteProxyLogQuota.ApplyAsync(conn, tx, quota, ct);
             await tx.CommitAsync(ct);
+            return quotaResult;
         }
         catch
         {

@@ -18,11 +18,27 @@ public sealed class SqliteProxyLogWriter
     private readonly IProxyLogRepository _repository;
     private readonly ILogger<SqliteProxyLogWriter> _logger;
     private long _writtenCount;
+    private readonly ProxyLogQuota _quota;
+    private ProxyLogQuotaResult _quotaUsage = new(0, 0, 0, 0);
+    private long _discardedBodies, _discardedMetadata;
+    public ProxyLogQuotaResult QuotaUsage => Volatile.Read(ref _quotaUsage);
+    public long QuotaDiscardedBodies => Interlocked.Read(ref _discardedBodies);
+    public long QuotaDiscardedMetadata => Interlocked.Read(ref _discardedMetadata);
 
     public SqliteProxyLogWriter(IProxyLogRepository repository, ILogger<SqliteProxyLogWriter> logger)
     {
+        _quota = new(0, 0);
         _repository = repository;
         _logger = logger;
+    }
+
+    public SqliteProxyLogWriter(IProxyLogRepository repository, ILogger<SqliteProxyLogWriter> logger,
+        Microsoft.Extensions.Options.IOptions<ProxyLogPluginOptions> options) : this(repository, logger)
+    {
+        _quota = new(options.Value.LogMetadataQuotaBytes, options.Value.LogBodyQuotaBytes);
+        if (_quota.MetadataBytes < 0 || _quota.BodyBytes < 0) throw new ArgumentOutOfRangeException(nameof(options));
+        if ((_quota.MetadataBytes > 0 || _quota.BodyBytes > 0) && repository is not IQuotaProxyLogRepository)
+            throw new InvalidOperationException("Configured log quotas require a quota-capable repository.");
     }
 
     /// <summary>Total number of log entries successfully written to SQLite.</summary>
@@ -51,7 +67,14 @@ public sealed class SqliteProxyLogWriter
 
         try
         {
-            await _repository.WriteBatchAsync(metaList, bodyList, ct);
+            if (_quota.MetadataBytes > 0 || _quota.BodyBytes > 0)
+            {
+                var result = await ((IQuotaProxyLogRepository)_repository).WriteBatchWithQuotaAsync(metaList, bodyList, _quota, ct);
+                Volatile.Write(ref _quotaUsage, result);
+                Interlocked.Add(ref _discardedBodies, result.DiscardedBodies);
+                Interlocked.Add(ref _discardedMetadata, result.DiscardedMetadata);
+            }
+            else await _repository.WriteBatchAsync(metaList, bodyList, ct);
             Interlocked.Add(ref _writtenCount, metaList.Count);
         }
         catch (Exception ex)

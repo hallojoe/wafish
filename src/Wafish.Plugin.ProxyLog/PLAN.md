@@ -80,7 +80,10 @@ Each accepted entry is either persisted, pending, or counted as discarded.
 
 ### FEAT-02: Add log storage quotas
 
-Status: TODO. Priority: P2. Type: feature.
+Status: DONE. Completed: 2026-11-14.
+Verification: Release build and two `--log-quotas` cases pass, including concurrent writes and cancellation.
+Quota cleanup coverage is 100%; SQL command helper coverage is 85.7%.
+The README defines logical byte charges and physical disk overhead. Priority: P2. Type: feature.
 
 Evidence: [SqliteProxyLogWriter.cs](Services/SqliteProxyLogWriter.cs), `CleanupAsync`, uses age-based retention.
 

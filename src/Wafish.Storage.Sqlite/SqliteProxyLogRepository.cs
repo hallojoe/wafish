@@ -12,7 +12,7 @@ namespace Wafish.Storage.Sqlite;
 /// - <see cref="SqliteProxyLogReader"/> for paginated queries and detail retrieval
 /// - <see cref="SqliteProxyLogAggregator"/> for statistical aggregation
 /// </summary>
-public sealed class SqliteProxyLogRepository : IProxyLogRepository
+public sealed class SqliteProxyLogRepository : IProxyLogRepository, IQuotaProxyLogRepository
 {
     private readonly SqliteConnectionFactory _connections;
     private readonly SqliteProxyLogBatchWriter _writer;
@@ -34,6 +34,14 @@ public sealed class SqliteProxyLogRepository : IProxyLogRepository
     {
         await _writer.EnsureInitializedAsync(ct);
         await _writer.WriteBatchAsync(metaEntries, bodyEntries, ct);
+    }
+
+    public async Task<ProxyLogQuotaResult> WriteBatchWithQuotaAsync(
+        IReadOnlyList<ProxyLogMetaEntity> metadata, IReadOnlyList<ProxyLogBodyEntity?> bodies,
+        ProxyLogQuota quota, CancellationToken cancellationToken = default)
+    {
+        await _writer.EnsureInitializedAsync(cancellationToken);
+        return await _writer.WriteBatchAsync(metadata, bodies, cancellationToken, quota);
     }
 
     public async Task<ProxyLogBodyEntity?> GetBodyByMetaIdAsync(long metaId, CancellationToken ct = default)

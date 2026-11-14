@@ -308,7 +308,7 @@ internal static class StorageRepositoryChecks
         }
     }
 
-    private sealed class Database : IAsyncDisposable
+    internal sealed class Database : IAsyncDisposable
     {
         public string Path { get; } = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "wafish-repository-" + Guid.NewGuid().ToString("N") + ".db");
         private readonly ServiceProvider _provider;

@@ -5,6 +5,10 @@ namespace Wafish.Plugin.ProxyLog;
 /// </summary>
 public sealed class ProxyLogPluginOptions
 {
+    /// <summary>Retained metadata byte charge. Zero disables the quota.</summary>
+    public long LogMetadataQuotaBytes { get; set; }
+    /// <summary>Retained body byte charge. Zero disables the quota.</summary>
+    public long LogBodyQuotaBytes { get; set; }
     public string RoutePrefix { get; set; } = "dashboard";
     public bool LogPersistenceEnabled { get; set; } = true;
     public int LogMetaRetentionDays { get; set; } = 7;

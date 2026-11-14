@@ -87,3 +87,19 @@ Rules apply before display truncation, persistence, and live delivery. They neve
 Invalid or incomplete JSON is masked. Invalid manually published rules mask all captured headers and bodies.
 Default credential headers and JSON field names always remain protected when custom global lists are configured.
 Compatibility: malformed JSON logs now contain a redaction marker instead of the unexamined payload.
+
+## Storage quotas
+
+Configure `ProxyLogPluginOptions.LogMetadataQuotaBytes` and `LogBodyQuotaBytes` through `services.Configure<ProxyLogPluginOptions>`.
+Zero disables each quota for compatibility. Negative values fail startup.
+SQLite enforces both quotas inside each batch transaction. Other providers must implement `IQuotaProxyLogRepository` when quotas are enabled.
+Old bodies are removed first. Metadata cleanup then retains the newest insertion IDs within its separate budget.
+Health statistics report charged bytes and cumulative quota discards. Queue-loss counters remain separate.
+A body exceeding its budget is removed, even when it belongs to the newest entry.
+
+Charges include UTF-8 field bytes, 64 bytes per metadata row, and 32 bytes per body row.
+Committed charged bytes stay within the limits. An uncommitted batch can temporarily exceed them.
+Database indexes, free pages, transaction journals, and WAL are outside these logical limits.
+SQLite reuses freed pages; cleanup does not shrink an existing database file.
+Reserve disk space for those overheads and one pending batch. Use filesystem quotas for a strict physical limit.
+Age retention continues independently. Quota settings take effect after restarting the host and writing the next batch.

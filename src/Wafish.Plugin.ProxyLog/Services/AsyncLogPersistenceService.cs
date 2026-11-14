@@ -138,6 +138,10 @@ public sealed class AsyncLogPersistenceService : IProxyLogPersistenceService, IP
                 ["submittedEntries"] = _logStore.SubmittedCount,
                 ["pendingEntries"] = _logStore.PendingCount,
                 ["writtenEntries"] = WrittenCount,
+                ["quotaMetadataBytes"] = _writer.QuotaUsage.MetadataBytes,
+                ["quotaBodyBytes"] = _writer.QuotaUsage.BodyBytes,
+                ["quotaDiscardedBodies"] = _writer.QuotaDiscardedBodies,
+                ["quotaDiscardedMetadata"] = _writer.QuotaDiscardedMetadata,
                 ["droppedEntries"] = DroppedCount,
                 ["failures"] = Interlocked.Read(ref _failureCount),
                 ["memoryBytes"] = _logStore.GetEstimatedMemoryBytes()
