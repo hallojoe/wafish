@@ -1,10 +1,10 @@
 # WafIsh.Plugin.RateLimit.Redis: proposed work
 
 Reviewed against source on 2026-11-14.
-All items below are TODO proposals, not implemented capabilities or scheduled commitments.
+Completed items include verification evidence. Remaining items are proposals, not scheduled commitments.
 The [root execution plan](../../PLAN.md) remains the historical and cross-project record.
 
-## Improvements not yet implemented
+## Improvements
 
 ### IMP-01: Test Redis failover and reconnection
 
@@ -32,8 +32,57 @@ Allow an explicitly configured, authenticated tenant claim to select the shared 
 
 Acceptance: Missing or untrusted claims follow a documented policy and cannot create unlimited key cardinality.
 
+## Source review follow-up: 2026-11-14
+
+Static review findings follow. Implementation and acceptance checks remain pending.
+See [solution priorities and dependencies](../../DOTNET_REVIEW.md).
+
+### IMP-03: Separate keys for incompatible algorithms
+
+Status: DONE. Priority: P1. Type: configuration-transition defect.
+
+Evidence: [RedisRateLimitMiddleware.cs](Middleware/RedisRateLimitMiddleware.cs) and [RedisLuaRateLimitStore.cs](RedisLuaRateLimitStore.cs).
+
+Keys contain prefix, route, and client address.
+The algorithms use different Redis value types under those same keys.
+Changing algorithms can produce WRONGTYPE failures until the old key expires.
+Include a compatible policy generation or algorithm identity in keys.
+
+Acceptance: Change fixed-window, sliding-window, and token-bucket policies under traffic.
+No incompatible-key errors occur, and old keys expire.
+Keep fail-closed outage behavior.
+
+### IMP-04: Recover a failed connection creation task
+
+Status: TODO. Priority: P2. Type: recovery risk.
+
+Evidence: [RedisLuaRateLimitStore.cs](RedisLuaRateLimitStore.cs), the `_connections` dictionary.
+
+A faulted lazy connection task remains cached for the connection string.
+Ordinary disconnected multiplexers can reconnect; a faulted construction task cannot.
+Evict failed construction entries with bounded retry backoff and safe disposal.
+
+Acceptance: An injected first-connection failure recovers on a later attempt.
+Concurrent callers create one replacement without exposing connection secrets.
+
+### FEAT-02: Combine burst and sustained quotas
+
+Status: TODO. Priority: P3. Type: feature.
+
+Evidence: [RedisLuaRateLimitStore.cs](RedisLuaRateLimitStore.cs) evaluates one quota per acquisition.
+
+Support a short burst allowance and a longer sustained allowance in one atomic decision.
+Define Redis Cluster key placement and expiry rules.
+
+Acceptance: Exceeding either allowance rejects the request.
+Rejected requests do not partially consume another allowance.
+
 ## Completion rule
 
 Complete an item only after implementation and its acceptance checks pass.
 Record the date, verification commands, evidence, and any compatibility impact.
 Update [README.md](README.md) and [AGENTS.md](AGENTS.md) when the implemented behavior changes.
+
+## Implementation evidence
+
+Completed IMP-03 on 2026-11-14. [Verification](../../tests/WafIsh.Regression/evidence/review4567/README.md).

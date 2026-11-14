@@ -43,3 +43,9 @@ Direct project references: [WafIsh.Plugin.Abstractions](../WafIsh.Plugin.Abstrac
 Live Redis checks use `ANEIANG_REDIS_SERVER` and the regression runner's `--redis` option.
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+
+## Review fixes 4–7
+
+Redis keys include a versioned hash of algorithm, limit, window, and burst settings.
+Policy changes start fresh counters. Previous keys expire under their existing TTL.
+Deploy replicas together when changing this key format; mixed versions use separate counters.

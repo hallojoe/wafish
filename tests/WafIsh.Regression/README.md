@@ -45,3 +45,25 @@ Options: `--storage`, `--redis`, and `--dashboard-routes`.
 Live Redis checks require `ANEIANG_REDIS_SERVER` to identify a Redis server executable.
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+
+## Review regression coverage
+
+Live Kestrel checks cover retry, cache, compression, YARP replay, response-start boundaries, and disconnect cancellation.
+
+Review items 4–7 add deterministic publication barriers, atomic binding batches, live circuit retries, and lifecycle checks.
+Run `--review-lifecycle` for focused checks. [Evidence](evidence/review4567/README.md) includes managed benchmarks and live Redis verification.
+
+Review items 8–10 add log shutdown accounting, notification classification, UTC queries, orphan cleanup, and metrics finalization.
+Run `--review-accounting` for ten focused checks. [Evidence](evidence/review8910/README.md) records full regression and coverage results.
+
+Review items 11–13 add prefixed shell checks, owned domain shutdown, cache-key compatibility, and compression threshold cases.
+Run `--review-deployment` for six focused checks.
+[Evidence](evidence/review111213/README.md) also records browser, asset validation, and package checks.
+
+## Machine-readable results
+
+Set `WAFISH_TEST_REPORT` to a JSON output path before running the executable.
+Schema version 1 includes suite, case name, duration, status, and exception details.
+Normal exits write reports, including focused modes and failed assertions.
+Process termination cannot guarantee a report. CI also retains console logs.
+Use `--review-release` for controlled-clock, retention, and UTC migration checks.

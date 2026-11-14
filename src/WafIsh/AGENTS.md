@@ -13,6 +13,8 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Determine orphan clusters from the final route set after every requested batch deletion.
+
 - Keep this project independent of Runtime, Administration, and ReactUi.
 - Preserve stable route and cluster identities during renames.
 - A failed storage write must leave active configuration unchanged.

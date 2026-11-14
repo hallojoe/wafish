@@ -11,6 +11,8 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Unknown-length thresholds above 64 KiB bypass compression independently of write chunk size.
+
 - Keep proxy compression inside the response-cache boundary.
 - Preserve Vary, Content-Encoding, and length semantics.
 - Keep HEAD, ranges, existing encodings, and bodyless responses in the test matrix.

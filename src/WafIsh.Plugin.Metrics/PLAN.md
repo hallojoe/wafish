@@ -32,6 +32,59 @@ Bridge these measurements to standard instruments with controlled dimensions.
 
 Acceptance: A test collector receives route and cluster metrics without duplicate request counts.
 
+## Source review follow-up: 2026-11-14
+
+Static review findings follow. Implementation and acceptance checks remain pending.
+See [solution priorities and dependencies](../../DOTNET_REVIEW.md).
+
+### IMP-03: Record failed and cancelled requests
+
+Status: DONE. Owner: Codex. Completed: 2026-11-14. Priority: P1. Type: measurement gap.
+
+Verification: [review items 8–10 evidence](../../tests/WafIsh.Regression/evidence/review8910/README.md).
+Release build and 157 regression executions pass. Changed production-line coverage is 86.67%.
+Base commit `bc1b617`; implementation remains uncommitted.
+The original finding and acceptance criteria follow.
+
+Evidence: [PluginMetricsMiddleware.cs](PluginMetricsMiddleware.cs), `InvokeAsync`.
+
+Measurements occur only after the downstream delegate returns successfully.
+Exceptions and cancellation skip accounting.
+Record completion in a finalization path with distinct outcome classification.
+Also define whether measurements count logical requests or retry attempts.
+
+Acceptance: Throwing, cancelled, and successful delegates each produce one documented outcome.
+Enabling both metric plugins does not duplicate counts.
+
+### IMP-04: Remove counters for retired identities
+
+Status: DONE. Owner: Codex. Completed: 2026-11-14. Priority: P2. Type: retention risk.
+
+Verification: [review items 14–16](../../tests/WafIsh.Regression/evidence/review141516/README.md).
+Concurrent updates retain active counters. Removed identities and the series budget are covered.
+
+Evidence: [PluginMetricsMiddleware.cs](PluginMetricsMiddleware.cs), `PluginMetricStore`.
+
+Route, cluster, and destination dictionaries only add entries.
+Repeated configuration churn retains obsolete identities for the store lifetime.
+Apply bounded retention when identities leave active snapshots.
+
+Acceptance: Repeated destination replacement reaches a stable memory bound.
+Concurrent updates and removals preserve active counters.
+
+### FEAT-02: Add route latency distributions
+
+Status: TODO. Priority: P2. Type: feature.
+
+Evidence: `PluginMetricSnapshot` stores total duration but no route latency distribution.
+
+Add bounded duration histograms for routes and clusters.
+Use explicit units and documented bucket boundaries.
+Connect them to FEAT-01 telemetry exports.
+
+Acceptance: Known latency samples enter the expected buckets.
+Operators can inspect tail latency without retaining every request duration.
+
 ## Completion rule
 
 Complete an item only after implementation and its acceptance checks pass.

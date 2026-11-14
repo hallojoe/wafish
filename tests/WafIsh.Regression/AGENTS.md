@@ -7,6 +7,8 @@ Proposals do not authorize implementation outside the current user request.
 ## Source map
 
 - [Program.cs](Program.cs)
+- [ReviewDeploymentChecks.cs](ReviewDeploymentChecks.cs)
+- [ReviewAccountingChecks.cs](ReviewAccountingChecks.cs)
 - [ConfigurationTransactionChecks.cs](ConfigurationTransactionChecks.cs)
 - [StorageRepositoryChecks.cs](StorageRepositoryChecks.cs)
 - [SonarRegressionChecks.cs](SonarRegressionChecks.cs)

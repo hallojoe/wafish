@@ -11,6 +11,8 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Keep selectable path bases and nested prefixes covered across all supported browser authentication modes.
+
 - Require UI_TEST_PASSWORD; never add a fixed fallback credential.
 - Keep each process on a separate port and temporary data directory.
 - Preserve the runtime check that excludes Razor and the old dashboard assembly.

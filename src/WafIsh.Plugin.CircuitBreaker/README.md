@@ -46,3 +46,16 @@ Source project: [WafIsh.Plugin.CircuitBreaker.csproj](WafIsh.Plugin.CircuitBreak
 Direct project references: [WafIsh.Plugin.Abstractions](../WafIsh.Plugin.Abstractions/README.md), [WafIsh](../WafIsh/README.md).
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+
+## Review fixes 4–7
+
+Candidate filtering does not reserve probes. Load balancing selects a destination before probe acquisition.
+An attempt lease releases canceled probes and records each forwarding outcome once.
+Generation checks prevent late outcomes from changing a newer circuit state. Retry surrounds this attempt boundary.
+
+## Review items 14–16
+
+Runtime circuit state accepts an injected `TimeProvider`.
+Recovery, sampling, and idle retention use monotonic elapsed time. External legacy state timestamps retain UTC comparison fallback.
+
+Verification: [review evidence](../../tests/WafIsh.Regression/evidence/review141516/README.md).

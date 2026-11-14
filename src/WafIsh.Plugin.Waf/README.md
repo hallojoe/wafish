@@ -39,3 +39,8 @@ Source project: [WafIsh.Plugin.Waf.csproj](WafIsh.Plugin.Waf.csproj).
 Direct project references: [WafIsh.Plugin.Abstractions](../WafIsh.Plugin.Abstractions/README.md), [WafIsh](../WafIsh/README.md).
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+
+## Review safety limits
+
+CIDR rules are validated before activation. Rejection logs omit paths, queries, and matched request content.
+See [resource limits and consumer changes](../../docs/security.md#request-resource-limits-and-retry-behavior).

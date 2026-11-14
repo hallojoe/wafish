@@ -1,14 +1,18 @@
 # WafIsh.Plugin.ProxyLog: proposed work
 
 Reviewed against source on 2026-11-14.
-All items below are TODO proposals, not implemented capabilities or scheduled commitments.
+Statuses below distinguish completed review work from remaining proposals.
 The [root execution plan](../../PLAN.md) remains the historical and cross-project record.
 
-## Improvements not yet implemented
+## Improvements
 
 ### IMP-01: Bound decoded body allocations
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [review items 1–3 evidence](../../tests/WafIsh.Regression/evidence/review123/README.md).
+Base commit `bc1b617`; implementation remains uncommitted. Release build and both regression runners pass.
+Compatibility changes are recorded in the linked evidence.
 
 Review decompression paths that currently decode before applying display truncation.
 
@@ -31,6 +35,56 @@ Status: TODO.
 Allow route bindings to specify JSON field paths and header redaction rules.
 
 Acceptance: Sensitive fields are removed before persistence and realtime delivery.
+
+## Source review follow-up: 2026-11-14
+
+Static review findings follow. Completed items include verification evidence.
+See [solution priorities and dependencies](../../DOTNET_REVIEW.md).
+
+### Evidence for IMP-01: Enforce limits before decompression
+
+Priority: P1. Type: resource-exhaustion risk.
+
+Evidence: [ProxyLogBodyReader.cs](Services/ProxyLogBodyReader.cs), `ReadRequestBodyAsync`, `ReadStreamAsync`, and `DecompressBytes`.
+
+Request decoding uses `ReadToEndAsync` after checking compressed length.
+Response decoding expands into an unrestricted stream before truncation.
+Apply a decoded-byte limit during expansion and dispose decoder streams.
+
+Acceptance: Small compressed payloads with large decoded content remain within the configured allocation budget.
+Cancellation stops decoding promptly.
+
+### IMP-03: Preserve and account for unfinished log batches
+
+Status: DONE. Owner: Codex. Completed: 2026-11-14. Priority: P1. Type: data-loss accounting defect.
+
+Verification: [review items 8–10 evidence](../../tests/WafIsh.Regression/evidence/review8910/README.md).
+Release build and 157 regression executions pass. Changed production-line coverage is 86.67%.
+Base commit `bc1b617`; implementation remains uncommitted.
+The original finding and acceptance criteria follow.
+
+Evidence: [AsyncLogPersistenceService.cs](Services/AsyncLogPersistenceService.cs), `ConsumeLoopAsync` and `FlushBatchAsync`.
+
+Cancellation can interrupt a dequeued batch before persistence.
+The final drain clears that batch before reading the remaining queue.
+Exhausted write retries also omit failure and dropped-entry counter updates.
+Retain unfinished entries until persistence or an explicit recorded discard.
+
+Acceptance: Cancel after dequeue and before commit.
+Each accepted entry is either persisted, pending, or counted as discarded.
+
+### FEAT-02: Add log storage quotas
+
+Status: TODO. Priority: P2. Type: feature.
+
+Evidence: [SqliteProxyLogWriter.cs](Services/SqliteProxyLogWriter.cs), `CleanupAsync`, uses age-based retention.
+
+Add configurable storage quotas for metadata and captured bodies.
+Prefer dropping old bodies before removing their diagnostic metadata.
+Expose quota pressure through resource health.
+
+Acceptance: Sustained traffic respects the storage budget within a documented cleanup allowance.
+Quota cleanup preserves recent metadata and reports discarded bodies.
 
 ## Completion rule
 

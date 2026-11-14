@@ -40,3 +40,16 @@ Source project: [WafIsh.Plugin.RateLimit.csproj](WafIsh.Plugin.RateLimit.csproj)
 Direct project references: [WafIsh.Plugin.Abstractions](../WafIsh.Plugin.Abstractions/README.md), [WafIsh](../WafIsh/README.md).
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+
+## Review safety limits
+
+The built-in store admits at most 2,000 partitions. New partitions receive HTTP 429 at capacity.
+Route partitions use route identity. Variable paths share the route quota.
+See [resource limits and consumer changes](../../docs/security.md#request-resource-limits-and-retry-behavior).
+
+## Review items 14–16
+
+The injected `TimeProvider` controls middleware cleanup scheduling and store idle retention.
+Built-in .NET limiter replenishment retains its own system timers. Redis quota timing remains server-owned.
+
+Verification: [review evidence](../../tests/WafIsh.Regression/evidence/review141516/README.md).

@@ -42,3 +42,15 @@ Source project: [WafIsh.Administration.Regression.csproj](WafIsh.Administration.
 Direct project references: [WafIsh.Administration](../../src/WafIsh.Administration/README.md), [WafIsh.Storage.Sqlite](../../src/WafIsh.Storage.Sqlite/README.md).
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+
+## Review regression coverage
+
+HTTPS checks use real cookie containers and pinned test certificates.
+They cover login, logout, expiry, origin rejection, transport isolation, and authentication attempt limits.
+
+## Machine-readable results
+
+Set `WAFISH_TEST_REPORT` to a JSON output path before running the executable.
+Schema version 1 includes suite, case name, duration, status, and exception details.
+Normal exits write reports, including focused modes and failed assertions.
+Process termination cannot guarantee a report. CI also retains console logs.

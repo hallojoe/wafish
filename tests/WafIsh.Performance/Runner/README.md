@@ -53,3 +53,8 @@ For an existing Aspire gateway, use `--external-url` with its reported URL and a
 External mode leaves the target services running.
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+
+## Review fixes 4–7
+
+Managed and external failures return nonzero exit codes. Rate-limit scenarios accept only HTTP 429 as expected rejection.
+Reports separate expected rejections from transport failures. Each request has a ten-second deadline covering headers and response reads.

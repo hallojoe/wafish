@@ -314,6 +314,35 @@ If this project helps you, [⭐ Star it](https://github.com/aneiang/WafIsh) to s
 
 ## Changelog
 
+### 2026-11-14 — Review items 11–13
+
+- Included deployment path bases in UI, API, and asset URLs.
+- Tracked frontend build inputs and rejected incomplete assets before embedding or packing.
+- Joined retired plugin domains and watcher tasks during shutdown.
+- Deprecated ineffective cache switches and made compression fallback independent of write chunk size.
+- Fixed notification queue cleanup when shutdown precedes background execution.
+- Verified 163 .NET regressions, 20 browser checks, and 93.85% changed C# source coverage.
+- [Verification and compatibility evidence](tests/WafIsh.Regression/evidence/review111213/README.md).
+
+### 2026-11-14 — Review items 8–10
+
+- Preserved interrupted log batches and counted exhausted retries, overflow, and shutdown losses.
+- Added notification delivery, failure, suppression, and discard counters.
+- Corrected indexed SQLite UTC comparisons and batch orphan-cluster cleanup.
+- Recorded failed and cancelled metric attempts once, with explicit retry semantics.
+- Verified 157 regression executions and 86.67% changed production-line coverage.
+- [Verification and compatibility evidence](tests/WafIsh.Regression/evidence/review8910/README.md).
+
+### 2026-11-14 — Complete review items 1–3
+
+- Limit authentication attempts and verify real HTTPS cookie flows.
+- Reject invalid CIDR rules and remove request secrets from WAF rejection logs.
+- Require complete bounded request replay and stop retries when response transmission begins.
+- Bound decoded log capture and local limiter admission. Preserve active limiter leases during cleanup.
+- Add live Kestrel/YARP streaming, plugin-combination, and cancellation regressions.
+- Release build, 110 main checks, and 24 administration checks pass. Changed source coverage is 91.64%.
+- See [verification evidence](tests/WafIsh.Regression/evidence/review123/README.md) and [consumer migration notes](docs/security.md#consumer-changes-for-review-fixes).
+
 ### 2026-11-14 — Replace the outdated native database component
 
 - Replace the retired SQLCipher bundle with SQLite3MC 2.7.0 and SQLite 3.54.1.
@@ -423,3 +452,12 @@ Earlier release history remains in [CHANGELOG.md](CHANGELOG.md).
 - Deferred separate administration processes and replacement UI selection to their respective design milestones.
 
 See [PLAN.md](PLAN.md) for completed work, verification evidence, and remaining tasks.
+
+## Review completion: items 14–16
+
+Public packages now have package consistency checks and initial API snapshots.
+Isolated consumers verify runtime, administration, React assets, and encrypted SQLite.
+CI runs live Redis checks and strict dependency audits, with retained JSON test reports.
+UTC migration and injected clocks support consistent storage and controlled policy timing.
+Metric stores retire obsolete identities and bound retained series.
+See [verification and platform limits](tests/WafIsh.Regression/evidence/review141516/README.md).

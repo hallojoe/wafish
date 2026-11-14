@@ -13,6 +13,10 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Use the injected clock for lifecycle timers and join timer callbacks before disposing cancellation sources.
+
+- Preserve unfinished batches; account for every persistence-enabled submission as written, pending, or discarded.
+
 - Preserve sanitization before records reach storage or clients.
 - Keep capture limits effective for streaming and compressed bodies.
 - Report dropped entries; do not silently treat the queue as lossless.

@@ -32,6 +32,37 @@ Provide a local resource that can delay or interrupt backend traffic on request.
 
 Acceptance: A repeatable scenario demonstrates retries and circuit recovery without changing production defaults.
 
+## Source review follow-up: 2026-11-14
+
+Static review findings follow. Implementation and acceptance checks remain pending.
+See [solution priorities and dependencies](../DOTNET_REVIEW.md).
+
+### IMP-03: Isolate persistent resources across local topologies
+
+Status: TODO. Priority: P2. Type: development isolation risk.
+
+Evidence: [SonarQubeResources.cs](SonarQubeResources.cs) uses fixed named volumes.
+[AppHost.cs](AppHost.cs) provides a configurable gateway data directory.
+
+Add a documented topology identifier for optional container volumes and local state.
+Preserve existing volume names through an explicit compatibility option.
+Never delete existing volumes during startup.
+
+Acceptance: Two isolated topologies cannot write each other's data.
+Restarting one topology retains its own database and generated parameters.
+
+### FEAT-02: Add a service-discovery demonstration profile
+
+Status: TODO. Priority: P3. Type: feature.
+
+Evidence: [AppHost.cs](AppHost.cs) currently demonstrates registration through gRPC.
+
+Add an opt-in HTTP JSON discovery catalog for the sample backends.
+Exercise endpoint addition, removal, stale discovery, and recovery through real plugin bindings.
+
+Acceptance: The default topology remains unchanged.
+The discovery profile demonstrates stable destination identity and visible refresh failures.
+
 ## Completion rule
 
 Complete an item only after implementation and its acceptance checks pass.

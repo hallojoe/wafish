@@ -40,3 +40,10 @@ Source project: [WafIsh.Grpc.csproj](WafIsh.Grpc.csproj).
 This project has no direct solution project references. Package and framework references remain in its project file.
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+
+## Review fixes 4–7
+
+`UpdateDestinationsRequest` adds `instance_id` at field 3 and optional `expected_version` at field 4.
+Existing field numbers remain unchanged. Requests without these fields fail explicitly.
+Updates replace only the registered instance destinations. Use authenticated administration APIs for full-cluster replacement.
+Instance IDs identify ownership within the trusted registration boundary; they are not independent authentication credentials.

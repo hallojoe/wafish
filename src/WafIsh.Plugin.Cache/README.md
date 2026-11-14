@@ -42,3 +42,22 @@ Source project: [WafIsh.Plugin.Cache.csproj](WafIsh.Plugin.Cache.csproj).
 Direct project references: [WafIsh.Plugin.Abstractions](../WafIsh.Plugin.Abstractions/README.md), [WafIsh](../WafIsh/README.md).
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+
+## Cache key configuration
+
+`varyByQuery` and `varyHeaders` are deprecated, accepted for compatibility, and ignored.
+Their schema descriptions identify this behavior.
+Keys always include route, configuration generation, scheme, host, path base, path, and the complete query string.
+Keys include request headers except `Cache-Control`, `Pragma`, `X-Request-Id`, `traceparent`, `tracestate`, and `baggage`.
+Responses varying on excluded headers bypass storage. Credentials and private responses retain their existing bypass rules.
+Removing deprecated settings from stored bindings does not reduce response isolation.
+`enabled`, `ttlSeconds`, `maxBodyBytes`, and `cacheStatusCodes` retain their existing behavior.
+
+[Verification](../../tests/WafIsh.Regression/evidence/review111213/README.md).
+
+## Review items 14–16
+
+Cache lifetime and response age use monotonic time from the injected `TimeProvider`.
+UTC clock adjustments do not extend or shorten cache freshness. Stored wall timestamps use UTC.
+
+Verification: [review evidence](../../tests/WafIsh.Regression/evidence/review141516/README.md).

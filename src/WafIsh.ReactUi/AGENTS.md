@@ -13,6 +13,8 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Preserve PathBase in shell URLs. Validate every manifest asset before embedding or packing.
+
 - Edit frontend source under ClientApp, not generated wwwroot assets.
 - Keep API access in the shared client and query helpers.
 - Preserve authentication mode handling, request cancellation, and session expiry behavior.

@@ -42,3 +42,16 @@ Source project: [WafIsh.Client.csproj](WafIsh.Client.csproj).
 Direct project references: [WafIsh.Grpc](../WafIsh.Grpc/README.md).
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+
+## Review fixes 4–7
+
+One awaited heartbeat loop runs at a time. Shutdown cancels and joins that loop before unregistering.
+gRPC destination updates send the instance identity and last successful configuration revision.
+A revision conflict requires registration refresh before another update.
+
+## Review items 14–16
+
+Register a custom `TimeProvider` before `AddWafIshClient` to control registration backoff and heartbeat timers.
+Shutdown cancels and joins heartbeat work before unregistering.
+
+Verification: [review evidence](../../tests/WafIsh.Regression/evidence/review141516/README.md).

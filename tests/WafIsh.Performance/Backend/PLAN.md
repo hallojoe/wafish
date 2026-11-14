@@ -32,6 +32,36 @@ Provide chunked and event-stream responses with controlled chunk sizes and inter
 
 Acceptance: The harness can measure first-byte latency and buffering without an external service.
 
+## Source review follow-up: 2026-11-14
+
+Static review findings follow. Implementation and acceptance checks remain pending.
+See [solution priorities and dependencies](../../../DOTNET_REVIEW.md).
+
+### IMP-03: Stop work when the client disconnects
+
+Status: TODO. Priority: P2. Type: measurement distortion.
+
+Evidence: [Program.cs](Program.cs), echo and delay endpoints.
+
+The echo copy and delay do not receive `RequestAborted`.
+Cancelled load can leave backend work running into the next measurement.
+Add explicit request bounds and propagate cancellation through both endpoints.
+
+Acceptance: Cancelled requests stop promptly.
+A following scenario starts without leftover delay or echo work.
+
+### FEAT-02: Add deterministic transport faults
+
+Status: TODO. Priority: P2. Type: benchmark feature.
+
+Evidence: [Program.cs](Program.cs) supports status failures but no partial-response disconnect.
+
+Add opt-in responses that disconnect after a fixed byte count or stall after sending headers.
+Keep controls on loopback and reset fault state between cases.
+
+Acceptance: The runner can reproduce truncated responses and body-read deadlines.
+Backend counters distinguish completed, cancelled, and aborted requests.
+
 ## Completion rule
 
 Complete an item only after implementation and its acceptance checks pass.

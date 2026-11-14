@@ -13,6 +13,8 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Keep notification event accounting complete across overflow, cancellation, delivery, suppression, and shutdown.
+
 - Preserve authentication on protected administration routes and hubs. Keep login endpoints available for authentication.
 - Keep AI and MCP registration explicit; configuration alone must not activate them.
 - Preserve current response envelopes unless a migration is documented.

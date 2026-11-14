@@ -42,3 +42,10 @@ Source project: [WafIsh.Storage.Abstractions.csproj](WafIsh.Storage.Abstractions
 This project has no direct solution project references. Package and framework references remain in its project file.
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+
+## Review fixes 4–7
+
+`GetBindingsSnapshotAsync` returns bindings and their storage revision.
+`CommitBindingsAsync` applies upserts and deletions atomically against that revision.
+Stale revisions throw `BindingRevisionConflictException`. Unsupported providers fail explicitly.
+Revisions increase monotonically; one batch can advance the revision more than once.

@@ -196,3 +196,132 @@ Backups retain committed WAL changes and preserve encryption.
 A failed backup returns HTTP 503. It never falls back to copying a live main database file.
 The raw database-download endpoint remains distinct from the consistent backup endpoint.
 Use `/aneiang/api/settings/database/backup` for a consistent live backup, adjusted for your administration prefix.
+
+## Administration attempt limits
+
+Authentication limits work without proxy rate-limit plugins.
+Each source address receives 20 login attempts per minute.
+The configured login account also has a shared limit of 100 attempts per minute.
+Password failures, TOTP challenges, and TOTP failures consume login attempts.
+Basic and API-key checks allow 20 failed or concurrent attempts per source per minute.
+Successful direct credential checks refund their reservations.
+Exhaustion returns HTTP 429 with `Retry-After`; normal authentication envelopes remain unchanged.
+
+The limiter uses `Connection.RemoteIpAddress`. It does not parse caller forwarding headers.
+Only trusted forwarding middleware may replace that address.
+Each process retains at most 2,048 source/account counters. New counters receive 429 at capacity.
+Expired counters are removed. Existing counters keep their limits during key churn.
+Limits are process-local. Multiple gateways do not share these counters.
+
+## Request resource limits and retry behavior
+
+| Resource | Limit | Behavior at the limit |
+|---|---|---|
+| Retry request replay | 1 MiB per request | Larger or unknown-length bodies use one attempt without replay capture. |
+| Retry response capture | 64 KiB per attempt | Overflow forwards the retained prefix and continues streaming. |
+| Decoded log capture | Configured byte limit, capped at 1 MiB | Decode only the bounded prefix and one overflow byte; append a truncation marker. |
+| Local limiter partitions | 2,000 per runtime store | New partitions receive 429. Existing quotas remain enforced. |
+| Cache capture and entries | Existing configured shared cache budget | Existing capture overflow and eviction rules remain in force. |
+| Compression prefix | Existing 64 KiB maximum | Existing streaming fallback remains in force. |
+
+These limits are additive when plugins process the same request.
+Retry owns one pooled request buffer and at most one 64 KiB response buffer.
+Decoded logging owns a pooled byte buffer, one overflow byte, and the resulting text.
+Text can require approximately twice the retained byte count; decoder and transport buffers are additional.
+Compressed request buffering and response capture have separate configured budgets.
+These limits bound retained request data; they do not set a process-wide memory or request-concurrency limit.
+
+Request replay requires the complete declared body. Premature EOF rejects the request before forwarding.
+Preparation and each retry attempt use the configured `timeoutSeconds` deadline.
+Caller cancellation also stops reads, backoff, decoding, and queued limiter acquisition.
+Owned request streams and response features are restored on success, cancellation, and failure.
+Response buffers and replay buffers are released before the request leaves the middleware.
+
+Successful responses stream immediately.
+A response flush, explicit start, completion, file transfer, or capture overflow ends retry eligibility.
+Retry metadata is set before headers become immutable.
+`DisableBuffering` disables subsequent capture without treating an empty response as already transmitted.
+YARP normally disables response buffering. A bodyless upstream failure can still retry.
+After upstream response bytes are forwarded, that response cannot retry.
+See the [YARP forwarding implementation](https://github.com/dotnet/yarp/blob/v2.3.0/src/ReverseProxy/Forwarder/HttpForwarder.cs).
+
+Route partitions use the configured route identity, rather than variable request paths.
+Limiter leases retain ownership during queued acquisition and downstream processing.
+Cleanup removes only stale, fully idle partitions. It does not evict active quotas under capacity pressure.
+
+## WAF address validation and rejection logs
+
+CIDR prefixes must be within 0–32 for IPv4 or 0–128 for IPv6.
+Both binding validation and snapshot preparation reject invalid address rules.
+The request-time matcher also rejects invalid ranges without indexing outside address buffers.
+
+Rejection logs contain the rule, configured route, trace identifier, and client address.
+They omit request paths, query strings, body excerpts, and raw match details.
+
+## Consumer changes for review fixes
+
+- Implement `IRateLimiterStore.AcquireAsync` in custom limiter stores.
+  Return null at partition capacity. Retain ownership until the returned lease is disposed.
+- `GetOrAdd` throws when the built-in store reaches capacity. Prefer `AcquireAsync` for request handling.
+- Supply `AuthenticationAttemptLimiter` when constructing `DashboardAuthController` directly.
+  Normal administration registration supplies the shared singleton automatically.
+- Correct invalid WAF address rules before activating existing configuration.
+- Handle authentication HTTP 429 and `Retry-After` in administration clients.
+- Unknown-length and oversized request bodies no longer retry. Transmitted responses never retry.
+- Decoded log captures above 1 MiB are truncated, even when a larger capture setting is supplied.
+
+### Consumer changes for review items 4–7
+
+- Storage providers must implement atomic binding snapshots and revision-checked batches for runtime binding mutations.
+- Limiter integrations must acquire and dispose owned leases. Raw `GetOrAdd` access is removed.
+- Circuit stores must implement `TryAcquireAttempt` and release canceled probe ownership.
+- Redis policy keys use a new versioned format. Coordinate replica upgrades to avoid separate counters during rollout.
+- gRPC destination updates require instance identity and the last successful configuration revision.
+- Legacy destination updates fail explicitly. Authenticated administration retains full-cluster replacement.
+- Instance identity does not replace registration authentication. Clients sharing registration credentials remain within one trust boundary.
+
+## Consumer changes for review items 8–10
+
+The webhook settings GET response adds `dispatch` counters alongside its existing `data` object.
+Metric snapshots add `Exceptions` and `Cancellations`. Existing positional constructors remain available.
+Metrics count pipeline attempts, including retries that reach the metrics middleware.
+Plugin errors exclude cancellations. Native statistics include cancellation status 499 in their error count.
+SQLite migration 020 adds a UTC expression index without rewriting existing proxy log timestamp text.
+New log timestamps use UTC. Time ranges now compare instants rather than timestamp strings.
+
+See [verification and limitations](../tests/WafIsh.Regression/evidence/review8910/README.md).
+
+## Consumer changes for review items 11–13
+
+React UI configuration now includes the host's `PathBase`. Configure it before routing and WafIsh middleware.
+Retired plugin domains remain owned until their request leases finish and disposal completes.
+Shutdown rejects late activation and reports disposal failures. Long requests can delay shutdown.
+Cache settings `varyByQuery` and `varyHeaders` are deprecated and ignored; conservative isolation remains effective.
+Unknown-length compression bypasses thresholds above 65,536 bytes, independent of write chunk size.
+Known-length responses continue using the full configured threshold.
+Frontend builds and package checks require a complete Vite asset manifest and its referenced files.
+
+See [verification and remaining limits](../tests/WafIsh.Regression/evidence/review111213/README.md).
+
+## Review items 14–16 compatibility
+
+Migration 021 converts valid stored timestamps to invariant UTC round-trip text.
+Explicit offsets preserve their instants, including daylight-saving overlaps. Fractional precision is retained.
+Legacy offsetless values are interpreted as UTC; their original local timezone cannot be recovered reliably.
+Invalid text and null values remain unchanged. Existing migration history is retained.
+Readers return UTC values. Indexed proxy-log comparisons continue using `julianday`.
+
+Clock-aware constructors preserve their existing overloads. Register a custom `TimeProvider` before runtime, client, or storage registration.
+Cache expiry, circuit recovery, idle cleanup, discovery refresh, and background timers use the injected clock.
+Monotonic timestamps measure in-process durations. UTC timestamps represent persisted instants and health events.
+Built-in limiter replenishment, Redis quotas, and request deadlines retain their existing timer ownership.
+
+Metric stores remove obsolete identities on the next read or record after a configuration change.
+Active identities retain counters. Retired identities cannot return through late request completion.
+Each scope limits retained series to 10,000; additional identities receive no counters until capacity becomes available.
+
+User-approved policy: treat packages as first releases and use reviewed API snapshots until publication.
+See [baseline policy](../tests/contracts/public-api/README.md) before changing compatibility expectations.
+CI retains package and regression artifacts for 14 days. Audit reports remain available for 30 days.
+Dependency auditing includes transitive dependencies and fails for all reported vulnerability severities.
+Audit-source failures, warnings, invalid reports, and command failures also fail verification.

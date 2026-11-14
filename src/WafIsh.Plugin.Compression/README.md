@@ -40,3 +40,14 @@ Source project: [WafIsh.Plugin.Compression.csproj](WafIsh.Plugin.Compression.csp
 Direct project references: [WafIsh.Plugin.Abstractions](../WafIsh.Plugin.Abstractions/README.md), [WafIsh](../WafIsh/README.md).
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+
+## Minimum response size
+
+Known-length responses use the configured `minResponseSize`, including values above 64 KiB.
+Unknown-length responses use at most 64 KiB of prefix storage.
+For unknown lengths, thresholds above 65,536 bytes bypass compression regardless of write chunk size.
+At lower thresholds, reaching the threshold selects compression. Completing below it preserves the original response.
+An early flush selects uncompressed output for unknown lengths, preserving prompt streaming.
+The schema description exposes this fallback. Existing encoding, media-type, and HTTP exclusion rules remain effective.
+
+[Verification](../../tests/WafIsh.Regression/evidence/review111213/README.md).

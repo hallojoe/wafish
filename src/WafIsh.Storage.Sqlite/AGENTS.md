@@ -13,6 +13,10 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Write invariant UTC timestamps. Preserve invalid legacy text during normalization migrations.
+
+- Compare proxy log timestamps as UTC instants with the indexed `julianday(Timestamp)` expression.
+
 - Add a new migration for schema changes; preserve existing migration history.
 - Use bound parameters for user-controlled SQL values.
 - Preserve SQLite3MC initialization and legacy encrypted fixture compatibility.

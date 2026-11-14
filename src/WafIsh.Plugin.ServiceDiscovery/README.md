@@ -42,3 +42,16 @@ Source project: [WafIsh.Plugin.ServiceDiscovery.csproj](WafIsh.Plugin.ServiceDis
 Direct project references: [WafIsh.Plugin.Abstractions](../WafIsh.Plugin.Abstractions/README.md), [WafIsh](../WafIsh/README.md).
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+
+## Review fixes 4–7
+
+Destination IDs use SHA-256 over normalized absolute addresses. URI path case remains significant.
+Publication checks the captured binding and shares the configuration mutation gate.
+Unrelated configuration changes preserve the last discovered destinations. Removed or changed bindings reject stale refresh results.
+
+## Review items 14–16
+
+Injected `TimeProvider` controls refresh intervals and loop delays.
+Refresh intervals use monotonic elapsed time; resource health timestamps use UTC.
+
+Verification: [review evidence](../../tests/WafIsh.Regression/evidence/review141516/README.md).

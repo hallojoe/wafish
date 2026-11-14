@@ -42,3 +42,29 @@ Source project: [WafIsh.Plugin.Metrics.csproj](WafIsh.Plugin.Metrics.csproj).
 Direct project references: [WafIsh.Plugin.Abstractions](../WafIsh.Plugin.Abstractions/README.md), [WafIsh](../WafIsh/README.md).
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+
+## Measurement semantics
+
+Metrics count pipeline attempts that reach the metrics middleware. Each retry can produce another measurement.
+Earlier cache hits and policy rejections do not reach this middleware.
+A downstream circuit rejection can produce a measurement without an upstream request.
+Each successful, throwing, or cancelled attempt records duration and one request count.
+`Errors` counts HTTP 5xx results and exceptions. `Exceptions` identifies the exception subset.
+`Cancellations` counts cancelled attempts separately from plugin errors.
+Native gateway statistics use measured statuses 500 for exceptions and 499 for cancellation.
+Native statistics include 499 in their error total. These measured statuses do not modify HTTP responses.
+Byte totals use declared content lengths, not measured wire traffic.
+Both plugins share one middleware installation. Cluster metrics also work without traffic metrics.
+
+[Verification for review items 8–10](../../tests/WafIsh.Regression/evidence/review8910/README.md).
+
+## Review items 14–16
+
+Metric snapshots retire identities when the active configuration version changes.
+Late completions cannot recreate removed identities. Continuously active identities retain counters.
+Reintroduced identities start at zero after retirement is observed. Process restart also resets counters.
+Each route, cluster, and destination scope admits at most 10,000 series.
+Existing series continue updating at capacity; new series are ignored until slots become available.
+Reads and updates share a lock, preserving coherent snapshots during concurrent activity.
+
+Verification: [review evidence](../../tests/WafIsh.Regression/evidence/review141516/README.md).

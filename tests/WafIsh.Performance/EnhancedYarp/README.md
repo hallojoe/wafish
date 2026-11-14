@@ -45,3 +45,9 @@ Examples include `--mode=host-native`, `--mode=core`, `--mode=full`, `--mode=ret
 Use the [runner](../Runner/README.md) instead of starting conflicting benchmark processes manually.
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+
+## Review fixes 4–7
+
+WAF, rate-limit, logging, retry, and circuit modes install explicit bindings. Health returns 503 until activation and validation finish.
+Unknown modes fail startup. Proxy log settings use `Gateway:ProxyLog`.
+`full` enables pipeline composition without implicit route or cluster policies.

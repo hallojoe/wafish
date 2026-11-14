@@ -32,6 +32,36 @@ Demonstrate a health-checked switch between two backend versions using existing 
 
 Acceptance: The walkthrough proves cutover and rollback without losing the original route identity.
 
+## Source review follow-up: 2026-11-14
+
+Static review findings follow. Implementation and acceptance checks remain pending.
+See [solution priorities and dependencies](../../DOTNET_REVIEW.md).
+
+### IMP-03: Build operator URLs from effective configuration
+
+Status: TODO. Priority: P2. Type: sample mismatch.
+
+Evidence: [Program.cs](Program.cs), startup output and browser launch.
+
+The sample prints `/console` and builds an HTTP browser URL.
+UI prefixes and Kestrel transport settings are configurable.
+Use the resolved scheme, authority, and configured UI prefix.
+
+Acceptance: A custom UI prefix and HTTPS listener produce a valid browser link.
+Orchestrated startup still respects the disabled automatic-browser setting.
+
+### FEAT-02: Provide a minimal runtime composition profile
+
+Status: TODO. Priority: P3. Type: sample feature.
+
+Evidence: [Program.cs](Program.cs) always registers React administration and AI services.
+
+Add a runnable profile that selects runtime and storage without administration registration.
+Document the separate full-host profile using the public composition APIs.
+
+Acceptance: The minimal profile forwards traffic and restores saved configuration.
+Administration, AI, and MCP endpoints are absent from that profile.
+
 ## Completion rule
 
 Complete an item only after implementation and its acceptance checks pass.

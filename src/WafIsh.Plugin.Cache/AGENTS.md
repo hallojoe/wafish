@@ -13,6 +13,10 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Measure cache age with the injected monotonic clock, never wall-clock subtraction.
+
+- Keep deprecated variant switches accepted but ineffective; their schema must state the conservative key behavior.
+
 - Keep cache keys isolated by host, query, relevant headers, and configuration generation.
 - Preserve bypass rules for credentials, cookies, private responses, and conditional requests.
 - The memory budget includes pending captures and entries still being served.

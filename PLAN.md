@@ -6,6 +6,8 @@ This file tracks architectural improvements, security fixes, Aspire integration,
 Complete urgent security fixes before architectural changes.
 Keep each phase runnable and independently testable.
 
+The [2026-11-14 .NET source review](DOTNET_REVIEW.md) records new proposals, shared priorities, and all 30 project plans.
+
 ## Decisions
 
 - Breaking changes are permitted. Document consumer migrations before completing the affected task.
@@ -628,10 +630,51 @@ Update package publishing, documentation, and page-contract expectations.
 Acceptance: React workflows pass. The published sample contains no Razor UI package or assets.
 Former page routes are unavailable. All 87 non-page controller contracts remain unchanged.
 
+## Review follow-up: approved items 1–16
+
+Original phase completion remains historical evidence. These tasks address additional review findings.
+
+| Task | Status | Owner | Scope and next step |
+|---|---|---|---|
+| REV-01 | DONE | Codex | Authentication attempt limits, CIDR validation, WAF log sanitization, and HTTPS cookie checks pass. |
+| REV-02 | DONE | Codex | Safe replay, bounded response and decoded capture, partition admission, and request resource rules pass. |
+| REV-03 | DONE | Codex | Live Kestrel/YARP streaming, plugin combinations, and disconnect checks pass. |
+| REV-04 | DONE | Codex | Effective benchmark policies, readiness, failure exit codes, and response deadlines pass. |
+| REV-05 | DONE | Codex | Shared publication ownership, atomic binding batches, and revision-safe recovery pass. |
+| REV-06 | DONE | Codex | Selected circuit probes, Redis policy isolation, and owned limiter lifetimes pass. |
+| REV-07 | DONE | Codex | Awaited heartbeat shutdown, instance updates, and stable discovery identities pass. |
+| REV-08 | DONE | Codex | Unfinished log batches and notification losses have complete accounting. |
+| REV-09 | DONE | Codex | Indexed UTC comparisons and final-batch orphan cleanup pass. |
+| REV-10 | DONE | Codex | Failed and cancelled metric attempts finalize once; retry semantics are documented. |
+| REV-11 | DONE | Codex | PathBase, nested UI/API prefixes, frontend inputs, and package assets pass verification. |
+| REV-12 | DONE | Codex | Retired domains and watcher tasks remain owned until shutdown completes. |
+| REV-13 | DONE | Codex | Cache setting deprecations and bounded compression thresholds have explicit, tested behavior. |
+| REV-14 | DONE | Codex | Package validation, first-release API snapshots, and isolated native consumers pass. User-approved API snapshots define compatibility until publication. |
+| REV-15 | DONE | Codex | Live Redis, strict dependency auditing, JSON results, and retained CI artifacts are configured and checked locally. |
+| REV-16 | DONE | Codex | UTC migration, controlled policy clocks, and bounded metric identity retention pass. |
+
+Completed 2026-11-14. [Verification and compatibility evidence](tests/WafIsh.Regression/evidence/review123/README.md).
+Base commit `bc1b617`; implementation remains uncommitted.
+
+Items 4–7 completed 2026-11-14. [Verification and compatibility evidence](tests/WafIsh.Regression/evidence/review4567/README.md).
+
+Items 8–10 completed 2026-11-14. [Verification and compatibility evidence](tests/WafIsh.Regression/evidence/review8910/README.md).
+
+Items 11–13 completed 2026-11-14. [Verification and compatibility evidence](tests/WafIsh.Regression/evidence/review111213/README.md).
+
+Items 14–16 completed 2026-11-14. [Verification and compatibility evidence](tests/WafIsh.Regression/evidence/review141516/README.md).
+Linux validation is complete. Windows and macOS execution is configured in CI and awaits hosted runs.
+User decision: treat packages as first releases. Reviewed API snapshots establish compatibility until publication.
+
 ## Execution record
 
 | Date | Task | Owner | Status | Evidence and next action |
 |---|---|---|---|---|
+| 2026-11-14 | REV-14 through REV-16 | Codex | DONE | Release build, 169 standard regression checks, live Redis, 20 browser checks, and three isolated consumers pass. [Evidence](tests/WafIsh.Regression/evidence/review141516/README.md). |
+| 2026-11-14 | REV-11 through REV-13 | Codex | DONE | Release build, 163 regression executions, 20 browser checks, and package checks pass. Changed C# coverage: 93.85%. [Evidence](tests/WafIsh.Regression/evidence/review111213/README.md). |
+| 2026-11-14 | REV-08 through REV-10 | Codex | DONE | Release build and 157 regression executions pass. Changed source coverage: 86.67%. [Evidence](tests/WafIsh.Regression/evidence/review8910/README.md). |
+| 2026-11-14 | REV-04 through REV-07 | Codex | DONE | Release build; 151 regression checks and 23 managed scenarios pass. Changed source coverage: 89.71%. [Evidence](tests/WafIsh.Regression/evidence/review4567/README.md). |
+| 2026-11-14 | REV-01 through REV-03 | Codex | DONE | Release solution build; 110 main and 24 administration checks pass. Changed source coverage: 91.64%. [Evidence](tests/WafIsh.Regression/evidence/review123/README.md). |
 | 2026-11-14 | SEC-14 | Codex | DONE | Maintained SQLite3MC 2.7.0 / SQLite 3.54.1; legacy plaintext and SQLCipher compatibility verified. 68 regression, 20 administration, and 17 browser checks pass. Published encryption and backups verified. |
 | 2026-11-14 | UI-08 | Codex | DONE | Removed Razor project, pages, assets, wrappers, and fallback. All 87 API contracts remain; 64 regression, 19 administration, nine frontend, and 17 browser checks pass. Published sample and ProxyOnly isolation verified. |
 | 2026-11-14 | ASP-01 through ASP-08 | Codex | DONE | Dynamic endpoints, authenticated multi-instance registration, telemetry, Redis outage/recovery, and both runner modes verified. |

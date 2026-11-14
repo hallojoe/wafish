@@ -41,7 +41,13 @@ Browser tests can verify real authentication and persistence instead of mocking 
 Source project: [WafIsh.ReactUi.Host.csproj](WafIsh.ReactUi.Host.csproj).
 Direct project references: [WafIsh.ReactUi](../../src/WafIsh.ReactUi/README.md), [WafIsh.Storage.Sqlite](../../src/WafIsh.Storage.Sqlite/README.md).
 
-Playwright assigns ports 5219–5221 and generates a password when none is supplied.
+Playwright assigns ports 5219–5224 and generates a password when none is supplied.
 Use the [browser configuration](../../src/WafIsh.ReactUi/ClientApp/playwright.config.ts) to start this fixture.
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+
+`UI_TEST_PATH_BASE`, `UI_TEST_UI_PREFIX`, and `UI_TEST_API_PREFIX` select deployment prefixes.
+Defaults retain root hosting with `/console` and `/aneiang`.
+Browser verification uses three additional hosts on ports 5222–5224 with `/edge/manage/ui` and `/edge/manage/api`.
+These fixtures cover JWT, BasicAuth, and API-key authentication with isolated storage and credentials.
+HTTPS fixture selection remains separate work.

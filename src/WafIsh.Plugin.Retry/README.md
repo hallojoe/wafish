@@ -42,3 +42,20 @@ Source project: [WafIsh.Plugin.Retry.csproj](WafIsh.Plugin.Retry.csproj).
 Direct project references: [WafIsh.Plugin.Abstractions](../WafIsh.Plugin.Abstractions/README.md), [WafIsh](../WafIsh/README.md).
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+
+## Review safety limits
+
+Replay requires a complete known-length body of at most 1 MiB. Failure capture stops at 64 KiB.
+Flush, response start, and forwarded bytes prevent further retries. Cancellation restores owned streams and features.
+See [resource limits and consumer changes](../../docs/security.md#request-resource-limits-and-retry-behavior).
+
+## Review fixes 4–7
+
+Circuit outcomes belong to the selected forwarding attempt. Retry does not record a second outcome.
+
+## Review items 14–16
+
+Retry backoff uses `TimeProvider` from request services, with `TimeProvider.System` as fallback.
+Request and attempt cancellation deadlines retain their existing system timers.
+
+Verification: [review evidence](../../tests/WafIsh.Regression/evidence/review141516/README.md).

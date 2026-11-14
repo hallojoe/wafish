@@ -13,6 +13,10 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Preserve custom TimeProvider registrations and both-scope IServiceProviderIsService resolution.
+
+- Retain retirement tasks and join them during shutdown. Reject activation after shutdown starts.
+
 - Keep Administration and ReactUi references out of this project.
 - Start plugin resources through lifecycle contracts, not plugin constructors.
 - Retain the old domain when preparation or health checks fail.
