@@ -1,4 +1,5 @@
 <Project>
+  <Import Project="../Directory.Build.props" />
 
   <PropertyGroup>
     <Version>2.3.0.30</Version>
@@ -13,6 +14,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <EnablePackageValidation>true</EnablePackageValidation>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -23,7 +25,7 @@
 
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)..\README.md" Pack="true" PackagePath="\" />
-    <None Include="$(MSBuildThisFileDirectory)..\logo.png" Pack="true" PackagePath="\" Visible="false" />
+
   </ItemGroup>
 
 </Project>

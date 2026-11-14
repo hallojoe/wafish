@@ -1,0 +1,23 @@
+[
+  "Base: global::WafIsh.Plugin.RateLimit.RateLimitMiddleware : global::WafIsh.Infrastructure.Middleware.GatewayMiddlewareBase",
+  "Base: global::WafIsh.Plugin.RateLimit.RateLimitPlugin : object",
+  "Interface: global::WafIsh.Plugin.RateLimit.RateLimitPlugin : global::WafIsh.Plugins.IGatewayPlugin",
+  "Method: public global::System.Threading.Tasks.Task global::WafIsh.Plugin.RateLimit.RateLimitMiddleware.InvokeAsync(global::Microsoft.AspNetCore.Http.HttpContext context)",
+  "Method: public global::WafIsh.Plugin.RateLimit.RateLimitMiddleware.RateLimitMiddleware(global::Microsoft.AspNetCore.Http.RequestDelegate next, global::Microsoft.Extensions.Logging.ILogger\u003Cglobal::WafIsh.Plugin.RateLimit.RateLimitMiddleware\u003E logger, global::Microsoft.Extensions.Options.IOptions\u003Cglobal::WafIsh.Infrastructure.Middleware.GatewayMiddlewareOptions\u003E dashOptions, global::WafIsh.Plugins.IGatewayPluginManager pluginManager, global::WafIsh.Infrastructure.State.IRateLimiterStore limiterStore, global::WafIsh.Services.GatewayPluginExecutionPlanProvider executionPlans, global::System.TimeProvider timeProvider, global::WafIsh.Services.IDynamicYarpConfigService? yarpConfig = null)",
+  "Method: public global::WafIsh.Plugin.RateLimit.RateLimitMiddleware.RateLimitMiddleware(global::Microsoft.AspNetCore.Http.RequestDelegate next, global::Microsoft.Extensions.Logging.ILogger\u003Cglobal::WafIsh.Plugin.RateLimit.RateLimitMiddleware\u003E logger, global::Microsoft.Extensions.Options.IOptions\u003Cglobal::WafIsh.Infrastructure.Middleware.GatewayMiddlewareOptions\u003E dashOptions, global::WafIsh.Plugins.IGatewayPluginManager pluginManager, global::WafIsh.Infrastructure.State.IRateLimiterStore limiterStore, global::WafIsh.Services.GatewayPluginExecutionPlanProvider executionPlans, global::WafIsh.Services.IDynamicYarpConfigService? yarpConfig = null)",
+  "Method: public global::WafIsh.Plugin.RateLimit.RateLimitPlugin.RateLimitPlugin()",
+  "Method: public global::WafIsh.Plugins.PluginManifest global::WafIsh.Plugin.RateLimit.RateLimitPlugin.Manifest.get",
+  "Method: public string global::WafIsh.Plugin.RateLimit.RateLimitPlugin.DisplayName.get",
+  "Method: public string global::WafIsh.Plugin.RateLimit.RateLimitPlugin.PluginId.get",
+  "Method: public string global::WafIsh.Plugin.RateLimit.RateLimitPlugin.Version.get",
+  "Method: public void global::WafIsh.Plugin.RateLimit.RateLimitPlugin.ConfigureDashboard(global::WafIsh.Plugins.IPluginDashboardBuilder builder)",
+  "Method: public void global::WafIsh.Plugin.RateLimit.RateLimitPlugin.ConfigureMiddleware(global::Microsoft.AspNetCore.Builder.IApplicationBuilder app)",
+  "Method: public void global::WafIsh.Plugin.RateLimit.RateLimitPlugin.ConfigureProxyPipeline(global::Microsoft.AspNetCore.Builder.IReverseProxyApplicationBuilder proxyPipeline)",
+  "Method: public void global::WafIsh.Plugin.RateLimit.RateLimitPlugin.ConfigureServices(global::Microsoft.Extensions.DependencyInjection.IServiceCollection services, object? pluginOptions = null)",
+  "NamedType: global::WafIsh.Plugin.RateLimit.RateLimitMiddleware",
+  "NamedType: global::WafIsh.Plugin.RateLimit.RateLimitPlugin",
+  "Property: public global::WafIsh.Plugins.PluginManifest global::WafIsh.Plugin.RateLimit.RateLimitPlugin.Manifest",
+  "Property: public string global::WafIsh.Plugin.RateLimit.RateLimitPlugin.DisplayName",
+  "Property: public string global::WafIsh.Plugin.RateLimit.RateLimitPlugin.PluginId",
+  "Property: public string global::WafIsh.Plugin.RateLimit.RateLimitPlugin.Version"
+]

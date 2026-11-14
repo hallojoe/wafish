@@ -1,0 +1,11 @@
+<Project>
+  <!-- Stage the icon to avoid NuGet matching both logo.png and Logo.png on Linux. -->
+  <Target Name="StagePackageIcon" BeforeTargets="_GetPackageFiles">
+    <MakeDir Directories="$(IntermediateOutputPath)package-icon" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)../logo.png" DestinationFiles="$(IntermediateOutputPath)package-icon/logo.png" SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <None Include="$(IntermediateOutputPath)package-icon/logo.png" Pack="true" PackagePath="/" Visible="false" />
+      <FileWrites Include="$(IntermediateOutputPath)package-icon/logo.png" />
+    </ItemGroup>
+  </Target>
+</Project>

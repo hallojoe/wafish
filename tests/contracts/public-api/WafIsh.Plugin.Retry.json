@@ -1,0 +1,23 @@
+[
+  "Base: global::WafIsh.Plugin.Retry.RequestRetryMiddleware : global::WafIsh.Infrastructure.Middleware.GatewayMiddlewareBase",
+  "Base: global::WafIsh.Plugin.Retry.RequestRetryPlugin : object",
+  "Field: public const int global::WafIsh.Plugin.Retry.RequestRetryMiddleware.MaxRetryBodySizeBytes = 1048576",
+  "Interface: global::WafIsh.Plugin.Retry.RequestRetryPlugin : global::WafIsh.Plugins.IGatewayPlugin",
+  "Method: public global::System.Threading.Tasks.Task global::WafIsh.Plugin.Retry.RequestRetryMiddleware.InvokeAsync(global::Microsoft.AspNetCore.Http.HttpContext context)",
+  "Method: public global::WafIsh.Plugin.Retry.RequestRetryMiddleware.RequestRetryMiddleware(global::Microsoft.AspNetCore.Http.RequestDelegate next, global::Microsoft.Extensions.Logging.ILogger\u003Cglobal::WafIsh.Plugin.Retry.RequestRetryMiddleware\u003E logger, global::Microsoft.Extensions.Options.IOptions\u003Cglobal::WafIsh.Infrastructure.Middleware.GatewayMiddlewareOptions\u003E dashOptions, global::WafIsh.Plugins.IGatewayPluginManager pluginManager, global::Microsoft.IO.RecyclableMemoryStreamManager memoryStreamManager, global::WafIsh.Infrastructure.State.ICircuitStateStore circuitStore, global::WafIsh.Infrastructure.Resilience.IDestinationCandidateCoordinator destinationCoordinator, global::WafIsh.Services.GatewayPluginExecutionPlanProvider executionPlans, global::WafIsh.Services.IDynamicYarpConfigService? yarpConfig = null)",
+  "Method: public global::WafIsh.Plugin.Retry.RequestRetryPlugin.RequestRetryPlugin()",
+  "Method: public global::WafIsh.Plugins.PluginManifest global::WafIsh.Plugin.Retry.RequestRetryPlugin.Manifest.get",
+  "Method: public string global::WafIsh.Plugin.Retry.RequestRetryPlugin.DisplayName.get",
+  "Method: public string global::WafIsh.Plugin.Retry.RequestRetryPlugin.PluginId.get",
+  "Method: public string global::WafIsh.Plugin.Retry.RequestRetryPlugin.Version.get",
+  "Method: public void global::WafIsh.Plugin.Retry.RequestRetryPlugin.ConfigureDashboard(global::WafIsh.Plugins.IPluginDashboardBuilder builder)",
+  "Method: public void global::WafIsh.Plugin.Retry.RequestRetryPlugin.ConfigureMiddleware(global::Microsoft.AspNetCore.Builder.IApplicationBuilder app)",
+  "Method: public void global::WafIsh.Plugin.Retry.RequestRetryPlugin.ConfigureProxyPipeline(global::Microsoft.AspNetCore.Builder.IReverseProxyApplicationBuilder proxyPipeline)",
+  "Method: public void global::WafIsh.Plugin.Retry.RequestRetryPlugin.ConfigureServices(global::Microsoft.Extensions.DependencyInjection.IServiceCollection services, object? pluginOptions = null)",
+  "NamedType: global::WafIsh.Plugin.Retry.RequestRetryMiddleware",
+  "NamedType: global::WafIsh.Plugin.Retry.RequestRetryPlugin",
+  "Property: public global::WafIsh.Plugins.PluginManifest global::WafIsh.Plugin.Retry.RequestRetryPlugin.Manifest",
+  "Property: public string global::WafIsh.Plugin.Retry.RequestRetryPlugin.DisplayName",
+  "Property: public string global::WafIsh.Plugin.Retry.RequestRetryPlugin.PluginId",
+  "Property: public string global::WafIsh.Plugin.Retry.RequestRetryPlugin.Version"
+]

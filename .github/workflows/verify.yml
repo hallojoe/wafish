@@ -5,22 +5,59 @@ on:
 permissions:
   contents: read
 jobs:
-  native-storage:
+  packages-and-storage:
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - run: dotnet run --project tests/WafIsh.Regression -c Release -- --storage
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: dotnet build WafIsh.slnx -c Release
+      - run: dotnet run --project tests/WafIsh.Regression -c Release --no-build -- --storage
+        env:
+          WAFISH_TEST_REPORT: artifacts/test-results/storage.json
+      - run: python scripts/verify-packages.py
+      - run: python tests/WafIsh.PackageChecks/check-negative.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: packages-and-storage-${{ matrix.os }}
+          path: |
+            artifacts/test-results
+            artifacts/package-checks
+          retention-days: 14
+          if-no-files-found: error
+  dependency-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: python3 scripts/test-audit.py
+      - run: python3 scripts/audit-dependencies.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dependency-audit
+          path: artifacts/dependency-audit
+          retention-days: 30
+          if-no-files-found: error
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -33,15 +70,34 @@ jobs:
           cache-dependency-path: src/WafIsh.ReactUi/ClientApp/package-lock.json
       - run: dotnet build WafIsh.slnx -c Release
       - run: dotnet run --project tests/WafIsh.Regression -c Release --no-build
+        env:
+          WAFISH_TEST_REPORT: artifacts/test-results/main.json
       - run: dotnet run --project tests/WafIsh.Administration.Regression -c Release --no-build
+        env:
+          WAFISH_TEST_REPORT: artifacts/test-results/administration.json
+      - name: Install isolated Redis test executable
+        run: sudo apt-get update && sudo apt-get install -y redis-server
+      - name: Verify live Redis policies, outage, and recovery
+        run: dotnet run --project tests/WafIsh.Regression -c Release --no-build -- --redis
+        env:
+          ANEIANG_REDIS_SERVER: /usr/bin/redis-server
+          WAFISH_TEST_REPORT: artifacts/test-results/redis.json
       - run: npm run lint && npm run test:coverage && npm audit
         working-directory: src/WafIsh.ReactUi/ClientApp
+      - run: node --test --experimental-test-coverage src/WafIsh.ReactUi/ClientApp/scripts/verify-assets.test.mjs
+      - run: python3 tests/WafIsh.Regression/evidence/review111213/check-frontend-build.py
       - run: npx playwright install --with-deps chromium
         working-directory: src/WafIsh.ReactUi/ClientApp
       - run: npm run test:e2e
         working-directory: src/WafIsh.ReactUi/ClientApp
+        env:
+          UI_TEST_NO_BUILD: 'true'
       - uses: actions/upload-artifact@v4
-        if: failure()
+        if: always()
         with:
-          name: browser-results
-          path: src/WafIsh.ReactUi/ClientApp/test-results
+          name: regression-results
+          path: |
+            artifacts/test-results
+            src/WafIsh.ReactUi/ClientApp/test-results
+          retention-days: 14
+          if-no-files-found: error
