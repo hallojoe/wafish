@@ -1,0 +1,286 @@
+{
+  "schemaVersion": 1,
+  "suite": "administration",
+  "cases": [
+    {
+      "name": "Authorization matrix: every mapped action rejects missing and invalid credentials across four modes",
+      "group": null,
+      "durationMs": 2842.0204,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Mutation contracts: validation and model binding share Problem Details without losing endpoint fields",
+      "group": null,
+      "durationMs": 733.8436,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Shutdown: connected hubs close while queued notifications retain exact accounting",
+      "group": null,
+      "durationMs": 3091.4635,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Cleanup: failed assertions release clients, sockets, hosts, and temporary database files",
+      "group": null,
+      "durationMs": 600.367,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Cleanup: failed host startup disposes services before the next case",
+      "group": null,
+      "durationMs": 391.1561,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Storage API: oversized filters return 400 and extreme pages do not wrap",
+      "group": null,
+      "durationMs": 150.9005,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Sessions: bounded capacity, distinct tokens, generation races, revocation, expiry, and disposal",
+      "group": null,
+      "durationMs": 1913.3003,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Sessions: DefaultJwt sign-out, security changes, expiry, and concurrent API/hub requests",
+      "group": null,
+      "durationMs": 190.0561,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Sessions: CustomJwt sign-out, security changes, expiry, and concurrent API/hub requests",
+      "group": null,
+      "durationMs": 71.3657,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Sessions: BasicAuth credential rotation terminates realtime access and rejects old credentials",
+      "group": null,
+      "durationMs": 60.0772,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Sessions: ApiKey credential rotation terminates realtime access and rejects old credentials",
+      "group": null,
+      "durationMs": 43.4994,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Authentication: bounded atomic attempts, refunds, source isolation, and expiry",
+      "group": null,
+      "durationMs": 158.0456,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Authentication: Basic and API-key failures throttle without limiting valid traffic",
+      "group": null,
+      "durationMs": 2.8436,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Authentication: HTTPS cookie login, logout, expiry, transport, host, and origin",
+      "group": null,
+      "durationMs": 95.2912,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Authentication: HTTP login and direct credential limits return 429",
+      "group": null,
+      "durationMs": 204.6043,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Administration deploys without the dashboard assembly or Razor assets",
+      "group": null,
+      "durationMs": 3.3178,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Two-factor state persists privately and fails on corruption or write failure",
+      "group": null,
+      "durationMs": 1.3911,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Administration rejects missing and invalid API credentials",
+      "group": null,
+      "durationMs": 9.1752,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "AI and MCP configuration cannot activate unregistered services",
+      "group": null,
+      "durationMs": 1.7895,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Administration APIs work without page or static-asset endpoints",
+      "group": null,
+      "durationMs": 94.1488,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Administration creates clusters and routes through the preserved JSON API",
+      "group": null,
+      "durationMs": 427.3363,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Snapshots, rollback, and import preserve route activation",
+      "group": null,
+      "durationMs": 127.248,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Administration exposes storage failures and preserves the active revision",
+      "group": null,
+      "durationMs": 14.2218,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Administration serves system settings and database downloads without Razor",
+      "group": null,
+      "durationMs": 37.4556,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Encrypted database backup retains committed WAL data and rejects missing keys",
+      "group": null,
+      "durationMs": 275.8393,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Administration realtime hubs accept subscriptions and send overview updates",
+      "group": null,
+      "durationMs": 5019.19,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Corrupted two-factor persistence rejects JWT login",
+      "group": null,
+      "durationMs": 7.3919,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Administration login issues a usable JWT without a Razor login page",
+      "group": null,
+      "durationMs": 21.3067,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Administration retains configuration after host restart and supports deletion",
+      "group": null,
+      "durationMs": 39.3474,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Explicit AI registration resolves services and preserves administration authentication",
+      "group": null,
+      "durationMs": 43.3692,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "MCP binds loopback, enforces parent credentials, rejects origins, and limits request bodies",
+      "group": null,
+      "durationMs": 1107.8128,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Anonymous administration requires explicit loopback permission in Development",
+      "group": null,
+      "durationMs": 99.0639,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Anonymous administration requires explicit loopback permission in Staging",
+      "group": null,
+      "durationMs": 79.6438,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Anonymous administration requires explicit loopback permission in Production",
+      "group": null,
+      "durationMs": 86.8978,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Explicit MCP registration is independent and idempotent",
+      "group": null,
+      "durationMs": 1.4464,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    }
+  ]
+}

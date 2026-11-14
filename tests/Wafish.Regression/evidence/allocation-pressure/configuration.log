@@ -1,0 +1,9 @@
+PASS: Configuration: cluster APIs preserve updates, reject duplicates, and record enabled logs
+PASS: Registration: concurrent instances share routes and preserve peer destinations
+PASS: Configuration: atomic rollback covers single, batch, import, and replacement writes
+PASS: Configuration: cluster rename commits route references and binding identities together
+PASS: Configuration: route rename preserves disabled state and native match fields
+PASS: Configuration: validation and stale revisions cannot change stored or active state
+PASS: Configuration: readers see active state while a candidate waits for persistence
+PASS: Configuration: activation failure reports both revisions and recovers after restart
+All regression checks passed.

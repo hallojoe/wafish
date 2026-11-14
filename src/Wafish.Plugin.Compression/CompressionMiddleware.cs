@@ -30,7 +30,7 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
 
     private static string? SelectEncoding(string?[] values)
     {
-        if (!StringWithQualityHeaderValue.TryParseList(values.Select(v => v ?? "").ToArray(), out var parsed))
+        if (!HasValidQualities(values) || !StringWithQualityHeaderValue.TryParseStrictList(values.Select(v => v ?? "").ToArray(), out var parsed))
         {
             return null;
         }
@@ -47,6 +47,26 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
         }
         var br = Quality("br"); var gzip = Quality("gzip");
         return br > 0 && br >= gzip ? "br" : gzip > 0 ? "gzip" : null;
+    }
+
+    private static bool HasValidQualities(string?[] values)
+    {
+        // RFC 9110 qvalues allow 0..1 and at most three decimal places.
+        // The framework numeric parser accepts additional precision, so check the original tokens too.
+        foreach (var value in values)
+        foreach (var item in (value ?? "").Split(','))
+        {
+            var parts = item.Split(';', StringSplitOptions.TrimEntries);
+            if (parts.Length == 1) continue;
+            if (parts.Length != 2 || !parts[1].StartsWith("q=", StringComparison.OrdinalIgnoreCase)) return false;
+            var quality = parts[1].AsSpan(2);
+            if (quality.Length == 0 || quality[0] is not ('0' or '1')) return false;
+            if (quality.Length == 1) continue;
+            if (quality.Length > 5 || quality[1] != '.') return false;
+            foreach (var digit in quality[2..])
+                if (digit is < '0' or > '9' || (quality[0] == '1' && digit != '0')) return false;
+        }
+        return true;
     }
 
     internal static bool CanCompress(HttpContext context, CompressionExecutionConfig config) =>

@@ -1,0 +1,10 @@
+WAF corpus: {"name":"waf-corpus","benign":16,"attacks":14,"rejectedBenign":["Connection form field","Dots before number","Dots in filename","Dropdown label","HTML tutorial remains intentionally blocked","Selection field","Standalone SQL verb is intentionally broad","Updated field"],"missedAttacks":["Traversal mixed encoding"]}
+Protocol properties: WAF corpus reports benign rejections and missed attacks: Unexpected WAF corpus outcomes: Selection field: 403; Updated field: 403; Dropdown label: 403; Connection form field: 403; Dots in filename: 403; Dots before number: 403; Traversal mixed encoding: 200
+Protocol properties: seeded WAF decoding and split reads remain bounded: WAF seed 17, case 3, chunk 10 rejected or changed generated UTF-8.
+Protocol properties: cache directives preserve freshness, age, and variant isolation: Cache control=public, max-age=30; age=0; elapsed=0; request=: calls=2, status=200, hit=True.
+Protocol properties: encoding qualities, duplicates, wildcards, and invalid fields select supported bytes: Accept-Encoding 'br;q=0.1234' selected 'br', expected ''.
+Metric properties: seed 17, 2048 updates, 85 coherent concurrent snapshot rounds.
+Metric properties: seed 91, 2048 updates, 138 coherent concurrent snapshot rounds.
+Metric properties: seed 2026, 2048 updates, 141 coherent concurrent snapshot rounds.
+PASS: Protocol properties: concurrent metric snapshots retain coherent counters and retired identities
+Regression checks failed: 4

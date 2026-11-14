@@ -11,11 +11,12 @@ public sealed class PathTraversalRuleChecker : IWafRuleChecker
     public static readonly PathTraversalRuleChecker Instance = new();
 
     /// <summary>
-    /// Path traversal: raw ../ and URL-encoded variants (%2e%2e/, %252e%252e).
-    /// Simple alternation with no quantifiers — inherently safe.
+    /// Two raw or encoded dots followed by a raw or encoded path separator, or the end of the path.
+    /// Fixed repetition covers mixed single/double encoding without treating 5, c, or % as separators.
+    /// Retain the existing conservative rejection of two double-encoded dots with any suffix.
     /// </summary>
     private static readonly Regex Pattern = new(
-        @"(?i)(?>\.\.[/%5c\\])|(?>%2e%2e[%/%5c\\])|(?>%252e%252e)",
+        @"(?i)(?:\.|%2e|%252e){2}(?:/|\\|%2f|%5c|%252f|%255c|$)|%252e%252e",
         RegexOptions.Compiled,
         TimeSpan.FromMilliseconds(50));
 

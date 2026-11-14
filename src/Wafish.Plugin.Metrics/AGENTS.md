@@ -11,6 +11,8 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Run concurrent protocol properties after changing counter updates, snapshots, or identity retirement.
+
 - Retire obsolete identities and retain the 10,000-series limit for each metric scope.
 
 - Record each measured pipeline attempt once, including retries, exceptions, and cancellations. Keep cancellation counts separate.

@@ -1,0 +1,8 @@
+Cache measurement: one 512-byte response retains 1115136 charged bytes.
+Allocation pressure: small cache entries compact within the shared capture budget: Small cached response retained its one-MiB capture buffer.
+Compression measurement: binary=False, 16 x 16 MiB, allocated=257168, elapsedMs=34.2.
+Compression measurement: binary=True, 16 x 16 MiB, allocated=88824, elapsedMs=1.4.
+PASS: Allocation pressure: concurrent compression streams large JSON and excluded binary without body retention
+Snapshot measurement: 3000 routes, one change, rowWrites=6004, walBytes=1141272, elapsedMs=81.2.
+Allocation pressure: one-route snapshot updates avoid unrelated writes and WAL growth: One-route update rewrote unrelated configuration.
+Regression checks failed: 2

@@ -51,3 +51,22 @@ An early flush selects uncompressed output for unknown lengths, preserving promp
 The schema description exposes this fallback. Existing encoding, media-type, and HTTP exclusion rules remain effective.
 
 [Verification](../../tests/Wafish.Regression/evidence/review111213/README.md).
+
+## Encoding negotiation
+
+Brotli and gzip compete by quality. Brotli wins equal positive qualities.
+An explicit coding overrides the wildcard. Duplicate coding or wildcard qualities use the lowest value.
+Unknown codings do not select a compressor.
+Malformed lists, duplicate parameters, and invalid quality syntax bypass compression for the entire field.
+Quality syntax follows [RFC 9110 section 12.4.2](https://httpwg.org/specs/rfc9110.html#quality.values): values range from zero to one with at most three decimal places.
+Unsupported or unacceptable compression leaves the upstream representation unchanged; this middleware does not generate a 406 response.
+Generated checks cover field order, multiple header lines, wildcards, duplicates, malformed values, `Vary`, and byte-for-byte decompression.
+
+## Allocation measurements
+
+The allocation check streams sixteen concurrent sixteen-MiB responses into non-buffering sinks.
+Both compressed JSON and excluded binary responses deliver bytes before producers finish.
+Measured managed allocations remain below sixteen MiB for the complete 256-MiB workload.
+The focused run allocated approximately 233 KiB for JSON and 87 KiB for excluded binary.
+Native codec state and process RSS are outside this managed-allocation measurement.
+Existing bounded prefix buffering required no code change.

@@ -19,7 +19,7 @@ public sealed class SqlInjectionRuleChecker : IWafRuleChecker
 
     /// <summary>SQL keyword + comment injection detection.</summary>
     private static readonly Regex KeywordPattern = new(
-        @"(?i)(?>\b(?:SELECT|INSERT|UPDATE|DELETE|DROP|UNION|EXEC|EXECUTE|XP_|SP_))" +
+        @"(?i)(?>\b(?:(?:SELECT|INSERT|UPDATE|DELETE|DROP|UNION|EXEC|EXECUTE)\b|XP_|SP_))" +
         @"|(?>\B--|\B/\*|\*/)",
         RegexOptions.Compiled,
         RegexTimeout);

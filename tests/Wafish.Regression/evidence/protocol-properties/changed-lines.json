@@ -1,0 +1,37 @@
+{
+  "src/Wafish.Plugin.Compression/CompressionMiddleware.cs": [
+    33,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69
+  ],
+  "src/Wafish.Plugin.Waf/Middleware/PathTraversalRuleChecker.cs": [
+    14,
+    15,
+    16,
+    19
+  ],
+  "src/Wafish.Plugin.Waf/Middleware/SqlInjectionRuleChecker.cs": [
+    22
+  ],
+  "src/Wafish.Plugin.Waf/Middleware/XssRuleChecker.cs": [
+    15
+  ]
+}

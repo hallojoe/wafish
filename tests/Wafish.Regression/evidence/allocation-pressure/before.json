@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "suite": "main",
+  "cases": [
+    {
+      "name": "Allocation pressure: small cache entries compact within the shared capture budget",
+      "group": "allocation-pressure",
+      "durationMs": 79.5161,
+      "status": "failed",
+      "error": "System.InvalidOperationException: Small cached response retained its one-MiB capture buffer.\n   at AllocationPressureChecks.Check(Boolean condition, String message) in /home/casko/code/wafish/tests/Wafish.Regression/AllocationPressureChecks.cs:line 123\n   at AllocationPressureChecks.CacheAsync() in /home/casko/code/wafish/tests/Wafish.Regression/AllocationPressureChecks.cs:line 24\n   at RegressionCaseRegistry.RunAsync(String[] args) in /home/casko/code/wafish/tests/Shared/RegressionCaseRegistry.cs:line 63",
+      "schedules": []
+    },
+    {
+      "name": "Allocation pressure: concurrent compression streams large JSON and excluded binary without body retention",
+      "group": "allocation-pressure",
+      "durationMs": 38.0733,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Allocation pressure: one-route snapshot updates avoid unrelated writes and WAL growth",
+      "group": "allocation-pressure",
+      "durationMs": 263.9197,
+      "status": "failed",
+      "error": "System.InvalidOperationException: One-route update rewrote unrelated configuration.\n   at AllocationPressureChecks.Check(Boolean condition, String message) in /home/casko/code/wafish/tests/Wafish.Regression/AllocationPressureChecks.cs:line 123\n   at AllocationPressureChecks.SnapshotAsync() in /home/casko/code/wafish/tests/Wafish.Regression/AllocationPressureChecks.cs:line 115\n   at AllocationPressureChecks.SnapshotAsync() in /home/casko/code/wafish/tests/Wafish.Regression/AllocationPressureChecks.cs:line 117\n   at AllocationPressureChecks.SnapshotAsync() in /home/casko/code/wafish/tests/Wafish.Regression/AllocationPressureChecks.cs:line 117\n   at RegressionCaseRegistry.RunAsync(String[] args) in /home/casko/code/wafish/tests/Shared/RegressionCaseRegistry.cs:line 63",
+      "schedules": []
+    }
+  ]
+}

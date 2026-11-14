@@ -1,14 +1,16 @@
 # Wafish.Plugin.Metrics: proposed work
 
 Reviewed against source on 2026-11-14.
-All items below are TODO proposals, not implemented capabilities or scheduled commitments.
+Completed items include verification evidence. Remaining items are proposals.
 The [root execution plan](../../PLAN.md) remains the historical and cross-project record.
 
 ## Improvements not yet implemented
 
 ### IMP-01: Test concurrent snapshots and updates
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [generated protocol evidence](../../tests/Wafish.Regression/evidence/protocol-properties/README.md).
 
 Exercise metric reads while requests update counters and latency values.
 

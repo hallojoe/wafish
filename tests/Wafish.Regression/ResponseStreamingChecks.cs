@@ -158,7 +158,7 @@ internal static class ResponseStreamingChecks
         using Stream decoder = context.Response.Headers.ContentEncoding.ToString() switch { "br" => new BrotliStream(input, CompressionMode.Decompress), "gzip" => new GZipStream(input, CompressionMode.Decompress), _ => input };
         using var output = new MemoryStream(); decoder.CopyTo(output); return output.ToArray();
     }
-    private sealed class Fixture
+    internal sealed class Fixture
     {
         public ResponseCacheStore Store { get; }
         public int Calls;

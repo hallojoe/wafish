@@ -55,8 +55,8 @@ internal static class WafBodyChecks
         });
     }
 
-    private static async Task<(int Status, byte[]? Forwarded)> Invoke(byte[] body, long limit,
-        bool inspect = true, bool failRead = false, bool cancel = false, string path = "/waf-test", ILogger<WafMiddleware>? logger = null, string? query = null)
+    internal static async Task<(int Status, byte[]? Forwarded)> Invoke(byte[] body, long limit,
+        bool inspect = true, bool failRead = false, bool cancel = false, string path = "/waf-test", ILogger<WafMiddleware>? logger = null, string? query = null, string contentType = "text/plain; charset=utf-8", int chunkSize = 7)
     {
         var route = new RouteConfig { RouteId = "waf-test", Match = new() { Path = path } };
         var publisher = new GatewaySnapshotPublisher();
@@ -81,8 +81,9 @@ internal static class WafBodyChecks
         context.TraceIdentifier = "review-trace";
         context.Request.QueryString = new QueryString(query);
         context.Request.Method = "POST";
-        context.Request.ContentType = "text/plain; charset=utf-8";
-        context.Request.Body = new ShortStream(body, failRead);
+        context.Request.ContentType = contentType;
+        context.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestFeature>()!.RawTarget = path + query;
+        context.Request.Body = new ShortStream(body, failRead, chunkSize);
         context.Response.Body = new MemoryStream();
         if (cancel)
         {
@@ -107,7 +108,7 @@ internal static class WafBodyChecks
             => Messages.Add(formatter(state, exception));
     }
 
-    private sealed class ShortStream(byte[] bytes, bool fail) : MemoryStream(bytes)
+    private sealed class ShortStream(byte[] bytes, bool fail, int chunkSize) : MemoryStream(bytes)
     {
         public override bool CanSeek => false;
         public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
@@ -118,7 +119,7 @@ internal static class WafBodyChecks
                 throw new IOException("Injected read error");
             }
 
-            return base.ReadAsync(buffer[..Math.Min(buffer.Length, 7)], cancellationToken);
+            return base.ReadAsync(buffer[..Math.Min(buffer.Length, chunkSize)], cancellationToken);
         }
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
             => ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();

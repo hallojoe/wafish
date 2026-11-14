@@ -8,7 +8,9 @@ The [root execution plan](../../PLAN.md) remains the historical and cross-projec
 
 ### IMP-01: Add fuzz tests for decoding and normalization
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [generated protocol evidence](../../tests/Wafish.Regression/evidence/protocol-properties/README.md).
 
 Generate encoded paths, Unicode bodies, malformed escapes, and split reads.
 
@@ -16,7 +18,9 @@ Acceptance: Checks terminate within bounds and preserve the documented rejection
 
 ### IMP-02: Measure false positives with a benign corpus
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [generated protocol evidence](../../tests/Wafish.Regression/evidence/protocol-properties/README.md).
 
 Maintain representative valid API payloads alongside attack fixtures.
 

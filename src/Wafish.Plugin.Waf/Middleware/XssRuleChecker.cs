@@ -12,7 +12,7 @@ public sealed class XssRuleChecker : IWafRuleChecker
     public static readonly XssRuleChecker Instance = new();
 
     private static readonly Regex Pattern = new(
-        @"(?i)<script[^>]*>|</script>|javascript:|data:text/html|<iframe[^>]*>|on(?>\w+)(?>\s*)=",
+        @"(?i)<script[^>]*>|</script>|javascript:|data:text/html|<iframe[^>]*>|\bon(?>\w+)(?>\s*)=",
         RegexOptions.Compiled,
         TimeSpan.FromMilliseconds(50));
 

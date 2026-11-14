@@ -1,0 +1,5 @@
+13/13 src/Wafish.Plugin.Compression/CompressionMiddleware.cs missing []
+1/1 src/Wafish.Plugin.Waf/Middleware/PathTraversalRuleChecker.cs missing []
+1/1 src/Wafish.Plugin.Waf/Middleware/SqlInjectionRuleChecker.cs missing []
+1/1 src/Wafish.Plugin.Waf/Middleware/XssRuleChecker.cs missing []
+TOTAL 16/16 = 100.00%

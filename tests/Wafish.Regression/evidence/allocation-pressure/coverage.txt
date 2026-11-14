@@ -1,0 +1,4 @@
+12/13 src/Wafish.Plugin.Cache/ResponseCacheStore.cs missing [122]
+18/18 src/Wafish.Storage.Sqlite/SqliteConfigurationSnapshotRepository.Comparison.cs missing []
+23/23 src/Wafish.Storage.Sqlite/SqliteConfigurationSnapshotRepository.cs missing []
+TOTAL 53/54 = 98.15%

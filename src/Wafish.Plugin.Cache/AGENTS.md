@@ -13,6 +13,8 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Run generated protocol properties after changes to Age, freshness, Vary, or request cache directives.
+
 - Measure cache age with the injected monotonic clock, never wall-clock subtraction.
 
 - Keep deprecated variant switches accepted but ineffective; their schema must state the conservative key behavior.
@@ -48,3 +50,5 @@ For documentation-only changes, check links and Mermaid rendering instead of sta
 Update the README when behavior or scope changes.
 Keep future work in PLAN.md until its acceptance checks pass.
 Record implementation evidence when completing a plan item.
+
+Charge both buffers during compaction. Keep evicted entries charged until all readers finish.

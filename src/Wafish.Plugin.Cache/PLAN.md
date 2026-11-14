@@ -8,7 +8,9 @@ The [root execution plan](../../PLAN.md) remains the historical and cross-projec
 
 ### IMP-01: Expand cache-header property tests
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [generated protocol evidence](../../tests/Wafish.Regression/evidence/protocol-properties/README.md).
 
 Generate combinations of freshness, Vary, Age, and request cache directives.
 
@@ -16,7 +18,9 @@ Acceptance: Generated cases preserve isolation and freshness requirements.
 
 ### IMP-02: Measure concurrent capture pressure
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [allocation pressure](../../tests/Wafish.Regression/evidence/allocation-pressure/README.md).
 
 Benchmark simultaneous misses and eviction while clients read cached entries.
 
@@ -58,7 +62,9 @@ Host, query, credentials, and response variants remain isolated.
 
 ### IMP-04: Reduce retained allocation for small responses
 
-Status: TODO. Priority: P2. Type: performance hypothesis.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [allocation pressure](../../tests/Wafish.Regression/evidence/allocation-pressure/README.md). Priority: P2. Type: performance hypothesis.
 
 Evidence: [ResponseCacheStore.cs](ResponseCacheStore.cs), `Reserve` and `Store`.
 

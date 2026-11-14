@@ -61,3 +61,21 @@ Cache lifetime and response age use monotonic time from the injected `TimeProvid
 UTC clock adjustments do not extend or shorten cache freshness. Stored wall timestamps use UTC.
 
 Verification: [review evidence](../../tests/Wafish.Regression/evidence/review141516/README.md).
+
+## Generated header checks
+
+`--protocol-properties` exercises 694 combinations of freshness, shared freshness, Age, Vary, and request directives.
+An injected clock verifies expiration boundaries and response age without waiting for real time.
+The matrix includes private responses, no-cache, no-store, only-if-cached, max-age, min-fresh, malformed fields, Date, and Expires.
+Language variants remain isolated, and excluded operational Vary headers prevent storage.
+Every generated cache fixture checks its retained-memory budget.
+
+## Small responses and concurrent pressure
+
+Completed captures below half their capacity can shrink to the exact body length.
+The budget reserves both arrays before copying. Insufficient spare budget keeps the original capture.
+Header and entry allowances remain charged. Evicted entries remain charged until their final reader releases them.
+A 512-byte response with the default one-MiB capture limit retains 67,096 charged bytes after compaction.
+The previous implementation retained 1,115,136 bytes for the same response.
+The pressure check overlaps 32 misses with eight readers across generation changes.
+These charges bound owned buffers and allowances, not process RSS or delayed garbage collection.

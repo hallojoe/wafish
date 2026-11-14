@@ -8,7 +8,9 @@ The [root execution plan](../../PLAN.md) remains the historical and cross-projec
 
 ### IMP-01: Expand encoding negotiation tests
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [generated protocol evidence](../../tests/Wafish.Regression/evidence/protocol-properties/README.md).
 
 Generate quality-value combinations, wildcards, and invalid Accept-Encoding values.
 
@@ -16,7 +18,9 @@ Acceptance: The selected encoding follows the supported negotiation rules.
 
 ### IMP-02: Measure streaming allocation costs
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [allocation pressure](../../tests/Wafish.Regression/evidence/allocation-pressure/README.md).
 
 Compare large JSON and excluded binary responses under concurrent clients.
 

@@ -68,3 +68,10 @@ Existing series continue updating at capacity; new series are ignored until slot
 Reads and updates share a lock, preserving coherent snapshots during concurrent activity.
 
 Verification: [review evidence](../../tests/Wafish.Regression/evidence/review141516/README.md).
+
+## Concurrent snapshot checks
+
+`--protocol-properties` runs eight writers against concurrent route, cluster, and destination snapshot reads.
+Each seeded run records 2,048 outcomes and checks request, byte, duration, error, exception, and cancellation totals.
+Explicit barriers expose partial snapshots without using delays to select interleavings.
+Retired identities reject late writes. Reintroduced identities start with new counters.

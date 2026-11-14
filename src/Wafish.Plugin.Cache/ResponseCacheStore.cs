@@ -105,6 +105,22 @@ public sealed class ResponseCacheStore(IOptions<ResponseCacheBudgetOptions> opti
             }
 
             Remove(key);
+            // Charge both arrays before allocating. Under pressure, keep the original capture.
+            // Compaction must never borrow the reservation held by pending fills or active readers.
+            if (length < capture.Buffer.Length / 2 && _allocated + length + 24 <= SizeLimitBytes)
+            {
+                var temporaryCharge = length + 24L;
+                _allocated += temporaryCharge;
+                try
+                {
+                    var compact = new byte[length];
+                    capture.Buffer.AsSpan(0, length).CopyTo(compact);
+                    var previousCharge = capture.Charge;
+                    capture.Replace(compact, temporaryCharge + HeaderAllowance + EntryOverhead);
+                    _allocated -= previousCharge - HeaderAllowance - EntryOverhead;
+                }
+                catch { _allocated -= temporaryCharge; throw; }
+            }
             var entry = new Entry(capture.Buffer, length, status, headers, capture.Charge, lifetime, initialAge, timeProvider);
             capture.Transfer();
             entry.Node = _lru.AddLast(key);
@@ -165,8 +181,9 @@ public sealed class ResponseCacheStore(IOptions<ResponseCacheBudgetOptions> opti
     internal sealed class Capture(ResponseCacheStore owner, byte[] buffer, long charge) : IDisposable
     {
         public byte[]? Buffer { get; private set; } = buffer;
-        public long Charge => charge;
+        public long Charge { get; private set; } = charge;
+        public void Replace(byte[] replacement, long replacementCharge) { Buffer = replacement; Charge = replacementCharge; }
         public void Transfer() => Buffer = null;
-        public void Dispose() { if (Buffer != null) { Buffer = null; owner.Release(charge); } }
+        public void Dispose() { if (Buffer != null) { Buffer = null; owner.Release(Charge); } }
     }
 }

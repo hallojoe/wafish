@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "suite": "main",
+  "cases": [
+    {
+      "name": "Allocation pressure: small cache entries compact within the shared capture budget",
+      "group": "allocation-pressure",
+      "durationMs": 99.9447,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Allocation pressure: concurrent compression streams large JSON and excluded binary without body retention",
+      "group": "allocation-pressure",
+      "durationMs": 43.0796,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Allocation pressure: one-route snapshot updates avoid unrelated writes and WAL growth",
+      "group": "allocation-pressure",
+      "durationMs": 235.0213,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Allocation pressure: differential writes preserve every stored field, renames, cascades, and rollback",
+      "group": "allocation-pressure",
+      "durationMs": 68.7111,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    }
+  ]
+}

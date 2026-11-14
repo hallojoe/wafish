@@ -11,6 +11,8 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Keep strict quality syntax, explicit-over-wildcard selection, minimum duplicate quality, and malformed-list bypass covered.
+
 - Unknown-length thresholds above 64 KiB bypass compression independently of write chunk size.
 
 - Keep proxy compression inside the response-cache boundary.
@@ -44,3 +46,5 @@ For documentation-only changes, check links and Mermaid rendering instead of sta
 Update the README when behavior or scope changes.
 Keep future work in PLAN.md until its acceptance checks pass.
 Record implementation evidence when completing a plan item.
+
+Run `--allocation-pressure` when changing streaming buffers. Measure with non-buffering output sinks.

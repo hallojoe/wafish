@@ -44,3 +44,18 @@ Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in
 
 CIDR rules are validated before activation. Rejection logs omit paths, queries, and matched request content.
 See [resource limits and consumer changes](../../docs/security.md#request-resource-limits-and-retry-behavior).
+
+## Decoding and rule corpus
+
+The synthetic [behavior corpus](../../tests/Wafish.Regression/fixtures/waf/README.md) separates benign data from attack fixtures.
+Checks report rejected benign cases and missed attacks separately.
+Six accidental matches are corrected: keyword prefixes, embedded event-handler fragments, and filename suffixes after two dots.
+SQL checks match whole keywords. `XP_` and `SP_` remain procedure prefixes.
+XSS handler matching starts at a word boundary.
+Traversal checks cover mixed raw, single-encoded, and double-encoded dots and separators.
+The existing conservative rejection of paired double-encoded dots remains effective.
+
+The corpus still records two expected benign rejections: a standalone SQL verb and HTML tutorial content.
+These limits reflect broad text rules. They do not establish complete attack detection or arbitrary JSON semantic decoding.
+Generated cases cover Unicode, malformed escapes, split reads, invalid UTF-8, and byte limits.
+Run `--protocol-properties` with an optional `--seed` to reproduce generated inputs.

@@ -10,6 +10,7 @@
     <Compile Include="../Shared/RegressionReport.cs" Link="RegressionReport.cs" />
     <Compile Include="../Shared/RegressionCaseRegistry.cs" Link="RegressionCaseRegistry.cs" />
     <None Update="contracts/*.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="fixtures/waf/*.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="fixtures/storage/*.db" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>

@@ -13,6 +13,8 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Preserve the synthetic benign/attack corpus and report both rejection and miss counts. Keep explicit known false positives.
+
 - Keep inspection effective for chunked requests and missing Content-Length.
 - Count limits in bytes and preserve inspected request bodies for downstream consumers.
 - Do not trust forwarding headers unless the host has configured trusted proxies.
