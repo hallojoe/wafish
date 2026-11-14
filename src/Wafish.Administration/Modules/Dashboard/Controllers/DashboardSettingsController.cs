@@ -4,6 +4,7 @@ using Wafish.Dashboard.Modules.Dashboard.Services;
 using Wafish.Storage;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Wafish.Dashboard.Modules.Dashboard.Controllers;
@@ -103,41 +104,16 @@ public class DashboardSettingsController : Controller
     [HttpGet("api/settings/database/backup")]
     public async Task<IActionResult> BackupDatabase()
     {
-        var dbPath = ResolveDatabasePath(_storageOptions);
-        if (!System.IO.File.Exists(dbPath))
-        {
-            return Json(new { code = 404, message = "Database file not found" });
-        }
-
-        var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
-        var tempPath = Path.Combine(Path.GetTempPath(), $"gw-backup-{timestamp}-{Guid.NewGuid():N}.db");
-
+        var provider = HttpContext.RequestServices.GetService<IStorageBackupProvider>();
+        if (provider is null) return StatusCode(501, new { code = 501, message = "Storage backup is unsupported by this provider." });
         try
         {
-            await using var conn = await _connections.CreateConnectionAsync(HttpContext.RequestAborted);
-            await conn.OpenAsync(HttpContext.RequestAborted);
-            using var cmd = conn.CreateCommand();
-            cmd.CommandText = "VACUUM INTO @path";
-            var pathParameter = cmd.CreateParameter();
-            pathParameter.ParameterName = "@path";
-            pathParameter.Value = tempPath;
-            cmd.Parameters.Add(pathParameter);
-            await cmd.ExecuteNonQueryAsync(HttpContext.RequestAborted);
+            var backup = await provider.CreateBackupAsync(HttpContext.RequestAborted);
+            Response.RegisterForDisposeAsync(backup);
+            return File(backup.Content, "application/octet-stream", backup.FileName);
         }
-        catch
-        {
-            // Copying a live database can omit committed WAL transactions.
-            if (System.IO.File.Exists(tempPath))
-            {
-                System.IO.File.Delete(tempPath);
-            }
-
-            return StatusCode(503, new { code = 503, message = "Database backup failed. No backup was created." });
-        }
-
-        var stream = new FileStream(tempPath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.DeleteOnClose);
-        var fileName = $"gateway-store-backup-{timestamp}.db";
-        return File(stream, "application/octet-stream", fileName);
+        catch (OperationCanceledException) when (HttpContext.RequestAborted.IsCancellationRequested) { throw; }
+        catch { return StatusCode(503, new { code = 503, message = "Database backup failed. No backup was created." }); }
     }
 
     /// <summary>Resolves the SQLite database file path from the connection string.</summary>

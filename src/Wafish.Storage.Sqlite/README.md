@@ -128,3 +128,10 @@ Capacity exhaustion rejects new writes without evicting unexpired receipts.
 Expired receipts are removed during the next receipt reservation.
 Keys are limited to 128 characters; acknowledgements are limited to 16,384 characters.
 A missing acknowledgement reports an unknown activation outcome and prevents duplicate commits during retention.
+
+## Provider capabilities and backups
+
+SQLite reports encryption, consistent backup, atomic configuration, atomic bindings, and configuration receipt support.
+Provider-owned backups preserve encryption and committed WAL data. Disposal removes the private temporary directory.
+
+See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.

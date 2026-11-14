@@ -16,7 +16,7 @@ namespace Wafish.Storage.Sqlite;
 /// Schema migration is triggered lazily on the first <see cref="CreateConnection"/> call
 /// to guarantee tables exist before any repository reads the database.
 /// </summary>
-public sealed class SqliteConnectionFactory : IDbConnectionFactory
+public sealed partial class SqliteConnectionFactory : IDbConnectionFactory
 {
     internal TimeProvider Clock => _serviceProvider.GetService<TimeProvider>() ?? TimeProvider.System;
     private readonly string _connectionString;

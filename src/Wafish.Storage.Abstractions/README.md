@@ -78,3 +78,10 @@ Receipt reservation and the configuration save must share one transaction and ex
 Duplicate keys throw `ConfigurationReceiptExistsException`. Receipt completion retains the first acknowledgement.
 A null acknowledgement means the configuration committed but its original activation outcome is unknown.
 Providers without this optional contract reject idempotent configuration applies before writing.
+
+## Capabilities and backup ownership
+
+`IStorageCapabilitiesProvider` reports optional provider support. `AddWafishStorageRequirements` rejects unsupported requirements at startup.
+`IStorageBackupProvider` returns an owned backup stream. Dispose `StorageBackup` to release all temporary resources.
+
+See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.

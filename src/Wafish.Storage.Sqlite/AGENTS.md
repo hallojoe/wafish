@@ -55,3 +55,6 @@ Keep future work in PLAN.md until its acceptance checks pass.
 Record implementation evidence when completing a plan item.
 
 Compare every persisted field during differential writes. Keep deletion, insertion, binding renames, and version changes transactional.
+
+Preserve the [R19–R28 contracts](../../docs/need-seven-features.md) when changing registration or operational controls.
+Run the `--group need-seven` regression checks for these contracts.
