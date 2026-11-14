@@ -126,14 +126,20 @@ Approved breaking changes include migration notes and an explicit baseline decis
 
 ### NET-IMP-03: Define shared resource and cancellation limits
 
-Status: IN PROGRESS. Priority: P1. Type: availability.
+Status: DONE. Priority: P1. Type: availability.
 
 Request replay, response capture, decoded logging, partition admission, and combined streaming checks are complete.
 See [review items 1–3 evidence](tests/Wafish.Regression/evidence/review123/README.md).
 Queued-record loss accounting is complete. [Review items 8–10 evidence](tests/Wafish.Regression/evidence/review8910/README.md).
 Heartbeat shutdown ownership is complete under item 7. Retired-domain ownership is complete under item 12.
 See [review items 11–13 evidence](tests/Wafish.Regression/evidence/review111213/README.md).
-Broader deadline policy and asynchronous configuration preparation remain separate proposals.
+Deadline policy and asynchronous configuration preparation are complete.
+See [async policy evidence](tests/Wafish.Regression/evidence/async-retry/README.md),
+[lifetime evidence](tests/Wafish.Regression/evidence/lifetime-stress/README.md), and
+[allocation evidence](tests/Wafish.Regression/evidence/allocation-pressure/README.md).
+R01 verification repeated all three focused suites successfully on 2026-11-14.
+Cancellation remains cooperative. Arbitrary plugin code and held requests cannot be forcibly terminated.
+Configured deadlines bound owned waits; committed configuration reconciliation retains ownership.
 
 Evidence: [Retry](src/Wafish.Plugin.Retry/PLAN.md), [ProxyLog](src/Wafish.Plugin.ProxyLog/PLAN.md), and [RateLimit](src/Wafish.Plugin.RateLimit/PLAN.md) expose different limit gaps.
 [Client](src/Wafish.Client/PLAN.md) and [Runtime](src/Wafish.Runtime/PLAN.md) also need explicit background-task ownership.
