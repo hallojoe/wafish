@@ -107,6 +107,7 @@ try
     var summary = BuildSummary(results);
     var csvPath = Path.Combine(resultsDirectory, $"performance-{timestamp}.csv");
     var markdownPath = Path.Combine(resultsDirectory, $"performance-{timestamp}.md");
+    if (results.Any(r => r.Failures > 0 || r.Requests == 0)) Environment.ExitCode = 1;
     await File.WriteAllTextAsync(csvPath, BuildCsv(results, summary), Encoding.UTF8);
     await File.WriteAllTextAsync(markdownPath, BuildMarkdown(summary, durationSeconds, warmupSeconds, concurrency, repetitions), Encoding.UTF8);
 
@@ -123,7 +124,7 @@ finally
     CleanupDatabases(root);
 }
 
-static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int concurrency, TimeSpan duration, Process? measuredProcess, Uri? endpoint = null)
+static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int concurrency, TimeSpan duration, Process? measuredProcess, Uri? endpoint = null, bool allowPolicyRejections = false)
 {
     using var handler = new SocketsHttpHandler
     {
@@ -138,6 +139,8 @@ static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int
     var latencies = new ConcurrentBag<double>();
     long completed = 0;
     long failed = 0;
+    long policyRejections = 0;
+    long transportFailures = 0;
     var startedAt = Stopwatch.GetTimestamp();
     var cpuStart = measuredProcess?.TotalProcessorTime ?? TimeSpan.Zero;
     var stopAt = Stopwatch.GetTimestamp() + (long)(duration.TotalSeconds * Stopwatch.Frequency);
@@ -155,12 +158,15 @@ static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int
                     request.Content = new StringContent(scenario.Body, Encoding.UTF8, "application/json");
                     request.Content.Headers.ContentLength = Encoding.UTF8.GetByteCount(scenario.Body);
                 }
-                using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-                await response.Content.CopyToAsync(Stream.Null);
-                if (!response.IsSuccessStatusCode) Interlocked.Increment(ref failed);
+                using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, deadline.Token);
+                await response.Content.CopyToAsync(Stream.Null, deadline.Token);
+                if (allowPolicyRejections && response.StatusCode == HttpStatusCode.TooManyRequests) Interlocked.Increment(ref policyRejections);
+                else if (!response.IsSuccessStatusCode) Interlocked.Increment(ref failed);
             }
             catch
             {
+                Interlocked.Increment(ref transportFailures);
                 Interlocked.Increment(ref failed);
             }
             finally
@@ -184,7 +190,7 @@ static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int
         "", "", 0, completed / elapsed.TotalSeconds,
         Percentile(ordered, 0.50), Percentile(ordered, 0.95), Percentile(ordered, 0.99),
         completed == 0 ? 100 : failed * 100d / completed,
-        cpuPercent, memoryMb, completed, failed);
+        cpuPercent, memoryMb, completed, failed, policyRejections, transportFailures);
 }
 
 static double Percentile(double[] values, double percentile)
@@ -239,6 +245,7 @@ static async Task RunFirstBatchAsync(string root, string resultsDirectory, strin
 
         var csvPath = Path.Combine(resultsDirectory, $"performance-first-{timestamp}.csv");
         var markdownPath = Path.Combine(resultsDirectory, $"performance-first-{timestamp}.md");
+        if (records.Any(r => !r.Passed)) Environment.ExitCode = 1;
         await File.WriteAllTextAsync(csvPath, BuildExtendedCsv(records), Encoding.UTF8);
         await File.WriteAllTextAsync(markdownPath, BuildExtendedMarkdown(records, durationSeconds, soakSeconds), Encoding.UTF8);
         Console.WriteLine($"CSV: {csvPath}");
@@ -258,9 +265,9 @@ static async Task RunExtendedCaseAsync(string group, string mode, Scenario scena
     await WaitForHealthyAsync("http://127.0.0.1:5302/health", process);
     await RunLoadAsync(5302, scenario, concurrency, TimeSpan.FromSeconds(warmupSeconds), null);
     await ResetBackendAsync();
-    var result = await RunLoadAsync(5302, scenario, concurrency, TimeSpan.FromSeconds(durationSeconds), process);
+    var result = await RunLoadAsync(5302, scenario, concurrency, TimeSpan.FromSeconds(durationSeconds), process, allowPolicyRejections: allowNonSuccess);
     var counters = await ReadBackendCountersAsync();
-    var passed = allowNonSuccess || result.Failures == 0;
+    var passed = result.Requests > 0 && result.Failures == 0;
     records.Add(ExtendedResult.FromLoad(group, scenario.Name, concurrency, result, counters.Total, passed, allowNonSuccess ? "Expected policy rejections included" : "All responses successful"));
     Console.WriteLine($"[{group}] {scenario.Name}: {result.RequestsPerSecond:N0} RPS, P95 {result.P95Ms:N2} ms, errors {result.ErrorRatePercent:N2}%");
     StopProcess(process);
@@ -419,9 +426,9 @@ static List<BenchmarkResult> BuildSummary(List<BenchmarkResult> results) => resu
 
 static string BuildCsv(List<BenchmarkResult> results, List<BenchmarkResult> summary)
 {
-    var sb = new StringBuilder("Kind,Gateway,Scenario,Repetition,RPS,P50Ms,P95Ms,P99Ms,ErrorRatePercent,CpuPercent,WorkingSetMb,Requests,Failures\n");
+    var sb = new StringBuilder("Kind,Gateway,Scenario,Repetition,RPS,P50Ms,P95Ms,P99Ms,ErrorRatePercent,CpuPercent,WorkingSetMb,Requests,Failures,PolicyRejections,TransportFailures\n");
     foreach (var item in results.Select(x => (Kind: "run", Item: x)).Concat(summary.Select(x => (Kind: "median", Item: x))))
-        sb.AppendLine(string.Join(',', item.Kind, Csv(item.Item.Gateway), Csv(item.Item.Scenario), item.Item.Repetition, F(item.Item.RequestsPerSecond), F(item.Item.P50Ms), F(item.Item.P95Ms), F(item.Item.P99Ms), F(item.Item.ErrorRatePercent), F(item.Item.CpuPercent), F(item.Item.WorkingSetMb), item.Item.Requests, item.Item.Failures));
+        sb.AppendLine(string.Join(',', item.Kind, Csv(item.Item.Gateway), Csv(item.Item.Scenario), item.Item.Repetition, F(item.Item.RequestsPerSecond), F(item.Item.P50Ms), F(item.Item.P95Ms), F(item.Item.P99Ms), F(item.Item.ErrorRatePercent), F(item.Item.CpuPercent), F(item.Item.WorkingSetMb), item.Item.Requests, item.Item.Failures, item.Item.PolicyRejections, item.Item.TransportFailures));
     return sb.ToString();
 }
 
@@ -487,11 +494,11 @@ sealed record Scenario(string Name, HttpMethod Method, string Path, string? Body
     public static Scenario Get(string name, string path) => new(name, HttpMethod.Get, path, null);
     public static Scenario Post(string name, string path, string body) => new(name, HttpMethod.Post, path, body);
 }
-sealed record BenchmarkResult(string Gateway, string Scenario, int Repetition, double RequestsPerSecond, double P50Ms, double P95Ms, double P99Ms, double ErrorRatePercent, double CpuPercent, double WorkingSetMb, long Requests, long Failures);
+sealed record BenchmarkResult(string Gateway, string Scenario, int Repetition, double RequestsPerSecond, double P50Ms, double P95Ms, double P99Ms, double ErrorRatePercent, double CpuPercent, double WorkingSetMb, long Requests, long Failures, long PolicyRejections, long TransportFailures);
 sealed record ExtendedResult(string Group, string Scenario, int Concurrency, double RequestsPerSecond, double P50Ms, double P95Ms, double P99Ms, double NonSuccessPercent, long BackendRequests, string Statuses, bool Passed, string Notes)
 {
     public static ExtendedResult FromLoad(string group, string scenario, int concurrency, BenchmarkResult result, long backendRequests, bool passed, string notes) =>
-        new(group, scenario, concurrency, result.RequestsPerSecond, result.P50Ms, result.P95Ms, result.P99Ms, result.ErrorRatePercent, backendRequests, "load", passed, notes);
+        new(group, scenario, concurrency, result.RequestsPerSecond, result.P50Ms, result.P95Ms, result.P99Ms, result.ErrorRatePercent, backendRequests, "load", passed, $"{notes}; expected 429: {result.PolicyRejections}; transport failures: {result.TransportFailures}");
 }
 sealed class BackendCounters
 {
