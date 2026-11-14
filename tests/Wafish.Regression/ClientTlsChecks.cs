@@ -32,8 +32,12 @@ internal static class ClientTlsChecks
             services.AddWafishClient(o => { o.GatewayUrl = address; o.GrpcUrl = address; });
             await using var provider = services.BuildServiceProvider();
             var client = provider.GetRequiredService<GatewayRegistry.GatewayRegistryClient>();
-            try { await client.GetServicesAsync(new GetServicesRequest(), deadline: DateTime.UtcNow.AddSeconds(5)); throw new Exception("Untrusted certificate accepted."); }
-            catch (RpcException ex) when (ex.ToString().Contains("certificate", StringComparison.OrdinalIgnoreCase)) { }
+            var endpoints = provider.GetRequiredService<Wafish.Services.IRegistrationEndpointFactory>();
+            foreach (var transport in new[] { client, endpoints.Create(address), endpoints.Create(address) })
+            {
+                try { await transport.GetServicesAsync(new GetServicesRequest(), deadline: DateTime.UtcNow.AddSeconds(5)); throw new Exception("Untrusted certificate accepted."); }
+                catch (RpcException ex) when (ex.ToString().Contains("certificate", StringComparison.OrdinalIgnoreCase)) { }
+            }
             await app.StopAsync();
         });
     }

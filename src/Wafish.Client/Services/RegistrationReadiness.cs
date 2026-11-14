@@ -51,7 +51,7 @@ public partial class GatewayAutoRegistrationClient : IRegistrationStatusSource
                 return new(false, RegistrationStatus.NotFound, "No endpoint owns this registration.");
             Volatile.Write(ref _readiness, _readiness with { Registered = false, Ready = false, Draining = true, Status = "Unregistering" });
             var result = await UnregisterCoreAsync(ct).ConfigureAwait(false);
-            if (result.Success || result.Status == RegistrationStatus.NotFound) ClearEndpointOwnership();
+            if (result.Success || result.Status == RegistrationStatus.NotFound) { ClearEndpointOwnership(); ObserveRegistration(false, "Unregistered"); }
             return result;
         }
         finally { _registrationOperations.Release(); }

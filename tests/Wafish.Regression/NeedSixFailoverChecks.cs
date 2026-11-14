@@ -35,6 +35,16 @@ internal static class NeedSixFailoverChecks
             Check(await client.RegisterAsync() && !first.Owned && second.Owned, "Confirmed release did not permit failover.");
             Check(first.Instance == second.Instance && first.Token == second.Token, "Failover changed instance or lease identity.");
         });
+        await run("Registration failover: missing lease acknowledgements retain uncertain ownership", async () =>
+        {
+            var first = new Endpoint { OmitLease = true, RefuseRelease = true }; var second = new Endpoint();
+            await using var root = Create(first, second);
+            var client = root.GetRequiredService<GatewayAutoRegistrationClient>();
+            var result = await client.RegisterResultAsync();
+            Check(result.Status == RegistrationStatus.Unknown && result.MayHaveApplied, "Missing lease acknowledgement discarded remote ownership.");
+            first.Unavailable = true;
+            Check(!await client.RegisterAsync() && second.Registrations == 0, "Missing lease acknowledgement permitted conflicting failover.");
+        });
         await run("Registration failover: cancellation retains ownership and concurrent mutations remain serialized", async () =>
         {
             var first = new Endpoint(); var second = new Endpoint();
@@ -83,7 +93,7 @@ internal static class NeedSixFailoverChecks
     }
     private sealed class Endpoint : GatewayRegistry.GatewayRegistryClient
     {
-        public bool Unavailable, RefuseRelease, LoseRegistrationReply, Owned;
+        public bool Unavailable, RefuseRelease, LoseRegistrationReply, OmitLease, Owned;
         public int Registrations, Preflights;
         public string? Instance, Token;
         public TaskCompletionSource? WaitForCancellation;
@@ -100,7 +110,7 @@ internal static class NeedSixFailoverChecks
             {
                 if (WaitForCancellation is { } entered) { entered.TrySetResult(); await Task.Delay(Timeout.InfiniteTimeSpan, options.CancellationToken); }
                 if (LoseRegistrationReply) throw Failure();
-                return new() { Success = true, Status = "Applied", Lease = Lease() };
+                return new() { Success = true, Status = "Applied", Lease = OmitLease ? null : Lease() };
             }
         }
         public override AsyncUnaryCall<HeartbeatResponse> HeartbeatAsync(HeartbeatRequest request, CallOptions options)
