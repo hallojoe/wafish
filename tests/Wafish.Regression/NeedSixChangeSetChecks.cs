@@ -77,6 +77,38 @@ internal static class NeedSixChangeSetChecks
             Check(await fixture.Config.ApplyChangeSetAsync(request, "operator", "activation") == result, "Retry changed activation acknowledgement.");
             Check(!(await fixture.Config.ApplyChangeSetAsync(await Request(fixture), "operator", "blocked")).Configuration.Success, "Unreconciled change set accepted another write.");
         });
+        await run("Change sets: optional providers, cancellation, and lost receipts preserve mutation ownership", async () =>
+        {
+            await using (var unsupported = await ConfigurationTransactionChecks.Fixture.Create())
+            {
+                var request = await Request(unsupported);
+                Check(!(await unsupported.Config.PreviewChangeSetAsync(request, "operator")).Valid, "Unsupported preview accepted.");
+                Check((await unsupported.Config.ApplyChangeSetAsync(request, "operator", "unsupported")).Configuration.Status == ConfigurationUpdateStatus.ValidationRejected, "Unsupported storage accepted a combined write.");
+            }
+            await using var fixture = await Create();
+            var candidate = await Request(fixture);
+            Check(!(await fixture.Config.ApplyChangeSetAsync(candidate, "operator", "")).Configuration.Success, "Empty receipt key accepted.");
+            Check(!(await fixture.Config.ApplyChangeSetAsync(candidate, "", "actor")).Configuration.Success, "Empty actor accepted.");
+            using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
+            try { await fixture.Config.ApplyChangeSetAsync(candidate, "operator", "cancelled", cancelled.Token); throw new Exception("Cancelled apply succeeded."); } catch (OperationCanceledException) { }
+            Check(await Repository(fixture).GetReceiptAsync("set:cancelled") is null, "Cancellation reserved a receipt.");
+            await fixture.Sql("CREATE TRIGGER reject_combined_receipt BEFORE UPDATE ON configuration_receipts BEGIN SELECT RAISE(ABORT, 'injected'); END;");
+            var pending = await fixture.Config.ApplyChangeSetAsync(candidate, "operator", "pending");
+            Check(pending.Configuration.Status == ConfigurationUpdateStatus.ActivationFailed && pending.Configuration.ActiveVersion is null, "Lost receipt invented activation acknowledgement.");
+            var repeated = await fixture.Config.ApplyChangeSetAsync(candidate, "operator", "pending");
+            Check(repeated.Configuration.PersistedVersion == candidate.Configuration.ExpectedVersion + 1 &&
+                (await Repository(fixture).LoadAsync()).Version == repeated.Configuration.PersistedVersion, "Lost receipt caused another commit.");
+        });
+        await run("Change sets: runtime dependencies resolve after plugins can access core configuration", async () =>
+        {
+            await using var fixture = await ConfigurationTransactionChecks.Fixture.Create(configure: services =>
+            {
+                services.AddSingleton<IConfigurationSnapshotRepository>(sp => sp.GetRequiredService<SqliteConfigurationSnapshotRepository>());
+                services.AddSingleton<Wafish.Plugins.IGatewayPlugin, ConfigurationDependentPlugin>();
+            });
+            Check((await fixture.Config.PreviewChangeSetAsync(await Request(fixture), "operator")).Valid, "Plugin dependency caused a configuration construction cycle.");
+        });
+
     }
     private static Task<ConfigurationTransactionChecks.Fixture> Create() => ConfigurationTransactionChecks.Fixture.Create(configure: services =>
         services.AddSingleton<IConfigurationSnapshotRepository>(sp => sp.GetRequiredService<SqliteConfigurationSnapshotRepository>()));
@@ -88,5 +120,16 @@ internal static class NeedSixChangeSetChecks
             [new ClusterConfig { ClusterId = "cluster", Destinations = new Dictionary<string, DestinationConfig> { ["one"] = new() { Address = "http://127.0.0.1:12345/" } } }]),
             (await Bindings(fixture).GetBindingsSnapshotAsync()).Revision,
             [new() { Id = "cache", PluginId = "response-cache", Scope = PluginBindingScope.Route, ScopeId = "route", ConfigJson = "{\"enabled\":true,\"ttlSeconds\":20}" }]);
+    private sealed class ConfigurationDependentPlugin(IDynamicYarpConfigService configuration) : Wafish.Plugins.IGatewayPlugin
+    {
+        public string PluginId => "configuration-dependent";
+        public string DisplayName => "Configuration dependent test plugin";
+        public string Version => "1.0";
+        public Wafish.Plugins.PluginManifest Manifest => new(PluginId, DisplayName, Version, [], [], 100, new(), []);
+        public void ConfigureServices(IServiceCollection services, object? pluginOptions = null) { _ = configuration.GetDynamicConfig(); }
+        public void ConfigureMiddleware(Microsoft.AspNetCore.Builder.IApplicationBuilder app) { }
+        public void ConfigureProxyPipeline(Microsoft.AspNetCore.Builder.IReverseProxyApplicationBuilder pipeline) { }
+        public void ConfigureDashboard(Wafish.Plugins.IPluginDashboardBuilder builder) { }
+    }
     private static void Check(bool value, string message) { if (!value) throw new Exception(message); }
 }

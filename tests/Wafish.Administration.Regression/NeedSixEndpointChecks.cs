@@ -36,6 +36,27 @@ internal static class NeedSixEndpointChecks
             var result = await response.Content.ReadFromJsonAsync<ConfigurationChangeSetResult>();
             Check(result!.Configuration.Success && !string.IsNullOrWhiteSpace(result.Actor), "Apply omitted its actor or outcome.");
             Check((await client.PostAsJsonAsync("/ops/api/config/change-sets", request)).IsSuccessStatusCode, "Retry lost the receipt.");
+            auth.Permissions = [DashboardPermission.Read, DashboardPermission.ConfigurationWrite, DashboardPermission.PluginManagement];
+            Check((await client.PostAsJsonAsync("/ops/api/config/change-sets/preview", request)).StatusCode == HttpStatusCode.Conflict, "Stale preview did not report conflict.");
+            client.DefaultRequestHeaders.Remove("Idempotency-Key");
+            Check((await client.PostAsJsonAsync("/ops/api/config/change-sets", request)).StatusCode == HttpStatusCode.BadRequest, "Missing receipt key accepted.");
+            client.DefaultRequestHeaders.Add("Idempotency-Key", "combined-api-stale");
+            Check((await client.PostAsJsonAsync("/ops/api/config/change-sets", request)).StatusCode == HttpStatusCode.Conflict, "Stale apply did not report conflict.");
+            var current = host.Services.GetRequiredService<IDynamicYarpConfigService>().GetDynamicConfig()!;
+            var fresh = request with { Configuration = request.Configuration with { ExpectedVersion = current.Version } };
+            var invalid = fresh with { Configuration = fresh.Configuration with { Routes = [new() { RouteId = "invalid", ClusterId = "missing", Match = new() { Path = "/invalid" } }] } };
+            Check((await client.PostAsJsonAsync("/ops/api/config/change-sets", invalid)).StatusCode == HttpStatusCode.BadRequest, "Invalid combined configuration did not return 400.");
+            await using var connection = host.Services.GetRequiredService<Wafish.Storage.Sqlite.SqliteConnectionFactory>().CreateConnection();
+            await connection.OpenAsync();
+            await using var command = connection.CreateCommand();
+            command.CommandText = "CREATE TRIGGER reject_combined_api BEFORE UPDATE ON configuration_version BEGIN SELECT RAISE(ABORT, 'injected'); END;";
+            await command.ExecuteNonQueryAsync();
+            try
+            {
+                Check((await client.PostAsJsonAsync("/ops/api/config/change-sets", fresh)).StatusCode == HttpStatusCode.InternalServerError, "Storage failure reported success.");
+            }
+            finally { command.CommandText = "DROP TRIGGER reject_combined_api;"; await command.ExecuteNonQueryAsync(); }
+
         });
         await run("Maintenance API: authorization, actor, reason, expiry, and cancellation are enforced", async () =>
         {

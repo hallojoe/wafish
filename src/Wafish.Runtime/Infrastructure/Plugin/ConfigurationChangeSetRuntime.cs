@@ -1,14 +1,17 @@
+using Microsoft.Extensions.DependencyInjection;
 using Wafish.Plugins;
 using Wafish.Services;
 using Wafish.Storage.Entities;
 
 namespace Wafish.Dashboard.Infrastructure.Plugin;
 
-internal sealed class ConfigurationChangeSetRuntime(IGatewayPluginManager plugins, IPluginConfigurationSchemaValidator schemas,
-    IPluginRuntimeDomainManager domains) : IConfigurationChangeSetRuntime
+internal sealed class ConfigurationChangeSetRuntime(IServiceProvider services) : IConfigurationChangeSetRuntime
 {
     public void Validate(IReadOnlyList<PluginBindingEntity> bindings)
     {
+        // Resolve after core construction; installed plugins can themselves depend on core configuration services.
+        var plugins = services.GetRequiredService<IGatewayPluginManager>();
+        var schemas = services.GetRequiredService<IPluginConfigurationSchemaValidator>();
         foreach (var binding in bindings)
         {
             var manifest = plugins.GetManifest(binding.PluginId) ?? throw new ArgumentException("Binding plugin is not installed.");
@@ -26,6 +29,8 @@ internal sealed class ConfigurationChangeSetRuntime(IGatewayPluginManager plugin
 
     public async Task<IConfigurationChangeSetPreparation> PrepareAsync(IReadOnlyList<PluginBindingEntity> bindings, CancellationToken cancellationToken)
     {
+        var plugins = services.GetRequiredService<IGatewayPluginManager>();
+        var domains = services.GetRequiredService<IPluginRuntimeDomainManager>();
         var ids = plugins.GetAllManifests().Where(m => plugins.IsPluginEnabled(m.Id)).Select(m => m.Id).ToArray();
         var preparation = await domains.PrepareAsync(ids, cancellationToken);
         try
