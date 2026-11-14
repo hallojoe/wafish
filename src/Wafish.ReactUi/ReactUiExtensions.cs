@@ -55,6 +55,13 @@ public static class ReactUiExtensions
         var contentTypes = new FileExtensionContentTypeProvider();
         var assets = assembly.GetManifestResourceNames().Where(n => n.StartsWith("ReactUi/", StringComparison.Ordinal))
             .ToDictionary(n => n["ReactUi/".Length..].Replace('\\', '/'), n => n, StringComparer.Ordinal);
+        endpoints.MapGet(uiBase + "/version", (HttpContext context) =>
+        {
+            var policy = context.RequestServices.GetRequiredService<ControlPlaneAccessPolicy>();
+            if (!policy.IsAllowed(context, dashboard.Auth.AuthMode == DashboardAuthMode.None)) return Results.StatusCode(403);
+            context.Response.Headers.CacheControl = "no-store";
+            return Results.Json(ReactUiBuildInfo.Current);
+        });
         endpoints.MapGet(uiBase + "/assets/{**asset}", async context =>
         {
             var file = "assets/" + context.Request.RouteValues["asset"];
@@ -83,7 +90,7 @@ public static class ReactUiExtensions
                 uiBase = context.Request.PathBase.Add(new PathString(uiBase)).ToUriComponent(),
                 apiBase = context.Request.PathBase.Add(new PathString(apiBase)).ToUriComponent(), authMode = dashboard.Auth.AuthMode.ToString(),
                 apiKeyHeader = dashboard.Auth.ApiKeyHeaderName, locale = "en-US",
-                ai = features.Ai, mcp = features.Mcp
+                ai = features.Ai, mcp = features.Mcp, build = ReactUiBuildInfo.Current
             });
             var html = (await reader.ReadToEndAsync(context.RequestAborted))
                 .Replace("<!--APP_CONFIG-->", $"<base href=\"{HtmlEncoder.Default.Encode(context.Request.PathBase.Add(new PathString(uiBase)).ToUriComponent())}/\"><script type=\"application/json\" id=\"app-config\">{configuration}</script>");

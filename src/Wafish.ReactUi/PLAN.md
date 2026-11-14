@@ -81,7 +81,9 @@ Packing fails clearly when required generated assets are missing.
 
 ### FEAT-02: Expose embedded asset version metadata
 
-Status: TODO. Priority: P3. Type: hosting feature.
+Status: DONE. Completed: 2026-11-14.
+Verification: Release build and `--review-deployment` pass.
+Real HTTP checks compare shell metadata and the version endpoint under custom prefixes and PathBase. Priority: P3. Type: hosting feature.
 
 Evidence: [ReactUiExtensions.cs](ReactUiExtensions.cs) injects host configuration into the HTML shell.
 

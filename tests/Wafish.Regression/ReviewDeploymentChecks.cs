@@ -71,7 +71,14 @@ internal static class ReviewDeploymentChecks
                 using var client = new HttpClient { BaseAddress = new Uri(app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses.Single()) };
                 foreach (var prefix in new[] { "", "/edge" })
                 {
+                    using var version = await client.GetAsync(prefix + "/manage/ui/version");
+                    using var metadata = System.Text.Json.JsonDocument.Parse(await version.Content.ReadAsStringAsync());
+                    Check(version.Headers.CacheControl?.NoStore == true && metadata.RootElement.GetProperty("assetSha256").GetString() == ReactUiBuildInfo.Current.AssetSha256,
+                        "Asset identity endpoint changed across prefixes.");
+                    Check(ReactUiBuildInfo.Current.AssetSha256.Length == 64 && ReactUiBuildInfo.Current.AdministrationContractVersion == 1,
+                        "Asset identity or API contract omitted.");
                     var html = await client.GetStringAsync(prefix + "/manage/ui/configuration/routes");
+                    Check(html.Contains(ReactUiBuildInfo.Current.AssetSha256), "Shell omitted build identity.");
                     Check(html.Contains($"<base href=\"{prefix}/manage/ui/\">") && html.Contains($"\"apiBase\":\"{prefix}/manage/api\"") && html.Contains($"\"uiBase\":\"{prefix}/manage/ui\""), "Shell omitted deployment prefixes.");
                     var asset = System.Text.RegularExpressions.Regex.Match(html, "src=\"\\./(assets/[^\"]+)\"").Groups[1].Value;
                     Check(asset.Length > 0, "Shell entry asset missing.");

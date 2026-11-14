@@ -85,3 +85,11 @@ Browser checks cover validation dialogs, realtime disconnection, and mobile navi
 Large-list and plugin profiles verify pagination and seeded bindings.
 Process-selected failure profiles verify real mutation envelopes and delayed draft preservation.
 See [infrastructure evidence](../../tests/Wafish.Regression/evidence/regression-infrastructure/README.md).
+
+## Build identity
+
+`GET /console/version` returns package version, asset SHA-256, and administration contract version 1.
+The configured UI prefix and PathBase also apply to this endpoint. Control-plane access policy remains enforced.
+The shell includes the same metadata in `app-config.build`. Responses use `Cache-Control: no-store`.
+The hash covers ordered embedded resource names, lengths, and bytes, excluding timestamps and machine paths.
+Identical assets produce identical hashes. Keep UI and administration packages on matching releases.
