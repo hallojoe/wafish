@@ -211,7 +211,7 @@ public sealed class RequestRetryMiddleware : GatewayMiddlewareBase
                 var budget = context.RequestServices?.GetService<ClusterRetryBudget>() ?? _fallbackBudget;
                 if (!budget.TryAcquire(routeConfig.ClusterId))
                 {
-                    if (failure is not null) context.Response.StatusCode = StatusCodes.Status502BadGateway;
+                    if (failure is not null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
                     await response.CommitAsync(originalAborted);
                     return;
                 }

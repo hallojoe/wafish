@@ -30,6 +30,15 @@ internal static class RetryBudgetChecks
             Require(budget.TryAcquire("new") && budget.RetainedClusters == 1, "Expired identities were retained.");
             var zero = new ClusterRetryBudget(Options.Create(new ClusterRetryBudgetOptions { RetriesPerWindow = 0 }));
             Require(!zero.TryAcquire("any"), "Zero allowance admitted retries.");
+            using var deniedServices = new ServiceCollection().AddSingleton(zero).BuildServiceProvider();
+            var fault = new Fixture();
+            var expected = new IOException("upstream failure");
+            fault.Respond = _ => Task.FromException(expected);
+            var failedContext = fault.Context(); failedContext.RequestServices = deniedServices;
+            var originalBody = failedContext.Response.Body;
+            try { await fault.Pipeline(failedContext); throw new Exception("Budget exhaustion hid the upstream exception."); }
+            catch (IOException error) { Require(ReferenceEquals(error, expected), "Exception identity changed."); }
+            Require(fault.Calls == 1 && ReferenceEquals(originalBody, failedContext.Response.Body), "Denied retry changed attempts or response ownership.");
         });
     }
     private static void Require(bool value, string message) { if (!value) throw new Exception(message); }

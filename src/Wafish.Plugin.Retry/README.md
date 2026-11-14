@@ -82,7 +82,7 @@ See [verification](../../tests/Wafish.Regression/evidence/async-retry/README.md)
 `Gateway:RetryBudget:WindowSeconds` defaults to 1 and supports 1–3600 seconds.
 Zero retries disables extra attempts. Initial attempts retain their existing policy.
 Routes targeting the same cluster share a host-local allowance. Separate processes have separate allowances.
-Exhaustion returns the last upstream response, or 502 after an exception, without another attempt.
+Exhaustion returns the last upstream response without another attempt. Upstream exceptions retain their original failure behavior.
 The allowance uses fixed windows. Bursts can straddle a window boundary.
 At most 10,000 cluster identities are retained. Expired identities are removed during new-cluster admission.
 `DeniedRetries` counts rejected extra attempts for the budget lifetime. Process restart resets the budget.
