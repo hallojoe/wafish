@@ -23,11 +23,8 @@ The [2026-11-14 .NET source review](DOTNET_REVIEW.md) records new proposals, sha
 - Keep SQLite as local gateway storage. Add Redis only for scenarios that require it.
 - Defer separate administration and gateway processes to [IDEAS.md](IDEAS.md#idea-01-separate-administration-and-gateway-processes).
 
-## Active priority queue
+## Completed priorities 1–13
 
-Execution paused after priority 13 at the user's request. Priorities 14–24 remain TODO.
-
-Continue in this order. Project plans contain the individual acceptance checks.
 The naming correction is complete; see [consumer migration](docs/naming-migration.md).
 
 | Priority | Work | Status |
@@ -45,17 +42,130 @@ The naming correction is complete; see [consumer migration](docs/naming-migratio
 | 11 | Measured cache, compression, and snapshot-write optimization | DONE |
 | 12 | AppHost restart/Sonar/isolation and sample deployment checks | DONE |
 | 13 | Sample identities, contracts, telemetry, documentation, and probe filtering | DONE |
-| 14 | Operation permissions, log redaction, and quotas | TODO |
-| 15 | Configuration/idempotency/plugin previews, capabilities, and ordering | TODO |
-| 16 | Client retry/failover, capability handshake, leases, and readiness | TODO |
-| 17 | Metric units, OpenTelemetry, histograms, savings, and drain diagnostics | TODO |
-| 18 | Storage capabilities and backup abstraction; offline inspection completed with priority 5 | TODO |
-| 19 | Shared retry budgets, recovery jitter, maintenance, and cache fills/purge | TODO |
-| 20 | Named local quota groups, weights, tenants, and combined rate limits | TODO |
-| 21 | WAF detection/exclusions, EndpointSlice, and compression algorithms | TODO |
-| 22 | Benchmark fault, streaming, transport, arrival-rate, and budget scenarios | TODO |
-| 23 | Demonstration profiles, fault injection, blue/green, orders, streams, and telemetry | TODO |
-| 24 | WebAuthn, saved views, and asset metadata | TODO |
+
+## Remaining work: ranked release scope
+
+Implementation remains paused after completed priority 13. This update changes planning only.
+The previous grouped priorities 14–24 are superseded by R01–R55 below.
+Historical completion numbers and project task identifiers remain unchanged.
+
+### Recommended finish line
+
+Assumption: a small internal deployment, trusted administrators, SQLite, and the existing authentication methods.
+Independent administration processes, tenant isolation, multiple gateways, and external plugin ecosystems are outside this first release.
+
+**Recommended release scope: R01–R10. Stop after these acceptance checks and the release verification pass.**
+This means nine implementation tasks and one review-status reconciliation, not fifty-five required features.
+R11–R35 are follow-up work. R36–R55 are optional extensions and demonstrations.
+Their TODO statuses remain unchanged; postponement does not mean completion.
+Implementation order within optional work follows actual dependencies, not the need score alone.
+
+Ratings express first-release necessity, not implementation effort or a new finding that an existing feature is defective.
+A score of 10 means a confirmed release blocker; this planning review assigns none.
+Scores 8–9 belong in the recommended release scope. Scores 6–7 are valuable follow-up work.
+Scores 4–5 require a concrete deployment need. Scores 1–3 are conveniences or demonstrations.
+No delivery dates are estimated from task counts; task sizes differ substantially.
+
+### Inventory and scope
+
+- All 52 TODO tasks from the 30 project plans appear exactly once below.
+- R01 reconciles the unresolved NET-IMP-03 status in DOTNET_REVIEW.md against completed implementation evidence.
+- R31 and R32 include two distinct solution proposals outside the project PLAN.md files.
+- R18 includes the solution-wide NET-FEAT-02 lease proposal; it is not counted twice.
+- Total: 54 implementation proposals and one review check, represented by 55 ranked entries.
+- Separate administration processes remain a deferred idea in [IDEAS.md](IDEAS.md), outside this queue.
+
+The source plans retain their acceptance criteria. This queue supersedes their older relative P2/P3 ordering.
+
+### Recommended first release: R01–R10
+
+| Rank | Need / 10 | Task | Source | Reason and dependencies |
+|---|---|---|---|---|
+| R01 | 9 | Reconcile resource-limit and cancellation evidence | [Solution review NET-IMP-03](DOTNET_REVIEW.md#net-imp-03-define-shared-resource-and-cancellation-limits) | Close the unresolved review status against existing evidence; identify any concrete acceptance failure. |
+| R02 | 9 | Redact sensitive log fields | [Wafish.Plugin.ProxyLog FEAT-01](src/Wafish.Plugin.ProxyLog/PLAN.md#feat-01-add-per-route-structured-redaction-rules) | Prevent configured sensitive fields from reaching storage or realtime subscribers. |
+| R03 | 9 | Bound log storage with quotas | [Wafish.Plugin.ProxyLog FEAT-02](src/Wafish.Plugin.ProxyLog/PLAN.md#feat-02-add-log-storage-quotas) | Keep sustained traffic within a documented disk budget. |
+| R04 | 8 | Spread client startup retries | [Wafish.Client IMP-01](src/Wafish.Client/PLAN.md#imp-01-add-startup-retry-jitter) | Avoid synchronized registration retries during service restarts. |
+| R05 | 8 | Limit retries across each cluster | [Wafish.Plugin.Retry FEAT-01](src/Wafish.Plugin.Retry/PLAN.md#feat-01-add-a-cluster-wide-retry-budget) | Prevent extra attempts from amplifying an upstream outage. |
+| R06 | 8 | Define metric units and reset behavior | [Wafish.Plugin.Metrics IMP-02](src/Wafish.Plugin.Metrics/PLAN.md#imp-02-define-metric-units-and-reset-semantics) | Establish meaningful measurements before extending their export. |
+| R07 | 8 | Export plugin metrics through OpenTelemetry | [Wafish.Plugin.Metrics FEAT-01](src/Wafish.Plugin.Metrics/PLAN.md#feat-01-export-plugin-measurements-through-opentelemetry) | Make existing request and cluster measurements usable by standard collectors. After R06. |
+| R08 | 8 | Add bounded latency histograms | [Wafish.Plugin.Metrics FEAT-02](src/Wafish.Plugin.Metrics/PLAN.md#feat-02-add-route-latency-distributions) | Expose tail latency without retaining individual samples. After R06 and R07. |
+| R09 | 8 | Preview configuration changes | [Wafish FEAT-02](src/Wafish/PLAN.md#feat-02-preview-a-configuration-change) | Validate proposed routing changes without altering active traffic. |
+| R10 | 8 | Reproduce stalled and truncated responses | [Backend FEAT-02](tests/Wafish.Performance/Backend/PLAN.md#feat-02-add-deterministic-transport-faults) | Verify transport failure handling with deterministic faults. |
+
+### Follow-up work: R11–R35
+
+| Rank | Need / 10 | Task | Source | Reason and dependencies |
+|---|---|---|---|---|
+| R11 | 7 | Add operation permissions | [Wafish.Administration FEAT-02](src/Wafish.Administration/PLAN.md#feat-02-add-operation-permissions) | Separate reading, configuration, plugins, and credentials when operators have different responsibilities. |
+| R12 | 7 | Describe plugin statistic units | [Wafish.Plugin.Abstractions IMP-03](src/Wafish.Plugin.Abstractions/PLAN.md#imp-03-define-statistic-names-and-units) | Make generic resource statistics interpretable without plugin-specific assumptions. |
+| R13 | 7 | Add mutation idempotency keys | [Wafish FEAT-01](src/Wafish/PLAN.md#feat-01-add-mutation-idempotency-keys) | Allow safe retries after uncertain configuration responses. |
+| R14 | 7 | Validate plugin ordering constraints | [Wafish.Plugin.Abstractions FEAT-02](src/Wafish.Plugin.Abstractions/PLAN.md#feat-02-declare-pipeline-ordering-constraints) | Reject missing prerequisites and cycles before plugin activation. |
+| R15 | 7 | Declare plugin capability requirements | [Wafish.Plugin.Abstractions FEAT-01](src/Wafish.Plugin.Abstractions/PLAN.md#feat-01-declare-host-capability-requirements) | Reject unsupported external plugins before creating resources. |
+| R16 | 7 | Preview plugin activation | [Wafish.Runtime FEAT-01](src/Wafish.Runtime/PLAN.md#feat-01-expose-plugin-activation-previews) | Inspect candidate health and resource needs before publication. Coordinate with R09, R14, and R15. |
+| R17 | 7 | Negotiate registration capabilities | [Wafish.Grpc FEAT-01](src/Wafish.Grpc/PLAN.md#feat-01-add-a-capability-handshake) | Support explicit protocol evolution before adding lease features. |
+| R18 | 7 | Add registration leases and draining | [Wafish.Grpc FEAT-02](src/Wafish.Grpc/PLAN.md#feat-02-negotiate-registration-leases) | Define expiry and stale-renewal protection across protocol, client, core, and storage. After R17; includes NET-FEAT-02. |
+| R19 | 7 | Expose registration readiness | [SampleServiceDefaults FEAT-02](samples/SampleServiceDefaults/PLAN.md#feat-02-add-optional-registration-readiness) | Distinguish a live backend from one registered for routing; keep liveness independent. |
+| R20 | 7 | Purge cached responses by route or tag | [Wafish.Plugin.Cache FEAT-01](src/Wafish.Plugin.Cache/PLAN.md#feat-01-add-route-scoped-cache-tags-and-purge) | Give operators controlled invalidation. Apply R11 permissions when available. |
+| R21 | 7 | Evaluate WAF rules without blocking | [Wafish.Plugin.Waf FEAT-01](src/Wafish.Plugin.Waf/PLAN.md#feat-01-add-an-explicit-detection-only-mode) | Support staged rule evaluation while blocking remains the default. |
+| R22 | 7 | Add narrow WAF exclusions | [Wafish.Plugin.Waf FEAT-02](src/Wafish.Plugin.Waf/PLAN.md#feat-02-add-narrow-rule-exclusions) | Handle legitimate fields without disabling unrelated protection. Include exclusions in R09 previews. |
+| R23 | 7 | Expose plugin drain progress | [Wafish.Runtime FEAT-02](src/Wafish.Runtime/PLAN.md#feat-02-report-plugin-drain-progress) | Show held requests, retirement age, and disposal failures during transitions. |
+| R24 | 7 | Provide a minimal gateway profile | [SampleGateway FEAT-02](samples/SampleGateway/PLAN.md#feat-02-provide-a-minimal-runtime-composition-profile) | Offer a runnable runtime-only deployment without administration, AI, or MCP. |
+| R25 | 6 | Split administration tests into modules | [Wafish.Administration.Regression IMP-01](tests/Wafish.Administration.Regression/PLAN.md#imp-01-split-checks-into-focused-modules) | Improve maintenance without changing scenario names or coverage. |
+| R26 | 6 | Share concurrent cache fills | [Wafish.Plugin.Cache FEAT-02](src/Wafish.Plugin.Cache/PLAN.md#feat-02-share-concurrent-cache-fills) | Reduce duplicate upstream work with bounded waits and independent cancellation. |
+| R27 | 6 | Spread circuit recovery probes | [Wafish.Plugin.CircuitBreaker FEAT-01](src/Wafish.Plugin.CircuitBreaker/PLAN.md#feat-01-add-configurable-recovery-jitter) | Reduce synchronized recovery across replicas. |
+| R28 | 6 | Expose UI asset version metadata | [Wafish.ReactUi FEAT-02](src/Wafish.ReactUi/PLAN.md#feat-02-expose-embedded-asset-version-metadata) | Help diagnose stale assets and administration contract mismatches. |
+| R29 | 6 | Describe storage provider capabilities | [Wafish.Storage.Abstractions FEAT-01](src/Wafish.Storage.Abstractions/PLAN.md#feat-01-expose-provider-capability-metadata) | Validate provider options explicitly; most valuable when adding another provider. |
+| R30 | 6 | Abstract backup operations | [Wafish.Storage.Abstractions FEAT-02](src/Wafish.Storage.Abstractions/PLAN.md#feat-02-add-a-storage-backup-capability) | Remove SQLite-specific backup handling from administration. After R29; current SQLite backup already exists. |
+| R31 | 6 | Apply versioned configuration change sets | [Solution review NET-FEAT-01](DOTNET_REVIEW.md#net-feat-01-add-versioned-configuration-change-sets) | Coordinate route, cluster, and plugin edits in one operation. After R09 and existing atomic binding storage. |
+| R32 | 6 | Export a redacted diagnostic bundle | [Solution review NET-FEAT-03](DOTNET_REVIEW.md#net-feat-03-add-a-redacted-diagnostic-bundle) | Collect bounded support information. Use R23 drain diagnostics and R29 storage capabilities. |
+| R33 | 6 | Support ordered gateway failover | [Wafish.Client FEAT-01](src/Wafish.Client/PLAN.md#feat-01-support-ordered-gateway-failover) | Add multiple registration endpoints with clear ownership. Settle R18 lease semantics first. |
+| R34 | 6 | Add destination maintenance windows | [Wafish.Plugin.CircuitBreaker FEAT-02](src/Wafish.Plugin.CircuitBreaker/PLAN.md#feat-02-add-destination-maintenance-windows) | Temporarily remove one destination with an actor, reason, and expiry. Coordinate with R11 permissions. |
+| R35 | 6 | Support Kubernetes EndpointSlice | [Wafish.Plugin.ServiceDiscovery FEAT-01](src/Wafish.Plugin.ServiceDiscovery/PLAN.md#feat-01-support-kubernetes-endpointslice-discovery) | Improve Kubernetes discovery when that deployment is required. |
+
+### Optional extensions: R36–R55
+
+| Rank | Need / 10 | Task | Source | Reason and dependencies |
+|---|---|---|---|---|
+| R36 | 5 | Share local quotas across named route groups | [Wafish.Plugin.RateLimit FEAT-01](src/Wafish.Plugin.RateLimit/PLAN.md#feat-01-support-named-quota-groups) | Useful when several routes represent one shared allowance. |
+| R37 | 5 | Partition quotas by trusted tenant | [Wafish.Plugin.RateLimit.Redis FEAT-01](src/Wafish.Plugin.RateLimit.Redis/PLAN.md#feat-01-add-trusted-tenant-quota-partitions) | Needed for tenant-based limits; avoid trusting arbitrary caller headers. |
+| R38 | 5 | Combine burst and sustained quotas | [Wafish.Plugin.RateLimit.Redis FEAT-02](src/Wafish.Plugin.RateLimit.Redis/PLAN.md#feat-02-combine-burst-and-sustained-quotas) | Enforce two allowances in one atomic Redis decision. |
+| R39 | 5 | Assign weighted request costs | [Wafish.Plugin.RateLimit FEAT-02](src/Wafish.Plugin.RateLimit/PLAN.md#feat-02-support-weighted-request-costs) | Charge expensive routes more than cheap requests. |
+| R40 | 5 | Measure compression savings | [Wafish.Plugin.Compression FEAT-01](src/Wafish.Plugin.Compression/PLAN.md#feat-01-expose-compression-savings-metrics) | Show whether byte savings justify compression cost. Coordinate with R07 and R12. |
+| R41 | 5 | Configure compression algorithms and levels | [Wafish.Plugin.Compression FEAT-02](src/Wafish.Plugin.Compression/PLAN.md#feat-02-configure-allowed-compression-algorithms) | Allow route-specific CPU and bandwidth tradeoffs. |
+| R42 | 5 | Add paced streaming benchmarks | [Backend FEAT-01](tests/Wafish.Performance/Backend/PLAN.md#feat-01-add-paced-streaming-scenarios) | Measure early delivery and buffering under controlled streaming. |
+| R43 | 5 | Add matched HTTP/2 and TLS baselines | [NativeYarp FEAT-01](tests/Wafish.Performance/NativeYarp/PLAN.md#feat-01-add-selectable-http2-and-tls-baselines) | Support fair transport comparisons when performance claims require them. |
+| R44 | 5 | Schedule request arrival rates | [Runner FEAT-02](tests/Wafish.Performance/Runner/PLAN.md#feat-02-add-scheduled-request-rate-mode) | Reveal overload without the client silently reducing offered load. |
+| R45 | 5 | Enforce CI performance budgets | [Runner FEAT-01](tests/Wafish.Performance/Runner/PLAN.md#feat-01-add-ci-performance-regression-budgets) | Detect regressions after representative workloads and stable baselines exist; use R42–R44 as needed. |
+| R46 | 4 | Benchmark selected plugin combinations | [EnhancedYarp FEAT-01](tests/Wafish.Performance/EnhancedYarp/PLAN.md#feat-01-add-a-bounded-plugin-combination-matrix) | Attribute costs to bounded, recorded combinations. |
+| R47 | 4 | Benchmark multiple destinations | [NativeYarp FEAT-02](tests/Wafish.Performance/NativeYarp/PLAN.md#feat-02-add-a-multiple-destination-baseline) | Compare load-balancing behavior against a matched native baseline. |
+| R48 | 4 | Add WebAuthn authentication | [Wafish.Administration FEAT-01](src/Wafish.Administration/PLAN.md#feat-01-add-webauthn-authentication) | Add another authentication method; existing authentication and TOTP remain available. |
+| R49 | 4 | Add optional network fault injection | [Wafish.AppHost FEAT-01](Wafish.AppHost/PLAN.md#feat-01-add-optional-network-fault-injection) | Make local resilience demonstrations easier; deterministic transport tests are already ranked R10. |
+| R50 | 4 | Demonstrate blue-green deployment | [SampleGateway FEAT-01](samples/SampleGateway/PLAN.md#feat-01-add-a-blue-green-deployment-example) | Document health-checked cutover and rollback using existing configuration APIs. |
+| R51 | 3 | Demonstrate service discovery | [Wafish.AppHost FEAT-02](Wafish.AppHost/PLAN.md#feat-02-add-a-service-discovery-demonstration-profile) | Add an optional discovery profile without changing the default topology. |
+| R52 | 3 | Demonstrate cancellable streaming | [SampleLocalService FEAT-02](samples/SampleLocalService/PLAN.md#feat-02-demonstrate-cancellable-streaming) | Provide a synthetic example of streaming and disconnect cancellation. |
+| R53 | 3 | Show redacted telemetry configuration | [SampleServiceDefaults FEAT-01](samples/SampleServiceDefaults/PLAN.md#feat-01-add-redacted-telemetry-diagnostics) | Add an optional local diagnostic view of exporters and instrumentation. |
+| R54 | 3 | Demonstrate idempotent orders | [SampleLocalService FEAT-01](samples/SampleLocalService/PLAN.md#feat-01-add-an-idempotent-order-example) | Teach safe application writes; separate from gateway configuration idempotency. |
+| R55 | 3 | Save operator views | [Wafish.ReactUi FEAT-01](src/Wafish.ReactUi/PLAN.md#feat-01-add-saved-operator-views) | Persist per-user filters and columns; a convenience feature. |
+
+### Release completion rule
+
+1. Reconcile R01 against existing evidence; do not reopen already satisfied acceptance checks.
+2. Complete R02–R10 against their source acceptance criteria, with tests and migration notes where needed.
+3. Pass the Release solution build, relevant regression suites, browser checks, and isolated package consumers.
+4. Verify the intended deployment, authentication, backup/restore procedure, and published assets.
+5. Record known limitations and release evidence. Stop; optional tasks do not automatically become release requirements.
+
+A concrete failed acceptance check can block release. Report it explicitly instead of silently expanding this scope.
+This planning cutoff does not claim release verification is already complete.
+
+### Conditions that change the ratings
+
+- Shared operator roles: promote R11 operation permissions to 9 and place it in the release scope.
+- Multiple registration gateways: promote R17, R18, and R33; settle ownership before failover.
+- Tenant-based quotas: promote R37 to 9 and validate the tenant trust boundary before release.
+- Kubernetes deployment: promote R35 to 9 when EndpointSlice discovery is required.
+- External plugins: promote R14 and R15 to 8 before accepting third-party plugin packages.
+- Mandatory passkeys: promote R48 to 9; otherwise existing authentication keeps it optional.
 
 ## Tracking rules
 
