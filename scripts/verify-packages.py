@@ -7,6 +7,8 @@ parser=argparse.ArgumentParser();parser.add_argument('--update-api',action='stor
 packages=root/'artifacts/package-checks';packages.mkdir(parents=True,exist_ok=True)
 def run(command,**kwargs):subprocess.run(command,check=True,timeout=240,**kwargs)
 if not args.skip_pack:
+ for artifact in [*packages.glob('*.nupkg'), *packages.glob('*.snupkg')]:
+  artifact.unlink()
  for project in sorted((root/'src').glob('*/*.csproj')):
   run(['dotnet','pack',str(project),'-c','Release','--no-build','-o',str(packages)],cwd=root)
 with tempfile.TemporaryDirectory(prefix='wafish-package-consumers-') as temporary:

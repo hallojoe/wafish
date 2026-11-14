@@ -85,6 +85,7 @@ jobs:
       - run: npm run lint && npm run test:coverage && npm audit
         working-directory: src/Wafish.ReactUi/ClientApp
       - run: node --test --experimental-test-coverage src/Wafish.ReactUi/ClientApp/scripts/verify-assets.test.mjs
+      - run: npm --prefix src/Wafish.ReactUi/ClientApp run test:fixtures
       - run: python3 tests/Wafish.Regression/evidence/review111213/check-frontend-build.py
       - run: npx playwright install --with-deps chromium
         working-directory: src/Wafish.ReactUi/ClientApp

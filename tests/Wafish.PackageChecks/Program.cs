@@ -23,11 +23,15 @@ foreach (var file in files)
     var reference = references.Single(r => r.FilePath == file);
     var assembly = (IAssemblySymbol)compilation.GetAssemblyOrModuleSymbol(reference)!;
     var surface = new SortedSet<string>(StringComparer.Ordinal);
+    var requiredMembers = new Dictionary<string, string>(StringComparer.Ordinal);
     void Visit(ISymbol symbol)
     {
         if (symbol is INamespaceSymbol ns) { foreach (var child in ns.GetMembers()) Visit(child); return; }
         if (symbol.DeclaredAccessibility is not (Accessibility.Public or Accessibility.Protected or Accessibility.ProtectedOrInternal)) return;
-        surface.Add(symbol.Kind + ": " + symbol.ToDisplayString(format));
+        var declaration = symbol.Kind + ": " + symbol.ToDisplayString(format);
+        surface.Add(declaration);
+        if (symbol.IsAbstract && symbol is IMethodSymbol or IPropertySymbol or IEventSymbol)
+            requiredMembers.Add(declaration, "NamedType: " + symbol.ContainingType.ToDisplayString(format));
         if (symbol is INamedTypeSymbol type)
         {
             if (type.BaseType != null) surface.Add("Base: " + type.ToDisplayString(format) + " : " + type.BaseType.ToDisplayString(format));
@@ -39,7 +43,13 @@ foreach (var file in files)
     var baseline = Path.Combine(baselineDirectory, assembly.Name + ".json");
     if (update) File.WriteAllText(baseline, JsonSerializer.Serialize(surface, new JsonSerializerOptions { WriteIndented = true }) + "\n");
     else if (!File.Exists(baseline)) failures.Add("Missing API baseline: " + assembly.Name);
-    else foreach (var missing in JsonSerializer.Deserialize<string[]>(File.ReadAllText(baseline))!.Except(surface)) failures.Add(assembly.Name + ": removed or changed " + missing);
+    else
+    {
+        var previous = JsonSerializer.Deserialize<string[]>(File.ReadAllText(baseline))!.ToHashSet(StringComparer.Ordinal);
+        foreach (var missing in previous.Except(surface)) failures.Add(assembly.Name + ": removed or changed " + missing);
+        foreach (var added in requiredMembers.Where(pair => !previous.Contains(pair.Key) && previous.Contains(pair.Value)))
+            failures.Add(assembly.Name + ": new abstract requirement " + added.Key);
+    }
     Console.WriteLine($"API: {assembly.Name}, {surface.Count} public declarations");
 }
 if (!update)
