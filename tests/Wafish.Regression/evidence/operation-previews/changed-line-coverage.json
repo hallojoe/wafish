@@ -1,0 +1,157 @@
+{
+  "base": "533ed7b",
+  "covered": 289,
+  "executable": 293,
+  "files": [
+    {
+      "file": "src/Wafish.Administration/AdministrationEndpointRouteBuilderExtensions.cs",
+      "covered": 5,
+      "executable": 5,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Administration/AdministrationServiceCollectionExtensions.cs",
+      "covered": 2,
+      "executable": 2,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Administration/Infrastructure/Auth/DashboardAuthFilter.cs",
+      "covered": 5,
+      "executable": 5,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Administration/Infrastructure/Auth/DashboardAuthorizationService.cs",
+      "covered": 6,
+      "executable": 6,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Administration/Infrastructure/Auth/DashboardPermissions.cs",
+      "covered": 27,
+      "executable": 27,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Administration/Infrastructure/Realtime/OverviewHub.cs",
+      "covered": 3,
+      "executable": 3,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Administration/Infrastructure/Realtime/TrafficHub.cs",
+      "covered": 3,
+      "executable": 3,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Administration/Modules/Dashboard/Controllers/PluginPreviewController.cs",
+      "covered": 6,
+      "executable": 6,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Administration/Modules/Dashboard/Services/AIFunctionService.cs",
+      "covered": 9,
+      "executable": 9,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Administration/Modules/Dashboard/Services/McpServerHost.cs",
+      "covered": 4,
+      "executable": 4,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Administration/Modules/GatewayConfig/Controllers/ConfigurationChangesController.cs",
+      "covered": 14,
+      "executable": 14,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Runtime/GatewayRuntimeExtensions.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Runtime/Infrastructure/Plugin/PluginActivationPreview.cs",
+      "covered": 29,
+      "executable": 29,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Storage.Abstractions/IIdempotentConfigurationSnapshotRepository.cs",
+      "covered": 3,
+      "executable": 3,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Storage.Sqlite/Migrations/Migration022_ConfigurationReceipts.cs",
+      "covered": 14,
+      "executable": 14,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Storage.Sqlite/SqliteConfigurationSnapshotRepository.Receipts.cs",
+      "covered": 32,
+      "executable": 32,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Storage.Sqlite/SqliteConfigurationSnapshotRepository.cs",
+      "covered": 2,
+      "executable": 2,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Storage.Sqlite/SqliteSchemaMigrator.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish/Extensions/WafishServiceCollectionExtensions.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish/Services/DynamicConfigPersister.cs",
+      "covered": 3,
+      "executable": 3,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish/Services/DynamicConfigPublisher.cs",
+      "covered": 5,
+      "executable": 5,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish/Services/DynamicYarpConfigService.Changes.cs",
+      "covered": 109,
+      "executable": 113,
+      "uncovered": [
+        75,
+        76,
+        78,
+        100
+      ]
+    },
+    {
+      "file": "src/Wafish/Services/DynamicYarpConfigService.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish/Services/IConfigurationChangeService.cs",
+      "covered": 4,
+      "executable": 4,
+      "uncovered": []
+    }
+  ],
+  "percent": 98.63
+}

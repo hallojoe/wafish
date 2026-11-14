@@ -30,7 +30,11 @@ Acceptance: Cancellation leaves persisted and active state consistent.
 
 ### FEAT-01: Add mutation idempotency keys
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [R15–R18 evidence](../../tests/Wafish.Regression/evidence/operation-previews/README.md).
+Release build, 252 main cases, 40 administration cases, and 30 browser checks pass.
+Changed production-line coverage is 98.63%.
 
 Allow callers to repeat a configuration request after a connection failure.
 
@@ -76,7 +80,11 @@ Cancellation before persistence leaves both revisions unchanged.
 
 ### FEAT-02: Preview a configuration change
 
-Status: TODO. Priority: P2. Type: feature.
+Status: DONE. Owner: Codex. Completed: 2026-11-14. Priority: P2. Type: feature.
+
+Verification: [R15–R18 evidence](../../tests/Wafish.Regression/evidence/operation-previews/README.md).
+Release build, 252 main cases, 40 administration cases, and 30 browser checks pass.
+Changed production-line coverage is 98.63%.
 
 Evidence: [ConfigurationMutation.cs](Services/ConfigurationMutation.cs) already separates preparation from persistence.
 

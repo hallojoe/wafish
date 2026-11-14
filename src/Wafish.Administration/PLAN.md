@@ -83,7 +83,11 @@ Health distinguishes queued, delivered, failed, and discarded notifications.
 
 ### FEAT-02: Add operation permissions
 
-Status: TODO. Priority: P2. Type: feature.
+Status: DONE. Owner: Codex. Completed: 2026-11-14. Priority: P2. Type: feature.
+
+Verification: [R15–R18 evidence](../../tests/Wafish.Regression/evidence/operation-previews/README.md).
+Release build, 252 main cases, 40 administration cases, and 30 browser checks pass.
+Changed production-line coverage is 98.63%.
 
 Evidence: [DashboardAuthorizationService.cs](Infrastructure/Auth/DashboardAuthorizationService.cs) returns one authorization decision.
 

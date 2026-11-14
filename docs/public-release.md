@@ -1,14 +1,17 @@
 # Public package release scope
 
 The first public scope is R01–R14 in [PLAN.md](../PLAN.md).
-R15–R55 remain deferred. Their ratings do not make them first-release blockers.
+R15–R18 add operation permissions, idempotent configuration changes, and previews.
+R19–R55 remain deferred. Their ratings do not make them first-release blockers.
+See [R15–R18 verification](../tests/Wafish.Regression/evidence/operation-previews/README.md).
 
 ## Consumer entry points
 
 Start with [MinimalGateway](../samples/MinimalGateway/README.md) for runtime and SQLite.
 Use [SampleGateway](../samples/SampleGateway/README.md) for authenticated administration and the React console.
 Use matching Wafish package versions. The optional administration layer trusts authenticated administrators.
-Operation permissions and multi-role isolation remain deferred.
+Hosts can restrict operation permissions through shared settings, authenticated claims, or custom authorization.
+See [operation permissions](../src/Wafish.Administration/README.md#operation-permissions).
 
 ## Upgrade behavior
 

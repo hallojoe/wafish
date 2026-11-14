@@ -1,0 +1,1204 @@
+{
+  "main": [
+    {
+      "name": "Configuration changes: previews validate references and leave snapshots and storage unchanged",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration changes: concurrent retries return one durable result and preserve identities",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration changes: receipt survives restart without applying a stale request again",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration changes: failed storage rolls back receipts and allows a safe retry",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration changes: activation failure and lost acknowledgement never create a second commit",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration changes: unsupported storage and invalid inputs fail before commit",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration receipts: duplicate, capacity, expiry, and version checks remain atomic",
+      "status": "passed"
+    },
+    {
+      "name": "Plugin preview: candidate health and requirements leave active traffic unchanged and release services",
+      "status": "passed"
+    },
+    {
+      "name": "Plugin preview: cancellation disposes candidates and missing plugins never report success",
+      "status": "passed"
+    },
+    {
+      "name": "Plugin preview: plugins without health probes report unknown health",
+      "status": "passed"
+    },
+    {
+      "name": "Public logs: route rules redact before persistence and realtime delivery",
+      "status": "passed"
+    },
+    {
+      "name": "Public logs: incomplete JSON and invalid rules fail closed",
+      "status": "passed"
+    },
+    {
+      "name": "Public logs: redaction schema bounds lists and pointer syntax",
+      "status": "passed"
+    },
+    {
+      "name": "Log quotas: sustained writes retain recent metadata and account body discards",
+      "status": "passed"
+    },
+    {
+      "name": "Log quotas: cancellation rolls back, disabled quotas preserve data, and concurrent writes stay bounded",
+      "status": "passed"
+    },
+    {
+      "name": "Plugin policy: constraints preserve built-in ordering and reject missing targets and cycles",
+      "status": "passed"
+    },
+    {
+      "name": "Plugin policy: invalid replacements preserve the active domain before services are created",
+      "status": "passed"
+    },
+    {
+      "name": "Retry budget: concurrent routes share allowance and preserve initial attempts",
+      "status": "passed"
+    },
+    {
+      "name": "Metric contracts: units, reset behavior, descriptors, and collector counts agree",
+      "status": "passed"
+    },
+    {
+      "name": "Runner registry: dry listing, unique names, selections, exit codes, and complete reports remain stable",
+      "status": "passed"
+    },
+    {
+      "name": "Fault schedules: persistence, publication, and commit cancellation preserve revisions",
+      "status": "passed"
+    },
+    {
+      "name": "Fault schedules: retry recovery and cancelled delays preserve attempt ownership",
+      "status": "passed"
+    },
+    {
+      "name": "Fault schedules: log drain cancellation accounts for queued and in-flight records",
+      "status": "passed"
+    },
+    {
+      "name": "Fault schedules: audit loading retains recent writes within the capacity limit",
+      "status": "passed"
+    },
+    {
+      "name": "Protocol properties: WAF corpus reports benign rejections and missed attacks",
+      "status": "passed"
+    },
+    {
+      "name": "Protocol properties: seeded WAF decoding and split reads remain bounded",
+      "status": "passed"
+    },
+    {
+      "name": "Protocol properties: cache directives preserve freshness, age, and variant isolation",
+      "status": "passed"
+    },
+    {
+      "name": "Protocol properties: encoding qualities, duplicates, wildcards, and invalid fields select supported bytes",
+      "status": "passed"
+    },
+    {
+      "name": "Protocol properties: concurrent metric snapshots retain coherent counters and retired identities",
+      "status": "passed"
+    },
+    {
+      "name": "Benchmarks: fixed-memory histograms bound percentile error without losing samples",
+      "status": "passed"
+    },
+    {
+      "name": "Benchmarks: explicit addresses reject non-loopback and ambiguous origins",
+      "status": "passed"
+    },
+    {
+      "name": "Benchmarks: normalized manifests hash composition and redact nested secrets",
+      "status": "passed"
+    },
+    {
+      "name": "Benchmarks: workload preflight rejects wrong status, payload, size, and stalled reads",
+      "status": "passed"
+    },
+    {
+      "name": "Benchmarks: isolated backend cancellation drains work and identifies payload allocation",
+      "status": "passed"
+    },
+    {
+      "name": "Benchmarks: opt-in transport faults truncate bodies and cancel stalled reads",
+      "status": "passed"
+    },
+    {
+      "name": "Benchmarks: native forwarding preflight detects backend failure on isolated addresses",
+      "status": "passed"
+    },
+    {
+      "name": "Benchmarks: managed comparisons export effective manifests and clean only owned data",
+      "status": "passed"
+    },
+    {
+      "name": "Allocation pressure: small cache entries compact within the shared capture budget",
+      "status": "passed"
+    },
+    {
+      "name": "Allocation pressure: concurrent compression streams large JSON and excluded binary without body retention",
+      "status": "passed"
+    },
+    {
+      "name": "Allocation pressure: one-route snapshot updates avoid unrelated writes and WAL growth",
+      "status": "passed"
+    },
+    {
+      "name": "Allocation pressure: differential writes preserve every stored field, renames, cascades, and rollback",
+      "status": "passed"
+    },
+    {
+      "name": "Sample deployment: topology identifiers isolate state, credentials, volumes, and restart locks",
+      "status": "passed"
+    },
+    {
+      "name": "Sample deployment: Sonar readiness accepts only UP and bounds malformed or unavailable replies",
+      "status": "passed"
+    },
+    {
+      "name": "Sample deployment: operator links follow bound HTTPS endpoints and custom UI prefixes",
+      "status": "passed"
+    },
+    {
+      "name": "Sample contracts: both backend identities, headers, ping, echo, and trace context survive proxying",
+      "status": "passed"
+    },
+    {
+      "name": "Sample telemetry: configured probes are excluded while API traces and expected meters remain active",
+      "status": "passed"
+    },
+    {
+      "name": "UI fixtures: options reject invalid credentials, modes, paths, ports, and profiles",
+      "status": "passed"
+    },
+    {
+      "name": "UI fixtures: all authentication modes isolate baseline, large, and plugin profiles",
+      "status": "passed"
+    },
+    {
+      "name": "UI fixtures: HTTPS hosting and failed starts release their private directories",
+      "status": "passed"
+    },
+    {
+      "name": "UI fixtures: process-selected faults return real mutation revisions without control endpoints",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration async: delayed validation yields and cancellation preserves both revisions",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration async: lock wait and startup loading observe caller cancellation",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration async: cancellation after storage starts still completes activation and audit",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration async: generated concurrent rename, delete, registration, and stale updates preserve identities",
+      "status": "passed"
+    },
+    {
+      "name": "Retry timing: upstream delta, date, invalid, and capped delays use controlled time",
+      "status": "passed"
+    },
+    {
+      "name": "Retry timing: total deadline interrupts upstream Retry-After without another attempt",
+      "status": "passed"
+    },
+    {
+      "name": "Retry timing: attempt limits and exponential jitter are deterministic",
+      "status": "passed"
+    },
+    {
+      "name": "Retry timing: caller cancellation stays distinct from deadline expiry",
+      "status": "passed"
+    },
+    {
+      "name": "Retry timing: body preparation and non-idempotent forwarding obey the total deadline",
+      "status": "passed"
+    },
+    {
+      "name": "Redis recovery: failed construction backs off and concurrent callers share replacement",
+      "status": "passed"
+    },
+    {
+      "name": "Redis recovery: asynchronous failures use capped backoff and shutdown owns pending construction",
+      "status": "passed"
+    },
+    {
+      "name": "Redis recovery: interrupted commands do not replace or replay a healthy connection",
+      "status": "passed"
+    },
+    {
+      "name": "Redis recovery: connection admission remains bounded and missing settings fail closed",
+      "status": "passed"
+    },
+    {
+      "name": "Discovery provider: HttpJson handles healthy, empty, unhealthy, malformed, timeout, and cancellation responses",
+      "status": "passed"
+    },
+    {
+      "name": "Discovery provider: Consul handles healthy, empty, unhealthy, malformed, timeout, and cancellation responses",
+      "status": "passed"
+    },
+    {
+      "name": "Discovery provider: Nacos handles healthy, empty, unhealthy, malformed, timeout, and cancellation responses",
+      "status": "passed"
+    },
+    {
+      "name": "Discovery provider: Eureka handles healthy, empty, unhealthy, malformed, timeout, and cancellation responses",
+      "status": "passed"
+    },
+    {
+      "name": "Discovery provider: Kubernetes handles healthy, empty, unhealthy, malformed, timeout, and cancellation responses",
+      "status": "passed"
+    },
+    {
+      "name": "Discovery provider: static endpoints normalize, reject invalid addresses, and observe cancellation",
+      "status": "passed"
+    },
+    {
+      "name": "Discovery health: one failing binding stays degraded through successful peers and skipped cycles",
+      "status": "passed"
+    },
+    {
+      "name": "Discovery freshness: RetainLastKnown enforces elapsed expiry and recovers without changing binding revisions",
+      "status": "passed"
+    },
+    {
+      "name": "Discovery freshness: RejectNewTraffic enforces elapsed expiry and recovers without changing binding revisions",
+      "status": "passed"
+    },
+    {
+      "name": "Discovery freshness: startup failure expires configured destinations and default policy retains them",
+      "status": "passed"
+    },
+    {
+      "name": "Discovery scheduling: backoff is bounded, jitter varies retries, and successful empty responses reset failures",
+      "status": "passed"
+    },
+    {
+      "name": "Discovery publication: changed and disabled bindings reject pending results and clear old health",
+      "status": "passed"
+    },
+    {
+      "name": "Discovery health: recovery clears only its binding and removal clears only retired health",
+      "status": "passed"
+    },
+    {
+      "name": "Discovery traffic: stale expiry returns 503 and a recovered provider restores forwarding",
+      "status": "passed"
+    },
+    {
+      "name": "Discovery configuration: stale policy schema matches execution defaults and rejects unsupported settings",
+      "status": "passed"
+    },
+    {
+      "name": "Clock: circuit recovery and cleanup follow monotonic controlled time",
+      "status": "passed"
+    },
+    {
+      "name": "Clock: cache freshness ignores wall-clock jumps and expires without waiting",
+      "status": "passed"
+    },
+    {
+      "name": "Clock: registration retry, heartbeat, and shutdown use controlled time",
+      "status": "passed"
+    },
+    {
+      "name": "Clock: log batch flush and cleanup use the injected timer",
+      "status": "passed"
+    },
+    {
+      "name": "Metrics: configuration churn retires identities without losing active updates",
+      "status": "passed"
+    },
+    {
+      "name": "Storage: UTC migration preserves offset precision, invalid values, and ordering",
+      "status": "passed"
+    },
+    {
+      "name": "Deployment: shell and embedded assets include PathBase and custom prefixes",
+      "status": "passed"
+    },
+    {
+      "name": "Lifecycle: shutdown joins every retired domain and rejects late work",
+      "status": "passed"
+    },
+    {
+      "name": "Lifecycle: disposal failures remain observable through repeated shutdown",
+      "status": "passed"
+    },
+    {
+      "name": "Lifecycle: failed preparation releases its constructed provider",
+      "status": "passed"
+    },
+    {
+      "name": "Policy: deprecated cache switches preserve host, query, header, and credential isolation",
+      "status": "passed"
+    },
+    {
+      "name": "Policy: compression thresholds are independent of write chunk size",
+      "status": "passed"
+    },
+    {
+      "name": "Accounting: log batches preserve ownership during cancel-write",
+      "status": "passed"
+    },
+    {
+      "name": "Accounting: log batches preserve ownership during cancel-fill",
+      "status": "passed"
+    },
+    {
+      "name": "Accounting: log batches preserve ownership during exhaust-retries",
+      "status": "passed"
+    },
+    {
+      "name": "Accounting: log batches preserve ownership during transient",
+      "status": "passed"
+    },
+    {
+      "name": "Accounting: log batches preserve ownership during cancel-drain",
+      "status": "passed"
+    },
+    {
+      "name": "Accounting: concurrent notification overflow and shutdown count every event",
+      "status": "passed"
+    },
+    {
+      "name": "Accounting: notifications classify delivery, suppression, failure, and cancellation",
+      "status": "passed"
+    },
+    {
+      "name": "Correctness: recent errors and indexed ranges compare UTC instants",
+      "status": "passed"
+    },
+    {
+      "name": "Correctness: batch route deletion removes only final orphans and rolls back on failure",
+      "status": "passed"
+    },
+    {
+      "name": "Metrics: successful, throwing, and cancelled attempts finalize once",
+      "status": "passed"
+    },
+    {
+      "name": "Review: atomic binding batches reject stale revisions and roll back partial writes",
+      "status": "passed"
+    },
+    {
+      "name": "Review: administration batches are atomic and publish through the shared gate",
+      "status": "passed"
+    },
+    {
+      "name": "Review: route storage, binding changes, and discovery share publication ownership",
+      "status": "passed"
+    },
+    {
+      "name": "Review: binding storage failure preserves active state; activation failure uses revision-safe compensation",
+      "status": "passed"
+    },
+    {
+      "name": "Review: instance updates preserve peers, reject stale revisions, and reject legacy requests",
+      "status": "passed"
+    },
+    {
+      "name": "Review: live forwarding reserves only the selected probe and records each retry once",
+      "status": "passed"
+    },
+    {
+      "name": "Review: circuit probe cancellation releases ownership and stale completions cannot close a newer circuit",
+      "status": "passed"
+    },
+    {
+      "name": "Lifetime: copied leases release once and direct disposal drains requests",
+      "status": "passed"
+    },
+    {
+      "name": "Lifetime: 64 replacements preserve overlapping requests through shutdown",
+      "status": "passed"
+    },
+    {
+      "name": "Lifetime: collectible contexts unload after success and shutdown faults",
+      "status": "passed"
+    },
+    {
+      "name": "Lifetime: external resources stop before domain dependencies are disposed",
+      "status": "passed"
+    },
+    {
+      "name": "Lifetime: limiter rejection status and headers match each algorithm",
+      "status": "passed"
+    },
+    {
+      "name": "Lifetime: concurrent legacy deactivation and host shutdown share ownership",
+      "status": "passed"
+    },
+    {
+      "name": "Lifetime: half-open probe contention and cancellation preserve the limit",
+      "status": "passed"
+    },
+    {
+      "name": "Lifetime: native limiter queues cancel and replenish at algorithm boundaries",
+      "status": "passed"
+    },
+    {
+      "name": "Lifetime: partition churn preserves active quotas and bounds retained state",
+      "status": "passed"
+    },
+    {
+      "name": "Registration capabilities: discovery, legacy fallback, authentication, and cancellation remain distinct",
+      "status": "passed"
+    },
+    {
+      "name": "Registration outcomes: HTTP and gRPC preserve application statuses and revisions",
+      "status": "passed"
+    },
+    {
+      "name": "Registration outcomes: transport failures retain uncertainty and credential classification",
+      "status": "passed"
+    },
+    {
+      "name": "Registration outcomes: caller cancellation propagates and disabled operations stay local",
+      "status": "passed"
+    },
+    {
+      "name": "Registration outcomes: wire omissions and malformed responses do not invent confirmed revisions",
+      "status": "passed"
+    },
+    {
+      "name": "Registration protocol: validation, conflicts, storage, activation, and internal errors remain distinct",
+      "status": "passed"
+    },
+    {
+      "name": "Audit lifetime: shutdown joins lazy loading and accepted writes before releasing storage",
+      "status": "passed"
+    },
+    {
+      "name": "Plugin lifecycle contract: repeated reconciliation and partial-start cleanup retain ownership",
+      "status": "passed"
+    },
+    {
+      "name": "Plugin lifecycle contract: cancelled partial startup performs uncancelled cleanup",
+      "status": "passed"
+    },
+    {
+      "name": "Plugin lifecycle contract: shutdown joins startup and prevents restart after cleanup",
+      "status": "passed"
+    },
+    {
+      "name": "Plugin lifecycle contract: stop and health failures do not skip peer cleanup",
+      "status": "passed"
+    },
+    {
+      "name": "Registration wire: legacy fields, additive extensions, optional presence, and round trips remain compatible",
+      "status": "passed"
+    },
+    {
+      "name": "Mutation responses: all configuration outcomes share HTTP status, outcome, and revision fields",
+      "status": "passed"
+    },
+    {
+      "name": "Mutation responses: safe exceptions preserve typed failures and caller cancellation",
+      "status": "passed"
+    },
+    {
+      "name": "Review: invalid CIDR rules fail validation and matching",
+      "status": "passed"
+    },
+    {
+      "name": "Review: compressed log capture stops at the decoded byte limit",
+      "status": "passed"
+    },
+    {
+      "name": "Review: local limiter admission is bounded under concurrent key churn",
+      "status": "passed"
+    },
+    {
+      "name": "Review: WAF compiler rejects malformed stored address rules before activation",
+      "status": "passed"
+    },
+    {
+      "name": "Review: limiter leases survive cleanup, queue cancellation, and shutdown",
+      "status": "passed"
+    },
+    {
+      "name": "Review: route partitions stay stable and overflow returns 429",
+      "status": "passed"
+    },
+    {
+      "name": "Review: log decoding handles boundaries, cancellation, corruption, and stream ownership",
+      "status": "passed"
+    },
+    {
+      "name": "Retry: complete replay, unknown and oversized bodies, truncation, and cancellation",
+      "status": "passed"
+    },
+    {
+      "name": "Retry: request preparation observes its deadline and restores ownership",
+      "status": "passed"
+    },
+    {
+      "name": "Retry: uncommitted exceptions retry; exhausted destinations return 503",
+      "status": "passed"
+    },
+    {
+      "name": "Kestrel: retry headers, overflow, flush, start, completion, and body writer",
+      "status": "passed"
+    },
+    {
+      "name": "Kestrel: cache, compression, and retry stream before completion and release cancelled captures",
+      "status": "passed"
+    },
+    {
+      "name": "Kestrel and YARP: failed upstream response retries with an intact request body",
+      "status": "passed"
+    },
+    {
+      "name": "Kestrel: combined retry, compression, and cache preserve successful bytes",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration: cluster APIs preserve updates, reject duplicates, and record enabled logs",
+      "status": "passed"
+    },
+    {
+      "name": "Registration: concurrent instances share routes and preserve peer destinations",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration: atomic rollback covers single, batch, import, and replacement writes",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration: cluster rename commits route references and binding identities together",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration: route rename preserves disabled state and native match fields",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration: validation and stale revisions cannot change stored or active state",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration: readers see active state while a candidate waits for persistence",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration: activation failure reports both revisions and recovers after restart",
+      "status": "passed"
+    },
+    {
+      "name": "Storage conformance: atomic rollback, null values, stable identities, and stale writers",
+      "status": "passed"
+    },
+    {
+      "name": "Storage conformance: stable log pages, bounded limits, overflow, filters, and cancellation",
+      "status": "passed"
+    },
+    {
+      "name": "Storage conformance: bounded histories and deterministic ordering on timestamp ties",
+      "status": "passed"
+    },
+    {
+      "name": "SQLite recovery: failed migration body, ledger write, and caller cancellation roll back before reopening",
+      "status": "passed"
+    },
+    {
+      "name": "SQLite recovery: process interruption preserves committed WAL and replays only the unfinished migration",
+      "status": "passed"
+    },
+    {
+      "name": "SQLite logs: 50,000-row filtered queries remain bounded in memory and execution time",
+      "status": "passed"
+    },
+    {
+      "name": "SQLite backup: plaintext inspection and restore verification preserve source bytes",
+      "status": "passed"
+    },
+    {
+      "name": "SQLite backup: encrypted inspection and restore verification preserve source bytes",
+      "status": "passed"
+    },
+    {
+      "name": "SQLite backup: truncated, foreign, future-schema, and invalid-JSON backups fail without modifying their source",
+      "status": "passed"
+    },
+    {
+      "name": "SQLite backup command: missing arguments return a safe usage error",
+      "status": "passed"
+    },
+    {
+      "name": "Logging: persistence starts once, writes batches, and stops without losing entries",
+      "status": "passed"
+    },
+    {
+      "name": "Notifications: settings round-trip and test responses redact URL secrets",
+      "status": "passed"
+    },
+    {
+      "name": "Storage: route and cluster repositories preserve values, isolate deletes, and roll back batches",
+      "status": "passed"
+    },
+    {
+      "name": "Storage: binding scope filters accept stable identities and reject SQL injection",
+      "status": "passed"
+    },
+    {
+      "name": "Storage: runtime state opens connections, isolates nodes, updates, and deletes",
+      "status": "passed"
+    },
+    {
+      "name": "Storage: cancelled initialization does not create a database",
+      "status": "passed"
+    },
+    {
+      "name": "Storage: log settings upsert atomically and clear",
+      "status": "passed"
+    },
+    {
+      "name": "Storage: AI results preserve content, filter severity, and enforce retention",
+      "status": "passed"
+    },
+    {
+      "name": "Storage: conversations retain chronological order and isolate sessions",
+      "status": "passed"
+    },
+    {
+      "name": "Storage: webhook settings and bounded delivery history round-trip",
+      "status": "passed"
+    },
+    {
+      "name": "Storage: configuration history and audit filters preserve quoted values",
+      "status": "passed"
+    },
+    {
+      "name": "Storage: plugin schemas and presets update and delete without crossing plugin boundaries",
+      "status": "passed"
+    },
+    {
+      "name": "Storage: proxy logs preserve bodies, parameterize filters, aggregate, and expire",
+      "status": "passed"
+    },
+    {
+      "name": "Audit: initial history loading cannot duplicate concurrent writes",
+      "status": "passed"
+    },
+    {
+      "name": "Logging: batch disposal clears data and returns pooled storage only once",
+      "status": "passed"
+    },
+    {
+      "name": "Logging: compressed bodies decode safely and request bodies remain readable",
+      "status": "passed"
+    },
+    {
+      "name": "Migration: circuit-breaker defaults preserve explicit settings and reject malformed JSON",
+      "status": "passed"
+    },
+    {
+      "name": "Security: plugin schema regex rejects excessive backtracking within a time bound",
+      "status": "passed"
+    },
+    {
+      "name": "Validation: plugin schemas enforce types, composition, bounds, and nested fields",
+      "status": "passed"
+    },
+    {
+      "name": "Security: TOTP matches RFC 6238 vectors and preserves authenticator enrollment",
+      "status": "passed"
+    },
+    {
+      "name": "Validation: mutation requests require an explicit enabled value",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration: YARP failures retain route attribution and clear after successful apply",
+      "status": "passed"
+    },
+    {
+      "name": "Performance helpers: numeric limits, UTF-8, and ring-buffer ownership remain correct",
+      "status": "passed"
+    },
+    {
+      "name": "Security: disabled registration removes REST and gRPC endpoints",
+      "status": "passed"
+    },
+    {
+      "name": "Security: enabled registration retains REST and gRPC endpoints",
+      "status": "passed"
+    },
+    {
+      "name": "Security: empty dashboard API key denies requests",
+      "status": "passed"
+    },
+    {
+      "name": "Security: nested dashboard credentials configure gateway authentication",
+      "status": "passed"
+    },
+    {
+      "name": "Security: explicit control-plane authentication wins over legacy settings",
+      "status": "passed"
+    },
+    {
+      "name": "Security: invalid gateway credentials and modes are rejected",
+      "status": "passed"
+    },
+    {
+      "name": "Security: gRPC accepts only credentials for its configured mode",
+      "status": "passed"
+    },
+    {
+      "name": "Security: cache excludes private responses",
+      "status": "passed"
+    },
+    {
+      "name": "Security: cache excludes no-store responses",
+      "status": "passed"
+    },
+    {
+      "name": "Security: cache excludes private=\"Authorization\" responses",
+      "status": "passed"
+    },
+    {
+      "name": "Security: Set-Cookie responses are not cached",
+      "status": "passed"
+    },
+    {
+      "name": "Security: authorization bypasses cache reads and writes",
+      "status": "passed"
+    },
+    {
+      "name": "Security: cookie bypasses cache reads and writes",
+      "status": "passed"
+    },
+    {
+      "name": "Security: principal bypasses cache reads and writes",
+      "status": "passed"
+    },
+    {
+      "name": "Security: eligible public responses remain cached",
+      "status": "passed"
+    },
+    {
+      "name": "Security: network policy rejects remote HTTP and anonymous forwarding",
+      "status": "passed"
+    },
+    {
+      "name": "Security: JWT requires algorithm, issuer, subject, signature, and expiry",
+      "status": "passed"
+    },
+    {
+      "name": "Security: query JWT matches only the two exact hub paths",
+      "status": "passed"
+    },
+    {
+      "name": "Security: registration client rejects an untrusted TLS certificate",
+      "status": "passed"
+    },
+    {
+      "name": "Registration: startup jitter waits cancel without another registration",
+      "status": "passed"
+    },
+    {
+      "name": "Registration: gRPC preserves paths, instance identity, destinations, and credentials",
+      "status": "passed"
+    },
+    {
+      "name": "Registration: shutdown joins a blocked heartbeat before unregistering",
+      "status": "passed"
+    },
+    {
+      "name": "Registration: HTTP payloads, credentials, failures, heartbeats, and shutdown",
+      "status": "passed"
+    },
+    {
+      "name": "WAF: rejection logs contain rule, route, and trace without request secrets",
+      "status": "passed"
+    },
+    {
+      "name": "WAF: unknown-length short reads are fully inspected and preserved",
+      "status": "passed"
+    },
+    {
+      "name": "WAF: body and inspection limits count bytes without Content-Length",
+      "status": "passed"
+    },
+    {
+      "name": "WAF: decoding, read failures, and cancellation fail closed",
+      "status": "passed"
+    },
+    {
+      "name": "Cache: host, query, response Vary, GET/HEAD, and configuration generations",
+      "status": "passed"
+    },
+    {
+      "name": "Cache: directives, freshness, malformed metadata, and conditional requests",
+      "status": "passed"
+    },
+    {
+      "name": "Cache: overflow streams intact and concurrent captures stay within budget",
+      "status": "passed"
+    },
+    {
+      "name": "Compression: exact negotiation, streaming, cache variants, and exclusions",
+      "status": "passed"
+    },
+    {
+      "name": "Rate limiting: exhausted permits return JSON and Retry-After without forwarding",
+      "status": "passed"
+    },
+    {
+      "name": "Redis: route failure policy distinguishes outages from exhausted limits",
+      "status": "passed"
+    },
+    {
+      "name": "Runtime: starts and proxies without dashboard registration",
+      "status": "passed"
+    },
+    {
+      "name": "Runtime: split and isolated deployment modes preserve endpoint roles",
+      "status": "passed"
+    },
+    {
+      "name": "Storage: maintained native engine meets the patched version floor",
+      "status": "passed"
+    },
+    {
+      "name": "Storage: legacy plain SQLite data survives migration, write, and reopen",
+      "status": "passed"
+    },
+    {
+      "name": "Storage: legacy SQLCipher 4 data survives migration, write, and reopen",
+      "status": "passed"
+    },
+    {
+      "name": "Storage: explicit SQLCipher URI options and pooling settings are preserved",
+      "status": "passed"
+    },
+    {
+      "name": "Storage: encrypted database survives reopen and rejects missing or incorrect keys",
+      "status": "passed"
+    },
+    {
+      "name": "Administration: API contracts remain unchanged after removing Razor pages",
+      "status": "passed"
+    },
+    {
+      "name": "Administration: registration is idempotent and does not enable Razor",
+      "status": "passed"
+    },
+    {
+      "name": "Removed compatibility contracts stay isolated from runtime source",
+      "status": "passed"
+    },
+    {
+      "name": "Infrastructure plugin schemas expose discovery adapters",
+      "status": "passed"
+    },
+    {
+      "name": "Semantic version constraints support AND ranges and SemVer prerelease precedence",
+      "status": "passed"
+    },
+    {
+      "name": "External plugin registration exposes verifiable unload state",
+      "status": "passed"
+    },
+    {
+      "name": "Plugin runtime domain resolves plugin DI and preserves the old domain on failed health",
+      "status": "passed"
+    },
+    {
+      "name": "Plugin runtime domain drains in-flight requests before disposal",
+      "status": "passed"
+    },
+    {
+      "name": "Plugin manifest dependencies are exposed and built-in adapters are protected",
+      "status": "passed"
+    },
+    {
+      "name": "ClientIpResolver ignores spoofed forwarding headers",
+      "status": "passed"
+    },
+    {
+      "name": "Dashboard API key is header-only",
+      "status": "passed"
+    },
+    {
+      "name": "JWT query token is restricted to dashboard hubs",
+      "status": "passed"
+    },
+    {
+      "name": "Response capture does not depend on request content type",
+      "status": "passed"
+    },
+    {
+      "name": "Proxy log runtime settings use dashboard defaults",
+      "status": "passed"
+    },
+    {
+      "name": "Destination persistence mapping is lossless",
+      "status": "passed"
+    },
+    {
+      "name": "Cluster rename preserves native extensions",
+      "status": "passed"
+    },
+    {
+      "name": "PluginBinding SQLite CRUD and uniqueness",
+      "status": "passed"
+    },
+    {
+      "name": "GatewayPluginManager persists state in gateway_plugins and imports legacy JSON",
+      "status": "passed"
+    },
+    {
+      "name": "GatewaySnapshotCompiler filters disabled and missing targets",
+      "status": "passed"
+    },
+    {
+      "name": "GatewaySnapshotCompiler keeps UID bindings stable across target renames",
+      "status": "passed"
+    },
+    {
+      "name": "GatewaySnapshotPublisher rejects stale versions",
+      "status": "passed"
+    },
+    {
+      "name": "Plugin execution plan is reused and invalidated by snapshot publication",
+      "status": "passed"
+    },
+    {
+      "name": "Service discovery manifest and execution plan share the canonical plugin id",
+      "status": "passed"
+    },
+    {
+      "name": "Service discovery refreshes static destinations only while its resource runs",
+      "status": "passed"
+    },
+    {
+      "name": "Plugin health and runtime resource contracts expose accurate state",
+      "status": "passed"
+    },
+    {
+      "name": "Plugin schema validates nested composition",
+      "status": "passed"
+    },
+    {
+      "name": "Legacy global policy chains stay isolated from dashboard activation",
+      "status": "passed"
+    }
+  ],
+  "admin": [
+    {
+      "name": "Permissions: bound restrictions replace administrator defaults",
+      "status": "passed"
+    },
+    {
+      "name": "Permissions: readers cannot mutate configuration, credentials, plugins, or AI tools",
+      "status": "passed"
+    },
+    {
+      "name": "Permissions: authenticated claims restrict defaults and custom operation rules remain supported",
+      "status": "passed"
+    },
+    {
+      "name": "Administration: configuration preview and idempotent apply preserve HTTP results",
+      "status": "passed"
+    },
+    {
+      "name": "Administration: plugin preview reports health without activating a candidate",
+      "status": "passed"
+    },
+    {
+      "name": "Authorization matrix: every mapped action rejects missing and invalid credentials across four modes",
+      "status": "passed"
+    },
+    {
+      "name": "Mutation contracts: validation and model binding share Problem Details without losing endpoint fields",
+      "status": "passed"
+    },
+    {
+      "name": "Shutdown: connected hubs close while queued notifications retain exact accounting",
+      "status": "passed"
+    },
+    {
+      "name": "Cleanup: failed assertions release clients, sockets, hosts, and temporary database files",
+      "status": "passed"
+    },
+    {
+      "name": "Cleanup: failed host startup disposes services before the next case",
+      "status": "passed"
+    },
+    {
+      "name": "Storage API: oversized filters return 400 and extreme pages do not wrap",
+      "status": "passed"
+    },
+    {
+      "name": "Sessions: bounded capacity, distinct tokens, generation races, revocation, expiry, and disposal",
+      "status": "passed"
+    },
+    {
+      "name": "Sessions: DefaultJwt sign-out, security changes, expiry, and concurrent API/hub requests",
+      "status": "passed"
+    },
+    {
+      "name": "Sessions: CustomJwt sign-out, security changes, expiry, and concurrent API/hub requests",
+      "status": "passed"
+    },
+    {
+      "name": "Sessions: BasicAuth credential rotation terminates realtime access and rejects old credentials",
+      "status": "passed"
+    },
+    {
+      "name": "Sessions: ApiKey credential rotation terminates realtime access and rejects old credentials",
+      "status": "passed"
+    },
+    {
+      "name": "Authentication: bounded atomic attempts, refunds, source isolation, and expiry",
+      "status": "passed"
+    },
+    {
+      "name": "Authentication: Basic and API-key failures throttle without limiting valid traffic",
+      "status": "passed"
+    },
+    {
+      "name": "Authentication: HTTPS cookie login, logout, expiry, transport, host, and origin",
+      "status": "passed"
+    },
+    {
+      "name": "Authentication: HTTP login and direct credential limits return 429",
+      "status": "passed"
+    },
+    {
+      "name": "Administration deploys without the dashboard assembly or Razor assets",
+      "status": "passed"
+    },
+    {
+      "name": "Two-factor state persists privately and fails on corruption or write failure",
+      "status": "passed"
+    },
+    {
+      "name": "Administration rejects missing and invalid API credentials",
+      "status": "passed"
+    },
+    {
+      "name": "AI and MCP configuration cannot activate unregistered services",
+      "status": "passed"
+    },
+    {
+      "name": "Administration APIs work without page or static-asset endpoints",
+      "status": "passed"
+    },
+    {
+      "name": "Administration creates clusters and routes through the preserved JSON API",
+      "status": "passed"
+    },
+    {
+      "name": "Snapshots, rollback, and import preserve route activation",
+      "status": "passed"
+    },
+    {
+      "name": "Administration exposes storage failures and preserves the active revision",
+      "status": "passed"
+    },
+    {
+      "name": "Administration serves system settings and database downloads without Razor",
+      "status": "passed"
+    },
+    {
+      "name": "Encrypted database backup retains committed WAL data and rejects missing keys",
+      "status": "passed"
+    },
+    {
+      "name": "Administration realtime hubs accept subscriptions and send overview updates",
+      "status": "passed"
+    },
+    {
+      "name": "Corrupted two-factor persistence rejects JWT login",
+      "status": "passed"
+    },
+    {
+      "name": "Administration login issues a usable JWT without a Razor login page",
+      "status": "passed"
+    },
+    {
+      "name": "Administration retains configuration after host restart and supports deletion",
+      "status": "passed"
+    },
+    {
+      "name": "Explicit AI registration resolves services and preserves administration authentication",
+      "status": "passed"
+    },
+    {
+      "name": "MCP binds loopback, enforces parent credentials, rejects origins, and limits request bodies",
+      "status": "passed"
+    },
+    {
+      "name": "Anonymous administration requires explicit loopback permission in Development",
+      "status": "passed"
+    },
+    {
+      "name": "Anonymous administration requires explicit loopback permission in Staging",
+      "status": "passed"
+    },
+    {
+      "name": "Anonymous administration requires explicit loopback permission in Production",
+      "status": "passed"
+    },
+    {
+      "name": "Explicit MCP registration is independent and idempotent",
+      "status": "passed"
+    }
+  ],
+  "final-core": [
+    {
+      "name": "Configuration changes: previews validate references and leave snapshots and storage unchanged",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration changes: concurrent retries return one durable result and preserve identities",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration changes: receipt survives restart without applying a stale request again",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration changes: failed storage rolls back receipts and allows a safe retry",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration changes: activation failure and lost acknowledgement never create a second commit",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration changes: unsupported storage and invalid inputs fail before commit",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration receipts: duplicate, capacity, expiry, and version checks remain atomic",
+      "status": "passed"
+    }
+  ]
+}

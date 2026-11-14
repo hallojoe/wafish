@@ -32,7 +32,11 @@ Acceptance: Repeated unload cycles release their resources within a defined boun
 
 ### FEAT-01: Expose plugin activation previews
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [R15–R18 evidence](../../tests/Wafish.Regression/evidence/operation-previews/README.md).
+Release build, 252 main cases, 40 administration cases, and 30 browser checks pass.
+Changed production-line coverage is 98.63%.
 
 Return a diagnostic report for a candidate domain without publishing it.
 

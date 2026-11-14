@@ -45,8 +45,10 @@ The naming correction is complete; see [consumer migration](docs/naming-migratio
 
 ## Remaining work: ranked release scope
 
-R01–R14 implementation and Linux public-package verification are complete. Implementation is paused at this release boundary.
-R15–R55 remain deferred: 41 tasks outside the agreed release scope.
+R01–R14 implementation and Linux public-package verification are complete.
+R15–R18 are complete. This authorized follow-up batch is finished.
+R19–R55 remain deferred: 37 tasks.
+See [R15–R18 verification](tests/Wafish.Regression/evidence/operation-previews/README.md).
 See [verification evidence](tests/Wafish.Regression/evidence/public-release/README.md) and [consumer changes](docs/public-release.md).
 R14 is complete: opt-in loopback transport faults with distinct abort and cancellation accounting.
 R11–R13 are complete: metric units, statistic descriptors, and bounded OpenTelemetry instruments.
@@ -67,12 +69,13 @@ Historical completion numbers and project task identifiers remain unchanged.
 Confirmed target: a public package for external adopters.
 Support independent package consumers, existing authentication, SQLite, and the documented plugin extension model.
 Public availability does not require multi-tenancy, multiple registration gateways, Kubernetes, or every optional authentication method.
-The default administration model remains trusted administrators until operation permissions are implemented.
-Document that boundary explicitly; do not claim multi-role isolation.
+Existing hosts retain administrator access by default. R15 adds configurable operation permissions.
+These permissions do not provide tenant or route ownership isolation.
 
-**Release scope: R01–R14. Implementation stops here after public-package verification.**
+**Initial release scope: R01–R14, complete. Authorized follow-up R15–R18 is also complete.**
+Implementation stops after this follow-up batch.
 This means thirteen implementation tasks and one review-status reconciliation, not fifty-five required features.
-R15–R35 are follow-up work. R36–R55 are optional extensions and demonstrations.
+R19–R35 are remaining follow-up work. R36–R55 are optional extensions and demonstrations.
 Their TODO statuses remain unchanged; postponement does not mean completion.
 Implementation order within optional work follows actual dependencies, not the need score alone.
 
@@ -116,14 +119,19 @@ The source plans retain their acceptance criteria. This queue supersedes their o
 | R14 | 8 | Reproduce stalled and truncated responses | [Backend FEAT-02](tests/Wafish.Performance/Backend/PLAN.md#feat-02-add-deterministic-transport-faults) | Verify transport failure handling with deterministic faults. | DONE |
 
 
-### Follow-up work: R15–R35
+### Completed follow-up: R15–R18
+
+| Rank | Need / 10 | Task | Source | Reason and dependencies | Status |
+|---|---|---|---|---|---|
+| R15 | 7 | Add operation permissions | [Wafish.Administration FEAT-02](src/Wafish.Administration/PLAN.md#feat-02-add-operation-permissions) | Useful for shared operator teams. Public package availability alone does not require a multi-role administration product. | DONE |
+| R16 | 7 | Add mutation idempotency keys | [Wafish FEAT-01](src/Wafish/PLAN.md#feat-01-add-mutation-idempotency-keys) | Allow safe retries after uncertain configuration responses. | DONE |
+| R17 | 7 | Preview configuration changes | [Wafish FEAT-02](src/Wafish/PLAN.md#feat-02-preview-a-configuration-change) | Useful operational protection; existing validation and atomic apply remain the baseline for the first public package. | DONE |
+| R18 | 7 | Preview plugin activation | [Wafish.Runtime FEAT-01](src/Wafish.Runtime/PLAN.md#feat-01-expose-plugin-activation-previews) | Inspect candidate health and resource needs before publication. Coordinate with R17, R05, and R06. | DONE |
+
+### Follow-up work: R19–R35
 
 | Rank | Need / 10 | Task | Source | Reason and dependencies |
 |---|---|---|---|---|
-| R15 | 7 | Add operation permissions | [Wafish.Administration FEAT-02](src/Wafish.Administration/PLAN.md#feat-02-add-operation-permissions) | Useful for shared operator teams. Public package availability alone does not require a multi-role administration product. |
-| R16 | 7 | Add mutation idempotency keys | [Wafish FEAT-01](src/Wafish/PLAN.md#feat-01-add-mutation-idempotency-keys) | Allow safe retries after uncertain configuration responses. |
-| R17 | 7 | Preview configuration changes | [Wafish FEAT-02](src/Wafish/PLAN.md#feat-02-preview-a-configuration-change) | Useful operational protection; existing validation and atomic apply remain the baseline for the first public package. |
-| R18 | 7 | Preview plugin activation | [Wafish.Runtime FEAT-01](src/Wafish.Runtime/PLAN.md#feat-01-expose-plugin-activation-previews) | Inspect candidate health and resource needs before publication. Coordinate with R17, R05, and R06. |
 | R19 | 7 | Add registration leases and draining | [Wafish.Grpc FEAT-02](src/Wafish.Grpc/PLAN.md#feat-02-negotiate-registration-leases) | Define expiry and stale-renewal protection across protocol, client, core, and storage. After R07; includes NET-FEAT-02. |
 | R20 | 7 | Expose registration readiness | [SampleServiceDefaults FEAT-02](samples/SampleServiceDefaults/PLAN.md#feat-02-add-optional-registration-readiness) | Distinguish a live backend from one registered for routing; keep liveness independent. |
 | R21 | 7 | Add bounded latency histograms | [Wafish.Plugin.Metrics FEAT-02](src/Wafish.Plugin.Metrics/PLAN.md#feat-02-add-route-latency-distributions) | Useful tail-latency visibility; defer the additional histogram feature until after the base metric contract and export. |
@@ -184,7 +192,7 @@ This planning cutoff does not claim public release verification is already compl
 
 ### Conditions that change the ratings
 
-- Shared operator roles: promote R15 operation permissions to 9 and place it in the release scope.
+- Shared operator roles: configure the completed R15 operation permissions before granting restricted access.
 - Multiple registration gateways: promote R19 and R33; settle lease ownership before failover.
 - Tenant-based quotas: promote R37 to 9 and validate the tenant trust boundary before release.
 - Kubernetes deployment: promote R35 to 9 when EndpointSlice discovery is required.
