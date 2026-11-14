@@ -75,3 +75,15 @@ A zero maximum disables the upstream delay contribution.
 All timers use the registered `TimeProvider`. Tests can register `Random` for repeatable jitter.
 These defaults introduce a total deadline for existing configured retry bindings.
 See [verification](../../tests/Wafish.Regression/evidence/async-retry/README.md).
+
+## Shared retry budget
+
+`Gateway:RetryBudget:RetriesPerWindow` defaults to 100 extra attempts per cluster.
+`Gateway:RetryBudget:WindowSeconds` defaults to 1 and supports 1–3600 seconds.
+Zero retries disables extra attempts. Initial attempts retain their existing policy.
+Routes targeting the same cluster share a host-local allowance. Separate processes have separate allowances.
+Exhaustion returns the last upstream response, or 502 after an exception, without another attempt.
+The allowance uses fixed windows. Bursts can straddle a window boundary.
+At most 10,000 cluster identities are retained. Expired identities are removed during new-cluster admission.
+`DeniedRetries` counts rejected extra attempts for the budget lifetime. Process restart resets the budget.
+Compatibility: sustained upstream failures can now reach the shared limit before each route exhausts its individual retries.

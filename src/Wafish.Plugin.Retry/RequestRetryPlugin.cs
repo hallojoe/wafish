@@ -20,7 +20,11 @@ public class RequestRetryPlugin : IGatewayPlugin
             """)],
         "Retries failed upstream requests according to the route policy.");
 
-    public void ConfigureServices(IServiceCollection services, object? pluginOptions = null) { }
+    public void ConfigureServices(IServiceCollection services, object? pluginOptions = null)
+    {
+        services.AddOptions<ClusterRetryBudgetOptions>().BindConfiguration("Gateway:RetryBudget");
+        Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAddSingleton<ClusterRetryBudget>(services);
+    }
     public void ConfigureMiddleware(IApplicationBuilder app) { }
     public void ConfigureProxyPipeline(IReverseProxyApplicationBuilder proxyPipeline) => proxyPipeline.UseMiddleware<RequestRetryMiddleware>();
 

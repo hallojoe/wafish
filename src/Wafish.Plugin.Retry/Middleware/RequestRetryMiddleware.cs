@@ -31,6 +31,7 @@ public sealed class RequestRetryMiddleware : GatewayMiddlewareBase
     private readonly GatewayPluginExecutionPlanProvider _executionPlans;
     private readonly ICircuitStateStore _circuitStore;
     private readonly IDestinationCandidateCoordinator _destinationCoordinator;
+    private readonly ClusterRetryBudget _fallbackBudget = new(Options.Create(new ClusterRetryBudgetOptions()));
 
     private static readonly HashSet<string> NonIdempotentMethods = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -204,6 +205,13 @@ public sealed class RequestRetryMiddleware : GatewayMiddlewareBase
                         context.Response.Headers["X-Retry-Count"] = attempt.ToString();
                     }
 
+                    await response.CommitAsync(originalAborted);
+                    return;
+                }
+                var budget = context.RequestServices?.GetService<ClusterRetryBudget>() ?? _fallbackBudget;
+                if (!budget.TryAcquire(routeConfig.ClusterId))
+                {
+                    if (failure is not null) context.Response.StatusCode = StatusCodes.Status502BadGateway;
                     await response.CommitAsync(originalAborted);
                     return;
                 }

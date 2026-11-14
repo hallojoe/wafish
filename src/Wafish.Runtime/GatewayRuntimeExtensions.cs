@@ -117,6 +117,8 @@ public static class GatewayRuntimeExtensions
 
         services.AddSingleton<IGatewayPlugin, CircuitBreakerPlugin>();
         services.AddSingleton<IGatewayPlugin, RequestRetryPlugin>();
+        services.AddOptions<ClusterRetryBudgetOptions>().BindConfiguration("Gateway:RetryBudget");
+        services.TryAddSingleton<ClusterRetryBudget>();
         services.AddSingleton<IGatewayPlugin, RateLimitPlugin>();
         // Redis rate limits use a route connection override or Gateway:RateLimit:Redis configuration.
         services.AddSingleton<IGatewayPlugin, RedisRateLimitPlugin>();

@@ -30,7 +30,9 @@ Acceptance: Retry timing and total attempt limits can be asserted without long s
 
 ### FEAT-01: Add a cluster-wide retry budget
 
-Status: TODO.
+Status: DONE. Completed: 2026-11-14.
+Verification: `--retry-budget` passes concurrent allowance, original-attempt, window, and retention checks.
+Twenty concurrent requests produce twenty initial attempts and exactly three permitted retries.
 
 Limit extra attempts during a widespread upstream outage.
 
