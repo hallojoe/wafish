@@ -22,12 +22,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+using var report = new RegressionReport("administration");
+
 var failures = new List<string>();
 var path = Path.Combine(Path.GetTempPath(), "aneiang-administration-" + Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(path);
 var key = Guid.NewGuid().ToString("N");
 try
 {
+    await AuthenticationSecurityChecks.RunAsync(Check, (mode, certificate) => StartHost(mode, certificate: certificate), key);
     await Check("Administration deploys without the dashboard assembly or Razor assets", () =>
     {
         Require(!File.Exists(Path.Combine(AppContext.BaseDirectory, "WafIsh.Dashboard.dll")), "Dashboard assembly was deployed.");
@@ -374,15 +377,21 @@ return failures.Count == 0 ? 0 : 1;
 
 async Task Check(string name, Func<Task> action)
 {
-    try { await action(); Console.WriteLine("PASS: " + name); }
-    catch (Exception ex) { failures.Add(name + ": " + ex.Message); }
+    var started = System.Diagnostics.Stopwatch.GetTimestamp();
+    try { await action(); report.Record(name, started); Console.WriteLine("PASS: " + name); }
+    catch (Exception ex) { report.Record(name, started, ex); failures.Add(name + ": " + ex.Message); }
 }
 
-async Task<WebApplication> StartHost(string mode, bool enableAi = false, string environment = "Development", bool allowAnonymousLoopback = false, bool enableMcp = false, int mcpPort = 8090)
+async Task<WebApplication> StartHost(string mode, bool enableAi = false, string environment = "Development", bool allowAnonymousLoopback = false, bool enableMcp = false, int mcpPort = 8090, System.Security.Cryptography.X509Certificates.X509Certificate2? certificate = null)
 {
     var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = environment, ContentRootPath = path });
     builder.Logging.ClearProviders();
-    builder.WebHost.UseUrls("http://127.0.0.1:0");
+    if (certificate == null) builder.WebHost.UseUrls("http://127.0.0.1:0");
+    else builder.WebHost.ConfigureKestrel(options =>
+    {
+        options.Listen(IPAddress.Loopback, 0);
+        options.Listen(IPAddress.Loopback, 0, listen => listen.UseHttps(certificate));
+    });
     builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
     {
         ["Gateway:Storage:Sqlite:ConnectionString"] = new SqliteConnectionStringBuilder
@@ -393,6 +402,7 @@ async Task<WebApplication> StartHost(string mode, bool enableAi = false, string 
         ["Gateway:Dashboard:Auth:AuthMode"] = mode,
         ["Gateway:Dashboard:Auth:ApiKey"] = key,
         ["Gateway:Dashboard:Auth:JwtPassword"] = key,
+        ["Gateway:Dashboard:Auth:JwtUsername"] = "admin",
         ["Gateway:Dashboard:Auth:TwoFactorStatePath"] = Path.Combine(path, "twofactor.json"),
         ["Gateway:Dashboard:Auth:JwtSecret"] = new string('x', 64),
         ["AI:Enabled"] = "true",

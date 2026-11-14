@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../Shared/RegressionReport.cs" Link="RegressionReport.cs" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="../../src/WafIsh.Administration/WafIsh.Administration.csproj" />
     <ProjectReference Include="../../src/WafIsh.Storage.Sqlite/WafIsh.Storage.Sqlite.csproj" />

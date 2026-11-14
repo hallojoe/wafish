@@ -1,0 +1,279 @@
+{
+  "version": 1,
+  "parameters": "--vulnerable --include-transitive",
+  "sources": [
+    "https://data.nuget.org/v3/index.json"
+  ],
+  "projects": [
+    {
+      "path": "/home/casko/code/wafish/WafIsh.AppHost/WafIsh.AppHost.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/samples/SampleGateway/SampleGateway.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/samples/SampleLocalService/SampleLocalService.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/samples/SampleServiceDefaults/SampleServiceDefaults.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/src/WafIsh.Administration/WafIsh.Administration.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/src/WafIsh.Client/WafIsh.Client.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/src/WafIsh.Grpc/WafIsh.Grpc.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/src/WafIsh.Plugin.Abstractions/WafIsh.Plugin.Abstractions.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/src/WafIsh.Plugin.Cache/WafIsh.Plugin.Cache.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/src/WafIsh.Plugin.CircuitBreaker/WafIsh.Plugin.CircuitBreaker.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/src/WafIsh.Plugin.Compression/WafIsh.Plugin.Compression.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/src/WafIsh.Plugin.Metrics/WafIsh.Plugin.Metrics.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/src/WafIsh.Plugin.ProxyLog/WafIsh.Plugin.ProxyLog.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/src/WafIsh.Plugin.RateLimit.Redis/WafIsh.Plugin.RateLimit.Redis.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/src/WafIsh.Plugin.RateLimit/WafIsh.Plugin.RateLimit.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/src/WafIsh.Plugin.Retry/WafIsh.Plugin.Retry.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/src/WafIsh.Plugin.ServiceDiscovery/WafIsh.Plugin.ServiceDiscovery.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/src/WafIsh.Plugin.Waf/WafIsh.Plugin.Waf.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/src/WafIsh.ReactUi/WafIsh.ReactUi.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/src/WafIsh.Runtime/WafIsh.Runtime.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/src/WafIsh.Storage.Abstractions/WafIsh.Storage.Abstractions.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/src/WafIsh.Storage.Sqlite/WafIsh.Storage.Sqlite.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/src/WafIsh/WafIsh.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/tests/WafIsh.Administration.Regression/WafIsh.Administration.Regression.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/tests/WafIsh.ReactUi.Host/WafIsh.ReactUi.Host.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/tests/WafIsh.Regression/WafIsh.Regression.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/tests/WafIsh.Performance/Backend/Backend.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/tests/WafIsh.Performance/EnhancedYarp/EnhancedYarp.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/tests/WafIsh.Performance/NativeYarp/NativeYarp.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    },
+    {
+      "path": "/home/casko/code/wafish/tests/WafIsh.Performance/Runner/Runner.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "suite": "main",
+  "cases": [
+    {
+      "name": "Live Redis integration",
+      "durationMs": 1481.514,
+      "status": "passed",
+      "error": null
+    }
+  ]
+}

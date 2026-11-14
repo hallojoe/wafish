@@ -1,0 +1,7 @@
+1/1 src/WafIsh.Administration/Infrastructure/Notifications/NotificationDispatcher.cs missing []
+1/1 src/WafIsh.Plugin.Cache/ResponseCachePlugin.cs missing []
+1/1 src/WafIsh.Plugin.Compression/CompressionMiddleware.cs missing []
+1/1 src/WafIsh.Plugin.Compression/CompressionPlugin.cs missing []
+3/3 src/WafIsh.ReactUi/ReactUiExtensions.cs missing []
+54/58 src/WafIsh.Runtime/Infrastructure/Plugin/PluginRuntimeDomain.cs missing [104, 109, 110, 538]
+TOTAL 61/65 = 93.85%

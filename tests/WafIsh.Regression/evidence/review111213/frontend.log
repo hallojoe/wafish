@@ -1,0 +1,65 @@
+npm notice run @wafish/react-ui@0.0.0 test:coverage
+npm notice run vitest run --coverage
+
+ RUN  v5.1.0 /home/casko/code/wafish/src/WafIsh.ReactUi/ClientApp
+      Coverage enabled with v8
+
+
+ Test Files  2 passed (2)
+      Tests  27 passed (27)
+   Start at  15:20:49
+   Duration  3.29s (environment 42%, import 28%, transform 10%, tests 9%, setup 7%, worker 2%)
+
+ % Coverage report from v8
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |    7.57 |    16.27 |    6.22 |    7.44 |                   
+ src               |       0 |        0 |       0 |       0 |                   
+  App.tsx          |       0 |        0 |       0 |       0 | 26-321            
+  main.tsx         |       0 |      100 |     100 |       0 | 6                 
+ src/api           |     100 |      100 |      95 |     100 |                   
+  client.ts        |     100 |      100 |      95 |     100 |                   
+ src/components    |    6.66 |    23.52 |    6.34 |    6.97 |                   
+  auth.tsx         |       0 |        0 |       0 |       0 | 20-173            
+  json-form.tsx    |       0 |        0 |       0 |       0 | 41-223            
+  ...ma-fields.tsx |       0 |        0 |       0 |       0 | 7-76              
+  workspace.tsx    |    16.9 |    44.44 |   13.33 |   17.91 | 37-117,202-438    
+ src/components/ui |    1.78 |        0 |       0 |    1.78 |                   
+  alert.tsx        |       0 |      100 |       0 |       0 | 5-66              
+  badge.tsx        |   33.33 |        0 |       0 |   33.33 | 36-38             
+  button.tsx       |   33.33 |        0 |       0 |   33.33 | 53-55             
+  card.tsx         |       0 |        0 |       0 |       0 | 9-82              
+  checkbox.tsx     |       0 |      100 |       0 |       0 | 10                
+  dialog.tsx       |       0 |        0 |       0 |       0 | 12-157            
+  ...down-menu.tsx |       0 |        0 |       0 |       0 | 9-242             
+  input.tsx        |       0 |      100 |       0 |       0 | 5                 
+  label.tsx        |       0 |      100 |       0 |       0 | 9                 
+  select.tsx       |       0 |        0 |       0 |       0 | 1-169             
+  separator.tsx    |       0 |        0 |       0 |       0 | 11                
+  sheet.tsx        |       0 |        0 |       0 |       0 | 11-141            
+  skeleton.tsx     |       0 |      100 |       0 |       0 | 4                 
+  sonner.tsx       |       0 |        0 |       0 |       0 | 1-16              
+  switch.tsx       |       0 |        0 |       0 |       0 | 1-14              
+  table.tsx        |       0 |      100 |       0 |       0 | 5-95              
+  tabs.tsx         |       0 |        0 |       0 |       0 | 1-80              
+  textarea.tsx     |       0 |      100 |       0 |       0 | 5                 
+  tooltip.tsx      |       0 |        0 |       0 |       0 | 1-38              
+ src/hooks         |       0 |        0 |       0 |       0 |                   
+  api.ts           |       0 |        0 |       0 |       0 | 10-36             
+  live.ts          |       0 |        0 |       0 |       0 | 14-83             
+ src/pages         |       0 |        0 |       0 |       0 |                   
+  assistant.tsx    |       0 |        0 |       0 |       0 | 28-237            
+  ...iguration.tsx |       0 |        0 |       0 |       0 | 41-615            
+  history.tsx      |       0 |        0 |       0 |       0 | 18-143            
+  observe.tsx      |       0 |        0 |       0 |       0 | 40-570            
+  plugins.tsx      |       0 |        0 |       0 |       0 | 35-583            
+  settings.tsx     |       0 |        0 |       0 |       0 | 21-357            
+-------------------|---------|----------|---------|---------|-------------------
+
+=============================== Coverage summary ===============================
+Statements   : 7.57% ( 72/951 )
+Branches     : 16.27% ( 98/602 )
+Functions    : 6.22% ( 27/434 )
+Lines        : 7.44% ( 66/887 )
+================================================================================

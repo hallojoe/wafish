@@ -1,0 +1,6 @@
+PASS: Clock: circuit recovery and cleanup follow monotonic controlled time
+PASS: Clock: cache freshness ignores wall-clock jumps and expires without waiting
+PASS: Clock: registration retry, heartbeat, and shutdown use controlled time
+PASS: Clock: log batch flush and cleanup use the injected timer
+PASS: Metrics: configuration churn retires identities without losing active updates
+PASS: Storage: UTC migration preserves offset precision, invalid values, and ordering

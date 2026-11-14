@@ -94,6 +94,21 @@ internal static class RedisFailureChecks
             Check(denied.Available && !denied.Allowed && denied.RetryAfterSeconds is > 0 and <= 30,
                 algorithm + " did not enforce its shared limit.");
         }
+        foreach (var algorithm in new[] { "FixedWindow", "SlidingWindow", "TokenBucket" })
+        {
+            var result = await first.TryAcquireAsync(algorithm, "shared-policy-key", 2, 30, 1, null);
+            Check(result.Available && result.Allowed, "Algorithm change reused an incompatible Redis value.");
+            var changed = await second.TryAcquireAsync(algorithm, "shared-policy-key", 3, 30, 1, null);
+            Check(changed.Available && changed.Allowed && changed.Remaining == (algorithm == "TokenBucket" ? 3 : 2), "Policy change reused old counters.");
+        }
+        foreach (var algorithm in new[] { "FixedWindow", "SlidingWindow", "TokenBucket" })
+        {
+            var results = await Task.WhenAll(Enumerable.Range(0, 64).Select(i =>
+                (i % 2 == 0 ? first : second).TryAcquireAsync(algorithm, "concurrent:" + algorithm, 20, 30, 1, null).AsTask()));
+            Check(results.All(r => r.Available) && results.Count(r => r.Allowed) == (algorithm == "TokenBucket" ? 21 : 20),
+                algorithm + " exceeded capacity under concurrent callers.");
+        }
+        Console.WriteLine("PASS: Live Redis isolates algorithm and policy changes on the same logical key");
         Console.WriteLine("PASS: Live Redis shares fixed-window, sliding-window, and token-bucket counters across two clients");
         await server.StopAsync();
         Check(await Invoke(first, "FailClosed") == 503, "Live outage bypassed FailClosed.");

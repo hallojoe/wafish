@@ -7,6 +7,7 @@ using WafIsh.Services;
 using WafIsh.Storage.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Forwarder;
@@ -16,6 +17,17 @@ internal static class WafBodyChecks
 {
     public static async Task RunAsync(Func<string, Func<Task>, Task> run)
     {
+        await run("WAF: rejection logs contain rule, route, and trace without request secrets", async () =>
+        {
+            var logger = new CaptureLogger();
+            var secret = "seeded-secret-17393";
+            var result = await Invoke(Encoding.UTF8.GetBytes("password=" + secret + "<script>alert(1)</script>"), 1024,
+                path: "/" + secret, logger: logger, query: "?token=" + secret);
+            Check(result.Status == 403, "Attack was not blocked.");
+            var logs = string.Join("\n", logger.Messages);
+            Check(!logs.Contains(secret) && !logs.Contains("<script>"), "Request content leaked into logs.");
+            Check(logs.Contains("XssBlocked") && logs.Contains("waf-test") && logs.Contains("review-trace"), "Rejection context missing.");
+        });
         await run("WAF: unknown-length short reads are fully inspected and preserved", async () =>
         {
             var valid = Encoding.UTF8.GetBytes("name=hello&text=caf%C3%A9");
@@ -44,7 +56,7 @@ internal static class WafBodyChecks
     }
 
     private static async Task<(int Status, byte[]? Forwarded)> Invoke(byte[] body, long limit,
-        bool inspect = true, bool failRead = false, bool cancel = false, string path = "/waf-test")
+        bool inspect = true, bool failRead = false, bool cancel = false, string path = "/waf-test", ILogger<WafMiddleware>? logger = null, string? query = null)
     {
         var route = new RouteConfig { RouteId = "waf-test", Match = new() { Path = path } };
         var publisher = new GatewaySnapshotPublisher();
@@ -63,9 +75,11 @@ internal static class WafBodyChecks
             using var output = new MemoryStream();
             await ctx.Request.Body.CopyToAsync(output, ctx.RequestAborted);
             forwarded = output.ToArray();
-        }, NullLogger<WafMiddleware>.Instance, Options.Create(new GatewayMiddlewareOptions()), null!, plans);
+        }, logger ?? NullLogger<WafMiddleware>.Instance, Options.Create(new GatewayMiddlewareOptions()), null!, plans);
         var context = new DefaultHttpContext();
         context.Request.Path = path;
+        context.TraceIdentifier = "review-trace";
+        context.Request.QueryString = new QueryString(query);
         context.Request.Method = "POST";
         context.Request.ContentType = "text/plain; charset=utf-8";
         context.Request.Body = new ShortStream(body, failRead);
@@ -78,6 +92,15 @@ internal static class WafBodyChecks
             return (context.Response.StatusCode, forwarded);
         }
         finally { await context.Request.Body.DisposeAsync(); await context.Response.Body.DisposeAsync(); }
+    }
+
+    private sealed class CaptureLogger : ILogger<WafMiddleware>
+    {
+        public List<string> Messages { get; } = [];
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(LogLevel logLevel) => true;
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            => Messages.Add(formatter(state, exception));
     }
 
     private sealed class ShortStream(byte[] bytes, bool fail) : MemoryStream(bytes)

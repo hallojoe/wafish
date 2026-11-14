@@ -1,0 +1,73 @@
+[Native YARP] plain: warmup 0s, test 0s x 1, concurrency 1
+  #1: 0 RPS, P95 0.00 ms, P99 0.00 ms, errors 100.000%
+[Native YARP] json-small: warmup 0s, test 0s x 1, concurrency 1
+  #1: 0 RPS, P95 0.00 ms, P99 0.00 ms, errors 100.000%
+[Native YARP] post-1kb: warmup 0s, test 0s x 1, concurrency 1
+  #1: 0 RPS, P95 0.00 ms, P99 0.00 ms, errors 100.000%
+[Same host native] plain: warmup 0s, test 0s x 1, concurrency 1
+  #1: 0 RPS, P95 0.00 ms, P99 0.00 ms, errors 100.000%
+[Same host native] json-small: warmup 0s, test 0s x 1, concurrency 1
+  #1: 0 RPS, P95 0.00 ms, P99 0.00 ms, errors 100.000%
+[Same host native] post-1kb: warmup 0s, test 0s x 1, concurrency 1
+  #1: 0 RPS, P95 0.00 ms, P99 0.00 ms, errors 100.000%
+[Aneiang core] plain: warmup 0s, test 0s x 1, concurrency 1
+  #1: 0 RPS, P95 0.00 ms, P99 0.00 ms, errors 100.000%
+[Aneiang core] json-small: warmup 0s, test 0s x 1, concurrency 1
+  #1: 0 RPS, P95 0.00 ms, P99 0.00 ms, errors 100.000%
+[Aneiang core] post-1kb: warmup 0s, test 0s x 1, concurrency 1
+  #1: 0 RPS, P95 0.00 ms, P99 0.00 ms, errors 100.000%
+[Aneiang storage] plain: warmup 0s, test 0s x 1, concurrency 1
+  #1: 0 RPS, P95 0.00 ms, P99 0.00 ms, errors 100.000%
+[Aneiang storage] json-small: warmup 0s, test 0s x 1, concurrency 1
+  #1: 0 RPS, P95 0.00 ms, P99 0.00 ms, errors 100.000%
+[Aneiang storage] post-1kb: warmup 0s, test 0s x 1, concurrency 1
+  #1: 0 RPS, P95 0.00 ms, P99 0.00 ms, errors 100.000%
+[Aneiang services] plain: warmup 0s, test 0s x 1, concurrency 1
+  #1: 0 RPS, P95 0.00 ms, P99 0.00 ms, errors 100.000%
+[Aneiang services] json-small: warmup 0s, test 0s x 1, concurrency 1
+  #1: 0 RPS, P95 0.00 ms, P99 0.00 ms, errors 100.000%
+[Aneiang services] post-1kb: warmup 0s, test 0s x 1, concurrency 1
+  #1: 0 RPS, P95 0.00 ms, P99 0.00 ms, errors 100.000%
+[Aneiang minimal] plain: warmup 0s, test 0s x 1, concurrency 1
+  #1: 0 RPS, P95 0.00 ms, P99 0.00 ms, errors 100.000%
+[Aneiang minimal] json-small: warmup 0s, test 0s x 1, concurrency 1
+  #1: 0 RPS, P95 0.00 ms, P99 0.00 ms, errors 100.000%
+[Aneiang minimal] post-1kb: warmup 0s, test 0s x 1, concurrency 1
+  #1: 0 RPS, P95 0.00 ms, P99 0.00 ms, errors 100.000%
+[Aneiang full] plain: warmup 0s, test 0s x 1, concurrency 1
+  #1: 0 RPS, P95 0.00 ms, P99 0.00 ms, errors 100.000%
+[Aneiang full] json-small: warmup 0s, test 0s x 1, concurrency 1
+  #1: 0 RPS, P95 0.00 ms, P99 0.00 ms, errors 100.000%
+[Aneiang full] post-1kb: warmup 0s, test 0s x 1, concurrency 1
+  #1: 0 RPS, P95 0.00 ms, P99 0.00 ms, errors 100.000%
+[Aneiang WAF] plain: warmup 0s, test 0s x 1, concurrency 1
+  #1: 0 RPS, P95 0.00 ms, P99 0.00 ms, errors 100.000%
+[Aneiang WAF] json-small: warmup 0s, test 0s x 1, concurrency 1
+  #1: 0 RPS, P95 0.00 ms, P99 0.00 ms, errors 100.000%
+
+Median results:
+Aneiang core       json-small            0 RPS  P95    0.00 ms  P99    0.00 ms  CPU    0.0%  Memory   100.2 MB
+Aneiang full       json-small            0 RPS  P95    0.00 ms  P99    0.00 ms  CPU    0.0%  Memory   121.0 MB
+Aneiang minimal    json-small            0 RPS  P95    0.00 ms  P99    0.00 ms  CPU    0.0%  Memory   121.3 MB
+Aneiang services   json-small            0 RPS  P95    0.00 ms  P99    0.00 ms  CPU    0.0%  Memory   121.5 MB
+Aneiang storage    json-small            0 RPS  P95    0.00 ms  P99    0.00 ms  CPU    0.0%  Memory   101.5 MB
+Aneiang WAF        json-small            0 RPS  P95    0.00 ms  P99    0.00 ms  CPU    0.0%  Memory   121.7 MB
+Native YARP        json-small            0 RPS  P95    0.00 ms  P99    0.00 ms  CPU    0.0%  Memory    87.0 MB
+Same host native   json-small            0 RPS  P95    0.00 ms  P99    0.00 ms  CPU    0.0%  Memory    89.2 MB
+Aneiang core       plain                 0 RPS  P95    0.00 ms  P99    0.00 ms  CPU    0.0%  Memory   100.2 MB
+Aneiang full       plain                 0 RPS  P95    0.00 ms  P99    0.00 ms  CPU    0.0%  Memory   120.9 MB
+Aneiang minimal    plain                 0 RPS  P95    0.00 ms  P99    0.00 ms  CPU    0.0%  Memory   121.3 MB
+Aneiang services   plain                 0 RPS  P95    0.00 ms  P99    0.00 ms  CPU    0.0%  Memory   121.5 MB
+Aneiang storage    plain                 0 RPS  P95    0.00 ms  P99    0.00 ms  CPU    0.0%  Memory   101.4 MB
+Aneiang WAF        plain                 0 RPS  P95    0.00 ms  P99    0.00 ms  CPU    0.0%  Memory   121.7 MB
+Native YARP        plain                 0 RPS  P95    0.00 ms  P99    0.00 ms  CPU    0.0%  Memory    87.0 MB
+Same host native   plain                 0 RPS  P95    0.00 ms  P99    0.00 ms  CPU    0.0%  Memory    89.1 MB
+Aneiang core       post-1kb              0 RPS  P95    0.00 ms  P99    0.00 ms  CPU    0.0%  Memory   100.2 MB
+Aneiang full       post-1kb              0 RPS  P95    0.00 ms  P99    0.00 ms  CPU    0.0%  Memory   121.0 MB
+Aneiang minimal    post-1kb              0 RPS  P95    0.00 ms  P99    0.00 ms  CPU    0.0%  Memory   121.3 MB
+Aneiang services   post-1kb              0 RPS  P95    0.00 ms  P99    0.00 ms  CPU    0.0%  Memory   121.6 MB
+Aneiang storage    post-1kb              0 RPS  P95    0.00 ms  P99    0.00 ms  CPU    0.0%  Memory   101.5 MB
+Native YARP        post-1kb              0 RPS  P95    0.00 ms  P99    0.00 ms  CPU    0.0%  Memory    87.0 MB
+Same host native   post-1kb              0 RPS  P95    0.00 ms  P99    0.00 ms  CPU    0.0%  Memory    89.2 MB
+CSV: /home/casko/code/wafish/tests/WafIsh.Performance/results/performance-20261114-145048.csv
+Report: /home/casko/code/wafish/tests/WafIsh.Performance/results/performance-20261114-145048.md

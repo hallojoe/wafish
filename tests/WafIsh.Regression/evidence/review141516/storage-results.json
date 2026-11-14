@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "suite": "main",
+  "cases": [
+    {
+      "name": "Storage: maintained native engine meets the patched version floor",
+      "durationMs": 105.6288,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Storage: legacy plain SQLite data survives migration, write, and reopen",
+      "durationMs": 145.584,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Storage: legacy SQLCipher 4 data survives migration, write, and reopen",
+      "durationMs": 920.5668,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Storage: explicit SQLCipher URI options and pooling settings are preserved",
+      "durationMs": 461.7992,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Storage: encrypted database survives reopen and rejects missing or incorrect keys",
+      "durationMs": 1141.1344,
+      "status": "passed",
+      "error": null
+    }
+  ]
+}

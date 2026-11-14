@@ -1,0 +1,22 @@
+API: WafIsh.Storage.Sqlite, 161 public declarations
+API: WafIsh.Storage.Abstractions, 763 public declarations
+API: WafIsh.Runtime, 618 public declarations
+API: WafIsh.ReactUi, 10 public declarations
+API: WafIsh.Plugin.Waf, 97 public declarations
+API: WafIsh.Plugin.ServiceDiscovery, 29 public declarations
+API: WafIsh.Plugin.Retry, 21 public declarations
+API: WafIsh.Plugin.RateLimit.Redis, 63 public declarations
+API: WafIsh.Plugin.RateLimit, 21 public declarations
+API: WafIsh.Plugin.ProxyLog, 569 public declarations
+API: WafIsh.Plugin.Metrics, 85 public declarations
+API: WafIsh.Plugin.Compression, 20 public declarations
+API: WafIsh.Plugin.CircuitBreaker, 42 public declarations
+API: WafIsh.Plugin.Cache, 34 public declarations
+API: WafIsh.Plugin.Abstractions, 469 public declarations
+API: WafIsh.Grpc, 583 public declarations
+API: WafIsh.Client, 103 public declarations
+API: WafIsh.Administration, 2068 public declarations
+API: WafIsh, 1572 public declarations
+PASS: isolated package host, plugin composition, native encryption, and selected endpoints
+PASS: isolated package host, plugin composition, native encryption, and selected endpoints
+PASS: isolated package host, plugin composition, native encryption, and selected endpoints

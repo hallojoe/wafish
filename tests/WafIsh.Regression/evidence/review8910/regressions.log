@@ -1,0 +1,211 @@
+dotnet-coverage v18.12.0.0 [linux-x64 - .NET 10.0.14]
+
+SessionId: cac63bd7-35d9-4add-a998-9e735896ea8c
+PASS: Accounting: log batches preserve ownership during cancel-write
+PASS: Accounting: log batches preserve ownership during cancel-fill
+PASS: Accounting: log batches preserve ownership during exhaust-retries
+PASS: Accounting: log batches preserve ownership during transient
+PASS: Accounting: log batches preserve ownership during cancel-drain
+PASS: Accounting: concurrent notification overflow and shutdown count every event
+PASS: Accounting: notifications classify delivery, suppression, failure, and cancellation
+PASS: Correctness: recent errors and indexed ranges compare UTC instants
+PASS: Correctness: batch route deletion removes only final orphans and rolls back on failure
+PASS: Metrics: successful, throwing, and cancelled attempts finalize once
+PASS: Review: atomic binding batches reject stale revisions and roll back partial writes
+PASS: Review: administration batches are atomic and publish through the shared gate
+PASS: Review: route storage, binding changes, and discovery share publication ownership
+PASS: Review: binding storage failure preserves active state; activation failure uses revision-safe compensation
+PASS: Review: instance updates preserve peers, reject stale revisions, and reject legacy requests
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://127.0.0.1:41205
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Production
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: /home/casko/code/wafish
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://127.0.0.1:41205/service - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /service'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /service'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://127.0.0.1:41205/service - 200 0 - 3.6132ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://127.0.0.1:41205/service - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /service'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /service'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://127.0.0.1:41205/service - 503 0 - 0.0901ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://127.0.0.1:41205/service - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /service'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /service'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://127.0.0.1:41205/service - 503 0 - 0.0823ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://127.0.0.1:41205/service - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /service'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /service'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://127.0.0.1:41205/service - 200 0 - 0.0590ms
+info: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
+PASS: Review: live forwarding reserves only the selected probe and records each retry once
+PASS: Review: circuit probe cancellation releases ownership and stale completions cannot close a newer circuit
+PASS: Review: invalid CIDR rules fail validation and matching
+PASS: Review: compressed log capture stops at the decoded byte limit
+PASS: Review: local limiter admission is bounded under concurrent key churn
+PASS: Review: WAF compiler rejects malformed stored address rules before activation
+PASS: Review: limiter leases survive cleanup, queue cancellation, and shutdown
+PASS: Review: route partitions stay stable and overflow returns 429
+PASS: Review: log decoding handles boundaries, cancellation, corruption, and stream ownership
+PASS: Retry: complete replay, unknown and oversized bodies, truncation, and cancellation
+PASS: Retry: request preparation observes its deadline and restores ownership
+PASS: Retry: uncommitted exceptions retry; exhausted destinations return 503
+PASS: Kestrel: retry headers, overflow, flush, start, completion, and body writer
+PASS: Kestrel: cache, compression, and retry stream before completion and release cancelled captures
+PASS: Kestrel and YARP: failed upstream response retries with an intact request body
+PASS: Kestrel: combined retry, compression, and cache preserve successful bytes
+PASS: Configuration: cluster APIs preserve updates, reject duplicates, and record enabled logs
+PASS: Registration: concurrent instances share routes and preserve peer destinations
+PASS: Configuration: atomic rollback covers single, batch, import, and replacement writes
+PASS: Configuration: cluster rename commits route references and binding identities together
+PASS: Configuration: route rename preserves disabled state and native match fields
+PASS: Configuration: validation and stale revisions cannot change stored or active state
+PASS: Configuration: readers see active state while a candidate waits for persistence
+PASS: Configuration: activation failure reports both revisions and recovers after restart
+PASS: Logging: persistence starts once, writes batches, and stops without losing entries
+PASS: Notifications: settings round-trip and test responses redact URL secrets
+PASS: Storage: route and cluster repositories preserve values, isolate deletes, and roll back batches
+PASS: Storage: binding scope filters accept stable identities and reject SQL injection
+PASS: Storage: runtime state opens connections, isolates nodes, updates, and deletes
+PASS: Storage: cancelled initialization does not create a database
+PASS: Storage: log settings upsert atomically and clear
+PASS: Storage: AI results preserve content, filter severity, and enforce retention
+PASS: Storage: conversations retain chronological order and isolate sessions
+PASS: Storage: webhook settings and bounded delivery history round-trip
+PASS: Storage: configuration history and audit filters preserve quoted values
+PASS: Storage: plugin schemas and presets update and delete without crossing plugin boundaries
+PASS: Storage: proxy logs preserve bodies, parameterize filters, aggregate, and expire
+PASS: Audit: initial history loading cannot duplicate concurrent writes
+PASS: Logging: batch disposal clears data and returns pooled storage only once
+PASS: Logging: compressed bodies decode safely and request bodies remain readable
+PASS: Migration: circuit-breaker defaults preserve explicit settings and reject malformed JSON
+PASS: Security: plugin schema regex rejects excessive backtracking within a time bound
+PASS: Validation: plugin schemas enforce types, composition, bounds, and nested fields
+PASS: Security: TOTP matches RFC 6238 vectors and preserves authenticator enrollment
+PASS: Validation: mutation requests require an explicit enabled value
+PASS: Configuration: YARP failures retain route attribution and clear after successful apply
+PASS: Performance helpers: numeric limits, UTF-8, and ring-buffer ownership remain correct
+info: Microsoft.AspNetCore.Mvc.Infrastructure.DefaultActionDescriptorCollectionProvider[1]
+      No action descriptors found. This may indicate an incorrectly configured application or missing application parts. To learn more, visit https://aka.ms/aspnet/mvc/app-parts
+PASS: Security: disabled registration removes REST and gRPC endpoints
+PASS: Security: enabled registration retains REST and gRPC endpoints
+PASS: Security: empty dashboard API key denies requests
+PASS: Security: nested dashboard credentials configure gateway authentication
+PASS: Security: explicit control-plane authentication wins over legacy settings
+PASS: Security: invalid gateway credentials and modes are rejected
+PASS: Security: gRPC accepts only credentials for its configured mode
+PASS: Security: cache excludes private responses
+PASS: Security: cache excludes no-store responses
+PASS: Security: cache excludes private="Authorization" responses
+PASS: Security: Set-Cookie responses are not cached
+PASS: Security: authorization bypasses cache reads and writes
+PASS: Security: cookie bypasses cache reads and writes
+PASS: Security: principal bypasses cache reads and writes
+PASS: Security: eligible public responses remain cached
+PASS: Security: network policy rejects remote HTTP and anonymous forwarding
+PASS: Security: JWT requires algorithm, issuer, subject, signature, and expiry
+PASS: Security: query JWT matches only the two exact hub paths
+PASS: Security: registration client rejects an untrusted TLS certificate
+PASS: Registration: gRPC preserves paths, instance identity, destinations, and credentials
+PASS: Registration: shutdown joins a blocked heartbeat before unregistering
+PASS: Registration: HTTP payloads, credentials, failures, heartbeats, and shutdown
+PASS: WAF: rejection logs contain rule, route, and trace without request secrets
+PASS: WAF: unknown-length short reads are fully inspected and preserved
+PASS: WAF: body and inspection limits count bytes without Content-Length
+PASS: WAF: decoding, read failures, and cancellation fail closed
+PASS: Cache: host, query, response Vary, GET/HEAD, and configuration generations
+PASS: Cache: directives, freshness, malformed metadata, and conditional requests
+PASS: Cache: overflow streams intact and concurrent captures stay within budget
+PASS: Compression: exact negotiation, streaming, cache variants, and exclusions
+PASS: Rate limiting: exhausted permits return JSON and Retry-After without forwarding
+PASS: Redis: route failure policy distinguishes outages from exhausted limits
+PASS: Runtime: starts and proxies without dashboard registration
+PASS: Runtime: split and isolated deployment modes preserve endpoint roles
+Native storage: SQLite3MC SQLite3 Multiple Ciphers 2.7.0; SQLite 3.54.1
+PASS: Storage: maintained native engine meets the patched version floor
+PASS: Storage: legacy plain SQLite data survives migration, write, and reopen
+PASS: Storage: legacy SQLCipher 4 data survives migration, write, and reopen
+PASS: Storage: explicit SQLCipher URI options and pooling settings are preserved
+Encrypted storage: SQLite3MC SQLite3 Multiple Ciphers 2.7.0; SQLite 3.54.1
+PASS: Storage: encrypted database survives reopen and rejects missing or incorrect keys
+PASS: Administration: API contracts remain unchanged after removing Razor pages
+PASS: Administration: registration is idempotent and does not enable Razor
+PASS: Removed compatibility contracts stay isolated from runtime source
+PASS: Infrastructure plugin schemas expose discovery adapters
+PASS: Semantic version constraints support AND ranges and SemVer prerelease precedence
+PASS: External plugin registration exposes verifiable unload state
+PASS: Plugin runtime domain resolves plugin DI and preserves the old domain on failed health
+PASS: Plugin runtime domain drains in-flight requests before disposal
+PASS: Plugin manifest dependencies are exposed and built-in adapters are protected
+PASS: ClientIpResolver ignores spoofed forwarding headers
+PASS: Dashboard API key is header-only
+PASS: JWT query token is restricted to dashboard hubs
+PASS: Response capture does not depend on request content type
+PASS: Proxy log runtime settings use dashboard defaults
+PASS: Destination persistence mapping is lossless
+PASS: Cluster rename preserves native extensions
+PASS: PluginBinding SQLite CRUD and uniqueness
+PASS: GatewayPluginManager persists state in gateway_plugins and imports legacy JSON
+PASS: GatewaySnapshotCompiler filters disabled and missing targets
+PASS: GatewaySnapshotCompiler keeps UID bindings stable across target renames
+PASS: GatewaySnapshotPublisher rejects stale versions
+PASS: Plugin execution plan is reused and invalidated by snapshot publication
+PASS: Service discovery manifest and execution plan share the canonical plugin id
+PASS: Service discovery refreshes static destinations only while its resource runs
+PASS: Plugin health and runtime resource contracts expose accurate state
+PASS: Plugin schema validates nested composition
+PASS: Legacy global policy chains stay isolated from dashboard activation
+All regression checks passed.
+PASS: Authentication: bounded atomic attempts, refunds, source isolation, and expiry
+PASS: Authentication: Basic and API-key failures throttle without limiting valid traffic
+PASS: Authentication: HTTPS cookie login, logout, expiry, transport, host, and origin
+PASS: Authentication: HTTP login and direct credential limits return 429
+PASS: Administration deploys without the dashboard assembly or Razor assets
+PASS: Two-factor state persists privately and fails on corruption or write failure
+PASS: Administration rejects missing and invalid API credentials
+PASS: AI and MCP configuration cannot activate unregistered services
+PASS: Administration APIs work without page or static-asset endpoints
+PASS: Administration creates clusters and routes through the preserved JSON API
+PASS: Snapshots, rollback, and import preserve route activation
+PASS: Administration exposes storage failures and preserves the active revision
+PASS: Administration serves system settings and database downloads without Razor
+PASS: Encrypted database backup retains committed WAL data and rejects missing keys
+PASS: Administration realtime hubs accept subscriptions and send overview updates
+PASS: Corrupted two-factor persistence rejects JWT login
+PASS: Administration login issues a usable JWT without a Razor login page
+PASS: Administration retains configuration after host restart and supports deletion
+PASS: Explicit AI registration resolves services and preserves administration authentication
+PASS: MCP binds loopback, enforces parent credentials, rejects origins, and limits request bodies
+PASS: Anonymous administration requires explicit loopback permission in Development
+PASS: Anonymous administration requires explicit loopback permission in Staging
+PASS: Anonymous administration requires explicit loopback permission in Production
+PASS: Explicit MCP registration is independent and idempotent
+All administration checks passed.
+Native storage: SQLite3MC SQLite3 Multiple Ciphers 2.7.0; SQLite 3.54.1
+PASS: Storage: maintained native engine meets the patched version floor
+PASS: Storage: legacy plain SQLite data survives migration, write, and reopen
+PASS: Storage: legacy SQLCipher 4 data survives migration, write, and reopen
+PASS: Storage: explicit SQLCipher URI options and pooling settings are preserved
+Encrypted storage: SQLite3MC SQLite3 Multiple Ciphers 2.7.0; SQLite 3.54.1
+PASS: Storage: encrypted database survives reopen and rejects missing or incorrect keys
+Code coverage results: /tmp/wafish8910-coverage.xml.

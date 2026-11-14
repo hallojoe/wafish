@@ -28,9 +28,13 @@ using Microsoft.Extensions.Options;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Forwarder;
 
+using var report = new RegressionReport("main");
+
 if (args is ["--redis"])
 {
-    await RedisFailureChecks.RunLiveAsync();
+    var started = System.Diagnostics.Stopwatch.GetTimestamp();
+    try { await RedisFailureChecks.RunLiveAsync(); report.Record("Live Redis integration", started); }
+    catch (Exception ex) { report.Record("Live Redis integration", started, ex); throw; }
     return 0;
 }
 
@@ -41,6 +45,31 @@ if (args is ["--dashboard-routes"])
 }
 
 var failures = new List<string>();
+if (args is ["--review-release"])
+{
+    await ReviewReleaseChecks.RunAsync(RunAsync);
+    foreach (var failure in failures) Console.Error.WriteLine(failure);
+    return failures.Count == 0 ? 0 : 1;
+}
+if (args is ["--review-deployment"])
+{
+    await ReviewDeploymentChecks.RunAsync(RunAsync);
+    foreach (var failure in failures) Console.Error.WriteLine(failure);
+    return failures.Count == 0 ? 0 : 1;
+}
+if (args is ["--review-accounting"])
+{
+    await ReviewAccountingChecks.RunAsync(RunAsync);
+    foreach (var failure in failures) Console.Error.WriteLine(failure);
+    return failures.Count == 0 ? 0 : 1;
+}
+if (args is ["--review-lifecycle"])
+{
+    await ReviewLifecycleChecks.RunAsync(RunAsync);
+    foreach (var failure in failures) Console.Error.WriteLine(failure);
+    return failures.Count == 0 ? 0 : 1;
+}
+
 
 if (args is ["--storage"])
 {
@@ -49,6 +78,12 @@ if (args is ["--storage"])
     return failures.Count == 0 ? 0 : 1;
 }
 
+await ReviewReleaseChecks.RunAsync(RunAsync);
+await ReviewDeploymentChecks.RunAsync(RunAsync);
+await ReviewAccountingChecks.RunAsync(RunAsync);
+await ReviewLifecycleChecks.RunAsync(RunAsync);
+await ReviewSecurityChecks.RunAsync(RunAsync);
+await RetryStreamingChecks.RunAsync(RunAsync);
 await ConfigurationTransactionChecks.RunAsync(RunAsync);
 await StorageRepositoryChecks.RunAsync(RunAsync);
 await SonarRegressionChecks.RunAsync(RunAsync);
@@ -566,7 +601,7 @@ async Task TestServiceDiscoveryStaticRefreshAsync()
 
     Equal(2L, publisher.Current.Version);
     var addresses = publisher.Current.Clusters.Single().Destinations!.Values.Select(x => x.Address).Order().ToArray();
-    True(addresses.SequenceEqual(new[] { "http://127.0.0.1:5101", "http://127.0.0.1:5102" }));
+    True(addresses.SequenceEqual(new[] { "http://127.0.0.1:5101/", "http://127.0.0.1:5102/" }));
     Equal(0, ThrowingHttpClientFactory.CreateCalls);
 }
 
@@ -634,13 +669,15 @@ void TestLegacyGlobalPolicyIsolation()
 
 void Run(string name, Action action)
 {
-    try { action(); Console.WriteLine($"PASS: {name}"); }
-    catch (Exception ex) { failures.Add($"{name}: {ex.Message}"); }
+    var started = System.Diagnostics.Stopwatch.GetTimestamp();
+    try { action(); report.Record(name, started); Console.WriteLine($"PASS: {name}"); }
+    catch (Exception ex) { report.Record(name, started, ex); failures.Add($"{name}: {ex.Message}"); }
 }
 async Task RunAsync(string name, Func<Task> action)
 {
-    try { await action(); Console.WriteLine($"PASS: {name}"); }
-    catch (Exception ex) { failures.Add($"{name}: {ex.Message}"); }
+    var started = System.Diagnostics.Stopwatch.GetTimestamp();
+    try { await action(); report.Record(name, started); Console.WriteLine($"PASS: {name}"); }
+    catch (Exception ex) { report.Record(name, started, ex); failures.Add($"{name}: {ex.Message}"); }
 }
 void Equal<T>(T expected, T actual) { if (!EqualityComparer<T>.Default.Equals(expected, actual)) throw new InvalidOperationException($"Expected '{expected}', got '{actual}'."); }
 void True(bool value) { if (!value) throw new InvalidOperationException("Expected true."); }

@@ -1,0 +1,2 @@
+PASS: removing a public API fails compatibility validation
+PASS: removing a package assembly fails compatibility validation

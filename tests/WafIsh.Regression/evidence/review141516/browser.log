@@ -1,0 +1,29 @@
+npm notice run @wafish/react-ui@0.0.0 test:e2e
+npm notice run playwright test
+
+Running 20 tests using 1 worker
+
+(node:113242) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests/browser/prefix.spec.ts:4:3 › DefaultJwt supports PathBase, nested prefixes, assets, API, and realtime (1.6s)
+  ✓   2 tests/browser/prefix.spec.ts:4:3 › BasicAuth supports PathBase, nested prefixes, assets, API, and realtime (1.7s)
+  ✓   3 tests/browser/prefix.spec.ts:4:3 › ApiKey supports PathBase, nested prefixes, assets, API, and realtime (1.6s)
+  ✓   4 tests/browser/workspace.spec.ts:21:1 › login rejects invalid credentials and restores cookie sessions on deep links (2.1s)
+  ✓   5 tests/browser/workspace.spec.ts:50:1 › all administration workspaces load without Razor (8.2s)
+  ✓   6 tests/browser/workspace.spec.ts:78:1 › legacy pages and assets are unavailable while the React workspace remains available (42ms)
+  ✓   7 tests/browser/workspace.spec.ts:95:1 › route and cluster CRUD preserve advanced fields and show applied state (6.5s)
+  ✓   8 tests/browser/workspace.spec.ts:178:3 › failed save ValidationRejected preserves the editor and revision details (1.9s)
+  ✓   9 tests/browser/workspace.spec.ts:178:3 › failed save VersionConflict preserves the editor and revision details (1.9s)
+  ✓  10 tests/browser/workspace.spec.ts:178:3 › failed save StorageFailed preserves the editor and revision details (1.9s)
+  ✓  11 tests/browser/workspace.spec.ts:178:3 › failed save ActivationFailed preserves the editor and revision details (1.9s)
+  ✓  12 tests/browser/workspace.spec.ts:211:1 › snapshot comparison, rollback, import validation and export work (3.7s)
+  ✓  13 tests/browser/workspace.spec.ts:259:1 › live connection can pause and reconnect (1.4s)
+  ✓  14 tests/browser/workspace.spec.ts:272:1 › expired sessions return to login and clear the authenticated view (9.2s)
+  ✓  15 tests/browser/workspace.spec.ts:287:1 › English desktop and mobile layouts pass automated accessibility checks (7.2s)
+  ✓  16 tests/browser/workspace.spec.ts:376:3 › BasicAuth credentials stay in memory and authorize realtime requests (1.8s)
+  ✓  17 tests/browser/workspace.spec.ts:376:3 › ApiKey credentials stay in memory and authorize realtime requests (1.8s)
+  ✓  18 tests/browser/workspace.spec.ts:407:1 › plugin bindings, presets, and activation use real administration APIs (6.4s)
+  ✓  19 tests/browser/workspace.spec.ts:511:1 › two-factor setup, login challenge, and disable work (2.4s)
+  ✓  20 tests/browser/workspace.spec.ts:542:1 › assistant write tools require confirmation and retain returned results (1.9s)
+
+  20 passed (1.4m)

@@ -1,0 +1,10 @@
+PASS: Accounting: log batches preserve ownership during cancel-write
+PASS: Accounting: log batches preserve ownership during cancel-fill
+PASS: Accounting: log batches preserve ownership during exhaust-retries
+PASS: Accounting: log batches preserve ownership during transient
+PASS: Accounting: log batches preserve ownership during cancel-drain
+PASS: Accounting: concurrent notification overflow and shutdown count every event
+PASS: Accounting: notifications classify delivery, suppression, failure, and cancellation
+PASS: Metrics: successful, throwing, and cancelled attempts finalize once
+Correctness: recent errors and indexed ranges compare UTC instants: Recent window included expired or future errors.
+Correctness: batch route deletion removes only final orphans and rolls back on failure: Final shared cluster remained orphaned.

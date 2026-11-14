@@ -203,7 +203,7 @@ internal static class ConfigurationTransactionChecks
         }
     }
 
-    private sealed class Fixture : IAsyncDisposable
+    internal sealed class Fixture : IAsyncDisposable
     {
         public required WebApplication App { get; init; }
         public required string Directory { get; init; }
@@ -241,12 +241,13 @@ internal static class ConfigurationTransactionChecks
         }
         public async ValueTask DisposeAsync()
         {
+            await App.StopAsync();
             await App.DisposeAsync();
             SqliteConnection.ClearAllPools();
             if (OwnsDirectory) System.IO.Directory.Delete(Directory, true);
         }
     }
-    private sealed class BlockingStore(SqliteConfigurationSnapshotRepository inner) : IConfigurationSnapshotRepository
+    internal sealed class BlockingStore(SqliteConfigurationSnapshotRepository inner) : IConfigurationSnapshotRepository
     {
         public Func<Task>? BeforeSave { get; set; }
         public Task<ConfigurationSnapshot> LoadAsync(CancellationToken ct = default) => inner.LoadAsync(ct);
@@ -256,11 +257,16 @@ internal static class ConfigurationTransactionChecks
             await inner.SaveAsync(snapshot, expectedVersion, ct);
         }
     }
-    private sealed class FailingPublisher : IGatewaySnapshotPublisher
+    internal sealed class FailingPublisher : IGatewaySnapshotPublisher
     {
         private readonly GatewaySnapshotPublisher _inner = new();
         public bool Fail { get; set; }
+        public Action? BeforePublish { get; set; }
         public GatewaySnapshot Current => _inner.Current;
-        public GatewaySnapshot Publish(GatewaySnapshot snapshot) => Fail ? throw new InvalidOperationException("Injected activation failure") : _inner.Publish(snapshot);
+        public GatewaySnapshot Publish(GatewaySnapshot snapshot)
+        {
+            BeforePublish?.Invoke();
+            return Fail ? throw new InvalidOperationException("Injected activation failure") : _inner.Publish(snapshot);
+        }
     }
 }

@@ -1,0 +1,34 @@
+✔ asset verification: none (69.396382ms)
+✔ asset verification: index (59.216939ms)
+✔ asset verification: entry (54.049473ms)
+✔ asset verification: css (66.725509ms)
+✔ asset verification: font (71.758695ms)
+✔ asset verification: chunk (61.029462ms)
+✔ asset verification: import (44.486712ms)
+✔ asset verification: dynamicImport (65.473226ms)
+✔ asset verification: marker (76.64685ms)
+✔ asset verification: manifestEntry (63.118406ms)
+✔ asset verification: traversal (73.755818ms)
+✔ asset verification: directory (45.582989ms)
+✔ asset verification: htmlReference (60.164344ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 946.825584
+ℹ start of coverage report
+ℹ ----------------------------------------------------------------------
+ℹ file                  | line % | branch % | funcs % | uncovered lines
+ℹ ----------------------------------------------------------------------
+ℹ src                   |        |          |         | 
+ℹ  WafIsh.ReactUi       |        |          |         | 
+ℹ   ClientApp           |        |          |         | 
+ℹ    scripts            |        |          |         | 
+ℹ     verify-assets.mjs | 100.00 |   100.00 |  100.00 | 
+ℹ ----------------------------------------------------------------------
+ℹ all files             | 100.00 |   100.00 |  100.00 | 
+ℹ ----------------------------------------------------------------------
+ℹ end of coverage report

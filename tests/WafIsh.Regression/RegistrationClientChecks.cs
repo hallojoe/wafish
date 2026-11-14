@@ -34,9 +34,40 @@ internal static class RegistrationClientChecks
             Check(grpc.Registration!.Paths.SequenceEqual(["/first", "/second"]) && grpc.Registration.Destinations.Count == 2, "gRPC paths or destinations were lost.");
             Check(grpc.Headers!.Any(h => h.Key == "x-api-key" && h.Value == "test-key"), "gRPC credentials were lost.");
             Check(await client.HeartbeatAsync() && grpc.Heartbeat?.InstanceId == "instance-one", "Heartbeat lost instance identity.");
+            Check(await client.UpdateDestinationsAsync(["http://localhost:9002/"]), "Destination update failed.");
+            Check(grpc.Update is { ServiceId: "orders", InstanceId: "instance-one", ExpectedVersion: 7 }, "Update lost ownership or revision.");
+            Check(await client.UpdateDestinationsAsync(["http://localhost:9003/"]) && grpc.Update!.ExpectedVersion == 8, "Update revision did not advance.");
             await hosted.StopAsync(default);
             Check(grpc.Unregistration?.InstanceId == "instance-one", "Shutdown lost instance identity.");
             Check(logs.Messages.Any(m => m.Contains("exceeds maximum", StringComparison.Ordinal)), "Invalid heartbeat interval was not clamped.");
+        });
+
+        await run("Registration: shutdown joins a blocked heartbeat before unregistering", async () =>
+        {
+            var services = new ServiceCollection().AddLogging();
+            services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+            services.AddWafIshClient(o =>
+            {
+                o.GatewayUrl = "http://gateway.test"; o.UseGrpcRegistration = true;
+                o.RouteName = "service"; o.InstanceId = "one"; o.DestinationAddress = "http://localhost:9000/";
+                o.AutoResolveIp = false; o.HeartbeatEnabled = false;
+            });
+            var grpc = new CaptureGrpcClient { Blocked = new(TaskCreationOptions.RunContinuationsAsynchronously), Release = new(TaskCreationOptions.RunContinuationsAsynchronously) };
+            services.AddSingleton<WafIsh.GatewayRegistry.GatewayRegistry.GatewayRegistryClient>(grpc);
+            await using var provider = services.BuildServiceProvider();
+            var hosted = provider.GetServices<IHostedService>().Single(s => s.GetType().Name == "GatewayRegistrationHostedService");
+            await hosted.StartAsync(default);
+            var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+            var type = hosted.GetType();
+            var lifetime = (CancellationTokenSource)type.GetField("_heartbeatLifetime", flags)!.GetValue(hosted)!;
+            var loop = (Task)type.GetMethod("RunHeartbeatsAsync", flags)!.Invoke(hosted, [TimeSpan.FromMilliseconds(1), lifetime.Token])!;
+            type.GetField("_heartbeatTask", flags)!.SetValue(hosted, loop);
+            await grpc.Blocked.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            var stop = hosted.StopAsync(default);
+            Check(!stop.IsCompleted && grpc.Unregistration == null && grpc.Heartbeats == 3, "Shutdown did not wait for its single heartbeat.");
+            grpc.Release.SetResult();
+            await stop.WaitAsync(TimeSpan.FromSeconds(5));
+            Check(loop.IsCompleted && grpc.Registrations == 1 && grpc.Unregistration != null, "Heartbeat re-registered after shutdown.");
         });
 
         await run("Registration: HTTP payloads, credentials, failures, heartbeats, and shutdown", async () =>
@@ -76,16 +107,58 @@ internal static class RegistrationClientChecks
         });
     }
 
+    internal static async Task ControlledClockAsync()
+    {
+        var clock = new ReviewReleaseChecks.ManualTime();
+        using var handler = new CaptureHandler { Status = HttpStatusCode.ServiceUnavailable };
+        var services = new ServiceCollection().AddLogging();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+        services.AddSingleton<TimeProvider>(clock);
+        services.AddWafIshClient(o =>
+        {
+            o.GatewayUrl = "http://gateway.test"; o.RouteName = "clock";
+            o.DestinationAddress = "http://localhost:9000/"; o.AutoResolveIp = false;
+            o.HeartbeatIntervalSeconds = 30;
+        });
+        services.AddSingleton<IHttpClientFactory>(new ClientFactory(handler));
+        await using var provider = services.BuildServiceProvider();
+        var hosted = provider.GetServices<IHostedService>().Single(s => s.GetType().Name == "GatewayRegistrationHostedService");
+        var start = hosted.StartAsync(default);
+        Check(!start.IsCompleted && handler.Calls.Count == 1, "Registration did not wait for retry.");
+        handler.Status = HttpStatusCode.OK;
+        clock.Advance(TimeSpan.FromSeconds(2));
+        await start.WaitAsync(TimeSpan.FromSeconds(5));
+        Check(handler.Calls.Count == 2, "Controlled retry failed.");
+        clock.Advance(TimeSpan.FromSeconds(30));
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        while (handler.Calls.Count < 3) await Task.Delay(5, timeout.Token);
+        Check(handler.Calls.Last().Path.EndsWith("/heartbeat", StringComparison.Ordinal), "Controlled heartbeat failed.");
+        await hosted.StopAsync(default);
+        var stoppedCount = handler.Calls.Count;
+        clock.Advance(TimeSpan.FromDays(1));
+        Check(handler.Calls.Count == stoppedCount && clock.TimerCount == 0, "Shutdown retained a heartbeat timer.");
+    }
+
     private sealed class CaptureGrpcClient : WafIsh.GatewayRegistry.GatewayRegistry.GatewayRegistryClient
     {
         public WafIsh.GatewayRegistry.RegisterServiceRequest? Registration { get; private set; }
         public WafIsh.GatewayRegistry.UnregisterServiceRequest? Unregistration { get; private set; }
-        public WafIsh.GatewayRegistry.HeartbeatRequest? Heartbeat { get; private set; }
+        public new WafIsh.GatewayRegistry.HeartbeatRequest? Heartbeat { get; private set; }
+        public WafIsh.GatewayRegistry.UpdateDestinationsRequest? Update { get; private set; }
+        public int Registrations { get; private set; }
+        public int Heartbeats { get; private set; }
+        public TaskCompletionSource? Blocked { get; set; }
+        public TaskCompletionSource? Release { get; set; }
+        public override Grpc.Core.AsyncUnaryCall<WafIsh.GatewayRegistry.UpdateDestinationsResponse> UpdateDestinationsAsync(WafIsh.GatewayRegistry.UpdateDestinationsRequest request, Grpc.Core.CallOptions options)
+        {
+            Update = request;
+            return Reply(new WafIsh.GatewayRegistry.UpdateDestinationsResponse { Success = true, ActiveVersion = request.ExpectedVersion + 1 });
+        }
         public Grpc.Core.Metadata? Headers { get; private set; }
         public override Grpc.Core.AsyncUnaryCall<WafIsh.GatewayRegistry.RegisterServiceResponse> RegisterServiceAsync(WafIsh.GatewayRegistry.RegisterServiceRequest request, Grpc.Core.CallOptions options)
         {
-            Registration = request; Headers = options.Headers;
-            return Reply(new WafIsh.GatewayRegistry.RegisterServiceResponse { Success = true });
+            Registrations++; Registration = request; Headers = options.Headers;
+            return Reply(new WafIsh.GatewayRegistry.RegisterServiceResponse { Success = true, ActiveVersion = 7 });
         }
         public override Grpc.Core.AsyncUnaryCall<WafIsh.GatewayRegistry.UnregisterServiceResponse> UnregisterServiceAsync(WafIsh.GatewayRegistry.UnregisterServiceRequest request, Grpc.Core.CallOptions options)
         {
@@ -95,6 +168,16 @@ internal static class RegistrationClientChecks
         public override Grpc.Core.AsyncUnaryCall<WafIsh.GatewayRegistry.HeartbeatResponse> HeartbeatAsync(WafIsh.GatewayRegistry.HeartbeatRequest request, Grpc.Core.CallOptions options)
         {
             Heartbeat = request;
+            Heartbeats++;
+            if (Blocked != null)
+            {
+                async Task<WafIsh.GatewayRegistry.HeartbeatResponse> Wait()
+                {
+                    if (Heartbeats >= 3) { Blocked.TrySetResult(); await Release!.Task; }
+                    return new() { Success = false };
+                }
+                return new(Wait(), Task.FromResult(new Grpc.Core.Metadata()), () => Grpc.Core.Status.DefaultSuccess, () => new Grpc.Core.Metadata(), () => { });
+            }
             return Reply(new WafIsh.GatewayRegistry.HeartbeatResponse { Success = true });
         }
         private static Grpc.Core.AsyncUnaryCall<T> Reply<T>(T response) => new(Task.FromResult(response), Task.FromResult(new Grpc.Core.Metadata()), () => Grpc.Core.Status.DefaultSuccess, () => new Grpc.Core.Metadata(), () => { });
@@ -108,10 +191,10 @@ internal static class RegistrationClientChecks
     private sealed class CaptureHandler : HttpMessageHandler
     {
         public HttpStatusCode Status { get; set; } = HttpStatusCode.OK;
-        public List<(HttpMethod Method, string Path, string? Key, string? Body)> Calls { get; } = [];
+        public System.Collections.Concurrent.ConcurrentQueue<(HttpMethod Method, string Path, string? Key, string? Body)> Calls { get; } = new();
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            Calls.Add((request.Method, request.RequestUri!.AbsolutePath, request.Headers.TryGetValues("X-Api-Key", out var keys) ? keys.Single() : null,
+            Calls.Enqueue((request.Method, request.RequestUri!.AbsolutePath, request.Headers.TryGetValues("X-Api-Key", out var keys) ? keys.Single() : null,
                 request.Content is null ? null : await request.Content.ReadAsStringAsync(cancellationToken)));
             return new(Status) { Content = new StringContent("{\"success\":true}") };
         }

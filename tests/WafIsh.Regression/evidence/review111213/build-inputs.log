@@ -1,0 +1,5 @@
+PASS: no-change build preserves generated output
+PASS: package build-script changes rebuild assets
+PASS: added and removed source inputs rebuild assets
+PASS: complete embedded assets can be packed without rebuilding
+PASS: packing rejects a missing referenced asset with an explicit error
