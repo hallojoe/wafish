@@ -7,12 +7,12 @@ import subprocess
 import tempfile
 import xml.etree.ElementTree as ET
 
-source = Path('src/WafIsh.ReactUi')
+source = Path('src/Wafish.ReactUi')
 with tempfile.TemporaryDirectory(prefix='wafish-build-inputs-') as temporary:
     root = Path(temporary) / "src" / "Probe"
     root.mkdir(parents=True)
     shutil.copyfile("logo.png", Path(temporary) / "logo.png")
-    project = ET.parse(source / 'WafIsh.ReactUi.csproj')
+    project = ET.parse(source / 'Wafish.ReactUi.csproj')
     for group in project.getroot().findall('ItemGroup'):
         for item in group.findall('ProjectReference'):
             group.remove(item)

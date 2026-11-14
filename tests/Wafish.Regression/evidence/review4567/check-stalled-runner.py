@@ -21,7 +21,7 @@ thread = threading.Thread(target=server.serve_forever, daemon=True)
 thread.start()
 started = time.monotonic()
 try:
-    result = subprocess.run(['dotnet', 'tests/WafIsh.Performance/Runner/bin/Release/net10.0/Runner.dll',
+    result = subprocess.run(['dotnet', 'tests/Wafish.Performance/Runner/bin/Release/net10.0/Runner.dll',
         '--external-url', f'http://127.0.0.1:{server.server_port}', '--path', '/',
         '--duration', '1', '--warmup', '0', '--concurrency', '1', '--repetitions', '1'],
         timeout=20, capture_output=True, text=True)
