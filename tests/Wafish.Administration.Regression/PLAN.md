@@ -8,7 +8,8 @@ The [root execution plan](../../PLAN.md) remains the historical and cross-projec
 
 ### IMP-01: Split checks into focused modules
 
-Status: TODO.
+Status: DONE. Completed: 2026-11-14.
+Verification: Release build and all 42 administration checks pass. Scenario names and order match the previous evidence.
 
 Extract authentication, configuration, backup, and MCP scenarios from Program.cs.
 

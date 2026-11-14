@@ -73,3 +73,10 @@ The complete suite includes these checks and the controller authentication matri
 Run `--need-seven` for WAF exclusion previews and audits, operational endpoints, and unsupported backup handling.
 The full suite also checks new routes in the authorization matrix and verifies encrypted WAL backups.
 See [feature contracts](../../docs/need-seven-features.md).
+
+## Focused scenario modules
+
+`Program.cs` starts `AdministrationRegressionSuite`. The suite owns credentials, the report, and the shared temporary directory.
+Authentication, configuration, backups, realtime, and optional-service checks have separate source files.
+Fixture helpers retain host creation, HTTP, websocket, and assertion behavior. Scenario names, order, flags, and cleanup remain unchanged.
+Verification: 42 cases pass in the original order after the split.

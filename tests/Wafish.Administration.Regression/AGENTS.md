@@ -7,6 +7,8 @@ Proposals do not authorize implementation outside the current user request.
 ## Source map
 
 - [Program.cs](Program.cs)
+- [AdministrationRegressionSuite.cs](AdministrationRegressionSuite.cs)
+- [AdministrationRegression.Fixture.cs](AdministrationRegression.Fixture.cs)
 - [Wafish.Administration.Regression.csproj](Wafish.Administration.Regression.csproj)
 
 ## Boundaries and invariants
