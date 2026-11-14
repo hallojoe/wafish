@@ -1,0 +1,327 @@
+{
+  "base": "0be18f0",
+  "covered": 493,
+  "executable": 553,
+  "files": [
+    {
+      "file": "src/Wafish.Administration/Modules/Dashboard/Controllers/PluginBindingsController.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Administration/Modules/GatewayConfig/Controllers/ConfigurationChangeSetsController.cs",
+      "covered": 23,
+      "executable": 24,
+      "uncovered": [
+        23
+      ]
+    },
+    {
+      "file": "src/Wafish.Administration/Modules/GatewayConfig/Controllers/DestinationMaintenanceController.cs",
+      "covered": 17,
+      "executable": 19,
+      "uncovered": [
+        26,
+        36
+      ]
+    },
+    {
+      "file": "src/Wafish.Client/Extensions/WafishClientServiceCollectionExtensions.cs",
+      "covered": 1,
+      "executable": 3,
+      "uncovered": [
+        120,
+        121
+      ]
+    },
+    {
+      "file": "src/Wafish.Client/Models/GatewayRegistrationOptions.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Client/Services/GatewayAutoRegistrationClient.Failover.cs",
+      "covered": 42,
+      "executable": 49,
+      "uncovered": [
+        19,
+        37,
+        42,
+        46,
+        58,
+        72,
+        73
+      ]
+    },
+    {
+      "file": "src/Wafish.Client/Services/GatewayAutoRegistrationClient.cs",
+      "covered": 13,
+      "executable": 20,
+      "uncovered": [
+        205,
+        206,
+        516,
+        520,
+        576,
+        610,
+        626
+      ]
+    },
+    {
+      "file": "src/Wafish.Client/Services/RegistrationEndpointFactory.cs",
+      "covered": 13,
+      "executable": 13,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Client/Services/RegistrationOptionsResolver.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Client/Services/RegistrationReadiness.cs",
+      "covered": 22,
+      "executable": 24,
+      "uncovered": [
+        51,
+        86
+      ]
+    },
+    {
+      "file": "src/Wafish.Plugin.Cache/ResponseCacheMiddleware.cs",
+      "covered": 20,
+      "executable": 21,
+      "uncovered": [
+        57
+      ]
+    },
+    {
+      "file": "src/Wafish.Plugin.Cache/ResponseCachePlugin.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Plugin.Cache/ResponseCacheStore.Fills.cs",
+      "covered": 23,
+      "executable": 23,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Plugin.Cache/ResponseCacheStore.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Plugin.CircuitBreaker/CircuitBreakerPlugin.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Plugin.CircuitBreaker/Middleware/CircuitBreakerMiddleware.cs",
+      "covered": 1,
+      "executable": 2,
+      "uncovered": [
+        67
+      ]
+    },
+    {
+      "file": "src/Wafish.Plugin.ServiceDiscovery/HttpServiceDiscoveryPlugin.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Plugin.ServiceDiscovery/ServiceDiscoveryRefreshService.EndpointSlices.cs",
+      "covered": 79,
+      "executable": 87,
+      "uncovered": [
+        12,
+        13,
+        14,
+        15,
+        26,
+        27,
+        63,
+        67
+      ]
+    },
+    {
+      "file": "src/Wafish.Plugin.ServiceDiscovery/ServiceDiscoveryRefreshService.cs",
+      "covered": 2,
+      "executable": 2,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Runtime/GatewayRuntimeExtensions.cs",
+      "covered": 3,
+      "executable": 3,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Runtime/Infrastructure/Plugin/ConfigurationChangeSetRuntime.cs",
+      "covered": 23,
+      "executable": 27,
+      "uncovered": [
+        17,
+        19,
+        22,
+        42
+      ]
+    },
+    {
+      "file": "src/Wafish.Runtime/Infrastructure/Plugin/PluginBindingMutationService.cs",
+      "covered": 3,
+      "executable": 3,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Runtime/Infrastructure/Resilience/DestinationCandidateCoordinator.cs",
+      "covered": 3,
+      "executable": 3,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Runtime/Infrastructure/Resilience/DestinationMaintenanceMiddleware.cs",
+      "covered": 11,
+      "executable": 11,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Runtime/Infrastructure/State/InMemoryCircuitStateStore.cs",
+      "covered": 16,
+      "executable": 17,
+      "uncovered": [
+        153
+      ]
+    },
+    {
+      "file": "src/Wafish.Runtime/Infrastructure/State/InMemoryDestinationMaintenanceStore.cs",
+      "covered": 28,
+      "executable": 28,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Storage.Abstractions/StorageCapabilities.cs",
+      "covered": 0,
+      "executable": 0,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Storage.Sqlite/SqliteConfigurationSnapshotRepository.ChangeSets.cs",
+      "covered": 9,
+      "executable": 10,
+      "uncovered": [
+        13
+      ]
+    },
+    {
+      "file": "src/Wafish.Storage.Sqlite/SqliteConfigurationSnapshotRepository.cs",
+      "covered": 17,
+      "executable": 17,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Storage.Sqlite/SqlitePluginConfigurationRepository.cs",
+      "covered": 0,
+      "executable": 0,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Storage.Sqlite/SqliteStorageCapabilities.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish/Extensions/WafishServiceCollectionExtensions.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish/Infrastructure/State/ICircuitStateStore.cs",
+      "covered": 0,
+      "executable": 0,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish/Infrastructure/State/IDestinationMaintenanceStore.cs",
+      "covered": 2,
+      "executable": 2,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish/Models/CircuitBreakerConfig.cs",
+      "covered": 0,
+      "executable": 0,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish/Models/CircuitBreakerState.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish/Models/PluginExecutionConfigs.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish/Services/DynamicConfigPublisher.cs",
+      "covered": 2,
+      "executable": 2,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish/Services/DynamicYarpConfigService.ChangeSets.cs",
+      "covered": 102,
+      "executable": 125,
+      "uncovered": [
+        39,
+        42,
+        43,
+        52,
+        80,
+        81,
+        83,
+        84,
+        87,
+        102,
+        109,
+        113,
+        114,
+        121,
+        145,
+        166,
+        168,
+        170,
+        175,
+        177,
+        178,
+        180,
+        181
+      ]
+    },
+    {
+      "file": "src/Wafish/Services/GatewayPublicationCoordinator.cs",
+      "covered": 0,
+      "executable": 0,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish/Services/IConfigurationChangeSetService.cs",
+      "covered": 7,
+      "executable": 7,
+      "uncovered": []
+    }
+  ],
+  "percent": 89.15
+}

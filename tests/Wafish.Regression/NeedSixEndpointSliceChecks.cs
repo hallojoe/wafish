@@ -69,9 +69,9 @@ internal static class NeedSixEndpointSliceChecks
             fixture.Handler.Respond = (_, _) => Reply("{\"error\":true}"); fixture.Clock.Advance(TimeSpan.FromSeconds(30));
             await fixture.Service.RefreshDueBindingsAsync(default);
             Check(fixture.Publisher.Current.Clusters.Single().Destinations!.Count == 2, "Malformed slices removed valid destinations.");
-            fixture.Handler.Respond = (_, _) => Reply(List([Slice("IPv4", "10.0.0.2")])); fixture.Clock.Advance(TimeSpan.FromSeconds(30));
+            fixture.Handler.Respond = (_, _) => Reply(List([Slice("IPv4", "10.0.0.1", new { ready = false }), Slice("IPv4", "10.0.0.2")])); fixture.Clock.Advance(TimeSpan.FromSeconds(30));
             await fixture.Service.RefreshDueBindingsAsync(default);
-            Check(fixture.Publisher.Current.Clusters.Single().Destinations!.Values.Single().Address == "http://10.0.0.2:8080/", "Removed slice remained active.");
+            Check(fixture.Publisher.Current.Clusters.Single().Destinations!.Values.Single().Address == "http://10.0.0.2:8080/", "Unready endpoint remained active.");
             fixture.Handler.Respond = (_, _) => Reply(List([])); fixture.Clock.Advance(TimeSpan.FromSeconds(30));
             await fixture.Service.RefreshDueBindingsAsync(default);
             Check(fixture.Publisher.Current.Clusters.Single().Destinations!.Count == 0, "Valid empty slice list retained removed endpoints.");

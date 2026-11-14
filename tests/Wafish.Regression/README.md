@@ -142,3 +142,8 @@ These cover restart retries, rollback, activation failures, receipt limits, cand
 Run `--group need-seven` for registration leases, readiness, storage capabilities, backups, histograms, cache purge, WAF policies, and diagnostics.
 Checks include controlled clocks, held requests, pending fills, provider timeouts, and restart persistence.
 See [contracts](../../docs/need-seven-features.md) and [evidence](evidence/need-seven/README.md).
+
+## Need-6 follow-up
+
+Run `--group need-six` for cache sharing, recovery jitter, combined change sets, gateway failover, maintenance, and EndpointSlice contracts.
+See [verification evidence](evidence/need-six/README.md).

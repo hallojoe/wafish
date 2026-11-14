@@ -80,3 +80,5 @@ See [feature contracts](../../docs/need-seven-features.md).
 Authentication, configuration, backups, realtime, and optional-service checks have separate source files.
 Fixture helpers retain host creation, HTTP, websocket, and assertion behavior. Scenario names, order, flags, and cleanup remain unchanged.
 Verification: 42 cases pass in the original order after the split.
+
+Run `--need-six` for combined change-set permissions and destination maintenance endpoints.

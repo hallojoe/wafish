@@ -1,5 +1,25 @@
 # R29–R35 feature contracts
 
+## Administration regression modules
+
+The runner delegates authentication, configuration, backups, composition, and realtime checks to focused modules.
+Shared fixtures retain host ownership, credentials, temporary storage, scenario names, and cleanup behavior.
+
+## Concurrent cache fills
+
+Eligible identical GET misses share one public cache fill per process.
+`fillWaitMilliseconds` defaults to 1000; zero disables sharing. The maximum wait is 5000 milliseconds.
+Admission permits at most 256 owners and 1024 waiters. Waiters cancel independently.
+Only fresh cache entries satisfy waiters. Failed, private, purged, and retired-generation fills cannot supply shared responses.
+Timeout and admission overflow forward requests normally.
+
+## Circuit recovery jitter
+
+`recoveryJitterSeconds` defaults to zero and permits values through 300.
+Each circuit opening adds one random delay within that bound to `recoveryTimeoutSeconds`.
+Polling and configuration changes cannot extend an existing deadline.
+Failed recovery probes start a new bounded deadline. Half-open concurrency limits remain enforced.
+
 ## Versioned configuration change sets
 
 `POST /{prefix}/api/config/change-sets/preview` validates a complete desired configuration and binding set.
