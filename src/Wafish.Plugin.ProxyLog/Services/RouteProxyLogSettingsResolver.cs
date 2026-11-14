@@ -12,7 +12,8 @@ internal sealed record RouteProxyLogSettings(
     int MaxBodyBufferBytes,
     bool ErrorsOnly,
     bool SamplingEnabled,
-    double SamplingRate);
+    double SamplingRate,
+    RouteLogRedactor Redactor);
 
 internal static class RouteProxyLogSettingsResolver
 {
@@ -39,7 +40,8 @@ internal static class RouteProxyLogSettingsResolver
             Math.Clamp(binding.MaxBodyBufferBytes ?? binding.LogMaxBodyBufferBytes ?? defaults.MaxBodyBufferBytes, 0, 1024 * 1024),
             binding.ErrorsOnly ?? binding.LogErrorsOnly ?? defaults.ErrorsOnly,
             binding.SamplingEnabled ?? binding.EnableSampling ?? binding.EnableLogSampling ?? defaults.SamplingEnabled,
-            Math.Clamp(binding.SamplingRate ?? binding.LogSamplingRate ?? defaults.SamplingRate, 0d, 1d));
+            Math.Clamp(binding.SamplingRate ?? binding.LogSamplingRate ?? defaults.SamplingRate, 0d, 1d),
+            new RouteLogRedactor(binding.RedactHeaders, binding.RedactJsonPaths));
         return true;
     }
 }

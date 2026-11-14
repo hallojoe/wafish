@@ -70,6 +70,8 @@ public sealed record RedisRateLimitExecutionConfig
 
 public sealed record ProxyLogBindingExecutionConfig
 {
+    public string[] RedactHeaders { get; init; } = [];
+    public string[] RedactJsonPaths { get; init; } = [];
     public bool? CaptureRequestHeaders { get; init; }
     public bool? CaptureResponseHeaders { get; init; }
     public bool? RequestBodyCaptureEnabled { get; init; }

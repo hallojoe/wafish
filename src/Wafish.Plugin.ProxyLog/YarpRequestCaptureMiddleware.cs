@@ -78,7 +78,7 @@ public sealed class YarpRequestCaptureMiddleware
             ? await ProxyLogBodyReader.ReadRequestBodyAsync(context.Request, settings.MaxBodyBufferBytes)
             : string.Empty;
 
-        var sanitizedRequestBody = _sanitizer.SanitizeBody(requestBody, context.Request.ContentType);
+        var sanitizedRequestBody = settings.Redactor.Body(_sanitizer.SanitizeBody(requestBody, context.Request.ContentType));
         var requestText = TruncateText(sanitizedRequestBody, settings.MaxBodyLength, out var requestTruncated);
 
         // ── Phase 2: Set up response body capture ──
@@ -119,13 +119,13 @@ public sealed class YarpRequestCaptureMiddleware
             var downstreamText = requestText;
             var downstreamTruncated = requestTruncated;
 
-        var sanitizedResponseBody = _sanitizer.SanitizeBody(responseBodyText, context.Response.ContentType);
+        var sanitizedResponseBody = settings.Redactor.Body(_sanitizer.SanitizeBody(responseBodyText, context.Response.ContentType));
         var responseText = TruncateText(sanitizedResponseBody, settings.MaxBodyLength, out var responseTruncated);
         var requestHeaders = settings.CaptureRequestHeaders
-            ? _sanitizer.SanitizeHeaders(context.Request.Headers)
+            ? settings.Redactor.Headers(_sanitizer.SanitizeHeaders(context.Request.Headers))
             : new HeaderList();
         var responseHeaders = settings.CaptureResponseHeaders
-            ? _sanitizer.SanitizeHeaders(context.Response.Headers)
+            ? settings.Redactor.Headers(_sanitizer.SanitizeHeaders(context.Response.Headers))
             : new HeaderList();
 
 

@@ -33,7 +33,9 @@ Acceptance: Counts, dropped records, and shutdown results accurately report the 
 
 ### FEAT-01: Add per-route structured redaction rules
 
-Status: TODO.
+Status: DONE. Completed: 2026-11-14.
+Verification: Release regression build and three `--log-safety` cases pass.
+Route redactor executable-line coverage is 100%. See README for migration behavior.
 
 Allow route bindings to specify JSON field paths and header redaction rules.
 

@@ -46,6 +46,7 @@ The naming correction is complete; see [consumer migration](docs/naming-migratio
 ## Remaining work: ranked release scope
 
 Public-release implementation R01–R14 is active. Stop after its acceptance checks and release verification.
+R02 is complete: route redaction, fail-closed JSON capture, and mandatory credential defaults.
 R01 is complete: resource-limit, async-policy, lifetime, and allocation evidence reconciled.
 The previous grouped priorities 14–24 are superseded by R01–R55 below.
 Historical completion numbers and project task identifiers remain unchanged.

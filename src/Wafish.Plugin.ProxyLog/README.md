@@ -75,3 +75,15 @@ Verification: [review evidence](../../tests/Wafish.Regression/evidence/review141
 Regression checks cover storage retry exhaustion, transient recovery, cancellation, and shutdown draining.
 Persisted and discarded counts account for all submitted records after shutdown.
 See [lifetime and accounting evidence](../../tests/Wafish.Regression/evidence/lifetime-stress/README.md).
+
+## Route redaction
+
+Route bindings accept `redactHeaders` and `redactJsonPaths`. Both lists support up to 64 entries.
+Headers match without case sensitivity. Each header name supports up to 128 characters.
+JSON paths use case-sensitive JSON Pointer segments, with `*` matching any property or array index.
+Use `~1` for `/` and `~0` for `~`. Paths support 256 characters and 16 segments.
+Example: `{"redactHeaders":["X-Customer"],"redactJsonPaths":["/customer/id","/items/*/value"]}`.
+Rules apply before display truncation, persistence, and live delivery. They never modify forwarded data.
+Invalid or incomplete JSON is masked. Invalid manually published rules mask all captured headers and bodies.
+Default credential headers and JSON field names always remain protected when custom global lists are configured.
+Compatibility: malformed JSON logs now contain a redaction marker instead of the unexamined payload.

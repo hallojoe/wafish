@@ -53,12 +53,12 @@ public sealed class LogSanitizer : ILogSanitizer
 
         // Build header blacklist - merged default + custom
         _headerBlacklist = new HashSet<string>(
-            opt.LogHeaderBlacklist ?? (IEnumerable<string>)_defaultHeaderBlacklist,
+            _defaultHeaderBlacklist.Concat(opt.LogHeaderBlacklist ?? []),
             StringComparer.OrdinalIgnoreCase);
 
         // Build JSON field sanitize list - merged default + custom
         _jsonFieldSanitizeList = new HashSet<string>(
-            opt.LogJsonFieldSanitizeList ?? (IEnumerable<string>)_defaultJsonFieldSanitizeList,
+            _defaultJsonFieldSanitizeList.Concat(opt.LogJsonFieldSanitizeList ?? []),
             StringComparer.OrdinalIgnoreCase);
 
         // Cache query blacklist to avoid rebuilding on every SanitizeQueryString call
@@ -173,8 +173,8 @@ public sealed class LogSanitizer : ILogSanitizer
         }
         catch (JsonException)
         {
-            // If not valid JSON, return as-is
-            return body;
+            // Captured JSON can be incomplete. Never publish unexamined fields.
+            return "***REDACTED***";
         }
     }
 
