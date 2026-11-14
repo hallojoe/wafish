@@ -69,7 +69,7 @@ public sealed class YarpRequestCaptureMiddleware
         }
 
         // ── Phase 1: Capture request data (before _next) ──
-        var timestamp = DateTime.Now;
+        var timestamp = DateTime.UtcNow;
         var startTimestamp = Stopwatch.GetTimestamp();
         var upstreamPath = context.Request.Path + context.Request.QueryString.Value;
 
@@ -109,7 +109,7 @@ public sealed class YarpRequestCaptureMiddleware
 
             // ── Phase 5: Process response data ──
             var responseBodyText = responseBodyStream != null && ProxyLogBodyReader.IsResponseBodyCaptureSafe(context.Response)
-                ? await ProxyLogBodyReader.ReadStreamAsync(responseBodyStream.CapturedBody, settings.MaxBodyBufferBytes, context.Response.ContentType, context.Response.Headers.ContentEncoding.ToString())
+                ? await ProxyLogBodyReader.ReadStreamAsync(responseBodyStream.CapturedBody, settings.MaxBodyBufferBytes, context.Response.ContentType, context.Response.Headers.ContentEncoding.ToString(), context.RequestAborted)
                 : string.Empty;
 
             // The current pipeline does not mutate request bodies after this middleware.

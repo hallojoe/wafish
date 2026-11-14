@@ -80,7 +80,7 @@ public sealed class SqliteProxyLogWriter
 
     private static ProxyLogMetaEntity MapToMeta(LogEntry entry) => new()
     {
-        Timestamp = entry.Timestamp.ToString("O"),
+        Timestamp = entry.Timestamp.ToUniversalTime().ToString("O"),
         EventType = entry.EventType.ToString(),
         Level = entry.Level,
         RouteId = entry.RouteId,

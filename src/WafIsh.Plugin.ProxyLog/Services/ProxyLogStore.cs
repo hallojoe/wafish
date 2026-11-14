@@ -12,8 +12,8 @@ namespace WafIsh.Plugin.ProxyLog.Services;
 /// Memory optimization changes (v2.4):
 /// - Buffer capacity reduced (default 50 → aligned to 64 internally)
 /// - Large fields on old entries are set to null when overwritten to release GC pressure
-/// - Bounded Channel with DropNewest for persistence pipeline (never blocks proxy thread)
-/// - DroppedCount tracks Channel-full drops for frontend warning
+/// - Bounded Channel with nonblocking admission for persistence pipeline (never blocks proxy thread)
+/// - DroppedCount tracks admission, persistence, and shutdown discards
 /// - Removed dead _count field (was stuck at _bufferLength after buffer fills)
 /// </summary>
 public sealed class ProxyLogStore : IProxyLogStore
@@ -24,16 +24,18 @@ public sealed class ProxyLogStore : IProxyLogStore
     private int _head; // modified only via Interlocked
     private long _evictedCount;
 
-    // Bounded Channel for persistence pipeline — DropNewest so logging never blocks proxy
+    // Bounded Channel for persistence pipeline — nonblocking admission so logging never blocks proxy
     private readonly Channel<LogEntry> _persistenceChannel;
     private readonly bool _initialPersistenceEnabled;
     private readonly ProxyLogRuntimeSettings? _runtimeSettings;
+    private long _submittedCount;
+    private long _persistedCount;
     private long _droppedCount; // Tracks entries dropped when Channel is full
 
     /// <summary>
     /// Creates a ring buffer with specified capacity (default 50, aligned to 64 internally).
     /// Capacity is rounded up to the next power of 2 for bit-masking optimization.
-    /// Also creates a bounded Channel (capacity 1000, DropNewest) for persistence.
+    /// Also creates a bounded Channel (capacity 1000, nonblocking admission) for persistence.
     /// </summary>
     /// <param name="capacity">Maximum number of entries to keep in memory buffer. Minimum: 16.</param>
     /// <param name="channelCapacity">Capacity of the persistence Channel. Default: 1000.</param>
@@ -72,8 +74,14 @@ public sealed class ProxyLogStore : IProxyLogStore
     public void CompletePersistence() => _persistenceChannel.Writer.TryComplete();
 
     /// <summary>
-    /// Number of log entries dropped because the persistence Channel was full.
+    /// Number of entries submitted while persistence is enabled.
     /// </summary>
+    public long SubmittedCount => Interlocked.Read(ref _submittedCount);
+    public long PersistedCount => Interlocked.Read(ref _persistedCount);
+    public long PendingCount => Math.Max(0, SubmittedCount - PersistedCount - DroppedCount);
+    internal void RecordPersisted(int count) => Interlocked.Add(ref _persistedCount, count);
+    internal void RecordDiscarded(int count) => Interlocked.Add(ref _droppedCount, count);
+
     public long DroppedCount => Volatile.Read(ref _droppedCount);
 
     /// <summary>
@@ -101,7 +109,7 @@ public sealed class ProxyLogStore : IProxyLogStore
     /// Add a log entry. Lock-free, O(1).
     /// When buffer is full, oldest entry is overwritten.
     /// Large fields on the old entry are set to null to release memory.
-    /// Entry is also written to the persistence Channel (DropNewest if full).
+    /// Entry is also offered to the persistence Channel without blocking; full queues reject it.
     /// Notifies all WebSocket subscribers.
     /// </summary>
     /// <param name="entry">Log entry to add.</param>
@@ -118,10 +126,10 @@ public sealed class ProxyLogStore : IProxyLogStore
 
         // Write to persistence Channel only when persistence is enabled.
         var persistenceEnabled = _runtimeSettings?.Current.PersistenceEnabled ?? _initialPersistenceEnabled;
-        if (persistenceEnabled && !_persistenceChannel.Writer.TryWrite(entry))
+        if (persistenceEnabled)
         {
-            // Channel full — entry dropped, increment counter for frontend warning
-            Interlocked.Increment(ref _droppedCount);
+            Interlocked.Increment(ref _submittedCount);
+            if (!_persistenceChannel.Writer.TryWrite(entry)) RecordDiscarded(1);
         }
 
         // Notify WebSocket subscribers

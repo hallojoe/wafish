@@ -19,7 +19,7 @@ namespace WafIsh.Plugin.ProxyLog.Services;
 /// Features:
 /// - Batch writes: accumulates up to 100 entries or flushes every 500ms
 /// - Hourly cleanup: deletes expired meta/body rows + WAL checkpoint
-/// - DroppedCount: tracks Channel-full drops (also tracked by ProxyLogStore)
+/// - DroppedCount: tracks admission, retry-exhaustion, and shutdown discards
 /// - WrittenCount: total entries successfully persisted
 /// - Implements IProxyLogPersistenceService for DI access to stats
 /// </remarks>
@@ -30,8 +30,8 @@ public sealed class AsyncLogPersistenceService : IProxyLogPersistenceService, IP
     private readonly ProxyLogRuntimeSettings _runtimeSettings;
     private readonly IGatewayPluginManager _pluginManager;
     private readonly ILogger<AsyncLogPersistenceService> _logger;
-    private long _writtenCount;
-    private DateTime _lastCleanup = DateTime.Now;
+    private CancellationTokenSource? _drainCancellation;
+    private long _lastCleanup;
     private CancellationTokenSource? _cts;
     private Task? _consumeTask;
     private DateTimeOffset? _startedAt;
@@ -43,13 +43,19 @@ public sealed class AsyncLogPersistenceService : IProxyLogPersistenceService, IP
     public string ResourceId => "proxy-log:channel-sqlite-writer";
     public string ResourceType => "channel-writer";
 
+    private readonly TimeProvider _time;
+    public AsyncLogPersistenceService(ProxyLogStore logStore, SqliteProxyLogWriter writer, ProxyLogRuntimeSettings runtimeSettings, IGatewayPluginManager pluginManager, ILogger<AsyncLogPersistenceService> logger)
+        : this(logStore, writer, runtimeSettings, pluginManager, logger, TimeProvider.System) { }
+
     public AsyncLogPersistenceService(
         ProxyLogStore logStore,
         SqliteProxyLogWriter writer,
         ProxyLogRuntimeSettings runtimeSettings,
         IGatewayPluginManager pluginManager,
-        ILogger<AsyncLogPersistenceService> logger)
+        ILogger<AsyncLogPersistenceService> logger, TimeProvider timeProvider)
     {
+        _time = timeProvider;
+        _lastCleanup = _time.GetTimestamp();
         _logStore = logStore;
         _writer = writer;
         _runtimeSettings = runtimeSettings;
@@ -61,7 +67,7 @@ public sealed class AsyncLogPersistenceService : IProxyLogPersistenceService, IP
     public long DroppedCount => _logStore.DroppedCount;
 
     /// <inheritdoc />
-    public long WrittenCount => Volatile.Read(ref _writtenCount);
+    public long WrittenCount => _logStore.PersistedCount;
 
     public ValueTask StartResourceAsync(CancellationToken cancellationToken)
     {
@@ -73,8 +79,9 @@ public sealed class AsyncLogPersistenceService : IProxyLogPersistenceService, IP
                 settings.PersistenceEnabled, settings.MetaRetentionDays, settings.BodyRetentionDays);
         }
         _lastError = null;
-        _startedAt = DateTimeOffset.UtcNow;
+        _startedAt = _time.GetUtcNow();
         _cts = new CancellationTokenSource();
+        _drainCancellation = new CancellationTokenSource();
         _consumeTask = Task.Run(() => ConsumeLoopAsync(_cts.Token), CancellationToken.None);
         return ValueTask.CompletedTask;
     }
@@ -82,19 +89,26 @@ public sealed class AsyncLogPersistenceService : IProxyLogPersistenceService, IP
     public async ValueTask StopResourceAsync(CancellationToken cancellationToken)
     {
         if (_consumeTask is null) return;
+        var drain = _drainCancellation!;
+        using var drainTimer = _time.CreateTimer(_ => drain.Cancel(), null, TimeSpan.FromSeconds(5), Timeout.InfiniteTimeSpan);
+        using var stopRegistration = cancellationToken.Register(() => drain.Cancel());
         if (_cts is not null) await _cts.CancelAsync();
         try { await _consumeTask.WaitAsync(cancellationToken); }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
         catch (Exception ex)
         {
             _lastError = ex;
             Interlocked.Increment(ref _failureCount);
             _logger.LogWarning(ex, "AsyncLogPersistenceService consume task stopped with error");
         }
+        stopRegistration.Dispose();
+        await drainTimer.DisposeAsync();
+        drain.Dispose();
+        _drainCancellation = null;
         _cts?.Dispose();
         _cts = null;
         _consumeTask = null;
-        _stoppedAt = DateTimeOffset.UtcNow;
+        _stoppedAt = _time.GetUtcNow();
         if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
         {
             _logger.LogInformation("AsyncLogPersistenceService stopped. Written: {WrittenCount}, Dropped: {DroppedCount}", WrittenCount, DroppedCount);
@@ -109,6 +123,8 @@ public sealed class AsyncLogPersistenceService : IProxyLogPersistenceService, IP
         return ValueTask.FromResult(new PluginRuntimeResourceSnapshot(ResourceId, ResourceType, running, health,
             _startedAt, _stoppedAt, _lastError?.Message, new Dictionary<string, long>
             {
+                ["submittedEntries"] = _logStore.SubmittedCount,
+                ["pendingEntries"] = _logStore.PendingCount,
                 ["writtenEntries"] = WrittenCount,
                 ["droppedEntries"] = DroppedCount,
                 ["failures"] = Interlocked.Read(ref _failureCount),
@@ -131,7 +147,8 @@ public sealed class AsyncLogPersistenceService : IProxyLogPersistenceService, IP
                     continue;
 
                 batch.Add(first);
-                using var flushDelay = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
+                using var flushDeadline = new CancellationTokenSource(TimeSpan.FromMilliseconds(500), _time);
+                using var flushDelay = CancellationTokenSource.CreateLinkedTokenSource(ct, flushDeadline.Token);
                 while (batch.Count < batchSize)
                 {
                     while (batch.Count < batchSize && reader.TryRead(out var entry))
@@ -152,34 +169,42 @@ public sealed class AsyncLogPersistenceService : IProxyLogPersistenceService, IP
                 }
 
                 await FlushBatchAsync(batch, ct);
+                batch.Clear();
 
-                if (DateTime.Now - _lastCleanup > TimeSpan.FromHours(1))
+                if (_time.GetElapsedTime(_lastCleanup) > TimeSpan.FromHours(1))
                 {
                     var settings = _runtimeSettings.Current;
                     await _writer.CleanupAsync(settings.MetaRetentionDays, settings.BodyRetentionDays, ct);
-                    _lastCleanup = DateTime.Now;
+                    _lastCleanup = _time.GetTimestamp();
                 }
             }
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
-            // Forced shutdown after graceful drain timed out.
+            // Shutdown transfers the unfinished batch to the bounded final drain.
         }
         finally
         {
-            batch.Clear();
-            while (reader.TryRead(out var entry))
+            // Preserve the dequeued batch. Drain only the backlog present at shutdown.
+            var remaining = reader.Count;
+            try
             {
-                batch.Add(entry);
-                if (batch.Count < batchSize)
-                    continue;
-
-                await FlushBatchAsync(batch, CancellationToken.None);
-                batch.Clear();
+                while (remaining > 0 || batch.Count > 0)
+                {
+                    while (batch.Count < batchSize && remaining > 0 && reader.TryRead(out var entry))
+                    {
+                        batch.Add(entry);
+                        remaining--;
+                    }
+                    await FlushBatchAsync(batch, _drainCancellation!.Token);
+                    batch.Clear();
+                }
             }
-
-            if (batch.Count > 0)
-                await FlushBatchAsync(batch, CancellationToken.None);
+            catch (OperationCanceledException) when (_drainCancellation!.IsCancellationRequested)
+            {
+                _logStore.RecordDiscarded(batch.Count);
+                while (remaining-- > 0 && reader.TryRead(out _)) _logStore.RecordDiscarded(1);
+            }
         }
     }
 
@@ -190,7 +215,8 @@ public sealed class AsyncLogPersistenceService : IProxyLogPersistenceService, IP
             try
             {
                 await _writer.WriteBatchAsync(batch, ct);
-                Interlocked.Add(ref _writtenCount, batch.Count);
+                _logStore.RecordPersisted(batch.Count);
+                _lastError = null;
                 return;
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -199,13 +225,18 @@ public sealed class AsyncLogPersistenceService : IProxyLogPersistenceService, IP
             }
             catch (Exception ex) when (attempt < 3)
             {
+                _lastError = ex;
+                Interlocked.Increment(ref _failureCount);
                 _logger.LogWarning(ex,
                     "Failed to write {Count} entries to SQLite (attempt {Attempt}/3)",
                     batch.Count, attempt);
-                await Task.Delay(TimeSpan.FromMilliseconds(100 * attempt), ct);
+                await Task.Delay(TimeSpan.FromMilliseconds(100 * attempt), _time, ct);
             }
             catch (Exception ex)
             {
+                _lastError = ex;
+                Interlocked.Increment(ref _failureCount);
+                _logStore.RecordDiscarded(batch.Count);
                 _logger.LogError(ex,
                     "Failed to write {Count} entries to SQLite after 3 attempts; batch dropped",
                     batch.Count);

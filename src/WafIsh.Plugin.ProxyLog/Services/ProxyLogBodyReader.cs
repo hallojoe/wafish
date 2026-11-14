@@ -100,20 +100,15 @@ public static class ProxyLogBodyReader
         if (request.ContentLength > maxBodyBytes)
             return $"[{request.ContentType}] ({request.ContentLength} bytes) - too large to log";
 
+        maxBodyBytes = Math.Min(maxBodyBytes, 1024 * 1024);
+        if (request.ContentLength > maxBodyBytes) return "[Body too large to log]";
         var contentLength = (int)request.ContentLength.Value;
         request.EnableBuffering(bufferThreshold: contentLength, bufferLimit: maxBodyBytes);
         request.Body.Position = 0;
         try
         {
-            var encoding = GetEncoding(request.ContentType);
-            var encodingHeader = request.Headers.ContentEncoding.ToString();
-            var stream = request.Body;
-            if (!string.IsNullOrEmpty(encodingHeader))
-            {
-                stream = WrapDecompressionStream(request.Body, encodingHeader);
-            }
-            using var reader = new StreamReader(stream, encoding, leaveOpen: true);
-            return await reader.ReadToEndAsync(request.HttpContext.RequestAborted);
+            return await ReadStreamAsync(request.Body, maxBodyBytes, request.ContentType,
+                request.Headers.ContentEncoding.ToString(), request.HttpContext.RequestAborted);
         }
         finally
         {
@@ -126,49 +121,44 @@ public static class ProxyLogBodyReader
     /// Uses the response Content-Type charset for correct decoding.
     /// Automatically decompresses gzip/deflate/br encoded bodies.
     /// </summary>
-    public static async Task<string> ReadStreamAsync(Stream stream, int maxBodyBytes, string? contentType = null, string? contentEncoding = null)
+    public static Task<string> ReadStreamAsync(Stream stream, int maxBodyBytes, string? contentType = null, string? contentEncoding = null)
+        => ReadStreamAsync(stream, maxBodyBytes, contentType, contentEncoding, CancellationToken.None);
+
+    public static async Task<string> ReadStreamAsync(Stream stream, int maxBodyBytes, string? contentType,
+        string? contentEncoding, CancellationToken cancellationToken)
     {
-        if (maxBodyBytes <= 0)
-            return string.Empty;
-
+        if (maxBodyBytes <= 0) return string.Empty;
+        cancellationToken.ThrowIfCancellationRequested();
         stream.Seek(0, SeekOrigin.Begin);
-        var encoding = GetEncoding(contentType);
-
-        // Read all bytes first -- we need them as raw bytes for decoding
-        var rawBytes = new byte[stream.Length];
-        var rawRead = 0;
-        while (rawRead < rawBytes.Length)
+        var decoder = string.IsNullOrEmpty(contentEncoding) ? stream : WrapDecompressionStream(stream, contentEncoding);
+        // One extra byte detects overflow without expanding the rest of the input.
+        var limit = Math.Min(maxBodyBytes, 1024 * 1024);
+        var bytes = ArrayPool<byte>.Shared.Rent(limit);
+        try
         {
-            var n = await stream.ReadAsync(rawBytes.AsMemory(rawRead));
-            if (n == 0) break;
-            rawRead += n;
-        }
-
-        // Try to decompress if Content-Encoding indicates it
-        byte[] bodyBytes = rawBytes;
-        int bodyLength = rawRead;
-        if (!string.IsNullOrEmpty(contentEncoding))
-        {
-            try
+            var count = 0;
+            while (count < limit)
             {
-                bodyBytes = DecompressBytes(rawBytes, rawRead, contentEncoding);
-                bodyLength = bodyBytes.Length;
+                var read = await decoder.ReadAsync(bytes.AsMemory(count, limit - count), cancellationToken);
+                if (read == 0) break;
+                count += read;
             }
-            catch
-            {
-                // Decompression failed -- treat as raw text, may show garbled output
-            }
+            var truncated = count == limit && await decoder.ReadAsync(new byte[1], cancellationToken) > 0;
+            var encoding = GetEncoding(contentType);
+            var length = Math.Min(count, limit);
+            if (encoding.CodePage == Encoding.UTF8.CodePage) length = TrimIncompleteUtf8(bytes, length);
+            var text = encoding.GetString(bytes, 0, length);
+            return truncated ? text + "\n... [TRUNCATED - decoded body too large]" : text;
         }
-
-        if (bodyLength > maxBodyBytes)
+        catch (InvalidDataException)
         {
-            var safeLen = TrimIncompleteUtf8(bodyBytes, maxBodyBytes);
-            var text = encoding.GetString(bodyBytes, 0, safeLen);
-            return text + "\n... [TRUNCATED - response too large]";
+            return "[Body unavailable: invalid compressed content]";
         }
-
-        var fullSafeLen = TrimIncompleteUtf8(bodyBytes, bodyLength);
-        return encoding.GetString(bodyBytes, 0, fullSafeLen);
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(bytes, clearArray: true);
+            if (!ReferenceEquals(decoder, stream)) await decoder.DisposeAsync();
+        }
     }
 
     /// <summary>
@@ -185,20 +175,6 @@ public static class ProxyLogBodyReader
             "br" => new BrotliStream(stream, CompressionMode.Decompress, leaveOpen: true),
             _ => stream
         };
-    }
-
-    /// <summary>
-    /// Decompresses a byte buffer using the specified Content-Encoding.
-    /// </summary>
-    private static byte[] DecompressBytes(byte[] data, int length, string contentEncoding)
-    {
-        using var input = new MemoryStream(data, 0, length, writable: false);
-        using var output = new MemoryStream();
-        using (var decompressor = WrapDecompressionStream(input, contentEncoding))
-        {
-            decompressor.CopyTo(output);
-        }
-        return output.ToArray();
     }
 
     /// <summary>

@@ -16,7 +16,14 @@ public sealed class TrafficMetricsPlugin : IGatewayPlugin
         """)], "Route-scoped request, error, latency, and byte metrics.");
     public void ConfigureServices(IServiceCollection services, object? pluginOptions = null) { }
     public void ConfigureMiddleware(IApplicationBuilder app) { }
-    public void ConfigureProxyPipeline(IReverseProxyApplicationBuilder proxyPipeline) => proxyPipeline.UseMiddleware<PluginMetricsMiddleware>();
+    public void ConfigureProxyPipeline(IReverseProxyApplicationBuilder proxyPipeline) => ConfigureMetricsPipeline(proxyPipeline);
+    internal static void ConfigureMetricsPipeline(IReverseProxyApplicationBuilder pipeline)
+    {
+        const string key = "WafIsh.Metrics.Pipeline";
+        if (pipeline.Properties.ContainsKey(key)) return;
+        pipeline.Properties[key] = true;
+        pipeline.UseMiddleware<PluginMetricsMiddleware>();
+    }
     public void ConfigureDashboard(IPluginDashboardBuilder builder) { }
 }
 
@@ -32,6 +39,6 @@ public sealed class ClusterMetricsPlugin : IGatewayPlugin
         """)], "Cluster-scoped request, error, latency, and destination metrics.");
     public void ConfigureServices(IServiceCollection services, object? pluginOptions = null) { }
     public void ConfigureMiddleware(IApplicationBuilder app) { }
-    public void ConfigureProxyPipeline(IReverseProxyApplicationBuilder proxyPipeline) { }
+    public void ConfigureProxyPipeline(IReverseProxyApplicationBuilder proxyPipeline) => TrafficMetricsPlugin.ConfigureMetricsPipeline(proxyPipeline);
     public void ConfigureDashboard(IPluginDashboardBuilder builder) { }
 }

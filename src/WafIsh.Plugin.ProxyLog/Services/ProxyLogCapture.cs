@@ -85,7 +85,7 @@ public sealed class ProxyLogCapture : IProxyLogCapture
 
         _store.Add(new LogEntry
         {
-            Timestamp = DateTime.Now,
+            Timestamp = DateTime.UtcNow,
             EventType = LogEventType.ProxyResponse,
             Level = ProxyLogBodyReader.GetLogLevel(context.Response.StatusCode),
             Message = null,

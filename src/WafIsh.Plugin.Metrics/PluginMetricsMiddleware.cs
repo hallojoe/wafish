@@ -8,29 +8,73 @@ using Yarp.ReverseProxy.Model;
 
 namespace WafIsh.Plugin.Metrics;
 
-public sealed record PluginMetricSnapshot(long Requests, long Errors, long RequestBytes, long ResponseBytes, long DurationMicroseconds);
+public enum PluginMetricOutcome { Completed, Faulted, Cancelled }
+
+public sealed record PluginMetricSnapshot(long Requests, long Errors, long RequestBytes, long ResponseBytes, long DurationMicroseconds)
+{
+    public long Exceptions { get; init; }
+    public long Cancellations { get; init; }
+}
 
 public sealed class PluginMetricStore
 {
+    private readonly object _gate = new();
+    private readonly IGatewaySnapshotPublisher? _snapshots;
+    private long _version = -1;
+    private HashSet<string>? _routes, _clusters, _destinations;
+    public const int MaximumSeriesPerScope = 10_000;
+    public PluginMetricStore() { }
+    public PluginMetricStore(IGatewaySnapshotPublisher snapshots) => _snapshots = snapshots;
+
+    private void Refresh()
+    {
+        if (_snapshots is null || _snapshots.Current.Version == _version) return;
+        var snapshot = _snapshots.Current;
+        _routes = snapshot.Routes.Select(r => r.RouteId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        _clusters = snapshot.Clusters.Select(c => c.ClusterId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        _destinations = snapshot.Clusters.SelectMany(c => (c.Destinations?.Keys ?? Enumerable.Empty<string>()).Select(d => $"{c.ClusterId}/{d}"))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var key in _route.Keys.Where(k => !_routes.Contains(k))) _route.TryRemove(key, out _);
+        foreach (var key in _cluster.Keys.Where(k => !_clusters.Contains(k))) _cluster.TryRemove(key, out _);
+        foreach (var key in _destination.Keys.Where(k => !_destinations.Contains(k))) _destination.TryRemove(key, out _);
+        _version = snapshot.Version;
+    }
+    private static Counters? Admit(ConcurrentDictionary<string, Counters> counters, HashSet<string>? active, string key)
+    {
+        if (active is not null && !active.Contains(key)) return null;
+        if (counters.TryGetValue(key, out var current)) return current;
+        return counters.Count < MaximumSeriesPerScope ? counters.GetOrAdd(key, _ => new()) : null;
+    }
+
     private readonly ConcurrentDictionary<string, Counters> _route = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, Counters> _cluster = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, Counters> _destination = new(StringComparer.OrdinalIgnoreCase);
 
     public void Record(string? routeId, string? clusterId, string? destinationId, int statusCode, long durationMicroseconds, long requestBytes, long responseBytes)
+        => Record(routeId, clusterId, destinationId, statusCode, durationMicroseconds, requestBytes, responseBytes, PluginMetricOutcome.Completed);
+
+    public void Record(string? routeId, string? clusterId, string? destinationId, int statusCode, long durationMicroseconds, long requestBytes, long responseBytes, PluginMetricOutcome outcome)
     {
-        if (routeId != null) Record(_route.GetOrAdd(routeId, _ => new()), statusCode, durationMicroseconds, requestBytes, responseBytes);
-        if (clusterId != null) Record(_cluster.GetOrAdd(clusterId, _ => new()), statusCode, durationMicroseconds, requestBytes, responseBytes);
-        if (clusterId != null && destinationId != null) Record(_destination.GetOrAdd($"{clusterId}/{destinationId}", _ => new()), statusCode, durationMicroseconds, requestBytes, responseBytes);
+        lock (_gate)
+        {
+            Refresh();
+            if (routeId != null && Admit(_route, _routes, routeId) is { } route) Record(route, statusCode, durationMicroseconds, requestBytes, responseBytes, outcome);
+            if (clusterId != null && Admit(_cluster, _clusters, clusterId) is { } cluster) Record(cluster, statusCode, durationMicroseconds, requestBytes, responseBytes, outcome);
+            if (clusterId != null && destinationId != null && Admit(_destination, _destinations, $"{clusterId}/{destinationId}") is { } destination)
+                Record(destination, statusCode, durationMicroseconds, requestBytes, responseBytes, outcome);
+        }
     }
 
-    public IReadOnlyDictionary<string, PluginMetricSnapshot> GetRoutes() => Snapshot(_route);
-    public IReadOnlyDictionary<string, PluginMetricSnapshot> GetClusters() => Snapshot(_cluster);
-    public IReadOnlyDictionary<string, PluginMetricSnapshot> GetDestinations() => Snapshot(_destination);
+    public IReadOnlyDictionary<string, PluginMetricSnapshot> GetRoutes() { lock (_gate) { Refresh(); return Snapshot(_route); } }
+    public IReadOnlyDictionary<string, PluginMetricSnapshot> GetClusters() { lock (_gate) { Refresh(); return Snapshot(_cluster); } }
+    public IReadOnlyDictionary<string, PluginMetricSnapshot> GetDestinations() { lock (_gate) { Refresh(); return Snapshot(_destination); } }
 
-    private static void Record(Counters counters, int statusCode, long duration, long requestBytes, long responseBytes)
+    private static void Record(Counters counters, int statusCode, long duration, long requestBytes, long responseBytes, PluginMetricOutcome outcome)
     {
         Interlocked.Increment(ref counters.Requests);
-        if (statusCode >= 500) Interlocked.Increment(ref counters.Errors);
+        if (outcome == PluginMetricOutcome.Cancelled) Interlocked.Increment(ref counters.Cancellations);
+        else if (outcome == PluginMetricOutcome.Faulted || statusCode >= 500) Interlocked.Increment(ref counters.Errors);
+        if (outcome == PluginMetricOutcome.Faulted) Interlocked.Increment(ref counters.Exceptions);
         Interlocked.Add(ref counters.DurationMicroseconds, duration);
         Interlocked.Add(ref counters.RequestBytes, Math.Max(0, requestBytes));
         Interlocked.Add(ref counters.ResponseBytes, Math.Max(0, responseBytes));
@@ -40,9 +84,10 @@ public sealed class PluginMetricStore
         source.ToDictionary(pair => pair.Key, pair => new PluginMetricSnapshot(
             Interlocked.Read(ref pair.Value.Requests), Interlocked.Read(ref pair.Value.Errors),
             Interlocked.Read(ref pair.Value.RequestBytes), Interlocked.Read(ref pair.Value.ResponseBytes),
-            Interlocked.Read(ref pair.Value.DurationMicroseconds)), StringComparer.OrdinalIgnoreCase);
+            Interlocked.Read(ref pair.Value.DurationMicroseconds))
+            { Exceptions = Interlocked.Read(ref pair.Value.Exceptions), Cancellations = Interlocked.Read(ref pair.Value.Cancellations) }, StringComparer.OrdinalIgnoreCase);
 
-    private sealed class Counters { public long Requests; public long Errors; public long RequestBytes; public long ResponseBytes; public long DurationMicroseconds; }
+    private sealed class Counters { public long Requests; public long Errors; public long RequestBytes; public long ResponseBytes; public long DurationMicroseconds; public long Exceptions; public long Cancellations; }
 }
 
 public sealed class PluginMetricsMiddleware
@@ -76,18 +121,32 @@ public sealed class PluginMetricsMiddleware
         }
 
         var started = Stopwatch.GetTimestamp();
-        await _next(context);
-        var elapsedMicros = (long)(Stopwatch.GetElapsedTime(started).TotalMilliseconds * 1000d);
-        var destinationId = feature?.ProxiedDestination?.DestinationId;
-        var requestBytes = routeEnabled && routeConfig!.IncludeRequestBytes ? context.Request.ContentLength ?? 0 : 0;
-        var responseBytes = routeEnabled && routeConfig!.IncludeResponseBytes ? context.Response.ContentLength ?? 0 : 0;
-        _metricStore.Record(routeEnabled ? routeId : null, clusterEnabled ? clusterId : null,
-            clusterEnabled && clusterConfig!.IncludeDestination ? destinationId : null,
-            context.Response.StatusCode, elapsedMicros, requestBytes, responseBytes);
-        _statistics.RecordRequest(
-            context.Response.StatusCode,
-            elapsedMicros,
-            routeId == null ? 0 : StringComparer.OrdinalIgnoreCase.GetHashCode(routeId),
-            clusterId == null ? 0 : StringComparer.OrdinalIgnoreCase.GetHashCode(clusterId));
+        var outcome = PluginMetricOutcome.Completed;
+        try { await _next(context); }
+        catch (OperationCanceledException) { outcome = PluginMetricOutcome.Cancelled; throw; }
+        catch { outcome = PluginMetricOutcome.Faulted; throw; }
+        finally
+        {
+            if (outcome == PluginMetricOutcome.Completed && context.RequestAborted.IsCancellationRequested)
+                outcome = PluginMetricOutcome.Cancelled;
+            var measuredStatus = outcome switch
+            {
+                PluginMetricOutcome.Cancelled => 499,
+                PluginMetricOutcome.Faulted => 500,
+                _ => context.Response.StatusCode
+            };
+            var elapsedMicros = (long)(Stopwatch.GetElapsedTime(started).TotalMilliseconds * 1000d);
+            var destinationId = feature?.ProxiedDestination?.DestinationId;
+            var requestBytes = routeEnabled && routeConfig!.IncludeRequestBytes ? context.Request.ContentLength ?? 0 : 0;
+            var responseBytes = routeEnabled && routeConfig!.IncludeResponseBytes ? context.Response.ContentLength ?? 0 : 0;
+            _metricStore.Record(routeEnabled ? routeId : null, clusterEnabled ? clusterId : null,
+                clusterEnabled && clusterConfig!.IncludeDestination ? destinationId : null,
+                measuredStatus, elapsedMicros, requestBytes, responseBytes, outcome);
+            _statistics.RecordRequest(
+                measuredStatus,
+                elapsedMicros,
+                routeId == null ? 0 : StringComparer.OrdinalIgnoreCase.GetHashCode(routeId),
+                clusterId == null ? 0 : StringComparer.OrdinalIgnoreCase.GetHashCode(clusterId));
+        }
     }
 }

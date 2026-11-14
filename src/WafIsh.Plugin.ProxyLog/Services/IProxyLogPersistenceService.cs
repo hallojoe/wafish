@@ -8,7 +8,7 @@ namespace WafIsh.Plugin.ProxyLog.Services;
 public interface IProxyLogPersistenceService
 {
     /// <summary>
-    /// Number of log entries dropped because the persistence Channel was full.
+    /// Number of log entries discarded by admission, exhausted writes, or shutdown.
     /// These entries exist in the in-memory ring buffer but were not persisted to SQLite.
     /// </summary>
     long DroppedCount { get; }
