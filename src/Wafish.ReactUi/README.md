@@ -74,6 +74,9 @@ See [HTTP migration](../../docs/mutation-contracts.md#consumer-migration).
 
 ## Workspace state verification
 
+The development client and browser fixtures use `/wafish` for administration APIs.
+Hosted clients use the API prefix supplied by their host. The default workspace path remains `/console`.
+
 Page component checks cover all 18 workspaces, including route/cluster and log/audit variants.
 They exercise pending reads, failed reads, recovery, cancellation, stale results, and editable drafts.
 Assistant session and message panels show loading and failure states with retry controls.

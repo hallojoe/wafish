@@ -29,7 +29,7 @@ internal static class RuntimeHostChecks
     {
         await run("Runtime: starts and proxies without dashboard registration", async () =>
         {
-            var path = Path.Combine(Path.GetTempPath(), "aneiang-runtime-" + Guid.NewGuid().ToString("N"));
+            var path = Path.Combine(Path.GetTempPath(), "wafish-runtime-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(path);
             try
             {

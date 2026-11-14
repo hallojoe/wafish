@@ -2,7 +2,7 @@
 
 The new workspace uses React, TypeScript, Tailwind CSS, and shadcn/ui with Radix primitives.
 The sample serves it at `/console`. It is the only bundled administration interface.
-Administration APIs retain the `/aneiang` prefix. The former Razor pages and assets are removed.
+Administration APIs retain the `/wafish` prefix. The former Razor pages and assets are removed.
 
 ## Host registration
 

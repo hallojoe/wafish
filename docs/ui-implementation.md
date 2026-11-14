@@ -26,7 +26,7 @@ Evidence: [workflow, accessibility, and packaging checks](../tests/Wafish.Regres
 
 The React package references administration contracts and hosting extensions only.
 The browser uses HTTP APIs and SignalR. It never reads gateway runtime services directly.
-Serve the UI at `/console`. Administration APIs remain under `/aneiang`.
+Serve the UI at `/console`. Administration APIs remain under `/wafish`.
 UI-08 removes the former Razor client at the user's request.
 Standalone hosts can register React and administration without adding Razor.
 

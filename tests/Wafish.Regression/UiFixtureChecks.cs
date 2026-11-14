@@ -49,7 +49,7 @@ internal static class UiFixtureChecks
                 if (profile == "plugins") Check(bindings.Bindings.All(binding => binding.Enabled && binding.ScopeId == "demo") && bindings.Bindings.Select(binding => binding.PluginId).Order().SequenceEqual(new[] { "compression", "rate-limit" }), "Representative bindings were not applied.");
                 using var client = new HttpClient { BaseAddress = new Uri(fixture.App.Urls.Single()) };
                 Check((await client.GetAsync("/console")).StatusCode == HttpStatusCode.OK, "Fixture UI is unavailable.");
-                Check((await client.GetAsync("/aneiang/api/routes")).StatusCode == HttpStatusCode.Unauthorized, "Fixture API bypassed authentication.");
+                Check((await client.GetAsync("/wafish/api/routes")).StatusCode == HttpStatusCode.Unauthorized, "Fixture API bypassed authentication.");
                 if (!OperatingSystem.IsWindows()) Check(File.GetUnixFileMode(fixture.DirectoryPath) == (UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute), "Fixture state permissions are not private.");
             }
             finally { await fixture.DisposeAsync(); await fixture.DisposeAsync(); }
@@ -94,7 +94,7 @@ internal static class UiFixtureChecks
             await fixture.StartAsync();
             using var client = new HttpClient { BaseAddress = new Uri(fixture.App.Urls.Single()) };
             client.DefaultRequestHeaders.Add("X-Api-Key", password);
-            using var response = await client.PutAsJsonAsync("/aneiang/api/config/routes/fixture-draft", new { ClusterId = "demo", Match = new { Path = "/fixture-draft" } });
+            using var response = await client.PutAsJsonAsync("/wafish/api/config/routes/fixture-draft", new { ClusterId = "demo", Match = new { Path = "/fixture-draft" } });
             using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
             var result = body.RootElement;
             Check((int)response.StatusCode == status && result.GetProperty("outcome").GetString() == outcome, "Fault profile did not produce its real mutation outcome: " + profile);

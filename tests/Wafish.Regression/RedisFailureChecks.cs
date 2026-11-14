@@ -78,8 +78,8 @@ internal static class RedisFailureChecks
 
     public static async Task RunLiveAsync()
     {
-        var executable = Environment.GetEnvironmentVariable("ANEIANG_REDIS_SERVER")
-            ?? throw new InvalidOperationException("Set ANEIANG_REDIS_SERVER to a Redis server executable.");
+        var executable = Environment.GetEnvironmentVariable("WAFISH_REDIS_SERVER")
+            ?? throw new InvalidOperationException("Set WAFISH_REDIS_SERVER to a Redis server executable.");
         await using var server = new RedisServer(executable);
         await server.StartAsync();
         var options = Options.Create(new RedisRateLimitStoreOptions { ConnectionString = $"127.0.0.1:{server.Port}" });
@@ -183,7 +183,7 @@ internal static class RedisFailureChecks
         Console.WriteLine("PASS: Live Redis reconnects after restart and preserves cancellation");
     }
 
-    private static async Task<int> Invoke(IDistributedRateLimitStore store, string failureMode, string keyPrefix = "aneiang:rl", string algorithm = "FixedWindow")
+    private static async Task<int> Invoke(IDistributedRateLimitStore store, string failureMode, string keyPrefix = "wafish:rl", string algorithm = "FixedWindow")
     {
         var route = new RouteConfig { RouteId = "redis-test", Match = new() { Path = "/redis-test" } };
         var snapshots = new GatewaySnapshotPublisher();
@@ -220,7 +220,7 @@ internal static class RedisFailureChecks
     private sealed class RedisServer : IAsyncDisposable
     {
         private readonly string _executable;
-        private readonly string _directory = Path.Combine(Path.GetTempPath(), "aneiang-redis-test-" + Guid.NewGuid().ToString("N"));
+        private readonly string _directory = Path.Combine(Path.GetTempPath(), "wafish-redis-test-" + Guid.NewGuid().ToString("N"));
         private Process? _process;
         public int Port { get; }
         public RedisServer(string executable)

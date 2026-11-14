@@ -64,7 +64,7 @@ public sealed record RedisRateLimitExecutionConfig
     public string Algorithm { get; init; } = "FixedWindow";
     public int Limit { get; init; } = 100;
     public int WindowSeconds { get; init; } = 60;
-    public string KeyPrefix { get; init; } = "aneiang:rl";
+    public string KeyPrefix { get; init; } = "wafish:rl";
     public int BurstBalance { get; init; }
 }
 

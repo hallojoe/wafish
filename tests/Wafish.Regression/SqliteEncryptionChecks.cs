@@ -29,7 +29,7 @@ internal static class SqliteEncryptionChecks
         {
             await run($"Storage: legacy {(encrypted ? "SQLCipher 4" : "plain SQLite")} data survives migration, write, and reopen", async () =>
             {
-                var path = Path.Combine(Path.GetTempPath(), "aneiang-legacy # ü;" + Guid.NewGuid().ToString("N") + ".db");
+                var path = Path.Combine(Path.GetTempPath(), "wafish-legacy # ü;" + Guid.NewGuid().ToString("N") + ".db");
                 File.Copy(Path.Combine(AppContext.BaseDirectory, "fixtures", "storage", encrypted ? "sqlcipher4.db" : "plain.db"), path);
                 var settings = new SqliteConnectionStringBuilder
                 {
@@ -72,7 +72,7 @@ internal static class SqliteEncryptionChecks
 
         await run("Storage: explicit SQLCipher URI options and pooling settings are preserved", async () =>
         {
-            var path = Path.Combine(Path.GetTempPath(), "aneiang-uri-" + Guid.NewGuid().ToString("N") + ".db");
+            var path = Path.Combine(Path.GetTempPath(), "wafish-uri-" + Guid.NewGuid().ToString("N") + ".db");
             File.Copy(Path.Combine(AppContext.BaseDirectory, "fixtures", "storage", "sqlcipher4.db"), path);
             try
             {
@@ -100,7 +100,7 @@ internal static class SqliteEncryptionChecks
 
         await run("Storage: encrypted database survives reopen and rejects missing or incorrect keys", async () =>
         {
-            var path = Path.Combine(Path.GetTempPath(), "aneiang-encrypted-" + Guid.NewGuid().ToString("N") + ".db");
+            var path = Path.Combine(Path.GetTempPath(), "wafish-encrypted-" + Guid.NewGuid().ToString("N") + ".db");
             var connectionString = new SqliteConnectionStringBuilder
             {
                 DataSource = path,

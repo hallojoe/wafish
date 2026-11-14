@@ -116,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           <div className="brand-mark">
             <Network />
           </div>
-          <p className="eyebrow mt-6">ANEIANG / YARP</p>
+          <p className="eyebrow mt-6">Wafish / YARP</p>
           <h1 className="mt-2 text-3xl font-semibold">{t("Sign in")}</h1>
           <p className="mt-3 text-muted-foreground">
             {t("Use your gateway credentials to continue.")}

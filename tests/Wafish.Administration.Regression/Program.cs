@@ -25,7 +25,7 @@ using Microsoft.Extensions.Logging;
 using var report = new RegressionReport("administration");
 
 var failures = new List<string>();
-var path = Path.Combine(Path.GetTempPath(), "aneiang-administration-" + Guid.NewGuid().ToString("N"));
+var path = Path.Combine(Path.GetTempPath(), "wafish-administration-" + Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(path);
 var key = Guid.NewGuid().ToString("N");
 try

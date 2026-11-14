@@ -10,7 +10,7 @@ export default defineConfig({
   server: {
     host: "127.0.0.1",
     proxy: {
-      "/aneiang": {
+      "/wafish": {
         target: process.env.GATEWAY_URL ?? "http://127.0.0.1:5200",
       },
     },

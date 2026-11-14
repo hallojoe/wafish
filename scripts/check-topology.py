@@ -88,7 +88,7 @@ def main():
             headers = {}
             if trace_id:
                 headers["traceparent"] = "00-" + trace_id + "-" + uuid.uuid4().hex[:16] + "-01"
-            if path.startswith("/aneiang/"):
+            if path.startswith("/wafish/"):
                 headers["Authorization"] = "Basic " + base64.b64encode(("admin:" + password()).encode()).decode()
             data = None if payload is None else json.dumps(payload).encode()
             if data is not None:
@@ -99,7 +99,7 @@ def main():
                 return (body, response.headers) if with_headers else body
 
         def contracts():
-            routes = request("/aneiang/api/routes")["data"]
+            routes = request("/wafish/api/routes")["data"]
             registered = next(route for route in routes if route["routeId"] == "sample-service-path0")
             expected = {destination["name"].split(":")[0] for destination in registered["destinations"]}
             assert expected == {"backend-one", "backend-two"}
@@ -140,10 +140,10 @@ def main():
             original_password = password()
             backends()
             contracts()
-            request("/aneiang/api/config/routes/restart-marker", {
+            request("/wafish/api/config/routes/restart-marker", {
                 "clusterId": "marker-cluster", "match": {"path": "/restart-marker"},
                 "destinations": {"one": "http://127.0.0.1:9/"}})
-            routes = request("/aneiang/api/routes")["data"]
+            routes = request("/wafish/api/routes")["data"]
             identity = next(route["routeUid"] for route in routes if route["routeId"] == "restart-marker")
             for resource in ("gateway", "backend-one", "backend-two"):
                 aspire("resource", resource, "restart")
@@ -158,7 +158,7 @@ def main():
             dashboard_links()
             backends()
             assert password() == original_password, "AppHost restart changed persisted credentials."
-            restored = next(route for route in request("/aneiang/api/routes")["data"] if route["routeId"] == "restart-marker")
+            restored = next(route for route in request("/wafish/api/routes")["data"] if route["routeId"] == "restart-marker")
             assert restored["routeUid"] == identity, "AppHost restart changed persisted route identity."
             contracts()
             print("PASS: gateway, both backends, and AppHost restart with stable credentials and persisted route identity.")

@@ -80,7 +80,7 @@ jobs:
       - name: Verify live Redis policies, outage, and recovery
         run: dotnet run --project tests/Wafish.Regression -c Release --no-build -- --redis
         env:
-          ANEIANG_REDIS_SERVER: /usr/bin/redis-server
+          WAFISH_REDIS_SERVER: /usr/bin/redis-server
           WAFISH_TEST_REPORT: artifacts/test-results/redis.json
       - run: npm run lint && npm run test:coverage && npm audit
         working-directory: src/Wafish.ReactUi/ClientApp

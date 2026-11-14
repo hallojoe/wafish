@@ -42,7 +42,7 @@ Source project: [Wafish.Regression.csproj](Wafish.Regression.csproj).
 Direct project references: [Wafish](../../src/Wafish/README.md), [Wafish.Administration](../../src/Wafish.Administration/README.md), [Wafish.Storage.Sqlite](../../src/Wafish.Storage.Sqlite/README.md).
 
 Options: `--storage`, `--redis`, and `--dashboard-routes`.
-Live Redis checks require `ANEIANG_REDIS_SERVER` to identify a Redis server executable.
+Live Redis checks require `WAFISH_REDIS_SERVER` to identify a Redis server executable.
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
 

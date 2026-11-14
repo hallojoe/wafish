@@ -103,7 +103,7 @@ public class EndpointRouterMiddleware
     }
 
     private bool IsDashboardPath(string path) =>
-        // Segment-boundary match: "/aneiang" or "/aneiang/...", so unrelated paths like
+        // Segment-boundary match: "/wafish" or "/wafish/...", so unrelated paths like
         // the gRPC service path "/wafish.v1.GatewayRegistry/..." are not captured.
         _additionalPrefixes.Any(p => path.Equals(p, StringComparison.OrdinalIgnoreCase) || path.StartsWith(p + "/", StringComparison.OrdinalIgnoreCase)) ||
         string.Equals(path, _dashPrefix, StringComparison.OrdinalIgnoreCase) ||

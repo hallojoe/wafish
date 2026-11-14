@@ -52,7 +52,7 @@ public sealed class RedisRateLimitMiddleware : GatewayMiddlewareBase
         }
 
         var clientIp = ClientIpResolver.GetClientIp(context) ?? "unknown";
-        var prefix = string.IsNullOrWhiteSpace(config.KeyPrefix) ? "aneiang:rl" : config.KeyPrefix;
+        var prefix = string.IsNullOrWhiteSpace(config.KeyPrefix) ? "wafish:rl" : config.KeyPrefix;
         var key = $"{prefix}:{routeId}:{clientIp}";
 
         DistributedRateLimitResult result;

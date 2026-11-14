@@ -5,8 +5,8 @@ namespace Wafish.Services;
 
 public partial class DynamicYarpConfigService
 {
-    private const string RegistrationServiceKey = "aneiang.registration.service";
-    private const string RegistrationInstanceKey = "aneiang.registration.instance";
+    private const string RegistrationServiceKey = "wafish.registration.service";
+    private const string RegistrationInstanceKey = "wafish.registration.instance";
 
     /// <summary>Atomically replaces only this instance's destinations in a shared service cluster.</summary>
     public Task<RouteOperationResult> RegisterInstanceAsync(string serviceId, string instanceId,

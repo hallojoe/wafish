@@ -3,13 +3,13 @@
 
   <PropertyGroup>
     <Version>2.3.0.30</Version>
-    <Authors>AneiangSoft Team</Authors>
-    <Company>AneiangSoft</Company>
-    <Copyright>Copyright © AneiangSoft $([System.DateTime]::Now.Year)</Copyright>
+    <Authors>Wafish Team</Authors>
+    <Company>Wafish</Company>
+    <Copyright>Copyright © Wafish $([System.DateTime]::Now.Year)</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>logo.png</PackageIcon>
-    <PackageProjectUrl>https://github.com/aneiangsoft/Wafish</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/aneiangsoft/Wafish</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/hallojoe/wafish</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/hallojoe/wafish</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

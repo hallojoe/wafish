@@ -195,7 +195,7 @@ The backup endpoint opens databases through the same connection factory as norma
 Backups retain committed WAL changes and preserve encryption.
 A failed backup returns HTTP 503. It never falls back to copying a live main database file.
 The raw database-download endpoint remains distinct from the consistent backup endpoint.
-Use `/aneiang/api/settings/database/backup` for a consistent live backup, adjusted for your administration prefix.
+Use `/wafish/api/settings/database/backup` for a consistent live backup, adjusted for your administration prefix.
 
 ## Administration attempt limits
 

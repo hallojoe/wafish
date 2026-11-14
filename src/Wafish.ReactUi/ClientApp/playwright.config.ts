@@ -63,7 +63,7 @@ export default defineConfig({
       UI_TEST_PORT: String(5219 + index),
       UI_TEST_PATH_BASE: index >= 3 ? "/edge" : "",
       UI_TEST_UI_PREFIX: index >= 3 ? "manage/ui" : "console",
-      UI_TEST_API_PREFIX: index >= 3 ? "manage/api" : "aneiang",
+      UI_TEST_API_PREFIX: index >= 3 ? "manage/api" : "wafish",
       ASPNETCORE_ENVIRONMENT: "Development",
     },
     stdout: "ignore",

@@ -40,7 +40,7 @@ Horizontal scaling does not multiply the allowed traffic for each shared key.
 Source project: [Wafish.Plugin.RateLimit.Redis.csproj](Wafish.Plugin.RateLimit.Redis.csproj).
 Direct project references: [Wafish.Plugin.Abstractions](../Wafish.Plugin.Abstractions/README.md), [Wafish](../Wafish/README.md).
 
-Live Redis checks use `ANEIANG_REDIS_SERVER` and the regression runner's `--redis` option.
+Live Redis checks use `WAFISH_REDIS_SERVER` and the regression runner's `--redis` option.
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
 
@@ -59,5 +59,7 @@ Shutdown awaits pending creation and disposes successful connections.
 Established multiplexers retain their normal reconnection behavior. Command failures do not replay Lua operations.
 A cancelled or interrupted command can already have consumed a permit.
 `FailClosed` remains the default. Use distinct `keyPrefix` values to isolate deployments.
+The default `keyPrefix` is `wafish:rl`. Changing the prefix starts separate counters.
+See [naming migration](../../docs/naming-migration.md#repository-branding-and-configured-names) before upgrading shared deployments.
 
 Verification: [Redis and discovery recovery](../../tests/Wafish.Regression/evidence/recovery/README.md).

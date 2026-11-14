@@ -79,15 +79,15 @@ test("legacy pages and assets are unavailable while the React workspace remains 
   request,
 }) => {
   for (const path of [
-    "/aneiang",
-    "/aneiang/routes",
-    "/aneiang/clusters",
-    "/aneiang/settings",
+    "/wafish",
+    "/wafish/routes",
+    "/wafish/clusters",
+    "/wafish/settings",
     "/_content/Wafish.Dashboard/js/core/dashboard-api.js",
   ]) {
     expect((await request.get(path)).status()).toBe(404);
   }
-  expect((await request.get("/aneiang/login")).status()).toBe(405);
+  expect((await request.get("/wafish/login")).status()).toBe(405);
   expect((await request.get("/console/configuration/routes")).status()).toBe(
     200,
   );
@@ -132,7 +132,7 @@ test("route and cluster CRUD preserve advanced fields and show applied state", a
   await page.getByRole("button", { name: "Save changes", exact: true }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   const exported = await (
-    await page.request.get("/aneiang/api/config/export")
+    await page.request.get("/wafish/api/config/export")
   ).json();
   const config = exported.data.ReverseProxy ?? exported.data.reverseProxy;
   const saved = (config.Routes ?? config.routes)["browser-route"];
@@ -239,7 +239,7 @@ test("snapshot comparison, rollback, import validation and export work", async (
   await page.getByRole("button", { name: "Export configuration" }).click();
   expect((await downloaded).suggestedFilename()).toBe("gateway-config.json");
   const exported = await (
-    await page.request.get("/aneiang/api/config/export")
+    await page.request.get("/wafish/api/config/export")
   ).json();
   await page
     .getByRole("textbox", { name: "Advanced JSON" })
@@ -434,7 +434,7 @@ test("plugin bindings, presets, and activation use real administration APIs", as
   await page.getByRole("button", { name: "Save changes", exact: true }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   const bindings = await (
-    await page.request.get("/aneiang/api/plugin-bindings")
+    await page.request.get("/wafish/api/plugin-bindings")
   ).json();
   const binding = bindings.data.find(
     (b: Record<string, unknown>) =>
@@ -533,7 +533,7 @@ test("two-factor changes revoke sessions and require a new sign-in", async ({
       page.getByRole("heading", { name: "Account", exact: true }),
     ).toBeVisible();
   } finally {
-    await page.request.post("/aneiang/api/2fa/disable");
+    await page.request.post("/wafish/api/2fa/disable");
   }
   await login(page);
   await open(page, "/settings/account", "Account");

@@ -43,6 +43,8 @@ Direct project references: [Wafish](../../src/Wafish/README.md), [Wafish.Storage
 
 Use the [Aspire guide](../../docs/aspire.md) for the complete local topology.
 Use the [security guide](../../docs/security.md) before standalone access.
+The sample serves administration APIs under `/wafish` and the React workspace at `/console`.
+See [naming migration](../../docs/naming-migration.md#repository-branding-and-configured-names) when upgrading existing clients or stored registrations.
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
 

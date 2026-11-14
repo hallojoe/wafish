@@ -62,7 +62,7 @@ test("validation dialogs retain keyboard focus and expose errors accessibly", as
 test("disconnected realtime views and mobile navigation remain keyboard accessible", async ({
   page,
 }) => {
-  await page.route("**/aneiang/hubs/**", (route) => route.abort("failed"));
+  await page.route("**/wafish/hubs/**", (route) => route.abort("failed"));
   await login(page);
   await expect(
     page.getByRole("status").filter({ hasText: "Disconnected" }),

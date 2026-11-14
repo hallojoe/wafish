@@ -12,7 +12,7 @@ export const config: AppConfig = JSON.parse(
   document.getElementById("app-config")?.textContent ??
     JSON.stringify({
       uiBase: "",
-      apiBase: "/aneiang",
+      apiBase: "/wafish",
       authMode: import.meta.env.VITE_AUTH_MODE ?? "DefaultJwt",
       apiKeyHeader: "X-Api-Key",
       locale: "en-US",

@@ -49,7 +49,8 @@ internal static partial class BenchmarkReliabilityChecks
             Check(root.GetProperty("latency").GetProperty("retainedBytes").GetInt32() < 32768 && root.GetProperty("hosts").GetArrayLength() == 9, "Run metadata lost histogram or host composition.");
             var rows = root.GetProperty("results").EnumerateArray().ToArray();
             Check(rows.Length == 23 && rows.All(row => row.GetProperty("failures").GetInt64() == 0 && row.GetProperty("configurationHash").GetString()!.Length == 64), "Measured rows lost success or configuration attribution.");
-            Check(rows.All(row => !row.GetProperty("gateway").GetString()!.Contains("Aneiang")), "Legacy benchmark labels remain.");
+            string[] expectedGateways = ["Native YARP", "Same host native", "Wafish core", "Wafish storage", "Wafish services", "Wafish minimal", "Wafish full", "Wafish WAF"];
+            Check(rows.Select(row => row.GetProperty("gateway").GetString()).ToHashSet().SetEquals(expectedGateways), "Benchmark labels differ from the supported gateway modes.");
             Check((await File.ReadAllTextAsync(Directory.GetFiles(reports, "*.csv").Single())).Contains("ConfigurationHash"), "CSV rows cannot be attributed to configuration.");
         }
         finally { File.Delete(sentinel); }

@@ -24,7 +24,7 @@ public interface IDistributedRateLimitStore
     /// requested algorithm (FixedWindow | SlidingWindow | TokenBucket).
     /// </summary>
     /// <param name="algorithm">Algorithm selector: FixedWindow, SlidingWindow or TokenBucket.</param>
-    /// <param name="key">Fully-qualified counter key, e.g. "aneiang:rl:{route}:{client}".</param>
+    /// <param name="key">Fully-qualified counter key, e.g. "wafish:rl:{route}:{client}".</param>
     /// <param name="limit">Requests allowed per window (bucket capacity before burst).</param>
     /// <param name="windowSeconds">Window length in seconds.</param>
     /// <param name="burstBalance">Extra burst capacity on top of <paramref name="limit"/> (TokenBucket only).</param>

@@ -47,7 +47,7 @@ Use the [browser configuration](../../src/Wafish.ReactUi/ClientApp/playwright.co
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
 
 `UI_TEST_PATH_BASE`, `UI_TEST_UI_PREFIX`, and `UI_TEST_API_PREFIX` select deployment prefixes.
-Defaults retain root hosting with `/console` and `/aneiang`.
+Defaults retain root hosting with `/console` and `/wafish`.
 Browser verification uses three additional hosts on ports 5222–5224 with `/edge/manage/ui` and `/edge/manage/api`.
 These fixtures cover JWT, BasicAuth, and API-key authentication with isolated storage and credentials.
 HTTPS fixture selection is implemented.

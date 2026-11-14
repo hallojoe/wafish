@@ -80,3 +80,6 @@ Registration HTTP responses use numeric `status` and named `outcome` fields.
 Stored and active revisions remain explicit when confirmed. Caller cancellation reaches precommit configuration work.
 Unexpected gRPC failures expose sanitized transport errors.
 See [HTTP and gRPC contracts](../../docs/mutation-contracts.md).
+
+Registration ownership metadata uses `wafish.registration.service` and `wafish.registration.instance`.
+See [naming migration](../../docs/naming-migration.md#repository-branding-and-configured-names) before upgrading stored registrations.
