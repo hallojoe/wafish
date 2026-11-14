@@ -1,8 +1,8 @@
-using WafIsh.Models;
-using WafIsh.Runtime;
-using WafIsh.Services;
-using WafIsh.Storage;
-using WafIsh.Storage.Sqlite;
+using Wafish.Models;
+using Wafish.Runtime;
+using Wafish.Services;
+using Wafish.Storage;
+using Wafish.Storage.Sqlite;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
@@ -82,9 +82,9 @@ internal static class ConfigurationTransactionChecks
             }
             catch (ConfigurationUpdateException ex) { Assert(ex.Result.Status == ConfigurationUpdateStatus.StorageFailed, "Wrong replacement failure."); }
             var grpc = new GatewayRegistryGrpcService(config, Microsoft.Extensions.Logging.Abstractions.NullLogger<GatewayRegistryGrpcService>.Instance);
-            var registration = new WafIsh.GatewayRegistry.RegisterServiceRequest { ServiceId = "grpc-write", ServiceName = "grpc-cluster" };
+            var registration = new Wafish.GatewayRegistry.RegisterServiceRequest { ServiceId = "grpc-write", ServiceName = "grpc-cluster" };
             registration.Paths.AddRange(["/first", "/second"]);
-            registration.Destinations.Add(new WafIsh.GatewayRegistry.Destination { DestinationId = "one", Address = "http://127.0.0.1:9/" });
+            registration.Destinations.Add(new Wafish.GatewayRegistry.Destination { DestinationId = "one", Address = "http://127.0.0.1:9/" });
             var grpcResult = await grpc.RegisterService(registration, null!);
             Assert(!grpcResult.Success && grpcResult.Status == "StorageFailed" && grpcResult.RouteIds.Count == 0,
                 "gRPC registration reported success after a failed transaction.");
@@ -104,9 +104,9 @@ internal static class ConfigurationTransactionChecks
             Applied(await host.Config.ImportBatchAsync([Cluster("one")], [Route("one", "one")]));
             var plugins = host.App.Services.GetRequiredService<IPluginConfigurationRepository>();
             var uid = host.Config.GetDynamicConfig()!.Clusters.Single().ClusterUid;
-            await plugins.UpsertBindingAsync(new WafIsh.Storage.Entities.PluginBindingEntity
+            await plugins.UpsertBindingAsync(new Wafish.Storage.Entities.PluginBindingEntity
             {
-                PluginId = "test-identity", PluginVersion = "1.0", Scope = WafIsh.Storage.Entities.PluginBindingScope.Cluster,
+                PluginId = "test-identity", PluginVersion = "1.0", Scope = Wafish.Storage.Entities.PluginBindingScope.Cluster,
                 ScopeId = "one", ClusterUid = uid, ConfigJson = "{}"
             });
             Applied(await host.Config.TryRenameCluster("one", "renamed", new() { ["destination"] = "http://127.0.0.1:12345/" }));

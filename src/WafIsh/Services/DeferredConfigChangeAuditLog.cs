@@ -1,5 +1,5 @@
-using WafIsh.Models;
-namespace WafIsh.Services;
+using Wafish.Models;
+namespace Wafish.Services;
 
 internal sealed class DeferredConfigChangeAuditLog(IConfigChangeAuditLog inner) : IConfigChangeAuditLog
 {

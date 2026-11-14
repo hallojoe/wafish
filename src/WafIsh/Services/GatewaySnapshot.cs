@@ -1,8 +1,8 @@
 using System.Collections.Immutable;
-using WafIsh.Storage.Entities;
+using Wafish.Storage.Entities;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>Immutable, fully compiled gateway configuration ready for atomic publication.</summary>
 public sealed record GatewaySnapshot(

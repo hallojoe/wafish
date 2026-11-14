@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>Static helper for parsing YARP routes, clusters, and transforms from IConfiguration.</summary>
 internal static partial class YarpConfigParser

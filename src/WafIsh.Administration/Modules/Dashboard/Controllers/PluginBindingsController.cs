@@ -1,15 +1,15 @@
 using System.Text.Json;
-using WafIsh.Dashboard.Infrastructure.Plugin;
-using WafIsh.Models;
-using WafIsh.Services;
-using WafIsh.Storage;
-using WafIsh.Storage.Entities;
+using Wafish.Dashboard.Infrastructure.Plugin;
+using Wafish.Models;
+using Wafish.Services;
+using Wafish.Storage;
+using Wafish.Storage.Entities;
 using Microsoft.AspNetCore.Mvc;
-using WafIsh.Plugins;
+using Wafish.Plugins;
 
-using WafIsh.Dashboard.Infrastructure.I18n;
+using Wafish.Dashboard.Infrastructure.I18n;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Controllers;
+namespace Wafish.Dashboard.Modules.Dashboard.Controllers;
 
 /// <summary>Manages plugin configuration bindings for routes and clusters.</summary>
 [ApiController]

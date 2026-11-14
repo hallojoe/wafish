@@ -3,10 +3,10 @@ using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using WafIsh.Storage;
+using Wafish.Storage;
 using Microsoft.AspNetCore.WebUtilities;
 
-namespace WafIsh.Storage.Sqlite;
+namespace Wafish.Storage.Sqlite;
 
 /// <summary>
 /// Shared SQLite connection factory used by all storage repositories.

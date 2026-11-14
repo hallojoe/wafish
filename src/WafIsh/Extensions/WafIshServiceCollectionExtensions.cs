@@ -1,8 +1,8 @@
-using WafIsh.Dashboard.Infrastructure.Auth;
-using WafIsh.Controllers;
-using WafIsh.Models;
-using WafIsh.Services;
-using WafIsh.Services.ProxyConfigHealth;
+using Wafish.Dashboard.Infrastructure.Auth;
+using Wafish.Controllers;
+using Wafish.Models;
+using Wafish.Services;
+using Wafish.Services.ProxyConfigHealth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,7 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.LoadBalancing;
 
-namespace WafIsh.Extensions;
+namespace Wafish.Extensions;
 
 /// <summary>
 /// WafIsh service registration extensions.

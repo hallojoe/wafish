@@ -1,6 +1,6 @@
 using Microsoft.IO;
 
-namespace WafIsh.Plugin.ProxyLog.Services;
+namespace Wafish.Plugin.ProxyLog.Services;
 
 /// <summary>
 /// TeeStream captures response body while forwarding to the original response stream.

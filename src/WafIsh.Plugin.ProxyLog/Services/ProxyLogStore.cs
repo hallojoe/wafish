@@ -1,7 +1,7 @@
 using System.Threading.Channels;
-using WafIsh.Plugin.ProxyLog.Models;
+using Wafish.Plugin.ProxyLog.Models;
 
-namespace WafIsh.Plugin.ProxyLog.Services;
+namespace Wafish.Plugin.ProxyLog.Services;
 
 /// <summary>
 /// Pre-allocated ring buffer for recent log entries (lock-free, O(1) add).

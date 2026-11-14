@@ -1,4 +1,4 @@
-namespace WafIsh.Dashboard.Modules.GatewayConfig.Models;
+namespace Wafish.Dashboard.Modules.GatewayConfig.Models;
 
 /// <summary>Request body for creating a manual configuration snapshot.</summary>
 public class SnapshotRequest

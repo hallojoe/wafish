@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace WafIsh.Dashboard.Modules.GatewayConfig.Models;
+namespace Wafish.Dashboard.Modules.GatewayConfig.Models;
 
 /// <summary>Represents a snapshot of the gateway configuration at a specific point in time.
 /// Used for config diff and comparison.</summary>

@@ -1,9 +1,9 @@
-using WafIsh.Plugins;
-using WafIsh.Services;
+using Wafish.Plugins;
+using Wafish.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
-namespace WafIsh.Infrastructure.Middleware;
+namespace Wafish.Infrastructure.Middleware;
 
 /// <summary>
 /// Base class for gateway middleware that share common patterns:

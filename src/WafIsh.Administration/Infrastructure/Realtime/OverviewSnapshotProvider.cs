@@ -1,11 +1,11 @@
-using WafIsh.Dashboard.Modules.Dashboard.Services;
-using WafIsh.Dashboard.Modules.GatewayConfig.Services;
-using WafIsh.Plugin.ProxyLog.Models;
-using WafIsh.Plugin.ProxyLog.Services;
-using WafIsh.Services.ProxyConfigHealth;
+using Wafish.Dashboard.Modules.Dashboard.Services;
+using Wafish.Dashboard.Modules.GatewayConfig.Services;
+using Wafish.Plugin.ProxyLog.Models;
+using Wafish.Plugin.ProxyLog.Services;
+using Wafish.Services.ProxyConfigHealth;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Dashboard.Infrastructure.Realtime;
+namespace Wafish.Dashboard.Infrastructure.Realtime;
 
 /// <summary>
 /// Shared builder for <see cref="OverviewSnapshot"/>. Used by both the

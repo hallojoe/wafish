@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace WafIsh.Dashboard.Infrastructure.Performance;
+namespace Wafish.Dashboard.Infrastructure.Performance;
 
 /// <summary>
 /// A simple, high-performance pool for StringBuilder instances.

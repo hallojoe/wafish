@@ -3,10 +3,10 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
-using WafIsh.Infrastructure.Middleware;
-using WafIsh.Plugin.RateLimit.Redis;
-using WafIsh.Services;
-using WafIsh.Storage.Entities;
+using Wafish.Infrastructure.Middleware;
+using Wafish.Plugin.RateLimit.Redis;
+using Wafish.Services;
+using Wafish.Storage.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -30,10 +30,10 @@ internal static class RedisFailureChecks
                         "{\"enabled\":true,\"algorithm\":\"FixedWindow\",\"permitLimit\":1,\"window\":\"00:01:00\",\"queueLimit\":0}", 1, 1, 0)])
             });
             var plans = new GatewayPluginExecutionPlanProvider(snapshots, NullLogger<GatewayPluginExecutionPlanProvider>.Instance);
-            var store = new WafIsh.Dashboard.Infrastructure.State.InMemoryRateLimiterStore();
+            var store = new Wafish.Dashboard.Infrastructure.State.InMemoryRateLimiterStore();
             var forwarded = 0;
-            var middleware = new WafIsh.Plugin.RateLimit.RateLimitMiddleware(_ => { forwarded++; return Task.CompletedTask; },
-                NullLogger<WafIsh.Plugin.RateLimit.RateLimitMiddleware>.Instance, Options.Create(new GatewayMiddlewareOptions()), null!, store, plans);
+            var middleware = new Wafish.Plugin.RateLimit.RateLimitMiddleware(_ => { forwarded++; return Task.CompletedTask; },
+                NullLogger<Wafish.Plugin.RateLimit.RateLimitMiddleware>.Instance, Options.Create(new GatewayMiddlewareOptions()), null!, store, plans);
             try
             {
                 for (var attempt = 0; attempt < 2; attempt++)

@@ -1,13 +1,13 @@
-using WafIsh.Administration;
-using WafIsh.Runtime;
+using Wafish.Administration;
+using Wafish.Runtime;
 using System.Text.Json;
-using WafIsh.Dashboard.Infrastructure;
-using WafIsh.Dashboard.Infrastructure.Plugin;
-using WafIsh.Extensions;
-using WafIsh.Plugins;
-using WafIsh.Services;
-using WafIsh.Storage.Entities;
-using WafIsh.Storage.Sqlite;
+using Wafish.Dashboard.Infrastructure;
+using Wafish.Dashboard.Infrastructure.Plugin;
+using Wafish.Extensions;
+using Wafish.Plugins;
+using Wafish.Services;
+using Wafish.Storage.Entities;
+using Wafish.Storage.Sqlite;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {

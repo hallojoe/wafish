@@ -2,20 +2,20 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using WafIsh.Infrastructure.Middleware;
-using WafIsh.Plugins;
-using WafIsh.Infrastructure.State;
-using WafIsh.Infrastructure.Resilience;
+using Wafish.Infrastructure.Middleware;
+using Wafish.Plugins;
+using Wafish.Infrastructure.State;
+using Wafish.Infrastructure.Resilience;
 using System.Buffers;
 using Microsoft.AspNetCore.Http.Features;
-using WafIsh.Plugin.Retry;
-using WafIsh.Services;
+using Wafish.Plugin.Retry;
+using Wafish.Services;
 using Microsoft.IO;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Model;
 using Yarp.ReverseProxy.Health;
 
-namespace WafIsh.Plugin.Retry;
+namespace Wafish.Plugin.Retry;
 
 /// <summary>
 /// Request retry middleware for failed proxy requests.

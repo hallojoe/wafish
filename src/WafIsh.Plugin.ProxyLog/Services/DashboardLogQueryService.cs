@@ -1,10 +1,10 @@
-using WafIsh.Plugin.ProxyLog.Models;
-using WafIsh.Storage;
-using WafIsh.Storage.Entities;
+using Wafish.Plugin.ProxyLog.Models;
+using Wafish.Storage;
+using Wafish.Storage.Entities;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 
-namespace WafIsh.Plugin.ProxyLog.Services;
+namespace Wafish.Plugin.ProxyLog.Services;
 
 /// <summary>
 /// Implementation of dashboard log query service.

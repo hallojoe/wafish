@@ -1,7 +1,7 @@
 using Microsoft.Data.Sqlite;
-using static WafIsh.Storage.Sqlite.Migrations.MigrationHelper;
+using static Wafish.Storage.Sqlite.Migrations.MigrationHelper;
 
-namespace WafIsh.Storage.Sqlite.Migrations;
+namespace Wafish.Storage.Sqlite.Migrations;
 
 /// <summary>All indexes for performance.</summary>
 internal sealed class Migration005_Indexes : ISchemaMigration

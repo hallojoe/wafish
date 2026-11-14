@@ -1,11 +1,11 @@
 using System.Text.Json;
-using WafIsh.Models;
-using WafIsh.Plugins;
-using WafIsh.Services;
+using Wafish.Models;
+using Wafish.Plugins;
+using Wafish.Services;
 using Microsoft.Extensions.Logging;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Plugin.ServiceDiscovery;
+namespace Wafish.Plugin.ServiceDiscovery;
 
 /// <summary>Refreshes cluster destinations for enabled service-discovery bindings.</summary>
 public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource

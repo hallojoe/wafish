@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace WafIsh.Dashboard.Infrastructure.Auth;
+namespace Wafish.Dashboard.Infrastructure.Auth;
 
 /// <summary>Atomic, private persistence for the dashboard's single-account TOTP state.</summary>
 public static class TwoFactorStateStore

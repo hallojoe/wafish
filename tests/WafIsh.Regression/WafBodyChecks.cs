@@ -1,10 +1,10 @@
 using System.Collections.Immutable;
 using System.Text;
 using System.Text.Json;
-using WafIsh.Infrastructure.Middleware;
-using WafIsh.Plugin.Waf;
-using WafIsh.Services;
-using WafIsh.Storage.Entities;
+using Wafish.Infrastructure.Middleware;
+using Wafish.Plugin.Waf;
+using Wafish.Services;
+using Wafish.Storage.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging;

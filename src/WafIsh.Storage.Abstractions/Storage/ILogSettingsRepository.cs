@@ -1,4 +1,4 @@
-namespace WafIsh.Storage;
+namespace Wafish.Storage;
 
 /// <summary>
 /// Repository interface for log settings key-value storage.

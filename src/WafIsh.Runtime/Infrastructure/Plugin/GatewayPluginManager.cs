@@ -1,13 +1,13 @@
 using System.Text.Json;
-using WafIsh.Plugins;
-using WafIsh.Services;
-using WafIsh.Storage;
-using WafIsh.Storage.Entities;
+using Wafish.Plugins;
+using Wafish.Services;
+using Wafish.Storage;
+using Wafish.Storage.Entities;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 
-namespace WafIsh.Dashboard.Infrastructure.Plugin;
+namespace Wafish.Dashboard.Infrastructure.Plugin;
 
 /// <summary>
 /// Default implementation of <see cref="IGatewayPluginManager"/>.

@@ -1,4 +1,4 @@
-namespace WafIsh.Dashboard.Modules.GatewayConfig.Models;
+namespace Wafish.Dashboard.Modules.GatewayConfig.Models;
 
 /// <summary>Runtime metrics for the asynchronous configuration snapshot queue.</summary>
 public sealed record ConfigSnapshotMetrics(

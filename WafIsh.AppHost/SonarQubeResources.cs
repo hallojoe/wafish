@@ -2,7 +2,7 @@ using Aspire.Hosting.ApplicationModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace WafIsh.AppHost;
+namespace Wafish.AppHost;
 
 internal static class SonarQubeResources
 {

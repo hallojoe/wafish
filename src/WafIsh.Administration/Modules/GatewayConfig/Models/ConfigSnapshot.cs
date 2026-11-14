@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace WafIsh.Dashboard.Modules.GatewayConfig.Models;
+namespace Wafish.Dashboard.Modules.GatewayConfig.Models;
 
 /// <summary>
 /// Configuration snapshot for YARP rollback/history.

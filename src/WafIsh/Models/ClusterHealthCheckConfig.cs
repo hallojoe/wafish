@@ -1,4 +1,4 @@
-namespace WafIsh.Models;
+namespace Wafish.Models;
 
 /// <summary>Health check configuration matching YARP's structure.</summary>
 public class ClusterHealthCheckConfig

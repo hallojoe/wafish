@@ -1,4 +1,4 @@
-namespace WafIsh.Models;
+namespace Wafish.Models;
 
 /// <summary>Active health check configuration.</summary>
 public class ActiveHealthCheckConfig

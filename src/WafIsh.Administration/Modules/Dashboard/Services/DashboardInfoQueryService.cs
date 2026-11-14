@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using System.Reflection;
-using WafIsh.Dashboard.Modules.Dashboard.Models;
+using Wafish.Dashboard.Modules.Dashboard.Models;
 using Microsoft.AspNetCore.Hosting;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Services;
+namespace Wafish.Dashboard.Modules.Dashboard.Services;
 
 /// <summary>
 /// Implementation of dashboard info query service.

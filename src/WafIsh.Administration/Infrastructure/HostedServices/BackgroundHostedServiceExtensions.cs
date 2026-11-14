@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using WafIsh.Dashboard.Infrastructure.HostedServices;
+using Wafish.Dashboard.Infrastructure.HostedServices;
 
-namespace WafIsh.Dashboard.Infrastructure.HostedServices;
+namespace Wafish.Dashboard.Infrastructure.HostedServices;
 
 /// <summary>
 /// Extension methods for registering background (non-blocking) hosted services.

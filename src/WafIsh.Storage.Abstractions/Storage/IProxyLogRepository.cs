@@ -1,6 +1,6 @@
-using WafIsh.Storage.Entities;
+using Wafish.Storage.Entities;
 
-namespace WafIsh.Storage;
+namespace Wafish.Storage;
 
 /// <summary>
 /// Repository interface for proxy log persistence and query operations.

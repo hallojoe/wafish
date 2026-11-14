@@ -1,9 +1,9 @@
 using System.Diagnostics;
-using WafIsh.Plugin.ProxyLog.Models;
+using Wafish.Plugin.ProxyLog.Models;
 using Microsoft.AspNetCore.Http;
 using Yarp.ReverseProxy.Model;
 
-namespace WafIsh.Plugin.ProxyLog.Services;
+namespace Wafish.Plugin.ProxyLog.Services;
 
 /// <summary>
 /// Builds and stores proxy log entries. Extracted from YarpRequestCaptureMiddleware

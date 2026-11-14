@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-namespace WafIsh.Models;
+namespace Wafish.Models;
 
 public static class ConfigurationUpdateHttp
 {

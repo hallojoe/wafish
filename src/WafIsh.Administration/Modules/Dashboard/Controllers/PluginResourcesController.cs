@@ -1,8 +1,8 @@
-using WafIsh.Dashboard.Infrastructure.I18n;
-using WafIsh.Plugins;
+using Wafish.Dashboard.Infrastructure.I18n;
+using Wafish.Plugins;
 using Microsoft.AspNetCore.Mvc;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Controllers;
+namespace Wafish.Dashboard.Modules.Dashboard.Controllers;
 
 /// <summary>
 /// Exposes per-plugin resource usage statistics (memory, requests, errors, health).

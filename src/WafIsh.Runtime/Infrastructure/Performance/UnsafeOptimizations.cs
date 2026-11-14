@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace WafIsh.Dashboard.Infrastructure.Performance;
+namespace Wafish.Dashboard.Infrastructure.Performance;
 
 /// <summary>
 /// Unsafe optimizations for maximum performance.

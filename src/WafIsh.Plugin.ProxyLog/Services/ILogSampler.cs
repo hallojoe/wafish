@@ -1,4 +1,4 @@
-namespace WafIsh.Plugin.ProxyLog.Services;
+namespace Wafish.Plugin.ProxyLog.Services;
 
 /// <summary>
 /// Determines whether a given request should be sampled (included in logs).

@@ -1,11 +1,11 @@
-using WafIsh.Dashboard.Infrastructure.Plugin;
-using WafIsh.Dashboard.Modules.Dashboard.Models;
-using WafIsh.Services;
+using Wafish.Dashboard.Infrastructure.Plugin;
+using Wafish.Dashboard.Modules.Dashboard.Models;
+using Wafish.Services;
 using Yarp.ReverseProxy;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Model;
 
-namespace WafIsh.Dashboard.Modules.GatewayConfig.Services;
+namespace Wafish.Dashboard.Modules.GatewayConfig.Services;
 
 /// <summary>
 /// Maps cluster configuration to dashboard response DTO.

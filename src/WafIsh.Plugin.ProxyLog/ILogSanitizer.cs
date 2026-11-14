@@ -1,7 +1,7 @@
-using WafIsh.Plugin.ProxyLog.Models;
+using Wafish.Plugin.ProxyLog.Models;
 using Microsoft.AspNetCore.Http;
 
-namespace WafIsh.Plugin.ProxyLog;
+namespace Wafish.Plugin.ProxyLog;
 
 /// <summary>
 /// Sanitizes sensitive information from log entries.

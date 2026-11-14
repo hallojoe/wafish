@@ -1,4 +1,4 @@
-namespace WafIsh.Storage;
+namespace Wafish.Storage;
 
 /// <summary>
 /// Route repository for YARP route entity CRUD operations.

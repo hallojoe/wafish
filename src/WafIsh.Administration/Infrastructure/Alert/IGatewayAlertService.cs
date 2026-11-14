@@ -1,6 +1,6 @@
-using WafIsh.Dashboard.Infrastructure;
+using Wafish.Dashboard.Infrastructure;
 
-namespace WafIsh.Dashboard.Infrastructure.Alert;
+namespace Wafish.Dashboard.Infrastructure.Alert;
 
 /// <summary>
 /// Abstraction for emitting gateway alert events (WAF blocks, circuit breaker trips, rate limits, config changes, ...).

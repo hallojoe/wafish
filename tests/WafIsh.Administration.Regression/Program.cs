@@ -1,16 +1,16 @@
-using WafIsh.Runtime;
-using WafIsh.Dashboard.Infrastructure.Auth;
-using WafIsh.Plugin.ProxyLog.Models;
-using WafIsh.Plugin.ProxyLog.Services;
+using Wafish.Runtime;
+using Wafish.Dashboard.Infrastructure.Auth;
+using Wafish.Plugin.ProxyLog.Models;
+using Wafish.Plugin.ProxyLog.Services;
 using System.Net;
 using System.Net.Http.Json;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
-using WafIsh.Administration;
-using WafIsh.Dashboard.Infrastructure.I18n;
-using WafIsh.Dashboard.Modules.Dashboard.Services;
-using WafIsh.Storage.Sqlite;
+using Wafish.Administration;
+using Wafish.Dashboard.Infrastructure.I18n;
+using Wafish.Dashboard.Modules.Dashboard.Services;
+using Wafish.Storage.Sqlite;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -141,10 +141,10 @@ try
             using var diff = await ReadJson(await client.GetAsync("/ops/api/config/diff/" + version));
             Require(diff.RootElement.GetProperty("data").GetProperty("activation").GetArrayLength() == 1, "Comparison omitted activation changes.");
             using var rollback = await ReadJson(await client.PostAsync("/ops/api/config/rollback/" + version, null));
-            Require(!host.Services.GetRequiredService<WafIsh.Services.IDynamicYarpConfigService>().GetDynamicConfig()!.Routes.Single(r => r.Config.RouteId == "test-route").Enabled, "Rollback activated a disabled route.");
+            Require(!host.Services.GetRequiredService<Wafish.Services.IDynamicYarpConfigService>().GetDynamicConfig()!.Routes.Single(r => r.Config.RouteId == "test-route").Enabled, "Rollback activated a disabled route.");
             using var enabledAgain = await ReadJson(await client.PutAsJsonAsync("/ops/api/config/routes/test-route/enabled", new { enabled = true }));
             using var imported = await ReadJson(await client.PostAsJsonAsync("/ops/api/config/import", saved));
-            Require(!host.Services.GetRequiredService<WafIsh.Services.IDynamicYarpConfigService>().GetDynamicConfig()!.Routes.Single(r => r.Config.RouteId == "test-route").Enabled, "Import lost disabled state.");
+            Require(!host.Services.GetRequiredService<Wafish.Services.IDynamicYarpConfigService>().GetDynamicConfig()!.Routes.Single(r => r.Config.RouteId == "test-route").Enabled, "Import lost disabled state.");
             using var restored = await ReadJson(await client.PutAsJsonAsync("/ops/api/config/routes/test-route/enabled", new { enabled = true }));
         });
 
@@ -166,7 +166,7 @@ try
                 using var error = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
                 Require(error.RootElement.GetProperty("status").GetString() == "StorageFailed", "Storage outcome is missing.");
                 Require(error.RootElement.GetProperty("activeVersion").GetInt64() == error.RootElement.GetProperty("persistedVersion").GetInt64(), "Failed write changed a revision.");
-                var active = host.Services.GetRequiredService<WafIsh.Services.IDynamicYarpConfigService>().GetDynamicConfig()!;
+                var active = host.Services.GetRequiredService<Wafish.Services.IDynamicYarpConfigService>().GetDynamicConfig()!;
                 Require(active.Clusters.All(c => c.Config.ClusterId != "implicit-cluster") && active.Routes.All(r => r.Config.RouteId != "failed-route"), "Implicit cluster escaped the transaction.");
             }
             finally

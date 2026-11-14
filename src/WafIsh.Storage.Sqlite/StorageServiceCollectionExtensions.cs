@@ -1,7 +1,7 @@
-using WafIsh.Storage;
+using Wafish.Storage;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace WafIsh.Storage.Sqlite;
+namespace Wafish.Storage.Sqlite;
 
 /// <summary>
 /// Extension methods for registering SQLite storage services.

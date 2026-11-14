@@ -1,8 +1,8 @@
 using System.Net;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using WafIsh.Extensions;
-using WafIsh.GatewayRegistry;
+using Wafish.Extensions;
+using Wafish.GatewayRegistry;
 using Grpc.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;

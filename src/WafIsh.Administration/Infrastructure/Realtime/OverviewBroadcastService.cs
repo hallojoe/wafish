@@ -1,10 +1,10 @@
-using WafIsh.Services.ProxyConfigHealth;
+using Wafish.Services.ProxyConfigHealth;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Dashboard.Infrastructure.Realtime;
+namespace Wafish.Dashboard.Infrastructure.Realtime;
 
 /// <summary>
 /// Background service that pushes the shared <see cref="OverviewSnapshot"/>

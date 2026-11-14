@@ -1,9 +1,9 @@
-using WafIsh.Storage.Sqlite.Migrations;
+using Wafish.Storage.Sqlite.Migrations;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Storage.Sqlite;
+namespace Wafish.Storage.Sqlite;
 
 /// <summary>
 /// Orchestrates versioned SQLite schema migrations.

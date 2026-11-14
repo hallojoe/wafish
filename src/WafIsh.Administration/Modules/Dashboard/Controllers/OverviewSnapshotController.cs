@@ -1,7 +1,7 @@
-using WafIsh.Dashboard.Infrastructure.Realtime;
+using Wafish.Dashboard.Infrastructure.Realtime;
 using Microsoft.AspNetCore.Mvc;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Controllers;
+namespace Wafish.Dashboard.Modules.Dashboard.Controllers;
 
 /// <summary>
 /// HTTP fallback for the Overview page: serves the same snapshot that the

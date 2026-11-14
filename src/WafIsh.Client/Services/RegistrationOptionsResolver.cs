@@ -1,10 +1,10 @@
 using System.Reflection;
-using WafIsh.Models;
+using Wafish.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>
 /// Resolves smart defaults for gateway registration options.

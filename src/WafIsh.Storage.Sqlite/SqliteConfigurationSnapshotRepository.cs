@@ -1,5 +1,5 @@
 using Microsoft.Data.Sqlite;
-namespace WafIsh.Storage.Sqlite;
+namespace Wafish.Storage.Sqlite;
 
 /// <summary>Commits the complete configuration in one SQLite transaction.</summary>
 public sealed class SqliteConfigurationSnapshotRepository(SqliteConnectionFactory connections)

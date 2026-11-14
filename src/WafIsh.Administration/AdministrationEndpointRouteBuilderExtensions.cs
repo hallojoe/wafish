@@ -1,12 +1,12 @@
-using WafIsh.Dashboard.Infrastructure.Auth;
-using WafIsh.Dashboard.Infrastructure;
-using WafIsh.Dashboard.Infrastructure.Realtime;
+using Wafish.Dashboard.Infrastructure.Auth;
+using Wafish.Dashboard.Infrastructure;
+using Wafish.Dashboard.Infrastructure.Realtime;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace WafIsh.Administration;
+namespace Wafish.Administration;
 
 /// <summary>Maps controllers and realtime hubs without adding presentation services or static-asset handlers.</summary>
 public static class AdministrationEndpointRouteBuilderExtensions

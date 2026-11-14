@@ -1,7 +1,7 @@
-using WafIsh.Infrastructure.Middleware;
+using Wafish.Infrastructure.Middleware;
 using Microsoft.Extensions.Options;
 
-namespace WafIsh.Plugin.ProxyLog.Services;
+namespace Wafish.Plugin.ProxyLog.Services;
 
 /// <summary>
 /// Sampling decision engine. Randomness controls log volume, not security decisions.

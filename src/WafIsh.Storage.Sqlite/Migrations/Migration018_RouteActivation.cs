@@ -1,6 +1,6 @@
 using Microsoft.Data.Sqlite;
-using static WafIsh.Storage.Sqlite.Migrations.MigrationHelper;
-namespace WafIsh.Storage.Sqlite.Migrations;
+using static Wafish.Storage.Sqlite.Migrations.MigrationHelper;
+namespace Wafish.Storage.Sqlite.Migrations;
 
 internal sealed class Migration018_RouteActivation : ISchemaMigration
 {

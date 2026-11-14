@@ -1,8 +1,8 @@
-using WafIsh.Controllers;
+using Wafish.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-namespace WafIsh.Dashboard.Infrastructure.Auth;
+namespace Wafish.Dashboard.Infrastructure.Auth;
 
 /// <summary>Applies GatewayApiAuthFilter to GatewayConfigController only.</summary>
 internal sealed class GatewayApiAuthConvention : IApplicationModelConvention

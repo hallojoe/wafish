@@ -1,4 +1,4 @@
-namespace WafIsh.Dashboard.Infrastructure;
+namespace Wafish.Dashboard.Infrastructure;
 
 /// <summary>
 /// AI assistant configuration. Binds from <c>AI</c> config section.

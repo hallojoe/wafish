@@ -1,11 +1,11 @@
 using System.Collections.Frozen;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using WafIsh.Models;
-using WafIsh.Storage;
+using Wafish.Models;
+using Wafish.Storage;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 public sealed class GatewayPluginExecutionPlanProvider
 {

@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 
-namespace WafIsh.Infrastructure.Performance;
+namespace Wafish.Infrastructure.Performance;
 
 /// <summary>
 /// Lock-free statistics accumulator using Interlocked operations.

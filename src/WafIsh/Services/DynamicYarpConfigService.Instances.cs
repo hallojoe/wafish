@@ -1,7 +1,7 @@
-using WafIsh.Models;
+using Wafish.Models;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 public partial class DynamicYarpConfigService
 {

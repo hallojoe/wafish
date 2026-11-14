@@ -1,6 +1,6 @@
-using WafIsh.Storage.Entities;
+using Wafish.Storage.Entities;
 
-namespace WafIsh.Storage;
+namespace Wafish.Storage;
 
 /// <summary>Stores plugin schemas and route/cluster configuration bindings.</summary>
 public interface IPluginConfigurationRepository

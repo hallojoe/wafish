@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace WafIsh.Services.ProxyConfigHealth;
+namespace Wafish.Services.ProxyConfigHealth;
 
 /// <summary>
 /// Status of the most recent proxy configuration apply attempt.

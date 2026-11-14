@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
-namespace WafIsh.Dashboard.Infrastructure.Auth;
+namespace Wafish.Dashboard.Infrastructure.Auth;
 
 /// <summary>JWT token generation and validation (zero external dependency).</summary>
 public static class DashboardJwtHelper

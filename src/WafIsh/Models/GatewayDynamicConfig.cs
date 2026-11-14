@@ -1,4 +1,4 @@
-namespace WafIsh.Models;
+namespace Wafish.Models;
 
 /// <summary>
 /// Container for all dynamic gateway configurations.

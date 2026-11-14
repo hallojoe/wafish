@@ -2,7 +2,7 @@ using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace WafIsh.Plugin.Retry;
+namespace Wafish.Plugin.Retry;
 
 /// <summary>Buffers only retryable failures. Flush, start, completion, and overflow commit the response.</summary>
 internal sealed class RetryResponseBody : Stream, IHttpResponseBodyFeature

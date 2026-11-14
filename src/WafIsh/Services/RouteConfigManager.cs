@@ -1,8 +1,8 @@
-using WafIsh.Models;
+using Wafish.Models;
 using Microsoft.Extensions.Logging;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>
 /// All route CRUD operations on the dynamic config working set. Thread-safe via a shared

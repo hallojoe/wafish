@@ -1,7 +1,7 @@
-using WafIsh.Dashboard.Modules.GatewayConfig.Services;
+using Wafish.Dashboard.Modules.GatewayConfig.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Controllers;
+namespace Wafish.Dashboard.Modules.Dashboard.Controllers;
 
 /// <summary>
 /// Route configuration endpoints.

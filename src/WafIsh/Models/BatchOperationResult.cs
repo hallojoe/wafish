@@ -1,4 +1,4 @@
-namespace WafIsh.Models;
+namespace Wafish.Models;
 
 /// <summary>
 /// Per-item outcome of a batch operation (e.g. batch delete, batch enable).

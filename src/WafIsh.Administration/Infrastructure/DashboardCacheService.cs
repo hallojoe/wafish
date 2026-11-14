@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace WafIsh.Dashboard.Infrastructure;
+namespace Wafish.Dashboard.Infrastructure;
 
 /// <summary>
 /// Dashboard caching service for optimized API response delivery.

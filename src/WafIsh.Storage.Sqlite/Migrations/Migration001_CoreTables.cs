@@ -1,7 +1,7 @@
 using Microsoft.Data.Sqlite;
-using static WafIsh.Storage.Sqlite.Migrations.MigrationHelper;
+using static Wafish.Storage.Sqlite.Migrations.MigrationHelper;
 
-namespace WafIsh.Storage.Sqlite.Migrations;
+namespace Wafish.Storage.Sqlite.Migrations;
 
 /// <summary>Core YARP tables: clusters, routes, destinations.</summary>
 internal sealed class Migration001_CoreTables : ISchemaMigration

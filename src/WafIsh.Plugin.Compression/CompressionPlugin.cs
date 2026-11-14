@@ -1,4 +1,4 @@
-namespace WafIsh.Plugin.Compression;
+namespace Wafish.Plugin.Compression;
 
 public sealed class CompressionPlugin : IGatewayPlugin
 {

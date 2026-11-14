@@ -1,7 +1,7 @@
 
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-namespace WafIsh.Dashboard.Infrastructure;
+namespace Wafish.Dashboard.Infrastructure;
 
 /// <summary>Prepends the dashboard route prefix to Dashboard and plugin controllers.</summary>
 /// <remarks>

@@ -1,12 +1,12 @@
-using WafIsh.Dashboard.Infrastructure.Performance;
-using WafIsh.Plugin.ProxyLog;
-using WafIsh.Plugin.ProxyLog.Models;
+using Wafish.Dashboard.Infrastructure.Performance;
+using Wafish.Plugin.ProxyLog;
+using Wafish.Plugin.ProxyLog.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 using System.Text.Unicode;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Services;
+namespace Wafish.Dashboard.Modules.Dashboard.Services;
 
 /// <summary>
 /// Service for sanitizing sensitive information from log entries.

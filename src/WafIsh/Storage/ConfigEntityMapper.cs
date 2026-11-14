@@ -1,8 +1,8 @@
 using System.Text.Json;
-using WafIsh.Models;
+using Wafish.Models;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Storage;
+namespace Wafish.Storage;
 
 /// <summary>
 /// Maps between domain models and storage entities for core persistence.

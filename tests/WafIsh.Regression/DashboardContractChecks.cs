@@ -1,6 +1,6 @@
 using System.Text.Json;
-using WafIsh.Administration;
-using WafIsh.Storage.Sqlite;
+using Wafish.Administration;
+using Wafish.Storage.Sqlite;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Controllers;

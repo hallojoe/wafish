@@ -2,14 +2,14 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
-using GatewayGrpc = WafIsh.GatewayRegistry.GatewayRegistry;
-using WafIsh.GatewayRegistry;
-using WafIsh.Models;
+using GatewayGrpc = Wafish.GatewayRegistry.GatewayRegistry;
+using Wafish.GatewayRegistry;
+using Wafish.Models;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>
 /// Gateway auto-registration client. Local services use this to register routes with a remote gateway,

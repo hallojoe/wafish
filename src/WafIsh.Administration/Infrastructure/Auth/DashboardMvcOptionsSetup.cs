@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
-namespace WafIsh.Dashboard.Infrastructure.Auth;
+namespace Wafish.Dashboard.Infrastructure.Auth;
 
 /// <summary>
 /// Configures MVC conventions and filters for the Dashboard:

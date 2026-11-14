@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace WafIsh.Storage;
+namespace Wafish.Storage;
 
 /// <summary>
 /// Deterministic UID generator based on a prefix + key combination.

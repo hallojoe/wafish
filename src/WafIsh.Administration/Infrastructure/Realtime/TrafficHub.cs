@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
-using WafIsh.Dashboard.Infrastructure.Auth;
+using Wafish.Dashboard.Infrastructure.Auth;
 using Microsoft.AspNetCore.SignalR;
 
-namespace WafIsh.Dashboard.Infrastructure.Realtime;
+namespace Wafish.Dashboard.Infrastructure.Realtime;
 
 /// <summary>
 /// SignalR hub for real-time traffic flow visualization on the topology page.

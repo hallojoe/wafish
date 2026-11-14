@@ -1,7 +1,7 @@
 using Microsoft.Data.Sqlite;
-using static WafIsh.Storage.Sqlite.Migrations.MigrationHelper;
+using static Wafish.Storage.Sqlite.Migrations.MigrationHelper;
 
-namespace WafIsh.Storage.Sqlite.Migrations;
+namespace Wafish.Storage.Sqlite.Migrations;
 
 /// <summary>Add tool_call_id column to ai_conversations for function calling support.</summary>
 internal sealed class Migration008_ToolCallId : ISchemaMigration

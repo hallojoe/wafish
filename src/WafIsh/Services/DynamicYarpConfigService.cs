@@ -1,11 +1,11 @@
-using WafIsh.Models;
-using WafIsh.Services.ProxyConfigHealth;
-using WafIsh.Storage;
+using Wafish.Models;
+using Wafish.Services.ProxyConfigHealth;
+using Wafish.Storage;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>
 /// Dynamic YARP config service: add, update, and delete routes and clusters at runtime.

@@ -1,4 +1,4 @@
-namespace WafIsh.Plugin.ProxyLog.Models;
+namespace Wafish.Plugin.ProxyLog.Models;
 
 /// <summary>
 /// Lightweight proxy log metadata item for list display.

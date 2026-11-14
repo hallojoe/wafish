@@ -1,4 +1,4 @@
-namespace WafIsh.Plugin.ProxyLog.Models;
+namespace Wafish.Plugin.ProxyLog.Models;
 
 /// <summary>
 /// Full log detail result — combines meta fields and body fields for a single log entry.

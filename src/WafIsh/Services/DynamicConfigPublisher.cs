@@ -1,9 +1,9 @@
-using WafIsh.Models;
-using WafIsh.Services.ProxyConfigHealth;
+using Wafish.Models;
+using Wafish.Services.ProxyConfigHealth;
 using Microsoft.Extensions.Logging;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>
 /// Builds immutable snapshots from the mutable working set and pushes them to

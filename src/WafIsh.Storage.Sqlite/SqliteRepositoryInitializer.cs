@@ -1,4 +1,4 @@
-namespace WafIsh.Storage.Sqlite;
+namespace Wafish.Storage.Sqlite;
 
 internal static class SqliteRepositoryInitializer
 {

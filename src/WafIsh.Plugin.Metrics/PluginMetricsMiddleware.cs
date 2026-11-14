@@ -1,12 +1,12 @@
 using System.Collections.Concurrent;
-using WafIsh.Infrastructure.Performance;
-using WafIsh.Models;
-using WafIsh.Services;
+using Wafish.Infrastructure.Performance;
+using Wafish.Models;
+using Wafish.Services;
 using Microsoft.AspNetCore.Http;
 using System.Diagnostics;
 using Yarp.ReverseProxy.Model;
 
-namespace WafIsh.Plugin.Metrics;
+namespace Wafish.Plugin.Metrics;
 
 public enum PluginMetricOutcome { Completed, Faulted, Cancelled }
 

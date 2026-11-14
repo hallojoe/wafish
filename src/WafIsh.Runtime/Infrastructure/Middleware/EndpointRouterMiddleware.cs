@@ -1,10 +1,10 @@
-using WafIsh.Infrastructure.Middleware;
-using WafIsh.Dashboard.Infrastructure.Deployment;
+using Wafish.Infrastructure.Middleware;
+using Wafish.Dashboard.Infrastructure.Deployment;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace WafIsh.Dashboard.Infrastructure.Middleware;
+namespace Wafish.Dashboard.Infrastructure.Middleware;
 
 /// <summary>
 /// Routes incoming requests based on the local port they arrived on.

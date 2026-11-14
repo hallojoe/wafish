@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Models;
+namespace Wafish.Dashboard.Modules.Dashboard.Models;
 
 /// <summary>
 /// Current proxy-log runtime settings (hot-reloadable subset).

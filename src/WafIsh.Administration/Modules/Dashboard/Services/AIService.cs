@@ -2,11 +2,11 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using WafIsh.Dashboard.Infrastructure;
-using WafIsh.Storage;
+using Wafish.Dashboard.Infrastructure;
+using Wafish.Storage;
 using Microsoft.Extensions.Options;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Services;
+namespace Wafish.Dashboard.Modules.Dashboard.Services;
 
 /// <summary>Event yielded by the streaming chat method.</summary>
 public record AIStreamEvent

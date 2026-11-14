@@ -1,9 +1,9 @@
 using System.Collections.Concurrent;
-using WafIsh.Models;
+using Wafish.Models;
 using Microsoft.Extensions.Primitives;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>
 /// Single source of truth for proxy configuration. Replaces YARP's <c>InMemoryConfigProvider</c>

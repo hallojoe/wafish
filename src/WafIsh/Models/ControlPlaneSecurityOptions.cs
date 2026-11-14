@@ -1,4 +1,4 @@
-namespace WafIsh.Models;
+namespace Wafish.Models;
 
 /// <summary>
 /// Unified control-plane security options for Gateway REST API, gRPC registration, and Dashboard.

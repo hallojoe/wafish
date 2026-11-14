@@ -1,8 +1,8 @@
 using System.Net;
-using WafIsh.Infrastructure;
-using WafIsh.Plugin.Waf.Helpers;
+using Wafish.Infrastructure;
+using Wafish.Plugin.Waf.Helpers;
 
-namespace WafIsh.Plugin.Waf;
+namespace Wafish.Plugin.Waf;
 
 /// <summary>
 /// Checks client IP against whitelist/blacklist rules.

@@ -1,7 +1,7 @@
 using Microsoft.Data.Sqlite;
-using static WafIsh.Storage.Sqlite.Migrations.MigrationHelper;
+using static Wafish.Storage.Sqlite.Migrations.MigrationHelper;
 
-namespace WafIsh.Storage.Sqlite.Migrations;
+namespace Wafish.Storage.Sqlite.Migrations;
 
 /// <summary>Add UID and snapshot columns to existing tables (idempotent).</summary>
 internal sealed class Migration004_ColumnAdditions : ISchemaMigration

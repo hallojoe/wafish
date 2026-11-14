@@ -1,12 +1,12 @@
 using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
-using WafIsh.Storage;
-using WafIsh.Storage.Abstractions.Storage.Entities;
+using Wafish.Storage;
+using Wafish.Storage.Abstractions.Storage.Entities;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Storage.Sqlite;
+namespace Wafish.Storage.Sqlite;
 
 /// <summary>
 /// SQLite implementation of <see cref="IPluginRuntimeStateRepository"/>.

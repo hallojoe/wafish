@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace WafIsh.Plugin.ProxyLog.Models;
+namespace Wafish.Plugin.ProxyLog.Models;
 
 /// <summary>
 /// Log event type enumeration.

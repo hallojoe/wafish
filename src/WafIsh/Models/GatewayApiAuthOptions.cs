@@ -1,4 +1,4 @@
-namespace WafIsh.Models;
+namespace Wafish.Models;
 
 /// <summary>Gateway API authentication mode.</summary>
 public enum GatewayApiAuthMode

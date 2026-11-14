@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace WafIsh.Plugin.Waf;
+namespace Wafish.Plugin.Waf;
 
 /// <summary>
 /// Detects SQL injection attacks in the decoded query string and request body.

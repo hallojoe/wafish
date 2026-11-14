@@ -1,7 +1,7 @@
-using WafIsh.Models;
+using Wafish.Models;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>
 /// Shared mutable state for the dynamic config pipeline. Owned by <see cref="DynamicYarpConfigService"/>

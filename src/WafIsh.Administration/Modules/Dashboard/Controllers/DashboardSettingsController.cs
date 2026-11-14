@@ -1,12 +1,12 @@
-using WafIsh.Dashboard.Infrastructure;
-using WafIsh.Dashboard.Infrastructure.Deployment;
-using WafIsh.Dashboard.Modules.Dashboard.Services;
-using WafIsh.Storage;
+using Wafish.Dashboard.Infrastructure;
+using Wafish.Dashboard.Infrastructure.Deployment;
+using Wafish.Dashboard.Modules.Dashboard.Services;
+using Wafish.Storage;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Options;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Controllers;
+namespace Wafish.Dashboard.Modules.Dashboard.Controllers;
 
 /// <summary>System information and database downloads shared by administration clients.</summary>
 public class DashboardSettingsController : Controller

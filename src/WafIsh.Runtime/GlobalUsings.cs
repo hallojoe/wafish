@@ -1,1 +1,1 @@
-global using WafIsh.Plugins;
+global using Wafish.Plugins;

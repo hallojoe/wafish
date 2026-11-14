@@ -1,6 +1,6 @@
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>
 /// Static helper methods extracted from <see cref="DynamicYarpConfigService"/>

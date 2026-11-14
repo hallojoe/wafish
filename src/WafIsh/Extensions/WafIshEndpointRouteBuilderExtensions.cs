@@ -1,9 +1,9 @@
-using WafIsh.Services;
+using Wafish.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace WafIsh.Extensions;
+namespace Wafish.Extensions;
 /// <summary>
 /// The WafIsh endpoint route builder extensions.
 /// </summary>

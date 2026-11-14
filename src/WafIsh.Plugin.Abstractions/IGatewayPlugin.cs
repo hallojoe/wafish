@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace WafIsh.Plugins;
+namespace Wafish.Plugins;
 
 /// <summary>
 /// Defines a gateway plugin that can extend the WafIsh functionality.

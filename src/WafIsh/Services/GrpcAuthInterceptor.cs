@@ -1,11 +1,11 @@
 using System.Text;
-using WafIsh.Models;
+using Wafish.Models;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>
 /// gRPC server-side auth interceptor. Validates credentials against <see cref="GatewayApiAuthOptions"/>.

@@ -1,10 +1,10 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using WafIsh.Storage;
-using WafIsh.Storage.Entities;
-using WafIsh.Storage.Abstractions.Storage.Entities;
-using WafIsh.Storage.Sqlite;
+using Wafish.Storage;
+using Wafish.Storage.Entities;
+using Wafish.Storage.Abstractions.Storage.Entities;
+using Wafish.Storage.Sqlite;
 
 internal static class StorageRepositoryChecks
 {
@@ -13,14 +13,14 @@ internal static class StorageRepositoryChecks
         await run("Logging: persistence starts once, writes batches, and stops without losing entries", async () =>
         {
             await using var db = new Database();
-            var settings = new WafIsh.Plugin.ProxyLog.Services.ProxyLogRuntimeSettings(Microsoft.Extensions.Options.Options.Create(new WafIsh.Plugin.ProxyLog.ProxyLogPluginOptions()));
-            var store = new WafIsh.Plugin.ProxyLog.Services.ProxyLogStore(runtimeSettings: settings);
-            var writer = new WafIsh.Plugin.ProxyLog.Services.SqliteProxyLogWriter(db.Get<IProxyLogRepository>(), Microsoft.Extensions.Logging.Abstractions.NullLogger<WafIsh.Plugin.ProxyLog.Services.SqliteProxyLogWriter>.Instance);
-            var logger = new EnabledLogger<WafIsh.Plugin.ProxyLog.Services.AsyncLogPersistenceService>();
-            var service = new WafIsh.Plugin.ProxyLog.Services.AsyncLogPersistenceService(store, writer, settings, null!, logger);
+            var settings = new Wafish.Plugin.ProxyLog.Services.ProxyLogRuntimeSettings(Microsoft.Extensions.Options.Options.Create(new Wafish.Plugin.ProxyLog.ProxyLogPluginOptions()));
+            var store = new Wafish.Plugin.ProxyLog.Services.ProxyLogStore(runtimeSettings: settings);
+            var writer = new Wafish.Plugin.ProxyLog.Services.SqliteProxyLogWriter(db.Get<IProxyLogRepository>(), Microsoft.Extensions.Logging.Abstractions.NullLogger<Wafish.Plugin.ProxyLog.Services.SqliteProxyLogWriter>.Instance);
+            var logger = new EnabledLogger<Wafish.Plugin.ProxyLog.Services.AsyncLogPersistenceService>();
+            var service = new Wafish.Plugin.ProxyLog.Services.AsyncLogPersistenceService(store, writer, settings, null!, logger);
             for (var i = 0; i < 100; i++)
             {
-                store.Add(new() { Timestamp = DateTime.Now, EventType = WafIsh.Plugin.ProxyLog.Models.LogEventType.ProxyResponse, Level = "Information", RouteId = "lifecycle", StatusCode = 200 });
+                store.Add(new() { Timestamp = DateTime.Now, EventType = Wafish.Plugin.ProxyLog.Models.LogEventType.ProxyResponse, Level = "Information", RouteId = "lifecycle", StatusCode = 200 });
             }
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
@@ -44,10 +44,10 @@ internal static class StorageRepositoryChecks
         {
             await using var db = new Database();
             using var http = new WebhookClientFactory();
-            var webhooks = new WafIsh.Dashboard.Infrastructure.Notifications.WebhookNotificationService(http, db.Services,
-                Microsoft.Extensions.Logging.Abstractions.NullLogger<WafIsh.Dashboard.Infrastructure.Notifications.WebhookNotificationService>.Instance);
-            var logger = new EnabledLogger<WafIsh.Dashboard.Modules.Dashboard.Controllers.WebhookSettingsController>();
-            var controller = new WafIsh.Dashboard.Modules.Dashboard.Controllers.WebhookSettingsController(webhooks, null!, db.Services, logger);
+            var webhooks = new Wafish.Dashboard.Infrastructure.Notifications.WebhookNotificationService(http, db.Services,
+                Microsoft.Extensions.Logging.Abstractions.NullLogger<Wafish.Dashboard.Infrastructure.Notifications.WebhookNotificationService>.Instance);
+            var logger = new EnabledLogger<Wafish.Dashboard.Modules.Dashboard.Controllers.WebhookSettingsController>();
+            var controller = new Wafish.Dashboard.Modules.Dashboard.Controllers.WebhookSettingsController(webhooks, null!, db.Services, logger);
             await controller.SaveSettings(new() { EnabledEvents = ["Test", "Test"], RetryCount = 0, TimeoutSeconds = 3 }, default);
             const string url = "https://webhook.test/hook?access_token=private-one&token=private-two&key=private-three&secret=private-four&visible=yes";
             await controller.SavePlatform(new() { Platform = "generic", Endpoints = [new() { Url = url }, new() { Url = url }] }, default);

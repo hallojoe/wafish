@@ -1,11 +1,11 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using WafIsh.Storage;
+using Wafish.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Dashboard.Infrastructure.Notifications;
+namespace Wafish.Dashboard.Infrastructure.Notifications;
 
 /// <summary>Supported notification platforms (2026 payload contracts).</summary>
 public static class WebhookPlatforms

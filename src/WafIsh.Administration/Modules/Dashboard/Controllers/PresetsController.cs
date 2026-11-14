@@ -1,8 +1,8 @@
-using WafIsh.Storage;
-using WafIsh.Storage.Entities;
+using Wafish.Storage;
+using Wafish.Storage.Entities;
 using Microsoft.AspNetCore.Mvc;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Controllers;
+namespace Wafish.Dashboard.Modules.Dashboard.Controllers;
 
 /// <summary>
 /// Strategy preset API: save, list, apply, and delete reusable plugin configuration presets.

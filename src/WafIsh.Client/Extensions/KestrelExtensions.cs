@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 
-namespace WafIsh.Extensions;
+namespace Wafish.Extensions;
 
 /// <summary>
 /// Kestrel configuration extensions support HTTP/1.1 and HTTP/2 for gRPC.

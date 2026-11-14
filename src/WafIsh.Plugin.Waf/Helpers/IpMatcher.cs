@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Text.RegularExpressions;
 
-namespace WafIsh.Plugin.Waf.Helpers;
+namespace Wafish.Plugin.Waf.Helpers;
 
 /// <summary>
 /// Zero-allocation IP matching utilities (exact, CIDR, wildcard).

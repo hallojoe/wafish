@@ -1,8 +1,8 @@
-using WafIsh.Plugin.ProxyLog.Models;
-using WafIsh.Plugin.ProxyLog.Services;
+using Wafish.Plugin.ProxyLog.Models;
+using Wafish.Plugin.ProxyLog.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Controllers;
+namespace Wafish.Dashboard.Modules.Dashboard.Controllers;
 
 /// <summary>
 /// Provides aggregated traffic statistics derived from the in-memory proxy log store.

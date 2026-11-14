@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Dashboard.Modules.GatewayConfig.Services;
+namespace Wafish.Dashboard.Modules.GatewayConfig.Services;
 
 /// <summary>
 /// Contract for config diff computation between snapshot versions and live config.

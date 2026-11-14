@@ -1,12 +1,12 @@
 using System.Diagnostics;
 using System.Reflection;
-using WafIsh.Dashboard.Infrastructure.Deployment;
-using WafIsh.Services;
+using Wafish.Dashboard.Infrastructure.Deployment;
+using Wafish.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace WafIsh.Dashboard.Infrastructure.Middleware;
+namespace Wafish.Dashboard.Infrastructure.Middleware;
 
 /// <summary>
 /// Serves liveness (/live), readiness (/ready), and combined (/health) endpoints for

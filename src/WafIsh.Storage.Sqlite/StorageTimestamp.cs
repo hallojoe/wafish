@@ -1,5 +1,5 @@
 using System.Globalization;
-namespace WafIsh.Storage.Sqlite;
+namespace Wafish.Storage.Sqlite;
 
 internal static class StorageTimestamp
 {

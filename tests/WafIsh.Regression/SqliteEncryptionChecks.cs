@@ -1,4 +1,4 @@
-using WafIsh.Storage.Sqlite;
+using Wafish.Storage.Sqlite;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

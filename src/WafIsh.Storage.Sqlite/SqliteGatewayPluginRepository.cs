@@ -1,7 +1,7 @@
-using WafIsh.Storage;
+using Wafish.Storage;
 using Microsoft.Data.Sqlite;
 
-namespace WafIsh.Storage.Sqlite;
+namespace Wafish.Storage.Sqlite;
 
 /// <summary>SQLite implementation of durable gateway plugin installation state.</summary>
 public sealed class SqliteGatewayPluginRepository : IGatewayPluginRepository

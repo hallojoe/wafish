@@ -1,8 +1,8 @@
 using System.Threading;
 using System.Threading.Tasks;
-using WafIsh.Storage.Abstractions.Storage.Entities;
+using Wafish.Storage.Abstractions.Storage.Entities;
 
-namespace WafIsh.Storage;
+namespace Wafish.Storage;
 
 /// <summary>
 /// Persists plugin runtime state (circuit breaker, rate-limit stats, WAF counts, etc.)

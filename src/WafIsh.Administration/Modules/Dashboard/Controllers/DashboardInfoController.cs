@@ -1,7 +1,7 @@
-using WafIsh.Dashboard.Modules.Dashboard.Services;
+using Wafish.Dashboard.Modules.Dashboard.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Controllers;
+namespace Wafish.Dashboard.Modules.Dashboard.Controllers;
 
 /// <summary>
 /// Gateway basic info endpoint.

@@ -1,8 +1,8 @@
-using WafIsh.Plugins;
+using Wafish.Plugins;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace WafIsh.Plugin.Cache;
+namespace Wafish.Plugin.Cache;
 
 public sealed class ResponseCachePlugin : IGatewayPlugin
 {

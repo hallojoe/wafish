@@ -1,9 +1,9 @@
 using System.Text.Json;
-using WafIsh.Storage;
+using Wafish.Storage;
 using Microsoft.Data.Sqlite;
-using static WafIsh.Storage.Sqlite.Migrations.MigrationHelper;
+using static Wafish.Storage.Sqlite.Migrations.MigrationHelper;
 
-namespace WafIsh.Storage.Sqlite.Migrations;
+namespace Wafish.Storage.Sqlite.Migrations;
 
 /// <summary>Backfill missing UIDs and snapshot columns (best-effort, time-boxed).</summary>
 internal sealed class Migration006_DataBackfill : ISchemaMigration

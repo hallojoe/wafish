@@ -10,19 +10,19 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using WafIsh.Dashboard.Infrastructure.Notifications;
-using WafIsh.Dashboard.Infrastructure.Plugin;
-using WafIsh.Infrastructure.Performance;
-using WafIsh.Plugin.Metrics;
-using WafIsh.Plugin.ProxyLog;
-using WafIsh.Plugin.ProxyLog.Models;
-using WafIsh.Plugin.ProxyLog.Services;
-using WafIsh.Plugins;
-using WafIsh.Runtime;
-using WafIsh.Services;
-using WafIsh.Storage;
-using WafIsh.Storage.Entities;
-using WafIsh.Storage.Sqlite;
+using Wafish.Dashboard.Infrastructure.Notifications;
+using Wafish.Dashboard.Infrastructure.Plugin;
+using Wafish.Infrastructure.Performance;
+using Wafish.Plugin.Metrics;
+using Wafish.Plugin.ProxyLog;
+using Wafish.Plugin.ProxyLog.Models;
+using Wafish.Plugin.ProxyLog.Services;
+using Wafish.Plugins;
+using Wafish.Runtime;
+using Wafish.Services;
+using Wafish.Storage;
+using Wafish.Storage.Entities;
+using Wafish.Storage.Sqlite;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Forwarder;
 using Yarp.ReverseProxy.Model;
@@ -150,9 +150,9 @@ internal static class ReviewAccountingChecks
             var after = dispatcher.GetSnapshot();
             Check(after.Submitted == after.Delivered + after.Failed + after.Suppressed + after.Discarded && after.Discarded == 1,
                 "Notification outcomes did not balance.");
-            var controller = new WafIsh.Dashboard.Modules.Dashboard.Controllers.WebhookSettingsController(
+            var controller = new Wafish.Dashboard.Modules.Dashboard.Controllers.WebhookSettingsController(
                 provider.GetRequiredService<WebhookNotificationService>(), dispatcher, provider,
-                NullLogger<WafIsh.Dashboard.Modules.Dashboard.Controllers.WebhookSettingsController>.Instance);
+                NullLogger<Wafish.Dashboard.Modules.Dashboard.Controllers.WebhookSettingsController>.Instance);
             var result = (Microsoft.AspNetCore.Mvc.OkObjectResult)await controller.GetSettings(default);
             var json = System.Text.Json.JsonSerializer.SerializeToElement(result.Value);
             Check(json.GetProperty("dispatch").GetProperty("Discarded").GetInt64() == 1, "Administration did not expose queue losses.");

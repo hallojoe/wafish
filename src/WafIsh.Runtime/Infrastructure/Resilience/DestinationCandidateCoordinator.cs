@@ -1,12 +1,12 @@
-using WafIsh.Dashboard.Infrastructure.Plugin;
-using WafIsh.Dashboard.Infrastructure.State;
+using Wafish.Dashboard.Infrastructure.Plugin;
+using Wafish.Dashboard.Infrastructure.State;
 using Microsoft.AspNetCore.Http;
 using Yarp.ReverseProxy.Model;
-using WafIsh.Infrastructure.State;
-using WafIsh.Infrastructure.Resilience;
-using WafIsh.Services;
+using Wafish.Infrastructure.State;
+using Wafish.Infrastructure.Resilience;
+using Wafish.Services;
 
-namespace WafIsh.Dashboard.Infrastructure.Resilience;
+namespace Wafish.Dashboard.Infrastructure.Resilience;
 
 public sealed class DestinationCandidateCoordinator(
     ICircuitStateStore circuitStateStore,

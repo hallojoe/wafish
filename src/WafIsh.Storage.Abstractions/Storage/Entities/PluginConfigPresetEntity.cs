@@ -1,4 +1,4 @@
-namespace WafIsh.Storage.Entities;
+namespace Wafish.Storage.Entities;
 
 /// <summary>A saved plugin configuration preset that can be applied to any binding of the same plugin.</summary>
 public class PluginConfigPresetEntity

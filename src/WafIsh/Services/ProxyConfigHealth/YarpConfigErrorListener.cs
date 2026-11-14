@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Services.ProxyConfigHealth;
+namespace Wafish.Services.ProxyConfigHealth;
 
 /// <summary>
 /// Captures YARP proxy configuration apply failures into <see cref="IProxyConfigErrorStore"/>.

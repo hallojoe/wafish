@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 
-namespace WafIsh.Dashboard.Infrastructure.Deployment;
+namespace Wafish.Dashboard.Infrastructure.Deployment;
 
 /// <summary>
 /// Command-line helpers for deployment configuration.

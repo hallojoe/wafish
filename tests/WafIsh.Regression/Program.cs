@@ -2,20 +2,20 @@ using System.Collections.Immutable;
 using System.Net;
 using System.Reflection;
 using System.Text.Json;
-using WafIsh.Administration;
-using WafIsh.Dashboard.Infrastructure;
-using WafIsh.Dashboard.Infrastructure.Auth;
-using WafIsh.Dashboard.Infrastructure.Plugin;
-using WafIsh.Plugins;
-using WafIsh.Plugin.ProxyLog;
-using WafIsh.Plugin.ProxyLog.Services;
-using WafIsh.Plugin.ServiceDiscovery;
-using WafIsh.Infrastructure;
-using WafIsh.Models;
-using WafIsh.Services;
-using WafIsh.Storage;
-using WafIsh.Storage.Entities;
-using WafIsh.Storage.Sqlite;
+using Wafish.Administration;
+using Wafish.Dashboard.Infrastructure;
+using Wafish.Dashboard.Infrastructure.Auth;
+using Wafish.Dashboard.Infrastructure.Plugin;
+using Wafish.Plugins;
+using Wafish.Plugin.ProxyLog;
+using Wafish.Plugin.ProxyLog.Services;
+using Wafish.Plugin.ServiceDiscovery;
+using Wafish.Infrastructure;
+using Wafish.Models;
+using Wafish.Services;
+using Wafish.Storage;
+using Wafish.Storage.Entities;
+using Wafish.Storage.Sqlite;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Data.Sqlite;
@@ -246,7 +246,7 @@ await RunAsync("Plugin runtime domain drains in-flight requests before disposal"
 
 Run("Plugin manifest dependencies are exposed and built-in adapters are protected", () =>
 {
-    var manifest = new WafIsh.Plugins.PluginManifest(
+    var manifest = new Wafish.Plugins.PluginManifest(
         "dependent", "Dependent", "1.0", [], [], 0, new(), [], "test")
     {
         Dependencies = [new("base")]

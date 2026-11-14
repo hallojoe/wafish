@@ -1,4 +1,4 @@
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>
 /// Event notifier for gateway configuration changes.

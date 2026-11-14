@@ -5,14 +5,14 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using WafIsh.Infrastructure.Middleware;
-using WafIsh.Plugins;
-using WafIsh.Services;
-using WafIsh.Models;
-using WafIsh.Infrastructure;
+using Wafish.Infrastructure.Middleware;
+using Wafish.Plugins;
+using Wafish.Services;
+using Wafish.Models;
+using Wafish.Infrastructure;
 using Yarp.ReverseProxy.Model;
 
-namespace WafIsh.Plugin.Waf;
+namespace Wafish.Plugin.Waf;
 
 /// <summary>
 /// Web Application Firewall middleware — orchestrator.

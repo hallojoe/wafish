@@ -1,8 +1,8 @@
-using WafIsh.Plugins;
+using Wafish.Plugins;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace WafIsh.Plugin.Metrics;
+namespace Wafish.Plugin.Metrics;
 
 public sealed class TrafficMetricsPlugin : IGatewayPlugin
 {

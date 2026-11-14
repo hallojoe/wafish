@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Dashboard.Infrastructure.HostedServices;
+namespace Wafish.Dashboard.Infrastructure.HostedServices;
 
 /// <summary>
 /// Wraps an <see cref="IHostedService"/> so that its <see cref="IHostedService.StartAsync"/>

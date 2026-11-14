@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Http;
-using WafIsh.Infrastructure.Middleware;
-using WafIsh.Models;
+using Wafish.Infrastructure.Middleware;
+using Wafish.Models;
 
-namespace WafIsh.Plugin.Waf;
+namespace Wafish.Plugin.Waf;
 
 /// <summary>
 /// Shared context passed to all <see cref="IWafRuleChecker"/> implementations.

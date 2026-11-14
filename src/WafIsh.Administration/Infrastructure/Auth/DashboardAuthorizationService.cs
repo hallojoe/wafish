@@ -1,9 +1,9 @@
-using WafIsh.Services;
+using Wafish.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace WafIsh.Dashboard.Infrastructure.Auth;
+namespace Wafish.Dashboard.Infrastructure.Auth;
 
 /// <summary>
 /// Standard dashboard authorization service.
@@ -23,7 +23,7 @@ public sealed class DashboardAuthorizationService : IDashboardAuthorizationServi
     {
         _options = options.Value;
         _attempts = attempts ?? new AuthenticationAttemptLimiter();
-        _policy = policy ?? new ControlPlaneAccessPolicy(Options.Create(new WafIsh.Models.ControlPlaneSecurityOptions()));
+        _policy = policy ?? new ControlPlaneAccessPolicy(Options.Create(new Wafish.Models.ControlPlaneSecurityOptions()));
         _logger = logger;
     }
 

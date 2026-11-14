@@ -1,6 +1,6 @@
 using System;
 
-namespace WafIsh.Storage.Abstractions.Storage.Entities;
+namespace Wafish.Storage.Abstractions.Storage.Entities;
 
 /// <summary>
 /// Persisted runtime state for a plugin target (circuit breaker state, rate-limit

@@ -1,7 +1,7 @@
-using WafIsh.Models;
+using Wafish.Models;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>
 /// Interface for dynamic YARP configuration management at runtime.

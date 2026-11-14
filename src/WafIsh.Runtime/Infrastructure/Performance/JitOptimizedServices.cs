@@ -3,7 +3,7 @@ using System.Runtime;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace WafIsh.Dashboard.Infrastructure.Performance;
+namespace Wafish.Dashboard.Infrastructure.Performance;
 
 #region JIT Optimization Attributes
 

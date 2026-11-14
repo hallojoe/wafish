@@ -1,6 +1,6 @@
-using WafIsh.Plugin.ProxyLog.Models;
+using Wafish.Plugin.ProxyLog.Models;
 
-namespace WafIsh.Plugin.ProxyLog.Services;
+namespace Wafish.Plugin.ProxyLog.Services;
 
 /// <summary>
 /// Interface for proxy log storage implementations.

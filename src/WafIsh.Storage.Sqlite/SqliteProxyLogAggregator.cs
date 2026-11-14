@@ -1,8 +1,8 @@
-using WafIsh.Storage;
+using Wafish.Storage;
 using Microsoft.Data.Sqlite;
 using System.Globalization;
 
-namespace WafIsh.Storage.Sqlite;
+namespace Wafish.Storage.Sqlite;
 
 /// <summary>
 /// Handles statistical aggregation queries on proxy_logs_meta:

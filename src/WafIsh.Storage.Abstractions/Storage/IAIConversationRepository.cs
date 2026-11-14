@@ -1,4 +1,4 @@
-namespace WafIsh.Storage;
+namespace Wafish.Storage;
 
 /// <summary>
 /// Repository for AI conversation history persistence.

@@ -1,10 +1,10 @@
-using WafIsh.Plugin.ProxyLog.Models;
-using WafIsh.Storage;
-using WafIsh.Storage.Entities;
+using Wafish.Plugin.ProxyLog.Models;
+using Wafish.Storage;
+using Wafish.Storage.Entities;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
-namespace WafIsh.Plugin.ProxyLog.Services;
+namespace Wafish.Plugin.ProxyLog.Services;
 
 /// <summary>
 /// High-level batch writer that converts LogEntry objects into ProxyLogMetaEntity + ProxyLogBodyEntity

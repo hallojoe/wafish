@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace WafIsh.Plugin.Waf;
+namespace Wafish.Plugin.Waf;
 
 /// <summary>
 /// Detects path traversal attacks: raw ../ and URL-encoded variants (%2e%2e/, %252e%252e).

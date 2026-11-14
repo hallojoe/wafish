@@ -1,9 +1,9 @@
-using WafIsh.ReactUi;
-using WafIsh.Administration;
-using WafIsh.Extensions;
-using WafIsh.Runtime;
-using WafIsh.Dashboard.Infrastructure.Deployment;
-using WafIsh.Storage.Sqlite;
+using Wafish.ReactUi;
+using Wafish.Administration;
+using Wafish.Extensions;
+using Wafish.Runtime;
+using Wafish.Dashboard.Infrastructure.Deployment;
+using Wafish.Storage.Sqlite;
 using Microsoft.Extensions.Options;
 using Serilog;
 

@@ -1,7 +1,7 @@
-using WafIsh.Models;
+using Wafish.Models;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>
 /// Shared base class for <see cref="RouteConfigManager"/> and <see cref="ClusterConfigManager"/>.

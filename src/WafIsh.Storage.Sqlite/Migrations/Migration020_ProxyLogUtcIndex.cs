@@ -1,6 +1,6 @@
 using Microsoft.Data.Sqlite;
-using static WafIsh.Storage.Sqlite.Migrations.MigrationHelper;
-namespace WafIsh.Storage.Sqlite.Migrations;
+using static Wafish.Storage.Sqlite.Migrations.MigrationHelper;
+namespace Wafish.Storage.Sqlite.Migrations;
 
 /// <summary>Indexes existing and future log timestamps by their UTC instant without rewriting original text.</summary>
 internal sealed class Migration020_ProxyLogUtcIndex : ISchemaMigration

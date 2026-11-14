@@ -1,14 +1,14 @@
 using System.Text.Json;
-using WafIsh.Dashboard.Infrastructure.State;
-using WafIsh.Dashboard.Modules.GatewayConfig.Models;
-using WafIsh.Models;
-using WafIsh.Services;
-using WafIsh.Storage;
-using WafIsh.Storage.Entities;
+using Wafish.Dashboard.Infrastructure.State;
+using Wafish.Dashboard.Modules.GatewayConfig.Models;
+using Wafish.Models;
+using Wafish.Services;
+using Wafish.Storage;
+using Wafish.Storage.Entities;
 using Microsoft.Extensions.Logging;
-using WafIsh.Infrastructure.State;
+using Wafish.Infrastructure.State;
 
-namespace WafIsh.Dashboard.Modules.GatewayConfig.Services;
+namespace Wafish.Dashboard.Modules.GatewayConfig.Services;
 
 public interface IGatewayIdentityService
 {

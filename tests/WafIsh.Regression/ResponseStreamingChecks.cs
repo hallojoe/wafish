@@ -1,11 +1,11 @@
 using System.Collections.Immutable;
 using System.IO.Compression;
 using System.Text;
-using WafIsh.Models;
-using WafIsh.Plugin.Cache;
-using WafIsh.Plugin.Compression;
-using WafIsh.Services;
-using WafIsh.Storage.Entities;
+using Wafish.Models;
+using Wafish.Plugin.Cache;
+using Wafish.Plugin.Compression;
+using Wafish.Services;
+using Wafish.Storage.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;

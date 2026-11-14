@@ -1,4 +1,4 @@
-namespace WafIsh.Dashboard.Infrastructure;
+namespace Wafish.Dashboard.Infrastructure;
 
 /// <summary>
 /// Proxy logging configuration options.

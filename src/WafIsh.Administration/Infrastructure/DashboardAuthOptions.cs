@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace WafIsh.Dashboard.Infrastructure;
+namespace Wafish.Dashboard.Infrastructure;
 
 /// <summary>
 /// Authentication options for Dashboard access.

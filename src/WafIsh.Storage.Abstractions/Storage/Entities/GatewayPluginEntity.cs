@@ -1,4 +1,4 @@
-namespace WafIsh.Storage;
+namespace Wafish.Storage;
 
 /// <summary>Persisted installation and runtime registration state for a gateway plugin.</summary>
 public sealed class GatewayPluginEntity

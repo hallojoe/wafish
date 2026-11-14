@@ -1,4 +1,4 @@
-using WafIsh.Extensions;
+using Wafish.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,4 +1,4 @@
-namespace WafIsh.Storage;
+namespace Wafish.Storage;
 
 /// <summary>Atomic route, cluster, destination, and version storage.</summary>
 public interface IConfigurationSnapshotRepository

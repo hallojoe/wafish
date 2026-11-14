@@ -1,4 +1,4 @@
-namespace WafIsh.Storage;
+namespace Wafish.Storage;
 
 /// <summary>Policy target binding entity. Transitional bridge from key-based applied_targets JSON to UID-based bindings.</summary>
 public class PolicyTargetEntity

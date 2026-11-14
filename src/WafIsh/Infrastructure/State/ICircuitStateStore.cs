@@ -1,6 +1,6 @@
-using WafIsh.Models;
+using Wafish.Models;
 
-namespace WafIsh.Infrastructure.State;
+namespace Wafish.Infrastructure.State;
 
 /// <summary>
 /// Manages in-memory circuit breaker state. Registered as a Singleton so that

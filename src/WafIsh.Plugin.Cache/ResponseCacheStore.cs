@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Options;
-namespace WafIsh.Plugin.Cache;
+namespace Wafish.Plugin.Cache;
 
 public sealed class ResponseCacheBudgetOptions
 {

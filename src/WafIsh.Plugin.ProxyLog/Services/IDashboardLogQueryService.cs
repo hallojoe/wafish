@@ -1,7 +1,7 @@
-using WafIsh.Plugin.ProxyLog.Models;
-using WafIsh.Storage.Entities;
+using Wafish.Plugin.ProxyLog.Models;
+using Wafish.Storage.Entities;
 
-namespace WafIsh.Plugin.ProxyLog.Services;
+namespace Wafish.Plugin.ProxyLog.Services;
 
 /// <summary>
 /// Service for querying and managing proxy logs.

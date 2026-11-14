@@ -1,11 +1,11 @@
-using WafIsh.Infrastructure.State;
-using WafIsh.Models;
-using WafIsh.Services;
-using WafIsh.Plugins;
+using Wafish.Infrastructure.State;
+using Wafish.Models;
+using Wafish.Services;
+using Wafish.Plugins;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Plugins.CircuitBreaker.Services;
+namespace Wafish.Plugins.CircuitBreaker.Services;
 
 /// <summary>
 /// Warm-up service that pre-populates circuit breaker states from the execution plan.

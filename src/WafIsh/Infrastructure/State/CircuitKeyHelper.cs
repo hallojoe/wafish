@@ -1,6 +1,6 @@
-using WafIsh.Storage;
+using Wafish.Storage;
 
-namespace WafIsh.Infrastructure.State;
+namespace Wafish.Infrastructure.State;
 
 /// <summary>
 /// Helper methods for circuit key generation and parsing.

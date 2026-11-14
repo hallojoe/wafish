@@ -1,9 +1,9 @@
-using WafIsh.Infrastructure.State;
-using WafIsh.Models;
-using WafIsh.Services;
+using Wafish.Infrastructure.State;
+using Wafish.Models;
+using Wafish.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace WafIsh.Plugins.CircuitBreaker.Controllers;
+namespace Wafish.Plugins.CircuitBreaker.Controllers;
 
 [ApiController]
 [Route("api/circuit-breaker")]

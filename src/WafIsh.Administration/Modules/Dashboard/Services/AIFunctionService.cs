@@ -1,14 +1,14 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using WafIsh.Dashboard.Infrastructure;
-using WafIsh.Dashboard.Modules.GatewayConfig.Services;
-using WafIsh.Models;
-using WafIsh.Services;
+using Wafish.Dashboard.Infrastructure;
+using Wafish.Dashboard.Modules.GatewayConfig.Services;
+using Wafish.Models;
+using Wafish.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Services;
+namespace Wafish.Dashboard.Modules.Dashboard.Services;
 
 /// <summary>
 /// Defines and executes Function Calling tools for the AI assistant.

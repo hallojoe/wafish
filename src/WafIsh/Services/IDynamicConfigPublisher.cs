@@ -1,7 +1,7 @@
-using WafIsh.Models;
+using Wafish.Models;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>
 /// Builds an immutable snapshot from the mutable <see cref="GatewayDynamicConfig"/> working set

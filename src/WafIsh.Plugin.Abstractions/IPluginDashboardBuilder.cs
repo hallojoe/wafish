@@ -1,4 +1,4 @@
-namespace WafIsh.Plugins;
+namespace Wafish.Plugins;
 
 /// <summary>
 /// Describes a navigation menu item contributed by a plugin.

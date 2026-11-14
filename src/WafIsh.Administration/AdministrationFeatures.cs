@@ -1,13 +1,13 @@
-using WafIsh.Dashboard.Infrastructure.Alert;
-using WafIsh.Dashboard.Infrastructure.Notifications;
-using WafIsh.Dashboard.Modules.Dashboard.Controllers;
-using WafIsh.Dashboard.Modules.Dashboard.Services;
+using Wafish.Dashboard.Infrastructure.Alert;
+using Wafish.Dashboard.Infrastructure.Notifications;
+using Wafish.Dashboard.Modules.Dashboard.Controllers;
+using Wafish.Dashboard.Modules.Dashboard.Services;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Administration;
+namespace Wafish.Administration;
 
 public sealed class AdministrationFeatures
 {

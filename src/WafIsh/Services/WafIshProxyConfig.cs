@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Primitives;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>
 /// Immutable proxy configuration snapshot. Serves both YARP (via <see cref="Routes"/> / <see cref="Clusters"/>)

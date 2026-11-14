@@ -2,10 +2,10 @@ using System.Collections.Immutable;
 using System.IO.Compression;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using WafIsh.Services;
-using WafIsh.Storage.Entities;
-using WafIsh.Infrastructure.Middleware;
-using WafIsh.Plugin.RateLimit;
+using Wafish.Services;
+using Wafish.Storage.Entities;
+using Wafish.Infrastructure.Middleware;
+using Wafish.Plugin.RateLimit;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Forwarder;
 using Yarp.ReverseProxy.Model;
@@ -13,11 +13,11 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http;
-using WafIsh.Dashboard.Infrastructure.Plugin;
-using WafIsh.Dashboard.Infrastructure.State;
-using WafIsh.Plugin.ProxyLog.Services;
-using WafIsh.Plugin.Waf;
-using WafIsh.Plugin.Waf.Helpers;
+using Wafish.Dashboard.Infrastructure.Plugin;
+using Wafish.Dashboard.Infrastructure.State;
+using Wafish.Plugin.ProxyLog.Services;
+using Wafish.Plugin.Waf;
+using Wafish.Plugin.Waf.Helpers;
 
 internal static class ReviewSecurityChecks
 {

@@ -1,9 +1,9 @@
 using Microsoft.Data.Sqlite;
-using WafIsh.Storage;
-using WafIsh.Storage.Entities;
+using Wafish.Storage;
+using Wafish.Storage.Entities;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Storage.Sqlite;
+namespace Wafish.Storage.Sqlite;
 
 /// <summary>
 /// SQLite implementation of IProxyLogRepository.

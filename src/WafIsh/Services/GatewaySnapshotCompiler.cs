@@ -1,9 +1,9 @@
 using System.Collections.Immutable;
-using WafIsh.Storage;
-using WafIsh.Storage.Entities;
+using Wafish.Storage;
+using Wafish.Storage.Entities;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>Default compiler that captures enabled bindings without activating plugin modules.</summary>
 public sealed class GatewaySnapshotCompiler : IGatewaySnapshotCompiler

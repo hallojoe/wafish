@@ -1,9 +1,9 @@
-using WafIsh.Services;
-using WafIsh.Storage;
-using WafIsh.Storage.Entities;
-using WafIsh.Plugins;
+using Wafish.Services;
+using Wafish.Storage;
+using Wafish.Storage.Entities;
+using Wafish.Plugins;
 
-namespace WafIsh.Dashboard.Infrastructure.Plugin;
+namespace Wafish.Dashboard.Infrastructure.Plugin;
 
 public interface IPluginBindingMutationService
 {

@@ -1,7 +1,7 @@
-using WafIsh.Administration;
-using WafIsh.ReactUi;
-using WafIsh.Runtime;
-using WafIsh.Storage.Sqlite;
+using Wafish.Administration;
+using Wafish.ReactUi;
+using Wafish.Runtime;
+using Wafish.Storage.Sqlite;
 using Microsoft.Data.Sqlite;
 
 var password = Environment.GetEnvironmentVariable("UI_TEST_PASSWORD")

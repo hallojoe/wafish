@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>Builds safe error messages for HTTP responses without leaking secrets in production.</summary>
 public static partial class SafeErrorMessages

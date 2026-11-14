@@ -1,16 +1,16 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using WafIsh.Dashboard.Infrastructure;
-using WafIsh.Dashboard.Infrastructure.Storage;
-using WafIsh.Dashboard.Modules.GatewayConfig.Models;
-using WafIsh.Models;
-using WafIsh.Services;
-using WafIsh.Storage;
+using Wafish.Dashboard.Infrastructure;
+using Wafish.Dashboard.Infrastructure.Storage;
+using Wafish.Dashboard.Modules.GatewayConfig.Models;
+using Wafish.Models;
+using Wafish.Services;
+using Wafish.Storage;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Dashboard.Modules.GatewayConfig.Services;
+namespace Wafish.Dashboard.Modules.GatewayConfig.Services;
 
 /// <summary>
 /// Service for managing configuration snapshots, import/export, and version history using dedicated repositories.
@@ -64,7 +64,7 @@ public class ConfigPersistenceService : IConfigPersistenceService
         var routesDict = new Dictionary<string, JsonElement>();
         foreach (var r in yarpRoutes)
         {
-            var json = WafIsh.Serialization.YarpJsonConfig.SerializeRoute(r);
+            var json = Wafish.Serialization.YarpJsonConfig.SerializeRoute(r);
             var obj = JsonNode.Parse(json)?.AsObject();
             if (obj != null) { obj.Remove("RouteId"); obj.Remove("routeId"); }
             var cleanedJson = obj?.ToJsonString() ?? json;
@@ -75,7 +75,7 @@ public class ConfigPersistenceService : IConfigPersistenceService
         var clustersDict = new Dictionary<string, JsonElement>();
         foreach (var c in yarpClusters)
         {
-            var json = WafIsh.Serialization.YarpJsonConfig.SerializeCluster(c);
+            var json = Wafish.Serialization.YarpJsonConfig.SerializeCluster(c);
             var obj = JsonNode.Parse(json)?.AsObject();
             if (obj != null) { obj.Remove("ClusterId"); obj.Remove("clusterId"); }
             var cleanedJson = obj?.ToJsonString() ?? json;
@@ -93,7 +93,7 @@ public class ConfigPersistenceService : IConfigPersistenceService
             }
         };
 
-        var fullJson = JsonSerializer.Serialize(fullConfig, WafIsh.Serialization.YarpJsonConfig.IndentedOptions);
+        var fullJson = JsonSerializer.Serialize(fullConfig, Wafish.Serialization.YarpJsonConfig.IndentedOptions);
         using var fullDoc = JsonDocument.Parse(fullJson);
         return fullDoc.RootElement.Clone();
     }
@@ -163,7 +163,7 @@ public class ConfigPersistenceService : IConfigPersistenceService
             {
                 foreach (var cluster in cCamel.EnumerateObject())
                 {
-                    var clusterConfig = WafIsh.Serialization.YarpJsonConfig.DeserializeCluster(cluster.Value);
+                    var clusterConfig = Wafish.Serialization.YarpJsonConfig.DeserializeCluster(cluster.Value);
                     if (clusterConfig == null)
                     {
                         result.SkippedClusters++;
@@ -188,7 +188,7 @@ public class ConfigPersistenceService : IConfigPersistenceService
             {
                 foreach (var route in rCamel.EnumerateObject())
                 {
-                    var routeConfig = WafIsh.Serialization.YarpJsonConfig.DeserializeRoute(route.Value);
+                    var routeConfig = Wafish.Serialization.YarpJsonConfig.DeserializeRoute(route.Value);
                     if (routeConfig == null)
                     {
                         result.SkippedRoutes++;
@@ -292,7 +292,7 @@ public class ConfigPersistenceService : IConfigPersistenceService
             {
                 foreach (var route in rC.EnumerateObject())
                 {
-                    var routeConfig = WafIsh.Serialization.YarpJsonConfig.DeserializeRoute(route.Value);
+                    var routeConfig = Wafish.Serialization.YarpJsonConfig.DeserializeRoute(route.Value);
                     if (routeConfig == null)
                     {
                         continue;
@@ -306,7 +306,7 @@ public class ConfigPersistenceService : IConfigPersistenceService
             {
                 foreach (var cluster in clC.EnumerateObject())
                 {
-                    var clusterConfig = WafIsh.Serialization.YarpJsonConfig.DeserializeCluster(cluster.Value);
+                    var clusterConfig = Wafish.Serialization.YarpJsonConfig.DeserializeCluster(cluster.Value);
                     if (clusterConfig == null)
                     {
                         continue;
@@ -337,7 +337,7 @@ public class ConfigPersistenceService : IConfigPersistenceService
             }
             return true;
         }
-        catch (WafIsh.Models.ConfigurationUpdateException) { throw; }
+        catch (Wafish.Models.ConfigurationUpdateException) { throw; }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to rollback to version: {VersionId}", versionId);

@@ -1,4 +1,4 @@
-namespace WafIsh.Storage;
+namespace Wafish.Storage;
 
 /// <summary>Config Audit Log entity for database storage.</summary>
 public class AuditLogEntity

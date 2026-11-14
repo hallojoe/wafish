@@ -1,9 +1,9 @@
-namespace WafIsh.Dashboard.Modules.GatewayConfig.Models;
+namespace Wafish.Dashboard.Modules.GatewayConfig.Models;
 
 /// <summary>Detailed result of a configuration import operation.</summary>
 public class ImportResult
 {
-    public WafIsh.Models.ConfigurationUpdateStatus Status { get; set; } = WafIsh.Models.ConfigurationUpdateStatus.ValidationRejected;
+    public Wafish.Models.ConfigurationUpdateStatus Status { get; set; } = Wafish.Models.ConfigurationUpdateStatus.ValidationRejected;
     public long? ActiveVersion { get; set; }
     public long? PersistedVersion { get; set; }
 

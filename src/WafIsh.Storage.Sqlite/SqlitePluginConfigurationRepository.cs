@@ -1,7 +1,7 @@
-using WafIsh.Storage;
-using WafIsh.Storage.Entities;
+using Wafish.Storage;
+using Wafish.Storage.Entities;
 
-namespace WafIsh.Storage.Sqlite;
+namespace Wafish.Storage.Sqlite;
 
 /// <summary>SQLite storage for versioned plugin schemas and route/cluster bindings.</summary>
 public sealed class SqlitePluginConfigurationRepository : IPluginConfigurationRepository

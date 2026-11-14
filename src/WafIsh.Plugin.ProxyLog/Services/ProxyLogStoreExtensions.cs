@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
-using WafIsh.Plugin.ProxyLog.Models;
+using Wafish.Plugin.ProxyLog.Models;
 
-namespace WafIsh.Plugin.ProxyLog.Services;
+namespace Wafish.Plugin.ProxyLog.Services;
 
 /// <summary>
 /// Extension methods for IProxyLogStore to support real-time log streaming via WebSocket.

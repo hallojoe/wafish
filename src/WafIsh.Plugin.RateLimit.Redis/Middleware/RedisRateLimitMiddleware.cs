@@ -1,16 +1,16 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using WafIsh.Infrastructure;
-using WafIsh.Infrastructure.Middleware;
-using WafIsh.Infrastructure.State;
-using WafIsh.Models;
-using WafIsh.Services;
-using WafIsh.Storage;
-using WafIsh.Plugins;
+using Wafish.Infrastructure;
+using Wafish.Infrastructure.Middleware;
+using Wafish.Infrastructure.State;
+using Wafish.Models;
+using Wafish.Services;
+using Wafish.Storage;
+using Wafish.Plugins;
 using Yarp.ReverseProxy.Model;
 
-namespace WafIsh.Plugin.RateLimit.Redis;
+namespace Wafish.Plugin.RateLimit.Redis;
 
 /// <summary>
 /// Route-level distributed rate limiting middleware. Reads the enabled rate-limit-redis binding

@@ -1,4 +1,4 @@
-namespace WafIsh.Dashboard.Infrastructure.Deployment;
+namespace Wafish.Dashboard.Infrastructure.Deployment;
 
 /// <summary>
 /// Deployment / startup mode controlling how Dashboard and Proxy share or split ports.

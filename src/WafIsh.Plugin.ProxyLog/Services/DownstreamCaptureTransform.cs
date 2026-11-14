@@ -1,9 +1,9 @@
-using WafIsh.Plugins;
-using WafIsh.Services;
+using Wafish.Plugins;
+using Wafish.Services;
 using Yarp.ReverseProxy.Transforms;
 using Yarp.ReverseProxy.Transforms.Builder;
 
-namespace WafIsh.Plugin.ProxyLog.Services;
+namespace Wafish.Plugin.ProxyLog.Services;
 
 /// <summary>
 /// Captures downstream request metadata after all configured YARP transforms.

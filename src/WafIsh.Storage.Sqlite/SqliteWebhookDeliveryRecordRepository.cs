@@ -1,8 +1,8 @@
-using WafIsh.Storage;
+using Wafish.Storage;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Storage.Sqlite;
+namespace Wafish.Storage.Sqlite;
 
 /// <summary>
 /// SQLite implementation of <see cref="IWebhookDeliveryRecordRepository"/>.

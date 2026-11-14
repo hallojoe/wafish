@@ -2,9 +2,9 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.Encodings.Web;
-using WafIsh.Administration;
-using WafIsh.Dashboard.Infrastructure;
-using WafIsh.Services;
+using Wafish.Administration;
+using Wafish.Dashboard.Infrastructure;
+using Wafish.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace WafIsh.ReactUi;
+namespace Wafish.ReactUi;
 
 public sealed class ReactUiOptions
 {
@@ -34,7 +34,7 @@ public static class ReactUiExtensions
             services.Configure(configure);
         }
 
-        services.AddOptions<WafIsh.Infrastructure.Middleware.GatewayMiddlewareOptions>()
+        services.AddOptions<Wafish.Infrastructure.Middleware.GatewayMiddlewareOptions>()
             .Configure<IOptions<ReactUiOptions>>((runtime, options) =>
                 runtime.AdditionalAdministrationPrefixes = runtime.AdditionalAdministrationPrefixes.Append(options.Value.RoutePrefix).Distinct().ToArray());
         return services;

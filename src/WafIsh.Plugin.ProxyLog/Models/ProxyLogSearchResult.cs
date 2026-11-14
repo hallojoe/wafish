@@ -1,4 +1,4 @@
-namespace WafIsh.Plugin.ProxyLog.Models;
+namespace Wafish.Plugin.ProxyLog.Models;
 
 /// <summary>
 /// Paginated result for historical proxy log queries from SQLite.

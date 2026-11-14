@@ -1,4 +1,4 @@
-namespace WafIsh.Storage;
+namespace Wafish.Storage;
 
 /// <summary>
 /// Cluster repository for YARP cluster and destination entity CRUD operations.

@@ -1,10 +1,10 @@
-using WafIsh.Dashboard.Infrastructure.I18n;
-using WafIsh.Dashboard.Infrastructure.Plugin;
-using WafIsh.Services;
+using Wafish.Dashboard.Infrastructure.I18n;
+using Wafish.Dashboard.Infrastructure.Plugin;
+using Wafish.Services;
 using Microsoft.AspNetCore.Mvc;
-using WafIsh.Plugins;
+using Wafish.Plugins;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Controllers;
+namespace Wafish.Dashboard.Modules.Dashboard.Controllers;
 
 /// <summary>
 /// Plugin management API.

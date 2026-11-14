@@ -1,17 +1,17 @@
-using WafIsh.Services;
+using Wafish.Services;
 using Microsoft.AspNetCore.Builder;
-using WafIsh.Runtime;
-using WafIsh.Dashboard.Infrastructure;
-using WafIsh.Dashboard.Infrastructure.Auth;
-using WafIsh.Dashboard.Infrastructure.HostedServices;
-using WafIsh.Dashboard.Infrastructure.Deployment;
-using WafIsh.Dashboard.Infrastructure.Realtime;
-using WafIsh.Dashboard.Modules.Dashboard.Controllers;
-using WafIsh.Dashboard.Modules.Dashboard.Services;
-using WafIsh.Dashboard.Modules.GatewayConfig.Services;
-using WafIsh.Plugin.ProxyLog;
-using WafIsh.Plugin.ProxyLog.Services;
-using WafIsh.Models;
+using Wafish.Runtime;
+using Wafish.Dashboard.Infrastructure;
+using Wafish.Dashboard.Infrastructure.Auth;
+using Wafish.Dashboard.Infrastructure.HostedServices;
+using Wafish.Dashboard.Infrastructure.Deployment;
+using Wafish.Dashboard.Infrastructure.Realtime;
+using Wafish.Dashboard.Modules.Dashboard.Controllers;
+using Wafish.Dashboard.Modules.Dashboard.Services;
+using Wafish.Dashboard.Modules.GatewayConfig.Services;
+using Wafish.Plugin.ProxyLog;
+using Wafish.Plugin.ProxyLog.Services;
+using Wafish.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
@@ -19,9 +19,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using DashboardInfrastructure = WafIsh.Dashboard.Infrastructure;
+using DashboardInfrastructure = Wafish.Dashboard.Infrastructure;
 
-namespace WafIsh.Administration;
+namespace Wafish.Administration;
 
 /// <summary>Administration registration without Razor presentation.</summary>
 public static class AdministrationServiceCollectionExtensions
@@ -49,7 +49,7 @@ public static class AdministrationServiceCollectionExtensions
         services.Configure<MvcOptions>(options => options.Conventions.Add(new AdministrationFeatureConvention(features)));
         services.AddDashboardOptions(configureOptions);
         services.AddWafIshRuntime();
-        services.AddOptions<WafIsh.Infrastructure.Middleware.GatewayMiddlewareOptions>()
+        services.AddOptions<Wafish.Infrastructure.Middleware.GatewayMiddlewareOptions>()
             .Configure<Microsoft.Extensions.Options.IOptions<DashboardOptions>>((runtime, dashboard) =>
                 runtime.RoutePrefix = dashboard.Value.RoutePrefix);
         services.AddDashboardWebInfrastructure();
@@ -153,8 +153,8 @@ public static class AdministrationServiceCollectionExtensions
         services.AddSingleton<DashboardInfrastructure.Notifications.NotificationDispatcher>();
         services.AddHostedService(sp => sp.GetRequiredService<DashboardInfrastructure.Notifications.NotificationDispatcher>());
         services.AddSingleton<DashboardInfrastructure.Notifications.WebhookAlertService>();
-        services.AddSingleton<WafIsh.Dashboard.Infrastructure.Alert.IGatewayAlertService,
-            WafIsh.Dashboard.Infrastructure.Notifications.WebhookAlertService>();
+        services.AddSingleton<Wafish.Dashboard.Infrastructure.Alert.IGatewayAlertService,
+            Wafish.Dashboard.Infrastructure.Notifications.WebhookAlertService>();
 
         if (configureOptions != null)
         {
@@ -175,7 +175,7 @@ public static class AdministrationServiceCollectionExtensions
         // accept relaxed JSON (matching docs/yarp_all.json style).
         var mvc = services.AddMvcCore()
             .AddApplicationPart(typeof(DashboardAuthController).Assembly)
-            .AddApplicationPart(typeof(WafIsh.Plugins.CircuitBreaker.Controllers.CircuitBreakerController).Assembly)
+            .AddApplicationPart(typeof(Wafish.Plugins.CircuitBreaker.Controllers.CircuitBreakerController).Assembly)
             .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
@@ -220,7 +220,7 @@ public static class AdministrationServiceCollectionExtensions
 
     private static IServiceCollection AddDashboardSecurity(this IServiceCollection services)
     {
-        WafIsh.Extensions.WafIshServiceCollectionExtensions.AddGatewayApiAuth(services);
+        Wafish.Extensions.WafIshServiceCollectionExtensions.AddGatewayApiAuth(services);
         services.AddSingleton<GatewayApiAuthFilter>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<MvcOptions>, GatewayApiAuthMvcOptionsSetup>());
 
@@ -349,7 +349,7 @@ public static class AdministrationServiceCollectionExtensions
         });
 
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, DeploymentConfigValidator>());
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, WafIsh.Dashboard.Infrastructure.HostedServices.KestrelEndpointChangeDetector>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, Wafish.Dashboard.Infrastructure.HostedServices.KestrelEndpointChangeDetector>());
         return services;
     }
 

@@ -1,15 +1,15 @@
 using System.Text.Json;
-using WafIsh.Dashboard.Infrastructure;
-using WafIsh.Dashboard.Modules.GatewayConfig.Services;
-using WafIsh.Models;
-using WafIsh.Services;
+using Wafish.Dashboard.Infrastructure;
+using Wafish.Dashboard.Modules.GatewayConfig.Services;
+using Wafish.Models;
+using Wafish.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Dashboard.Modules.GatewayConfig.Controllers;
+namespace Wafish.Dashboard.Modules.GatewayConfig.Controllers;
 
 /// <summary>
 /// Route CRUD operations — save, delete, rename.
@@ -51,7 +51,7 @@ public class RouteConfigController : ConfigControllerBase
             RouteConfig? route;
             try
             {
-                route = WafIsh.Serialization.YarpJsonConfig.DeserializeRoute(config);
+                route = Wafish.Serialization.YarpJsonConfig.DeserializeRoute(config);
             }
             catch (Exception parseEx)
             {

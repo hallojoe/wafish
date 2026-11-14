@@ -1,13 +1,13 @@
 using System.Text.Json;
-using WafIsh.Services;
-using WafIsh.Dashboard.Infrastructure;
-using WafIsh.Dashboard.Infrastructure.Auth;
-using WafIsh.Dashboard.Modules.Dashboard.Services;
+using Wafish.Services;
+using Wafish.Dashboard.Infrastructure;
+using Wafish.Dashboard.Infrastructure.Auth;
+using Wafish.Dashboard.Modules.Dashboard.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Controllers;
+namespace Wafish.Dashboard.Modules.Dashboard.Controllers;
 
 /// <summary>
 /// Authentication endpoints — login, logout, and two-factor authentication.

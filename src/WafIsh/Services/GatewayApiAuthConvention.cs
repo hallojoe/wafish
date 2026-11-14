@@ -1,8 +1,8 @@
-using WafIsh.Controllers;
+using Wafish.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 internal sealed class GatewayApiAuthConvention : IApplicationModelConvention
 {

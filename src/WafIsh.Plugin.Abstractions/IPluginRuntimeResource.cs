@@ -1,4 +1,4 @@
-namespace WafIsh.Plugins;
+namespace Wafish.Plugins;
 
 public enum PluginResourceHealthStatus
 {

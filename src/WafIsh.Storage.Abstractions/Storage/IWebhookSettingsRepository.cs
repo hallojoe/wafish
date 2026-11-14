@@ -1,4 +1,4 @@
-namespace WafIsh.Storage;
+namespace Wafish.Storage;
 
 /// <summary>A single webhook endpoint (URL + optional secret) for a notification platform.</summary>
 public sealed class WebhookEndpointConfig

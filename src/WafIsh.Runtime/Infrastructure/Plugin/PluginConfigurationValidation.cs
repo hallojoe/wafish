@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 
-namespace WafIsh.Dashboard.Infrastructure.Plugin;
+namespace Wafish.Dashboard.Infrastructure.Plugin;
 
 /// <summary>Validates plugin configuration instances against manifest-provided JSON schemas.</summary>
 public interface IPluginConfigurationSchemaValidator
@@ -256,7 +256,7 @@ public sealed class PluginConfigurationSchemaValidator : IPluginConfigurationSch
         }
 
         if (schema.TryGetProperty("format", out var addressFormat) && addressFormat.GetString() == "ip-pattern" &&
-            !WafIsh.Plugin.Waf.Helpers.IpMatcher.IsValidPattern(text))
+            !Wafish.Plugin.Waf.Helpers.IpMatcher.IsValidPattern(text))
         {
             error = $"{path} must contain an IP address, wildcard, or valid CIDR prefix.";
             return false;

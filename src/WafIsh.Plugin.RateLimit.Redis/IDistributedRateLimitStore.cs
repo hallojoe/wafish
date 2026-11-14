@@ -1,4 +1,4 @@
-namespace WafIsh.Plugin.RateLimit.Redis;
+namespace Wafish.Plugin.RateLimit.Redis;
 
 /// <summary>Outcome of a single distributed rate-limit acquisition attempt.</summary>
 /// <param name="Allowed">Whether the request is within the configured budget.</param>

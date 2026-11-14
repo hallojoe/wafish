@@ -1,7 +1,7 @@
-using WafIsh.Storage.Entities;
+using Wafish.Storage.Entities;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>Provides the global activation state used when compiling plugin bindings.</summary>
 public interface IPluginActivationState

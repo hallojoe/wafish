@@ -1,4 +1,4 @@
-namespace WafIsh.Dashboard.Infrastructure.Auth;
+namespace Wafish.Dashboard.Infrastructure.Auth;
 
 /// <summary>Login credentials for dashboard authentication.</summary>
 public class LoginRequest

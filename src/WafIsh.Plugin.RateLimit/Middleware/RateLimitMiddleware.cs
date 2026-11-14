@@ -3,17 +3,17 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using WafIsh.Infrastructure.Middleware;
-using WafIsh.Plugins;
-using WafIsh.Infrastructure.State;
-using WafIsh.Services;
-using WafIsh.Storage;
-using WafIsh.Models;
-using WafIsh.Infrastructure;
+using Wafish.Infrastructure.Middleware;
+using Wafish.Plugins;
+using Wafish.Infrastructure.State;
+using Wafish.Services;
+using Wafish.Storage;
+using Wafish.Models;
+using Wafish.Infrastructure;
 using System.Threading.RateLimiting;
 using Yarp.ReverseProxy.Model;
 
-namespace WafIsh.Plugin.RateLimit;
+namespace Wafish.Plugin.RateLimit;
 
 /// <summary>
 /// Route-level rate limiting middleware.

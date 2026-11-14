@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
-using WafIsh.Models;
+using Wafish.Models;
 
-namespace WafIsh.Dashboard.Infrastructure;
+namespace Wafish.Dashboard.Infrastructure;
 
 /// <summary>Dashboard authorization mode.</summary>
 public enum DashboardAuthMode

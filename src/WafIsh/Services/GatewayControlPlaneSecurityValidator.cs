@@ -1,7 +1,7 @@
-using WafIsh.Models;
+using Wafish.Models;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 internal sealed class GatewayControlPlaneOptions
 {

@@ -6,12 +6,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using WafIsh.Services;
-using WafIsh.Storage;
+using Wafish.Services;
+using Wafish.Storage;
 using Yarp.ReverseProxy.Model;
-using WafIsh.Plugins;
+using Wafish.Plugins;
 
-namespace WafIsh.Dashboard.Infrastructure.Plugin;
+namespace Wafish.Dashboard.Infrastructure.Plugin;
 
 public interface IPluginRuntimeDomainManager
 {

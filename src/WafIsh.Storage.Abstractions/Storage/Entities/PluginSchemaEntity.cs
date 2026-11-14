@@ -1,4 +1,4 @@
-namespace WafIsh.Storage.Entities;
+namespace Wafish.Storage.Entities;
 
 /// <summary>Versioned JSON Schema published by a gateway plugin.</summary>
 public sealed class PluginSchemaEntity

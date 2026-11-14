@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Http;
 using Yarp.ReverseProxy.LoadBalancing;
 using Yarp.ReverseProxy.Model;
-using WafIsh.Infrastructure;
+using Wafish.Infrastructure;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>
 /// Custom YARP load balancing policy that routes requests based on client IP address.

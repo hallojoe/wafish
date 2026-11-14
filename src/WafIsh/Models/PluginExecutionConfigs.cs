@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace WafIsh.Models;
+namespace Wafish.Models;
 
 // ──────────────── Route-scoped plugin binding configs ────────────────
 

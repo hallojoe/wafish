@@ -1,10 +1,10 @@
 using System.Text.Json;
-using WafIsh.Models;
-using WafIsh.Plugin.Waf.Helpers;
-using WafIsh.Services;
+using Wafish.Models;
+using Wafish.Plugin.Waf.Helpers;
+using Wafish.Services;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Plugin.Waf;
+namespace Wafish.Plugin.Waf;
 
 /// <summary>Rejects invalid address rules while preparing a snapshot, before storage or activation.</summary>
 public sealed class WafConfigurationCompiler : IRoutePluginCompiler

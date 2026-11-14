@@ -1,6 +1,6 @@
-using WafIsh.Dashboard.Infrastructure;
-using WafIsh.Dashboard.Infrastructure.Auth;
-using WafIsh.Services;
+using Wafish.Dashboard.Infrastructure;
+using Wafish.Dashboard.Infrastructure.Auth;
+using Wafish.Services;
 using Microsoft.Extensions.Options;
 using System.Net.Sockets;
 using System.Text.Json;
@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Services;
+namespace Wafish.Dashboard.Modules.Dashboard.Services;
 
 /// <summary>
 /// Model Context Protocol (MCP) server exposing gateway READ tools over the

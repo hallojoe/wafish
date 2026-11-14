@@ -1,13 +1,13 @@
-using WafIsh.Dashboard.Infrastructure;
-using WafIsh.Dashboard.Modules.Dashboard.Models;
-using WafIsh.Dashboard.Modules.Dashboard.Services;
-using WafIsh.Plugin.ProxyLog.Models;
-using WafIsh.Plugin.ProxyLog.Services;
-using WafIsh.Storage;
+using Wafish.Dashboard.Infrastructure;
+using Wafish.Dashboard.Modules.Dashboard.Models;
+using Wafish.Dashboard.Modules.Dashboard.Services;
+using Wafish.Plugin.ProxyLog.Models;
+using Wafish.Plugin.ProxyLog.Services;
+using Wafish.Storage;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Controllers;
+namespace Wafish.Dashboard.Modules.Dashboard.Controllers;
 
 /// <summary>
 /// Proxy log query, history, detail, and settings endpoints.

@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Serialization;
+namespace Wafish.Serialization;
 
 /// <summary>
 /// Single source of truth for serializing and deserializing native YARP

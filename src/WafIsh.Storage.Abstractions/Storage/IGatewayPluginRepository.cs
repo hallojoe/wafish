@@ -1,4 +1,4 @@
-namespace WafIsh.Storage;
+namespace Wafish.Storage;
 
 /// <summary>Persists installed gateway plugin state independently from route/cluster bindings.</summary>
 public interface IGatewayPluginRepository

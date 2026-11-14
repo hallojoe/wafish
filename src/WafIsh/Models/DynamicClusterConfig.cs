@@ -1,6 +1,6 @@
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Models;
+namespace Wafish.Models;
 
 /// <summary>
 /// Dynamic cluster configuration: holds the complete native YARP <see cref="ClusterConfig"/>

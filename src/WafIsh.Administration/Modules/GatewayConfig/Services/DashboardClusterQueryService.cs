@@ -1,10 +1,10 @@
-using WafIsh.Dashboard.Infrastructure.Plugin;
-using WafIsh.Dashboard.Modules.Dashboard.Models;
-using WafIsh.Services;
+using Wafish.Dashboard.Infrastructure.Plugin;
+using Wafish.Dashboard.Modules.Dashboard.Models;
+using Wafish.Services;
 using Microsoft.Extensions.Caching.Memory;
 using Yarp.ReverseProxy;
 
-namespace WafIsh.Dashboard.Modules.GatewayConfig.Services;
+namespace Wafish.Dashboard.Modules.GatewayConfig.Services;
 
 /// <summary>
 /// Implementation of dashboard cluster query service.

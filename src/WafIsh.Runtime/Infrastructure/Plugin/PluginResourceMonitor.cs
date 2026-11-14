@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
-using WafIsh.Plugins;
+using Wafish.Plugins;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Dashboard.Infrastructure.Plugin;
+namespace Wafish.Dashboard.Infrastructure.Plugin;
 
 /// <summary>
 /// Monitors and aggregates per-plugin resource usage statistics.

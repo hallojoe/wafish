@@ -1,12 +1,12 @@
 using System.Diagnostics;
-using WafIsh.Dashboard.Modules.GatewayConfig.Services;
-using WafIsh.Plugin.ProxyLog.Services;
-using WafIsh.Storage;
+using Wafish.Dashboard.Modules.GatewayConfig.Services;
+using Wafish.Plugin.ProxyLog.Services;
+using Wafish.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Services;
+namespace Wafish.Dashboard.Modules.Dashboard.Services;
 
 /// <summary>
 /// Warmup service that runs during application startup to eliminate cold-start latency.

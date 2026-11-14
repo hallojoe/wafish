@@ -5,9 +5,9 @@ using System.Text.Json.Serialization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using WafIsh.Plugins;
+using Wafish.Plugins;
 
-namespace WafIsh.Dashboard.Infrastructure.Plugin;
+namespace Wafish.Dashboard.Infrastructure.Plugin;
 
 /// <summary>External plugin discovery and load result. Discovery never loads the entry assembly.</summary>
 public sealed record ExternalPluginRegistration(

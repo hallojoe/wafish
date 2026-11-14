@@ -1,4 +1,4 @@
-namespace WafIsh.Models;
+namespace Wafish.Models;
 
 /// <summary>Update cluster request.</summary>
 public class UpdateClusterRequest

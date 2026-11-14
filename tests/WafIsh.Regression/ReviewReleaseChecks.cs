@@ -4,14 +4,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using WafIsh.Dashboard.Infrastructure.State;
-using WafIsh.Models;
-using WafIsh.Plugin.Cache;
-using WafIsh.Plugin.Metrics;
-using WafIsh.Services;
-using WafIsh.Storage.Entities;
-using WafIsh.Storage;
-using WafIsh.Storage.Sqlite;
+using Wafish.Dashboard.Infrastructure.State;
+using Wafish.Models;
+using Wafish.Plugin.Cache;
+using Wafish.Plugin.Metrics;
+using Wafish.Services;
+using Wafish.Storage.Entities;
+using Wafish.Storage;
+using Wafish.Storage.Sqlite;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Forwarder;
 using Yarp.ReverseProxy.Model;
@@ -61,12 +61,12 @@ internal static class ReviewReleaseChecks
         {
             await using var host = await ConfigurationTransactionChecks.Fixture.Create();
             var clock = new ManualTime();
-            var store = new WafIsh.Plugin.ProxyLog.Services.ProxyLogStore();
-            var writer = new WafIsh.Plugin.ProxyLog.Services.SqliteProxyLogWriter(host.App.Services.GetRequiredService<IProxyLogRepository>(),
-                NullLogger<WafIsh.Plugin.ProxyLog.Services.SqliteProxyLogWriter>.Instance);
-            var service = new WafIsh.Plugin.ProxyLog.Services.AsyncLogPersistenceService(store, writer,
-                new WafIsh.Plugin.ProxyLog.Services.ProxyLogRuntimeSettings(Options.Create(new WafIsh.Plugin.ProxyLog.ProxyLogPluginOptions())), null!,
-                NullLogger<WafIsh.Plugin.ProxyLog.Services.AsyncLogPersistenceService>.Instance, clock);
+            var store = new Wafish.Plugin.ProxyLog.Services.ProxyLogStore();
+            var writer = new Wafish.Plugin.ProxyLog.Services.SqliteProxyLogWriter(host.App.Services.GetRequiredService<IProxyLogRepository>(),
+                NullLogger<Wafish.Plugin.ProxyLog.Services.SqliteProxyLogWriter>.Instance);
+            var service = new Wafish.Plugin.ProxyLog.Services.AsyncLogPersistenceService(store, writer,
+                new Wafish.Plugin.ProxyLog.Services.ProxyLogRuntimeSettings(Options.Create(new Wafish.Plugin.ProxyLog.ProxyLogPluginOptions())), null!,
+                NullLogger<Wafish.Plugin.ProxyLog.Services.AsyncLogPersistenceService>.Instance, clock);
             await service.StartResourceAsync(default);
             try
             {

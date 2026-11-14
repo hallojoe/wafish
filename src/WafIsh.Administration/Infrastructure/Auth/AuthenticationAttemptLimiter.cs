@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace WafIsh.Dashboard.Infrastructure.Auth;
+namespace Wafish.Dashboard.Infrastructure.Auth;
 
 /// <summary>Bounded, process-local credential attempt windows. Forwarded headers are never read here.</summary>
 public sealed class AuthenticationAttemptLimiter(TimeProvider? timeProvider = null)

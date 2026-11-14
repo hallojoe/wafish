@@ -1,8 +1,8 @@
-using WafIsh.Plugins;
+using Wafish.Plugins;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace WafIsh.Plugin.ServiceDiscovery;
+namespace Wafish.Plugin.ServiceDiscovery;
 
 public sealed class HttpServiceDiscoveryPlugin : IGatewayPlugin
 {

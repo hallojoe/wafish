@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Http;
-using WafIsh.Dashboard.Infrastructure.Deployment;
-using WafIsh.Dashboard.Infrastructure.Middleware;
+using Wafish.Dashboard.Infrastructure.Deployment;
+using Wafish.Dashboard.Infrastructure.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace WafIsh.Runtime;
+namespace Wafish.Runtime;
 
 /// <summary>Controls gateway middleware independently of administration presentation.</summary>
 public class GatewayPipelineOptions
@@ -61,7 +61,7 @@ public static class GatewayPipelineExtensions
                 app.UseMiddleware<HealthCheckMiddleware>();
             }
         }
-        var middleware = app.ApplicationServices.GetRequiredService<IOptions<WafIsh.Infrastructure.Middleware.GatewayMiddlewareOptions>>().Value;
+        var middleware = app.ApplicationServices.GetRequiredService<IOptions<Wafish.Infrastructure.Middleware.GatewayMiddlewareOptions>>().Value;
         var prefixes = middleware.AdditionalAdministrationPrefixes.Append(middleware.RoutePrefix)
             .Select(prefix => "/" + prefix.Trim('/')).ToArray();
         // Proxy compression belongs inside the response-cache boundary.

@@ -4,8 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using WafIsh.Extensions;
-using WafIsh.Services;
+using Wafish.Extensions;
+using Wafish.Services;
 
 internal static class RegistrationClientChecks
 {
@@ -25,7 +25,7 @@ internal static class RegistrationClientChecks
                 o.ApiKey = "test-key"; o.HeartbeatIntervalSeconds = 4000;
             });
             var grpc = new CaptureGrpcClient();
-            services.AddSingleton<WafIsh.GatewayRegistry.GatewayRegistry.GatewayRegistryClient>(grpc);
+            services.AddSingleton<Wafish.GatewayRegistry.GatewayRegistry.GatewayRegistryClient>(grpc);
             await using var provider = services.BuildServiceProvider();
             var hosted = provider.GetServices<IHostedService>().Single(s => s.GetType().Name == "GatewayRegistrationHostedService");
             var client = provider.GetRequiredService<GatewayAutoRegistrationClient>();
@@ -53,7 +53,7 @@ internal static class RegistrationClientChecks
                 o.AutoResolveIp = false; o.HeartbeatEnabled = false;
             });
             var grpc = new CaptureGrpcClient { Blocked = new(TaskCreationOptions.RunContinuationsAsynchronously), Release = new(TaskCreationOptions.RunContinuationsAsynchronously) };
-            services.AddSingleton<WafIsh.GatewayRegistry.GatewayRegistry.GatewayRegistryClient>(grpc);
+            services.AddSingleton<Wafish.GatewayRegistry.GatewayRegistry.GatewayRegistryClient>(grpc);
             await using var provider = services.BuildServiceProvider();
             var hosted = provider.GetServices<IHostedService>().Single(s => s.GetType().Name == "GatewayRegistrationHostedService");
             await hosted.StartAsync(default);
@@ -143,46 +143,46 @@ internal static class RegistrationClientChecks
         Check(handler.Calls.Count == stoppedCount && clock.TimerCount == 0, "Shutdown retained a heartbeat timer.");
     }
 
-    private sealed class CaptureGrpcClient : WafIsh.GatewayRegistry.GatewayRegistry.GatewayRegistryClient
+    private sealed class CaptureGrpcClient : Wafish.GatewayRegistry.GatewayRegistry.GatewayRegistryClient
     {
-        public WafIsh.GatewayRegistry.RegisterServiceRequest? Registration { get; private set; }
-        public WafIsh.GatewayRegistry.UnregisterServiceRequest? Unregistration { get; private set; }
-        public new WafIsh.GatewayRegistry.HeartbeatRequest? Heartbeat { get; private set; }
-        public WafIsh.GatewayRegistry.UpdateDestinationsRequest? Update { get; private set; }
+        public Wafish.GatewayRegistry.RegisterServiceRequest? Registration { get; private set; }
+        public Wafish.GatewayRegistry.UnregisterServiceRequest? Unregistration { get; private set; }
+        public new Wafish.GatewayRegistry.HeartbeatRequest? Heartbeat { get; private set; }
+        public Wafish.GatewayRegistry.UpdateDestinationsRequest? Update { get; private set; }
         public int Registrations { get; private set; }
         public int Heartbeats { get; private set; }
         public TaskCompletionSource? Blocked { get; set; }
         public TaskCompletionSource? Release { get; set; }
-        public override Grpc.Core.AsyncUnaryCall<WafIsh.GatewayRegistry.UpdateDestinationsResponse> UpdateDestinationsAsync(WafIsh.GatewayRegistry.UpdateDestinationsRequest request, Grpc.Core.CallOptions options)
+        public override Grpc.Core.AsyncUnaryCall<Wafish.GatewayRegistry.UpdateDestinationsResponse> UpdateDestinationsAsync(Wafish.GatewayRegistry.UpdateDestinationsRequest request, Grpc.Core.CallOptions options)
         {
             Update = request;
-            return Reply(new WafIsh.GatewayRegistry.UpdateDestinationsResponse { Success = true, ActiveVersion = request.ExpectedVersion + 1 });
+            return Reply(new Wafish.GatewayRegistry.UpdateDestinationsResponse { Success = true, ActiveVersion = request.ExpectedVersion + 1 });
         }
         public Grpc.Core.Metadata? Headers { get; private set; }
-        public override Grpc.Core.AsyncUnaryCall<WafIsh.GatewayRegistry.RegisterServiceResponse> RegisterServiceAsync(WafIsh.GatewayRegistry.RegisterServiceRequest request, Grpc.Core.CallOptions options)
+        public override Grpc.Core.AsyncUnaryCall<Wafish.GatewayRegistry.RegisterServiceResponse> RegisterServiceAsync(Wafish.GatewayRegistry.RegisterServiceRequest request, Grpc.Core.CallOptions options)
         {
             Registrations++; Registration = request; Headers = options.Headers;
-            return Reply(new WafIsh.GatewayRegistry.RegisterServiceResponse { Success = true, ActiveVersion = 7 });
+            return Reply(new Wafish.GatewayRegistry.RegisterServiceResponse { Success = true, ActiveVersion = 7 });
         }
-        public override Grpc.Core.AsyncUnaryCall<WafIsh.GatewayRegistry.UnregisterServiceResponse> UnregisterServiceAsync(WafIsh.GatewayRegistry.UnregisterServiceRequest request, Grpc.Core.CallOptions options)
+        public override Grpc.Core.AsyncUnaryCall<Wafish.GatewayRegistry.UnregisterServiceResponse> UnregisterServiceAsync(Wafish.GatewayRegistry.UnregisterServiceRequest request, Grpc.Core.CallOptions options)
         {
             Unregistration = request;
-            return Reply(new WafIsh.GatewayRegistry.UnregisterServiceResponse { Success = true });
+            return Reply(new Wafish.GatewayRegistry.UnregisterServiceResponse { Success = true });
         }
-        public override Grpc.Core.AsyncUnaryCall<WafIsh.GatewayRegistry.HeartbeatResponse> HeartbeatAsync(WafIsh.GatewayRegistry.HeartbeatRequest request, Grpc.Core.CallOptions options)
+        public override Grpc.Core.AsyncUnaryCall<Wafish.GatewayRegistry.HeartbeatResponse> HeartbeatAsync(Wafish.GatewayRegistry.HeartbeatRequest request, Grpc.Core.CallOptions options)
         {
             Heartbeat = request;
             Heartbeats++;
             if (Blocked != null)
             {
-                async Task<WafIsh.GatewayRegistry.HeartbeatResponse> Wait()
+                async Task<Wafish.GatewayRegistry.HeartbeatResponse> Wait()
                 {
                     if (Heartbeats >= 3) { Blocked.TrySetResult(); await Release!.Task; }
                     return new() { Success = false };
                 }
                 return new(Wait(), Task.FromResult(new Grpc.Core.Metadata()), () => Grpc.Core.Status.DefaultSuccess, () => new Grpc.Core.Metadata(), () => { });
             }
-            return Reply(new WafIsh.GatewayRegistry.HeartbeatResponse { Success = true });
+            return Reply(new Wafish.GatewayRegistry.HeartbeatResponse { Success = true });
         }
         private static Grpc.Core.AsyncUnaryCall<T> Reply<T>(T response) => new(Task.FromResult(response), Task.FromResult(new Grpc.Core.Metadata()), () => Grpc.Core.Status.DefaultSuccess, () => new Grpc.Core.Metadata(), () => { });
     }

@@ -1,8 +1,8 @@
-using WafIsh.Plugins;
+using Wafish.Plugins;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace WafIsh.Plugin.RateLimit.Redis;
+namespace Wafish.Plugin.RateLimit.Redis;
 
 /// <summary>
 /// Route-scoped distributed rate limiting backed by Redis. Counters are shared across all

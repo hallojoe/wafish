@@ -1,4 +1,4 @@
-namespace WafIsh.Storage;
+namespace Wafish.Storage;
 
 /// <summary>YARP Cluster entity for database storage.</summary>
 public class ClusterEntity

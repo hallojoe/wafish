@@ -1,6 +1,6 @@
-using WafIsh.Plugins;
+using Wafish.Plugins;
 
-namespace WafIsh.Dashboard.Infrastructure.Plugin;
+namespace Wafish.Dashboard.Infrastructure.Plugin;
 
 /// <summary>
 /// Invokes <see cref="IGatewayPlugin.ConfigureDashboard"/> once at startup for every

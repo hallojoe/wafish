@@ -1,5 +1,5 @@
 using Microsoft.Data.Sqlite;
-namespace WafIsh.Storage.Sqlite.Migrations;
+namespace Wafish.Storage.Sqlite.Migrations;
 
 /// <summary>Preserves timestamp precision while normalizing legacy text to UTC.</summary>
 internal sealed class Migration021_UtcTimestamps : ISchemaMigration

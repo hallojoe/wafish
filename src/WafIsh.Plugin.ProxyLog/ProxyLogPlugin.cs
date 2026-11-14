@@ -1,8 +1,8 @@
-using WafIsh.Plugins;
+using Wafish.Plugins;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace WafIsh.Plugin.ProxyLog;
+namespace Wafish.Plugin.ProxyLog;
 
 public sealed class ProxyLogPlugin : IGatewayPlugin
 {

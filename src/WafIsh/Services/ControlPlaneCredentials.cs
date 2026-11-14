@@ -1,9 +1,9 @@
 using System.Security.Cryptography;
 using System.Text;
-using WafIsh.Models;
-using WafIsh.Dashboard.Infrastructure.Auth;
+using Wafish.Models;
+using Wafish.Dashboard.Infrastructure.Auth;
 using Microsoft.AspNetCore.Http;
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>Shared credential checks for REST, gRPC, and administration.</summary>
 public static class ControlPlaneCredentials

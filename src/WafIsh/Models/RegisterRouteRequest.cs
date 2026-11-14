@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace WafIsh.Models;
+namespace Wafish.Models;
 
 /// <summary>Route registration request.</summary>
 public class RegisterRouteRequest

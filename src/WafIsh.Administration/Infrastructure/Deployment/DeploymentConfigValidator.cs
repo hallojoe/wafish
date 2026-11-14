@@ -1,9 +1,9 @@
-using WafIsh.Dashboard.Infrastructure;
+using Wafish.Dashboard.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Dashboard.Infrastructure.Deployment;
+namespace Wafish.Dashboard.Infrastructure.Deployment;
 
 /// <summary>
 /// Hosted service that runs once at startup to validate the deployment configuration.

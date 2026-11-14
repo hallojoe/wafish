@@ -1,10 +1,10 @@
-using WafIsh.Plugin.ProxyLog.Models;
-using WafIsh.Plugin.ProxyLog.Services;
+using Wafish.Plugin.ProxyLog.Models;
+using Wafish.Plugin.ProxyLog.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Dashboard.Infrastructure.Realtime;
+namespace Wafish.Dashboard.Infrastructure.Realtime;
 
 /// <summary>
 /// Background service that collects real-time traffic metrics from the proxy log store

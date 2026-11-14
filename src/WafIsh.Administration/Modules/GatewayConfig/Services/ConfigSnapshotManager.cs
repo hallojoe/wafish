@@ -1,12 +1,12 @@
 using System.Text.Json;
-using WafIsh.Dashboard.Infrastructure;
-using WafIsh.Dashboard.Infrastructure.Storage;
-using WafIsh.Dashboard.Modules.GatewayConfig.Models;
-using WafIsh.Storage;
+using Wafish.Dashboard.Infrastructure;
+using Wafish.Dashboard.Infrastructure.Storage;
+using Wafish.Dashboard.Modules.GatewayConfig.Models;
+using Wafish.Storage;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace WafIsh.Dashboard.Modules.GatewayConfig.Services;
+namespace Wafish.Dashboard.Modules.GatewayConfig.Services;
 
 /// <summary>
 /// In-memory snapshot list with persistence via <see cref="IConfigHistoryRepository"/>.

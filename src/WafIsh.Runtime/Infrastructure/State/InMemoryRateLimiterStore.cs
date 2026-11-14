@@ -1,7 +1,7 @@
 using System.Threading.RateLimiting;
-using WafIsh.Infrastructure.State;
+using Wafish.Infrastructure.State;
 
-namespace WafIsh.Dashboard.Infrastructure.State;
+namespace Wafish.Dashboard.Infrastructure.State;
 
 /// <summary>Bounded admission with ownership held through queued acquisition and downstream work.</summary>
 public sealed class InMemoryRateLimiterStore : IRateLimiterStore, IDisposable

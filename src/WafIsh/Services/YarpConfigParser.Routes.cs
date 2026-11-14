@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>Route parsing methods for <see cref="YarpConfigParser"/>.</summary>
 partial class YarpConfigParser

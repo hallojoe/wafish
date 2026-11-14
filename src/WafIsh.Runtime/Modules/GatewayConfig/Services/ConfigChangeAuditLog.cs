@@ -1,11 +1,11 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
-using WafIsh.Models;
-using WafIsh.Services;
-using WafIsh.Storage;
+using Wafish.Models;
+using Wafish.Services;
+using Wafish.Storage;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Dashboard.Modules.GatewayConfig.Services;
+namespace Wafish.Dashboard.Modules.GatewayConfig.Services;
 
 /// <summary>
 /// Audit log store for gateway configuration changes using <see cref="IAuditLogRepository"/>.

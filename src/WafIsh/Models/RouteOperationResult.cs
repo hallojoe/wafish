@@ -1,5 +1,5 @@
 using System.Text.Json.Serialization;
-namespace WafIsh.Models;
+namespace Wafish.Models;
 
 [JsonConverter(typeof(JsonStringEnumConverter<ConfigurationUpdateStatus>))]
 public enum ConfigurationUpdateStatus { Applied, ValidationRejected, VersionConflict, StorageFailed, ActivationFailed }

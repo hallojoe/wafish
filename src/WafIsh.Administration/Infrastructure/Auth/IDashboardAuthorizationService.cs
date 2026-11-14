@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace WafIsh.Dashboard.Infrastructure.Auth;
+namespace Wafish.Dashboard.Infrastructure.Auth;
 
 /// <summary>
 /// Interface for dashboard authorization service.

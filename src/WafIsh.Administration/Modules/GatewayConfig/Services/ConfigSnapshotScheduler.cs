@@ -1,11 +1,11 @@
 using System.Threading.Channels;
-using WafIsh.Dashboard.Infrastructure;
-using WafIsh.Dashboard.Modules.GatewayConfig.Models;
+using Wafish.Dashboard.Infrastructure;
+using Wafish.Dashboard.Modules.GatewayConfig.Models;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace WafIsh.Dashboard.Modules.GatewayConfig.Services;
+namespace Wafish.Dashboard.Modules.GatewayConfig.Services;
 
 public interface IConfigSnapshotScheduler
 {

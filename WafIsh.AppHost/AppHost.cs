@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Aspire.Hosting.ApplicationModel;
-using WafIsh.AppHost;
+using Wafish.AppHost;
 
 var builder = DistributedApplication.CreateBuilder(args);
 if (builder.Configuration.GetValue<bool>("EnableSonarQube"))

@@ -1,7 +1,7 @@
-using WafIsh.Plugins;
-using WafIsh.Services;
+using Wafish.Plugins;
+using Wafish.Services;
 
-namespace WafIsh.Plugin.ProxyLog.Services;
+namespace Wafish.Plugin.ProxyLog.Services;
 
 internal sealed record RouteProxyLogSettings(
     bool CaptureRequestHeaders,

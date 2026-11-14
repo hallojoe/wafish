@@ -1,12 +1,12 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text.Json;
-using WafIsh.Services;
+using Wafish.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 using Yarp.ReverseProxy.Model;
 
-namespace WafIsh.Plugin.Cache;
+namespace Wafish.Plugin.Cache;
 
 public sealed class ResponseCacheMiddleware(RequestDelegate next, ResponseCacheStore cache, GatewayPluginExecutionPlanProvider plans)
 {

@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using WafIsh.Plugin.ProxyLog.Models;
+using Wafish.Plugin.ProxyLog.Models;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Models;
+namespace Wafish.Dashboard.Modules.Dashboard.Models;
 
 /// <summary>
 /// Login response with JWT token.

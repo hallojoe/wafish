@@ -1,6 +1,6 @@
 using Microsoft.Data.Sqlite;
 
-namespace WafIsh.Storage.Sqlite.Migrations;
+namespace Wafish.Storage.Sqlite.Migrations;
 
 /// <summary>
 /// Defines a single schema migration step. Migrations are applied in

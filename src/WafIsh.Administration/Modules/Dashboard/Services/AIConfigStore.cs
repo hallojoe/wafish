@@ -1,9 +1,9 @@
 using System.Text.Json;
-using WafIsh.Dashboard.Infrastructure;
-using WafIsh.Storage;
+using Wafish.Dashboard.Infrastructure;
+using Wafish.Storage;
 using Microsoft.Extensions.Options;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Services;
+namespace Wafish.Dashboard.Modules.Dashboard.Services;
 
 /// <summary>
 /// File-based AI config store. Loads from ai-config.json, falls back to bound IOptions.

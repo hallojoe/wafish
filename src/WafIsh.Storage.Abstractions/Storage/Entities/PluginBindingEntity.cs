@@ -1,4 +1,4 @@
-namespace WafIsh.Storage.Entities;
+namespace Wafish.Storage.Entities;
 
 /// <summary>Persisted plugin configuration bound to a route or cluster.</summary>
 public sealed class PluginBindingEntity

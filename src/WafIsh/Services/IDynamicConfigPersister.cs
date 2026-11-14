@@ -1,6 +1,6 @@
-using WafIsh.Models;
+using Wafish.Models;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>
 /// Persistence layer for <see cref="GatewayDynamicConfig"/> — loads from and saves to

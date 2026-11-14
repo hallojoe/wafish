@@ -1,9 +1,9 @@
-using WafIsh.Dashboard.Infrastructure.Notifications;
-using WafIsh.Services;
+using Wafish.Dashboard.Infrastructure.Notifications;
+using Wafish.Services;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Dashboard.Modules.GatewayConfig.Services;
+namespace Wafish.Dashboard.Modules.GatewayConfig.Services;
 
 /// <summary>
 /// Background service that dispatches config-change events from a queue.

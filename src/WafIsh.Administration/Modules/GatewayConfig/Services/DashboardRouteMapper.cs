@@ -1,8 +1,8 @@
-using WafIsh.Dashboard.Modules.Dashboard.Models;
-using WafIsh.Models;
+using Wafish.Dashboard.Modules.Dashboard.Models;
+using Wafish.Models;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Dashboard.Modules.GatewayConfig.Services;
+namespace Wafish.Dashboard.Modules.GatewayConfig.Services;
 
 /// <summary>
 /// Maps route configuration to dashboard response DTO.

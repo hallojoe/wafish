@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Yarp.ReverseProxy.Model;
 
-namespace WafIsh.Infrastructure.Resilience;
+namespace Wafish.Infrastructure.Resilience;
 
 public interface IDestinationCandidateCoordinator
 {

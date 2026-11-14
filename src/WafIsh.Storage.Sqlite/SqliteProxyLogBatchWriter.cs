@@ -1,9 +1,9 @@
-using WafIsh.Storage;
-using WafIsh.Storage.Entities;
+using Wafish.Storage;
+using Wafish.Storage.Entities;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Storage.Sqlite;
+namespace Wafish.Storage.Sqlite;
 
 /// <summary>
 /// Handles batch writes to proxy_logs_meta and proxy_logs_body tables.

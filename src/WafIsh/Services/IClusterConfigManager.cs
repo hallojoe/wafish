@@ -1,7 +1,7 @@
-using WafIsh.Models;
+using Wafish.Models;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>
 /// Cluster CRUD operations on the dynamic config working set. All methods are thread-safe

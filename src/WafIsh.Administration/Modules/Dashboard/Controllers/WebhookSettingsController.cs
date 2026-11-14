@@ -1,10 +1,10 @@
-using WafIsh.Dashboard.Infrastructure.Notifications;
-using WafIsh.Storage;
+using Wafish.Dashboard.Infrastructure.Notifications;
+using Wafish.Storage;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Controllers;
+namespace Wafish.Dashboard.Modules.Dashboard.Controllers;
 
 /// <summary>
 /// Webhook notification settings API consumed by the notification management page:

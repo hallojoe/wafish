@@ -1,8 +1,8 @@
 using System.Text.Json;
-using WafIsh.Dashboard.Modules.GatewayConfig.Models;
-using WafIsh.Storage;
+using Wafish.Dashboard.Modules.GatewayConfig.Models;
+using Wafish.Storage;
 
-namespace WafIsh.Dashboard.Infrastructure.Storage;
+namespace Wafish.Dashboard.Infrastructure.Storage;
 
 /// <summary>
 /// Dashboard-specific entity mapping extensions for ConfigSnapshot types.

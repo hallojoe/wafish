@@ -1,4 +1,4 @@
-namespace WafIsh.Infrastructure.Middleware;
+namespace Wafish.Infrastructure.Middleware;
 
 /// <summary>
 /// Lightweight options for gateway middleware, decoupled from Dashboard configuration.

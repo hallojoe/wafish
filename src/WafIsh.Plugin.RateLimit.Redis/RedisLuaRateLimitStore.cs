@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
-namespace WafIsh.Plugin.RateLimit.Redis;
+namespace Wafish.Plugin.RateLimit.Redis;
 
 public sealed class RedisRateLimitStoreOptions
 {

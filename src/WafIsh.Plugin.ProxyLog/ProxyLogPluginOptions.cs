@@ -1,4 +1,4 @@
-namespace WafIsh.Plugin.ProxyLog;
+namespace Wafish.Plugin.ProxyLog;
 
 /// <summary>
 /// Plugin-level options for ProxyLog, mapped from DashboardOptions during DI registration.

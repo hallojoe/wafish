@@ -1,7 +1,7 @@
-using WafIsh.Controllers;
+using Wafish.Controllers;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>
 /// Removes GatewayConfigController from the MVC application model

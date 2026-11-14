@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Options;
 
-namespace WafIsh.Plugin.ProxyLog.Services;
+namespace Wafish.Plugin.ProxyLog.Services;
 
 /// <summary>Thread-safe immutable snapshot of log settings used by the proxy hot path.</summary>
 public sealed record ProxyLogRuntimeSnapshot(

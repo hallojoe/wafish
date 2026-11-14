@@ -1,9 +1,9 @@
-using WafIsh.Models;
+using Wafish.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-using WafIsh.Infrastructure.Middleware;
+using Wafish.Infrastructure.Middleware;
 
-namespace WafIsh.Dashboard.Infrastructure.Yarp;
+namespace Wafish.Dashboard.Infrastructure.Yarp;
 
 /// <summary>
 /// Built-in request/response transform middleware.

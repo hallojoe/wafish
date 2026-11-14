@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Forwarder;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>Cluster parsing methods for <see cref="YarpConfigParser"/>.</summary>
 partial class YarpConfigParser

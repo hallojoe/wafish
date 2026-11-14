@@ -1,9 +1,9 @@
-using WafIsh.Plugins;
-using WafIsh.Services;
+using Wafish.Plugins;
+using Wafish.Services;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Dashboard.Infrastructure.Plugin;
+namespace Wafish.Dashboard.Infrastructure.Plugin;
 
 /// <summary>
 /// Reconciles plugin-owned resources against effective activation. This controls resource loops only;

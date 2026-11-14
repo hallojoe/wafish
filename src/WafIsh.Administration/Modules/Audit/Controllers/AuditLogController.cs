@@ -1,7 +1,7 @@
-using WafIsh.Services;
+using Wafish.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace WafIsh.Dashboard.Modules.Audit.Controllers;
+namespace Wafish.Dashboard.Modules.Audit.Controllers;
 
 /// <summary>
 /// API controller for accessing configuration change audit logs.

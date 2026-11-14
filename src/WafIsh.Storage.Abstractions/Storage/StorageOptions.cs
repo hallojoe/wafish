@@ -1,4 +1,4 @@
-namespace WafIsh.Storage;
+namespace Wafish.Storage;
 
 /// <summary>
 /// Storage configuration options. Binds from <c>Gateway:Storage</c> config section.

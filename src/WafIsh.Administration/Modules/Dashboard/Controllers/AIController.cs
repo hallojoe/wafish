@@ -1,13 +1,13 @@
 using System.Text.Json;
-using WafIsh.Dashboard.Infrastructure;
-using WafIsh.Dashboard.Modules.Dashboard.Services;
-using WafIsh.Storage;
+using Wafish.Dashboard.Infrastructure;
+using Wafish.Dashboard.Modules.Dashboard.Services;
+using Wafish.Storage;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using WafIsh.Administration;
+using Wafish.Administration;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Controllers;
+namespace Wafish.Dashboard.Modules.Dashboard.Controllers;
 
 /// <summary>
 /// AI assistant API: SSE streaming chat, config management, session history.

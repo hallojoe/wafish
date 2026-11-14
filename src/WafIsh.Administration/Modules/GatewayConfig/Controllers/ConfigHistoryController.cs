@@ -1,15 +1,15 @@
-using WafIsh.Models;
+using Wafish.Models;
 using System.Text.Json;
-using WafIsh.Dashboard.Infrastructure;
-using WafIsh.Dashboard.Modules.GatewayConfig.Models;
-using WafIsh.Dashboard.Modules.GatewayConfig.Services;
-using WafIsh.Services;
+using Wafish.Dashboard.Infrastructure;
+using Wafish.Dashboard.Modules.GatewayConfig.Models;
+using Wafish.Dashboard.Modules.GatewayConfig.Services;
+using Wafish.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace WafIsh.Dashboard.Modules.GatewayConfig.Controllers;
+namespace Wafish.Dashboard.Modules.GatewayConfig.Controllers;
 
 /// <summary>
 /// Configuration history, export/import, snapshot, rollback, diff, and validation endpoints.

@@ -1,11 +1,11 @@
 using System.Text.Json;
-using WafIsh.Models;
-using WafIsh.Services;
+using Wafish.Models;
+using Wafish.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Controllers;
+namespace Wafish.Controllers;
 
 /// <summary>Gateway config API: dynamic route registration, deletion, and query.</summary>
 [Route("api/gateway")]

@@ -1,9 +1,9 @@
-using WafIsh.GatewayRegistry;
-using WafIsh.Models;
+using Wafish.GatewayRegistry;
+using Wafish.Models;
 using Microsoft.Extensions.Logging;
 using Yarp.ReverseProxy.LoadBalancing;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 internal static class GrpcGatewayRegistryMapper
 {

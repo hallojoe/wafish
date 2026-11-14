@@ -1,4 +1,4 @@
-namespace WafIsh.Dashboard.Infrastructure;
+namespace Wafish.Dashboard.Infrastructure;
 
 /// <summary>
 /// Configuration history and snapshot options bound from <c>Gateway:Dashboard:ConfigHistory</c>.

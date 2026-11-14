@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace WafIsh.Plugin.ProxyLog.Services;
+namespace Wafish.Plugin.ProxyLog.Services;
 
 /// <summary>
 /// Determines whether a request should be skipped from logging entirely

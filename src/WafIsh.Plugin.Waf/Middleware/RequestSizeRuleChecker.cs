@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace WafIsh.Plugin.Waf;
+namespace Wafish.Plugin.Waf;
 
 /// <summary>
 /// Validates request size (Content-Length), header count/size, and URI length.

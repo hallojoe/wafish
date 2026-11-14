@@ -1,6 +1,6 @@
-using WafIsh.Models;
-using WafIsh.Storage;
-namespace WafIsh.Services;
+using Wafish.Models;
+using Wafish.Storage;
+namespace Wafish.Services;
 
 internal sealed class DynamicConfigPersister(IConfigurationSnapshotRepository snapshots) : IDynamicConfigPersister
 {

@@ -1,4 +1,4 @@
-namespace WafIsh.Plugins;
+namespace Wafish.Plugins;
 
 /// <summary>
 /// Provides plugin manifests independently of runtime plugin activation.

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>
 /// Service to check if Kestrel is listening on 0.0.0.0 for cross-machine access.

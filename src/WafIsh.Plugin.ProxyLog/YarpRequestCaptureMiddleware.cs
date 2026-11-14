@@ -1,15 +1,15 @@
-using WafIsh.Plugins;
-using WafIsh.Plugin.ProxyLog.Services;
-using WafIsh.Plugin.ProxyLog.Models;
-using WafIsh.Infrastructure.Performance;
-using WafIsh.Services;
+using Wafish.Plugins;
+using Wafish.Plugin.ProxyLog.Services;
+using Wafish.Plugin.ProxyLog.Models;
+using Wafish.Infrastructure.Performance;
+using Wafish.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.IO;
 using System.Diagnostics;
 using Yarp.ReverseProxy.Model;
 
-namespace WafIsh.Plugin.ProxyLog;
+namespace Wafish.Plugin.ProxyLog;
 
 /// <summary>
 /// Captures incoming proxy request/response details before YARP processes the request.

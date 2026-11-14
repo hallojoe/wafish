@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Services.ProxyConfigHealth;
+namespace Wafish.Services.ProxyConfigHealth;
 
 /// <summary>
 /// Singleton, thread-safe implementation of <see cref="IProxyConfigErrorStore"/>.

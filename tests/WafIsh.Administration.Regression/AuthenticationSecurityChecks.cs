@@ -11,8 +11,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using WafIsh.Dashboard.Infrastructure;
-using WafIsh.Dashboard.Infrastructure.Auth;
+using Wafish.Dashboard.Infrastructure;
+using Wafish.Dashboard.Infrastructure.Auth;
 
 internal static class AuthenticationSecurityChecks
 {

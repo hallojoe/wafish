@@ -1,8 +1,8 @@
-using WafIsh.Storage;
+using Wafish.Storage;
 using Microsoft.Data.Sqlite;
 using System.Globalization;
 
-namespace WafIsh.Storage.Sqlite;
+namespace Wafish.Storage.Sqlite;
 
 /// <summary>SQLite implementation of <see cref="IClusterRepository"/>.</summary>
 public sealed class SqliteClusterRepository : IClusterRepository

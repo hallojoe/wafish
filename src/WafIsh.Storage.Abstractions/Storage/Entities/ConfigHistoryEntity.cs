@@ -1,4 +1,4 @@
-namespace WafIsh.Storage;
+namespace Wafish.Storage;
 
 /// <summary>Config History entity for database storage.</summary>
 public class ConfigHistoryEntity

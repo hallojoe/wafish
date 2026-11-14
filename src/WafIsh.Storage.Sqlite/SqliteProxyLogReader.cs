@@ -1,7 +1,7 @@
-using WafIsh.Storage.Entities;
+using Wafish.Storage.Entities;
 using Microsoft.Data.Sqlite;
 
-namespace WafIsh.Storage.Sqlite;
+namespace Wafish.Storage.Sqlite;
 
 /// <summary>
 /// Handles paginated queries and detail retrieval from proxy_logs_meta and proxy_logs_body.

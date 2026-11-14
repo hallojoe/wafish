@@ -1,13 +1,13 @@
-using WafIsh.GatewayRegistry;
-using GatewayGrpc = WafIsh.GatewayRegistry.GatewayRegistry;
-using WafIsh.Models;
-using WafIsh.Services;
+using Wafish.GatewayRegistry;
+using GatewayGrpc = Wafish.GatewayRegistry.GatewayRegistry;
+using Wafish.Models;
+using Wafish.Services;
 using Grpc.Net.Client;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace WafIsh.Extensions;
+namespace Wafish.Extensions;
 
 /// <summary>
 /// WafIsh client service registration extensions.

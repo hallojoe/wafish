@@ -2,11 +2,11 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging.Abstractions;
-using WafIsh.Dashboard.Infrastructure.Auth;
-using WafIsh.Dashboard.Infrastructure.Performance;
-using WafIsh.Dashboard.Infrastructure.Plugin;
-using WafIsh.Dashboard.Modules.Dashboard.Controllers;
-using WafIsh.Services.ProxyConfigHealth;
+using Wafish.Dashboard.Infrastructure.Auth;
+using Wafish.Dashboard.Infrastructure.Performance;
+using Wafish.Dashboard.Infrastructure.Plugin;
+using Wafish.Dashboard.Modules.Dashboard.Controllers;
+using Wafish.Services.ProxyConfigHealth;
 
 internal static class SonarRegressionChecks
 {
@@ -15,8 +15,8 @@ internal static class SonarRegressionChecks
         await run("Audit: initial history loading cannot duplicate concurrent writes", async () =>
         {
             var repo = new DelayedAuditRepository();
-            var audit = new WafIsh.Dashboard.Modules.GatewayConfig.Services.ConfigChangeAuditLog(repo,
-                NullLogger<WafIsh.Dashboard.Modules.GatewayConfig.Services.ConfigChangeAuditLog>.Instance);
+            var audit = new Wafish.Dashboard.Modules.GatewayConfig.Services.ConfigChangeAuditLog(repo,
+                NullLogger<Wafish.Dashboard.Modules.GatewayConfig.Services.ConfigChangeAuditLog>.Instance);
             audit.RecordSuccess("UpdateRoute", "route");
             await repo.ReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
             await Task.WhenAny(repo.Saved.Task, Task.Delay(100));
@@ -60,9 +60,9 @@ internal static class SonarRegressionChecks
                 context.Request.ContentLength = compressed.Length;
                 context.Request.ContentType = "text/plain; charset=utf-8";
                 context.Request.Headers.ContentEncoding = encoding;
-                Check(await WafIsh.Plugin.ProxyLog.Services.ProxyLogBodyReader.ReadRequestBodyAsync(context.Request, 1024) == message, "Request decompression changed content.");
+                Check(await Wafish.Plugin.ProxyLog.Services.ProxyLogBodyReader.ReadRequestBodyAsync(context.Request, 1024) == message, "Request decompression changed content.");
                 Check(compressed.Position == 0 && compressed.CanRead, "Logging consumed the request body.");
-                Check(await WafIsh.Plugin.ProxyLog.Services.ProxyLogBodyReader.ReadStreamAsync(compressed, 1024, "text/plain", encoding) == message, "Response decompression changed content.");
+                Check(await Wafish.Plugin.ProxyLog.Services.ProxyLogBodyReader.ReadStreamAsync(compressed, 1024, "text/plain", encoding) == message, "Response decompression changed content.");
             }
         });
 
@@ -252,25 +252,25 @@ internal static class SonarRegressionChecks
         catch (ArgumentOutOfRangeException) { }
     }
 
-    private sealed class DelayedAuditRepository : WafIsh.Storage.IAuditLogRepository
+    private sealed class DelayedAuditRepository : Wafish.Storage.IAuditLogRepository
     {
         public TaskCompletionSource ReadStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public TaskCompletionSource ReleaseRead { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public TaskCompletionSource Saved { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        private WafIsh.Storage.AuditLogEntity? _entry;
-        public async Task<IReadOnlyList<WafIsh.Storage.AuditLogEntity>> GetAuditLogsAsync(int limit = 200, CancellationToken ct = default)
+        private Wafish.Storage.AuditLogEntity? _entry;
+        public async Task<IReadOnlyList<Wafish.Storage.AuditLogEntity>> GetAuditLogsAsync(int limit = 200, CancellationToken ct = default)
         {
             ReadStarted.SetResult();
             await ReleaseRead.Task.WaitAsync(ct);
             return _entry is { } entry ? [entry] : [];
         }
-        public Task SaveAuditLogAsync(WafIsh.Storage.AuditLogEntity audit, CancellationToken ct = default)
+        public Task SaveAuditLogAsync(Wafish.Storage.AuditLogEntity audit, CancellationToken ct = default)
         {
             _entry = audit;
             Saved.SetResult();
             return Task.CompletedTask;
         }
-        public Task<IReadOnlyList<WafIsh.Storage.AuditLogEntity>> GetAuditLogsByTargetAsync(string target, int limit = 50, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<WafIsh.Storage.AuditLogEntity>>([]);
+        public Task<IReadOnlyList<Wafish.Storage.AuditLogEntity>> GetAuditLogsByTargetAsync(string target, int limit = 50, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<Wafish.Storage.AuditLogEntity>>([]);
         public Task DeleteOldAuditLogsAsync(int keepCount, CancellationToken ct = default) => Task.CompletedTask;
     }
 

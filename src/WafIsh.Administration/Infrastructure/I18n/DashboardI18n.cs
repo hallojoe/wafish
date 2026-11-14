@@ -1,7 +1,7 @@
 using System.Reflection;
 using System.Text.Json;
 
-namespace WafIsh.Dashboard.Infrastructure.I18n;
+namespace Wafish.Dashboard.Infrastructure.I18n;
 
 /// <summary>
 /// Client-side internationalization dictionary for the Dashboard UI.

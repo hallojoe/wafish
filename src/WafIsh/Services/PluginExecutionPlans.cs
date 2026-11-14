@@ -1,8 +1,8 @@
 using System.Collections.Immutable;
-using WafIsh.Storage.Entities;
+using Wafish.Storage.Entities;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>Stable ordering stages used while compiling and executing gateway plugins.</summary>
 public enum PluginExecutionStage

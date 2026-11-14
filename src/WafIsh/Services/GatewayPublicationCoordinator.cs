@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using Yarp.ReverseProxy.Configuration;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>One preparation/commit gate per publisher. Hold it until activation completes.</summary>
 public sealed class GatewayPublicationCoordinator

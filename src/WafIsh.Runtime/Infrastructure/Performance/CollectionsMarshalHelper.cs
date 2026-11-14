@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace WafIsh.Dashboard.Infrastructure.Performance;
+namespace Wafish.Dashboard.Infrastructure.Performance;
 
 /// <summary>
 /// Helper methods for efficient collection operations using low-level APIs.

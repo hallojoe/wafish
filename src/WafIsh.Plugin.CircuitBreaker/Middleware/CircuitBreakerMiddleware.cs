@@ -1,14 +1,14 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using WafIsh.Infrastructure.Middleware;
-using WafIsh.Plugins;
-using WafIsh.Infrastructure.State;
-using WafIsh.Infrastructure.Resilience;
+using Wafish.Infrastructure.Middleware;
+using Wafish.Plugins;
+using Wafish.Infrastructure.State;
+using Wafish.Infrastructure.Resilience;
 using Yarp.ReverseProxy.Model;
-using WafIsh.Services;
+using Wafish.Services;
 
-namespace WafIsh.Plugin.CircuitBreaker;
+namespace Wafish.Plugin.CircuitBreaker;
 
 /// <summary>
 /// Per-destination circuit breaker middleware.

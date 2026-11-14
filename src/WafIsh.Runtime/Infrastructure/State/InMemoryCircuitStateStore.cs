@@ -1,10 +1,10 @@
 using System.Collections.Concurrent;
-using WafIsh.Plugin.CircuitBreaker;
-using WafIsh.Models;
-using WafIsh.Storage;
-using WafIsh.Infrastructure.State;
+using Wafish.Plugin.CircuitBreaker;
+using Wafish.Models;
+using Wafish.Storage;
+using Wafish.Infrastructure.State;
 
-namespace WafIsh.Dashboard.Infrastructure.State;
+namespace Wafish.Dashboard.Infrastructure.State;
 
 /// <summary>
 /// In-memory singleton implementation of <see cref="ICircuitStateStore"/>.

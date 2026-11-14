@@ -1,13 +1,13 @@
 using System.Text;
-using WafIsh.Controllers;
-using WafIsh.Models;
+using Wafish.Controllers;
+using Wafish.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Options;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 internal sealed class GatewayApiAuthFilter : IAsyncAuthorizationFilter
 {

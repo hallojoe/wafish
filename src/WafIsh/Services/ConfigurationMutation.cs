@@ -1,6 +1,6 @@
-using WafIsh.Models;
-using WafIsh.Storage;
-namespace WafIsh.Services;
+using Wafish.Models;
+using Wafish.Storage;
+namespace Wafish.Services;
 
 /// <summary>Caller holds the configuration lock for this scope.</summary>
 internal sealed class ConfigurationMutation : IDisposable

@@ -1,8 +1,8 @@
 using System.Net;
-using WafIsh.Models;
+using Wafish.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 /// <summary>Network restrictions shared by every administration transport.</summary>
 public sealed class ControlPlaneAccessPolicy(IOptions<ControlPlaneSecurityOptions> options)

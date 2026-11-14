@@ -1,11 +1,11 @@
 using System.Text.Json;
-using WafIsh.Dashboard.Modules.GatewayConfig.Models;
+using Wafish.Dashboard.Modules.GatewayConfig.Models;
 
-namespace WafIsh.Dashboard.Modules.GatewayConfig.Services;
+namespace Wafish.Dashboard.Modules.GatewayConfig.Services;
 
 /// <summary>
 /// Interface for configuration snapshot management: export/import, version history, rollback, and validation.
-/// Snapshots are persisted via <see cref="WafIsh.Storage.IConfigHistoryRepository"/>.
+/// Snapshots are persisted via <see cref="Wafish.Storage.IConfigHistoryRepository"/>.
 /// </summary>
 public interface IConfigPersistenceService
 {

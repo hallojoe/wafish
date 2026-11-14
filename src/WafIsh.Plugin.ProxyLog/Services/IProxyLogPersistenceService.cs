@@ -1,4 +1,4 @@
-namespace WafIsh.Plugin.ProxyLog.Services;
+namespace Wafish.Plugin.ProxyLog.Services;
 
 /// <summary>
 /// Interface for the log persistence coordination service.

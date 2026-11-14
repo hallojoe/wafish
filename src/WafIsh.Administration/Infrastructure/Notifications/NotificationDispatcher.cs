@@ -1,10 +1,10 @@
 using System.Threading.Channels;
-using WafIsh.Storage;
+using Wafish.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Dashboard.Infrastructure.Notifications;
+namespace Wafish.Dashboard.Infrastructure.Notifications;
 
 /// <summary>
 /// Central hub for all outbound webhook notifications. Events (config changes and

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 
-namespace WafIsh.Dashboard.Infrastructure.Deployment;
+namespace Wafish.Dashboard.Infrastructure.Deployment;
 
 /// <summary>
 /// Resolves Kestrel endpoint configuration to deployment role mappings.

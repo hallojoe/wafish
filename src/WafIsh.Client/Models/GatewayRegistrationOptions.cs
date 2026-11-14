@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace WafIsh.Models;
+namespace Wafish.Models;
 
 /// <summary>
 /// Gateway auto-registration options.

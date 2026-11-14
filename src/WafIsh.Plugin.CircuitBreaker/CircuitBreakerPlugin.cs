@@ -1,8 +1,8 @@
-using WafIsh.Plugins;
+using Wafish.Plugins;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace WafIsh.Plugin.CircuitBreaker;
+namespace Wafish.Plugin.CircuitBreaker;
 
 public class CircuitBreakerPlugin : IGatewayPlugin
 {
@@ -27,10 +27,10 @@ public class CircuitBreakerPlugin : IGatewayPlugin
         proxyPipeline.Use(async (context, next) =>
         {
             var feature = context.Features.Get<Yarp.ReverseProxy.Model.IReverseProxyFeature>();
-            var plans = context.RequestServices.GetRequiredService<WafIsh.Services.GatewayPluginExecutionPlanProvider>();
+            var plans = context.RequestServices.GetRequiredService<Wafish.Services.GatewayPluginExecutionPlanProvider>();
             if (feature != null && plans.Current.CircuitBreakerByCluster.TryGetValue(feature.Cluster.Config.ClusterId, out var config) && config.Enabled)
             {
-                var store = context.RequestServices.GetRequiredService<WafIsh.Infrastructure.State.ICircuitStateStore>();
+                var store = context.RequestServices.GetRequiredService<Wafish.Infrastructure.State.ICircuitStateStore>();
                 feature.AvailableDestinations = feature.AvailableDestinations
                     .Where(d => !store.IsCircuitOpen(feature.Cluster.Config.ClusterId, d.DestinationId)).ToArray();
             }

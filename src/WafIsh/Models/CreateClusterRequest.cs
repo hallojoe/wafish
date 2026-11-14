@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace WafIsh.Models;
+namespace Wafish.Models;
 
 /// <summary>Create cluster request.</summary>
 public class CreateClusterRequest

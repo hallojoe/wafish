@@ -1,6 +1,6 @@
 using System.Threading.RateLimiting;
 
-namespace WafIsh.Infrastructure.State;
+namespace Wafish.Infrastructure.State;
 
 /// <summary>
 /// Manages in-memory rate limiter instances. Registered as a Singleton so that

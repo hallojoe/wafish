@@ -3,7 +3,7 @@ using System.Text.Json;
 using Aspire.Hosting.ApplicationModel;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace WafIsh.AppHost;
+namespace Wafish.AppHost;
 
 internal sealed class SonarQubeHealthCheck(IHttpClientFactory clientFactory, EndpointReference endpoint) : IHealthCheck
 {

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace WafIsh.Plugins;
+namespace Wafish.Plugins;
 
 /// <summary>Static metadata describing a gateway plugin without activating its runtime implementation.</summary>
 public sealed record PluginManifest(

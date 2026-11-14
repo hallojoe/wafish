@@ -1,9 +1,9 @@
-using WafIsh.Dashboard.Modules.Dashboard.Models;
-using WafIsh.Services;
+using Wafish.Dashboard.Modules.Dashboard.Models;
+using Wafish.Services;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Dashboard.Modules.GatewayConfig.Services;
+namespace Wafish.Dashboard.Modules.GatewayConfig.Services;
 
 /// <summary>
 /// Lightweight DTO for destination info - eliminates reflection in mapper.
@@ -82,8 +82,8 @@ internal sealed class DashboardRouteQueryService : IDashboardRouteQueryService
 
         Dictionary<string, List<Dictionary<string, string>>>? configTransforms = null;
         Dictionary<string, string>? routeSources = null;
-        Dictionary<string, WafIsh.Models.DynamicRouteConfig>? dynamicRoutes = null;
-        Dictionary<string, WafIsh.Models.DynamicClusterConfig>? dynamicClusters = null;
+        Dictionary<string, Wafish.Models.DynamicRouteConfig>? dynamicRoutes = null;
+        Dictionary<string, Wafish.Models.DynamicClusterConfig>? dynamicClusters = null;
 
         try
         {

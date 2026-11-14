@@ -1,6 +1,6 @@
-using WafIsh.Dashboard.Modules.Dashboard.Models;
+using Wafish.Dashboard.Modules.Dashboard.Models;
 
-namespace WafIsh.Dashboard.Modules.GatewayConfig.Services;
+namespace Wafish.Dashboard.Modules.GatewayConfig.Services;
 
 /// <summary>
 /// Service for querying cluster information.

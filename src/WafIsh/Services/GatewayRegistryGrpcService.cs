@@ -1,9 +1,9 @@
-using GatewayGrpc = WafIsh.GatewayRegistry.GatewayRegistry;
-using WafIsh.GatewayRegistry;
+using GatewayGrpc = Wafish.GatewayRegistry.GatewayRegistry;
+using Wafish.GatewayRegistry;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Services;
+namespace Wafish.Services;
 
 public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
 {

@@ -1,7 +1,7 @@
-using WafIsh.Dashboard.Infrastructure.Auth;
+using Wafish.Dashboard.Infrastructure.Auth;
 using Microsoft.AspNetCore.SignalR;
 
-namespace WafIsh.Dashboard.Infrastructure.Realtime;
+namespace Wafish.Dashboard.Infrastructure.Realtime;
 
 /// <summary>
 /// SignalR hub for Overview page real-time push.

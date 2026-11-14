@@ -1,4 +1,4 @@
-namespace WafIsh.Dashboard.Infrastructure.Deployment;
+namespace Wafish.Dashboard.Infrastructure.Deployment;
 
 /// <summary>
 /// Tracks runtime configuration changes that require a process restart to take effect.

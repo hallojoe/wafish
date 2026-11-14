@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace WafIsh.Infrastructure;
+namespace Wafish.Infrastructure;
 
 /// <summary>
 /// Unified client IP resolution from HTTP headers.

@@ -1,4 +1,4 @@
-namespace WafIsh.Storage.Entities;
+namespace Wafish.Storage.Entities;
 
 /// <summary>
 /// Lightweight proxy log metadata entity.

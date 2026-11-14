@@ -1,13 +1,13 @@
-using WafIsh.Infrastructure.Middleware;
-using WafIsh.Plugins;
-using WafIsh.Plugin.ProxyLog.Models;
-using WafIsh.Storage;
-using WafIsh.Storage.Entities;
+using Wafish.Infrastructure.Middleware;
+using Wafish.Plugins;
+using Wafish.Plugin.ProxyLog.Models;
+using Wafish.Storage;
+using Wafish.Storage.Entities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Threading.Channels;
 
-namespace WafIsh.Plugin.ProxyLog.Services;
+namespace Wafish.Plugin.ProxyLog.Services;
 
 /// <summary>
 /// Background service that consumes log entries from ProxyLogStore's persistence Channel

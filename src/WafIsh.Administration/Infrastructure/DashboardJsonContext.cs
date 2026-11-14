@@ -1,9 +1,9 @@
-using WafIsh.Plugin.ProxyLog.Models;
-using WafIsh.Dashboard.Modules.Dashboard.Models;
+using Wafish.Plugin.ProxyLog.Models;
+using Wafish.Dashboard.Modules.Dashboard.Models;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace WafIsh.Dashboard.Infrastructure;
+namespace Wafish.Dashboard.Infrastructure;
 
 /// <summary>
 /// JSON serialization context using System.Text.Json source generators.

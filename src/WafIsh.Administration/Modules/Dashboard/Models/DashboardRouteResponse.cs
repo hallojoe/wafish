@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Models;
+namespace Wafish.Dashboard.Modules.Dashboard.Models;
 
 /// <summary>
 /// Route response with match criteria and transforms.

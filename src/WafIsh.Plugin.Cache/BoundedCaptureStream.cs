@@ -1,4 +1,4 @@
-namespace WafIsh.Plugin.Cache;
+namespace Wafish.Plugin.Cache;
 
 /// <summary>Streams every byte immediately. Capture stops and releases its budget on overflow.</summary>
 internal sealed class BoundedCaptureStream(Stream destination, ResponseCacheStore.Capture capture) : Stream

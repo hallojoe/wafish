@@ -1,6 +1,6 @@
 using System.Data.Common;
 
-namespace WafIsh.Storage;
+namespace Wafish.Storage;
 
 /// <summary>
 /// Abstraction for database connection factories used by storage-agnostic services

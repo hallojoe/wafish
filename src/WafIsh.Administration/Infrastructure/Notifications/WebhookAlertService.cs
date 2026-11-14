@@ -1,8 +1,8 @@
-using WafIsh.Dashboard.Infrastructure.Alert;
-using WafIsh.Dashboard.Infrastructure.Notifications;
+using Wafish.Dashboard.Infrastructure.Alert;
+using Wafish.Dashboard.Infrastructure.Notifications;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Dashboard.Infrastructure.Notifications;
+namespace Wafish.Dashboard.Infrastructure.Notifications;
 
 /// <summary>
 /// Implementation of <see cref="IGatewayAlertService"/> that forwards gateway alerts

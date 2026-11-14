@@ -1,7 +1,7 @@
-using WafIsh.Services;
+using Wafish.Services;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-namespace WafIsh.Dashboard.Infrastructure.Auth;
+namespace Wafish.Dashboard.Infrastructure.Auth;
 
 internal sealed class AdministrationSecurityValidator(IOptions<DashboardOptions> options,
     ControlPlaneAccessPolicy policy) : IHostedService

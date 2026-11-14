@@ -1,4 +1,4 @@
-namespace WafIsh.Storage;
+namespace Wafish.Storage;
 
 /// <summary>YARP Destination entity for database storage.</summary>
 public class DestinationEntity

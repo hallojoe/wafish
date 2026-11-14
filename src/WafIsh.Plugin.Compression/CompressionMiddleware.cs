@@ -1,11 +1,11 @@
 using System.IO.Compression;
-using WafIsh.Models;
-using WafIsh.Services;
+using Wafish.Models;
+using Wafish.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 using Yarp.ReverseProxy.Model;
 
-namespace WafIsh.Plugin.Compression;
+namespace Wafish.Plugin.Compression;
 
 /// <summary>Route-scoped compression with a bounded prefix and immediate streaming after selection.</summary>
 public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExecutionPlanProvider plans)

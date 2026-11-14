@@ -1,10 +1,10 @@
-using WafIsh.Dashboard.Infrastructure.Alert;
-using WafIsh.Dashboard.Infrastructure.Deployment;
+using Wafish.Dashboard.Infrastructure.Alert;
+using Wafish.Dashboard.Infrastructure.Deployment;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Dashboard.Infrastructure.HostedServices;
+namespace Wafish.Dashboard.Infrastructure.HostedServices;
 
 /// <summary>
 /// Periodically checks whether the <c>Kestrel:Endpoints</c> configuration has changed

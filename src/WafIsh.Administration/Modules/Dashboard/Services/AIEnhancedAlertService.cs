@@ -1,8 +1,8 @@
-using WafIsh.Dashboard.Infrastructure.Alert;
+using Wafish.Dashboard.Infrastructure.Alert;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace WafIsh.Dashboard.Modules.Dashboard.Services;
+namespace Wafish.Dashboard.Modules.Dashboard.Services;
 
 /// <summary>
 /// Decorator around <see cref="IGatewayAlertService"/> that, when <c>AI.EnhanceNotif</c>

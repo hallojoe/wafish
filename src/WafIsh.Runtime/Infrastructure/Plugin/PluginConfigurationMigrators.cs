@@ -1,7 +1,7 @@
 using System.Text.Json;
-using WafIsh.Plugins;
+using Wafish.Plugins;
 
-namespace WafIsh.Dashboard.Infrastructure.Plugin;
+namespace Wafish.Dashboard.Infrastructure.Plugin;
 
 /// <summary>
 /// Migrates circuit-breaker config from schema v1 to v2.
