@@ -26,7 +26,10 @@ Acceptance: Operators can distinguish healthy empty discovery from repeated prov
 
 ### FEAT-01: Support Kubernetes EndpointSlice discovery
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-15.
+
+Verification: Release regression build and `--group need-six`; paginated IPv4/IPv6, readiness, removal, bounds, and failure checks pass.
+See [EndpointSlice contracts](../../docs/need-six-features.md#kubernetes-endpointslice-discovery).
 
 Resolve ready endpoints from EndpointSlice resources with explicit access requirements.
 

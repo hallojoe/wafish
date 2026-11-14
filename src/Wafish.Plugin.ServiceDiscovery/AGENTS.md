@@ -46,3 +46,5 @@ For documentation-only changes, check links and Mermaid rendering instead of sta
 Update the README when behavior or scope changes.
 Keep future work in PLAN.md until its acceptance checks pass.
 Record implementation evidence when completing a plan item.
+
+Run `--group need-six` for EndpointSlice changes. Retain pagination bounds, condition defaults, and explicit credential access.

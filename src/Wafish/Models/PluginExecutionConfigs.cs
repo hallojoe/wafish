@@ -145,6 +145,8 @@ public sealed record ServiceDiscoveryExecutionConfig
     public string? Endpoint { get; init; }
     public string? ServiceName { get; init; }
     public string Namespace { get; init; } = "default";
+    public string? PortName { get; init; }
+    public bool UseServiceAccountToken { get; init; }
     public string Scheme { get; init; } = "http";
     public int RefreshSeconds { get; init; } = 30;
     public int RequestTimeoutSeconds { get; init; } = 5;

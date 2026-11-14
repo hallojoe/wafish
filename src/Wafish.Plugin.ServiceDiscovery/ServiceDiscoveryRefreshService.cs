@@ -9,7 +9,7 @@ using Yarp.ReverseProxy.Configuration;
 namespace Wafish.Plugin.ServiceDiscovery;
 
 /// <summary>Refreshes cluster destinations for enabled service-discovery bindings.</summary>
-public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
+public sealed partial class ServiceDiscoveryRefreshService : IPluginRuntimeResource
 {
     public const string PluginId = "service-discovery";
 
@@ -250,6 +250,8 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
     internal async Task<IReadOnlyList<string>> ResolveEndpointsAsync(ServiceDiscoveryExecutionConfig config, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        if (string.Equals(config.Mode, "KubernetesEndpointSlice", StringComparison.OrdinalIgnoreCase))
+            return await ResolveEndpointSlicesAsync(config, cancellationToken).ConfigureAwait(false);
         if (string.Equals(config.Mode, "Static", StringComparison.OrdinalIgnoreCase))
         {
             return NormalizeEndpoints(config.StaticEndpoints);

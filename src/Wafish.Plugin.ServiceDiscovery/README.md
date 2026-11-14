@@ -98,3 +98,9 @@ It also reports stale status and whether traffic was rejected.
 Resource health includes failing, stale, and rejected binding counts. Failure diagnostics omit provider exception messages.
 
 Verification: [Redis and discovery recovery](../../tests/Wafish.Regression/evidence/recovery/README.md).
+
+## Kubernetes EndpointSlice
+
+`KubernetesEndpointSlice` discovers ready IPv4 and IPv6 destinations across bounded list pages.
+Configure the API origin, namespace, service, optional port name, and explicit service-account token access.
+See [configuration, RBAC, and limits](../../docs/need-six-features.md#kubernetes-endpointslice-discovery).

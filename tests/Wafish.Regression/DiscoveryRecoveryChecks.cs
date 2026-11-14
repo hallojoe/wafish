@@ -321,7 +321,7 @@ internal static class DiscoveryRecoveryChecks
     }
     private static void Check(bool value, string message) { if (!value) { throw new Exception(message); } }
 
-    private sealed class Handler : HttpMessageHandler, IHttpClientFactory
+    internal sealed class Handler : HttpMessageHandler, IHttpClientFactory
     {
         public Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> Respond = (_, _) => Reply("[]");
         public int Calls;
@@ -329,7 +329,7 @@ internal static class DiscoveryRecoveryChecks
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         { Interlocked.Increment(ref Calls); return Respond(request, cancellationToken); }
     }
-    private sealed class Fixture : IAsyncDisposable
+    internal sealed class Fixture : IAsyncDisposable
     {
         public readonly ReviewReleaseChecks.ManualTime Clock = new();
         public readonly Handler Handler = new();

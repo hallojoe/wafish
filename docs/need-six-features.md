@@ -76,3 +76,74 @@ Maintenance filters new proxy traffic and retry candidates, including clusters w
 Existing requests can finish. Maintenance does not add failures or reset circuit statistics.
 `allowRecoveryProbes` permits only eligible half-open probes from an enabled circuit breaker, within its existing concurrency limit.
 A closed circuit remains blocked during maintenance. Expiry or cancellation restores normal eligibility.
+
+## Kubernetes EndpointSlice discovery
+
+Use an enabled cluster binding for `service-discovery`:
+
+```json
+{
+  "enabled": true,
+  "mode": "KubernetesEndpointSlice",
+  "endpoint": "https://kubernetes.default.svc",
+  "namespace": "default",
+  "serviceName": "catalog",
+  "portName": "http",
+  "useServiceAccountToken": true,
+  "refreshSeconds": 30,
+  "requestTimeoutSeconds": 5,
+  "maxStaleSeconds": 120,
+  "stalePolicy": "RejectNewTraffic"
+}
+```
+
+The provider lists `discovery.k8s.io/v1` EndpointSlices using the service-name label.
+It follows continuation tokens and publishes only after all pages succeed.
+IPv4 and IPv6 addresses are supported. FQDN slices are rejected.
+`portName` selects one named TCP port. Omitting it includes all concrete TCP ports; UDP and SCTP are excluded.
+
+Endpoints with `ready:false`, `serving:false`, or `terminating:true` are excluded.
+Missing or null readiness/serving conditions mean true; missing or null termination means false.
+These defaults follow the [EndpointSlice API](https://kubernetes.io/docs/reference/kubernetes-api/discovery/endpoint-slice-v1/).
+Duplicate addresses are removed. Each successful refresh replaces the previous endpoint set, including valid empty results.
+Malformed responses, permission failures, and expired pagination retain the last valid set under the configured stale policy.
+
+One refresh permits at most 100 pages, 10,000 address/port pairs, four MiB per page, and sixteen MiB total.
+The configured timeout covers the complete refresh. Partial pages are never published.
+
+Service-account authentication is opt-in and requires HTTPS.
+The token comes from `/var/run/secrets/kubernetes.io/serviceaccount/token` and is re-read for each refresh.
+The default is false. External authentication can use the named `service-discovery` HTTP client.
+Install the Kubernetes API CA in the container trust store or configure certificate trust on that named client.
+Certificate validation remains enabled. The new mode does not change legacy `Kubernetes` Endpoints behavior.
+
+Grant the gateway service account namespaced list permission:
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: wafish-endpoint-discovery
+  namespace: default
+rules:
+  - apiGroups: [discovery.k8s.io]
+    resources: [endpointslices]
+    verbs: [list]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wafish-endpoint-discovery
+  namespace: default
+subjects:
+  - kind: ServiceAccount
+    name: wafish
+    namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: wafish-endpoint-discovery
+```
+
+Create and assign the `wafish` service account to the gateway workload.
+Verification uses controlled HTTP responses. No live Kubernetes cluster is required by the regression suite.
