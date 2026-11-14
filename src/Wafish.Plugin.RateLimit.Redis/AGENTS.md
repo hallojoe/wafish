@@ -13,6 +13,9 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Failed connection tasks need bounded backoff and one replacement owner. Cancellation must not abandon shared creation.
+- Test deployment prefixes through the middleware and live Redis counters.
+
 - Keep FailClosed as the default outage behavior.
 - Apply the configured outage policy explicitly. Never bypass fail-closed errors.
 - Keep connection secrets out of logs, examples, and diagnostic responses.

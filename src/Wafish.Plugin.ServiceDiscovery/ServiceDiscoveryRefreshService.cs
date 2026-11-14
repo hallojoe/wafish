@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Text.Json;
 using Wafish.Models;
 using Wafish.Plugins;
@@ -19,7 +20,19 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<ServiceDiscoveryRefreshService> _logger;
     private SemaphoreSlim PublishLock => GatewayPublicationCoordinator.For(_snapshotPublisher).Gate;
-    private readonly Dictionary<string, (long Started, TimeSpan Interval)> _nextRefresh = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, BindingState> _bindings = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Func<double> _jitter;
+
+    private sealed record BindingState(PluginBindingSnapshot? Binding, ServiceDiscoveryExecutionConfig Config, long FirstSeen)
+    {
+        public long LastAttempt { get; init; }
+        public TimeSpan RetryDelay { get; init; }
+        public long? LastSuccess { get; init; }
+        public DateTimeOffset? LastSuccessUtc { get; init; }
+        public int Failures { get; init; }
+        public string? FailureType { get; init; }
+        public bool TrafficRejected { get; init; }
+    }
     private CancellationTokenSource? _runCancellation;
     private Task? _runTask;
     private DateTimeOffset? _startedAt;
@@ -44,7 +57,15 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
         IGatewaySnapshotPublisher snapshotPublisher,
         IHttpClientFactory httpClientFactory,
         ILogger<ServiceDiscoveryRefreshService> logger, TimeProvider timeProvider)
+        : this(executionPlans, configProvider, snapshotCompiler, snapshotPublisher, httpClientFactory, logger, timeProvider, Random.Shared.NextDouble) { }
+
+    internal ServiceDiscoveryRefreshService(
+        GatewayPluginExecutionPlanProvider executionPlans, WafishProxyConfigProvider configProvider,
+        IGatewaySnapshotCompiler snapshotCompiler, IGatewaySnapshotPublisher snapshotPublisher,
+        IHttpClientFactory httpClientFactory, ILogger<ServiceDiscoveryRefreshService> logger,
+        TimeProvider timeProvider, Func<double> jitter)
     {
+        _jitter = jitter;
         _time = timeProvider;
         _executionPlans = executionPlans;
         _configProvider = configProvider;
@@ -85,23 +106,33 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
             catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
         }
         cancellation.Dispose();
-        _nextRefresh.Clear();
+        _bindings.Clear();
         _stoppedAt = _time.GetUtcNow();
     }
 
     public ValueTask<PluginRuntimeResourceSnapshot> CheckHealthAsync(CancellationToken cancellationToken = default)
     {
         var running = _runTask is { IsCompleted: false };
-        var health = _lastError != null ? PluginResourceHealthStatus.Degraded :
+        var bindings = GetBindingHealth();
+        var failures = bindings.Count(b => b.ConsecutiveFailures > 0);
+        var stale = bindings.Count(b => b.Stale);
+        var health = _lastError != null || failures > 0 || stale > 0 ? PluginResourceHealthStatus.Degraded :
             running ? PluginResourceHealthStatus.Healthy : PluginResourceHealthStatus.Stopped;
+        var message = _lastError?.GetType().Name ?? (failures > 0 || stale > 0
+            ? $"Discovery bindings: {failures} failing, {stale} stale." : null);
         return ValueTask.FromResult(new PluginRuntimeResourceSnapshot(
-            ResourceId, ResourceType, running, health, _startedAt, _stoppedAt, _lastError?.Message,
+            ResourceId, ResourceType, running, health, _startedAt, _stoppedAt, message,
             new Dictionary<string, long>
             {
                 ["refreshes"] = Interlocked.Read(ref _refreshes),
                 ["publishedSnapshots"] = Interlocked.Read(ref _publishedSnapshots),
                 ["httpRequests"] = Interlocked.Read(ref _httpRequests),
-                ["memoryBytes"] = _nextRefresh.Count * 512L
+                ["memoryBytes"] = bindings.Count * 512L,
+                ["bindings"] = bindings.Count,
+                ["failedBindings"] = failures,
+                ["staleBindings"] = stale,
+                ["rejectedBindings"] = bindings.Count(b => b.TrafficRejected),
+                ["maxStaleAgeSeconds"] = bindings.Count == 0 ? 0 : (long)bindings.Max(b => b.StaleAgeSeconds)
             }));
     }
 
@@ -121,62 +152,104 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
             catch (Exception exception)
             {
                 _lastError = exception;
-                _logger.LogError(exception, "Service discovery refresh cycle failed");
+                _logger.LogError("Service discovery refresh cycle failed ({FailureType}).", exception.GetType().Name);
             }
 
             await Task.Delay(TimeSpan.FromSeconds(1), _time, cancellationToken).ConfigureAwait(false);
         }
     }
 
-    private async Task RefreshDueBindingsAsync(CancellationToken cancellationToken)
+    public IReadOnlyList<ServiceDiscoveryBindingHealth> GetBindingHealth() => _bindings
+        .OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+        .Select(pair => new ServiceDiscoveryBindingHealth(pair.Key, pair.Value.LastSuccessUtc,
+            _time.GetElapsedTime(pair.Value.LastSuccess ?? pair.Value.FirstSeen).TotalSeconds,
+            pair.Value.Failures, pair.Value.FailureType, IsStale(pair.Value), pair.Value.TrafficRejected,
+            Math.Max(0, (pair.Value.RetryDelay - _time.GetElapsedTime(pair.Value.LastAttempt)).TotalSeconds)))
+        .ToArray();
+
+    private bool IsStale(BindingState state) => state.Config.MaxStaleSeconds > 0 &&
+        _time.GetElapsedTime(state.LastSuccess ?? state.FirstSeen) >= TimeSpan.FromSeconds(state.Config.MaxStaleSeconds);
+
+    internal async Task RefreshDueBindingsAsync(CancellationToken cancellationToken)
     {
-        var now = _time.GetTimestamp();
+        cancellationToken.ThrowIfCancellationRequested();
         var capturedSnapshot = _snapshotPublisher.Current;
         var plan = _executionPlans.Current;
-        if (plan.SnapshotVersion != capturedSnapshot.Version)
-        {
-            return;
-        }
+        if (plan.SnapshotVersion != capturedSnapshot.Version) { return; }
 
-        var bindings = plan.ServiceDiscoveryByCluster
-            .Where(pair => pair.Value.Enabled)
-            .ToArray();
+        var bindings = plan.ServiceDiscoveryByCluster.Where(pair => pair.Value.Enabled).ToArray();
         var activeClusters = bindings.Select(pair => pair.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        foreach (var stale in _nextRefresh.Keys.Where(clusterId => !activeClusters.Contains(clusterId)).ToArray())
+        foreach (var stale in _bindings.Keys.Where(clusterId => !activeClusters.Contains(clusterId)))
         {
-            _nextRefresh.Remove(stale);
+            _bindings.TryRemove(stale, out _);
         }
 
         foreach (var (clusterId, config) in bindings)
         {
-            if (_nextRefresh.TryGetValue(clusterId, out var dueAt) && _time.GetElapsedTime(dueAt.Started, now) < dueAt.Interval)
+            cancellationToken.ThrowIfCancellationRequested();
+            var binding = GatewayPublicationCoordinator.DiscoveryBinding(capturedSnapshot, clusterId);
+            if (!_bindings.TryGetValue(clusterId, out var state) || state.Binding != binding)
             {
-                continue;
+                state = new BindingState(binding, config, _time.GetTimestamp());
+                _bindings[clusterId] = state;
             }
-
-            _nextRefresh[clusterId] = (now, TimeSpan.FromSeconds(Math.Clamp(config.RefreshSeconds, 5, 3600)));
 
             try
             {
-                var binding = GatewayPublicationCoordinator.DiscoveryBinding(capturedSnapshot, clusterId);
+                // Expiry is independent of retry backoff and never changes persisted configuration.
+                state = await ApplyStalePolicyAsync(clusterId, state, cancellationToken).ConfigureAwait(false);
+                _bindings[clusterId] = state;
+                if (_time.GetElapsedTime(state.LastAttempt) < state.RetryDelay) { continue; }
+
                 var endpoints = await ResolveEndpointsAsync(config, cancellationToken).ConfigureAwait(false);
-                await PublishDestinationsAsync(clusterId, endpoints, cancellationToken, binding).ConfigureAwait(false);
+                if (!await PublishDestinationsAsync(clusterId, endpoints, cancellationToken, binding).ConfigureAwait(false))
+                {
+                    _bindings.TryRemove(clusterId, out _);
+                    continue;
+                }
+                state = state with
+                {
+                    LastSuccess = _time.GetTimestamp(), LastSuccessUtc = _time.GetUtcNow(),
+                    LastAttempt = _time.GetTimestamp(), RetryDelay = TimeSpan.FromSeconds(Math.Clamp(config.RefreshSeconds, 5, 3600)),
+                    Failures = 0, FailureType = null, TrafficRejected = false
+                };
+                _bindings[clusterId] = state;
                 Interlocked.Increment(ref _refreshes);
             }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-            {
-                throw;
-            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
             catch (Exception exception)
             {
-                _lastError = exception;
-                _logger.LogWarning(exception, "Failed to refresh service discovery binding for cluster {ClusterId}", clusterId);
+                var failures = Math.Min(30, state.Failures + 1);
+                var interval = Math.Clamp(config.RefreshSeconds, 5, 3600);
+                var cap = Math.Max(interval, 300);
+                var delay = Math.Min(cap, interval * Math.Pow(2, Math.Min(10, failures - 1))) * (0.8 + 0.2 * _jitter());
+                state = state with
+                {
+                    Failures = failures, FailureType = exception.GetType().Name,
+                    LastAttempt = _time.GetTimestamp(), RetryDelay = TimeSpan.FromSeconds(delay)
+                };
+                _bindings[clusterId] = state;
+                _logger.LogWarning("Service discovery binding for cluster {ClusterId} failed ({FailureType}).", clusterId, state.FailureType);
+                // A request timeout can cross the stale boundary during this attempt.
+                _bindings[clusterId] = await ApplyStalePolicyAsync(clusterId, state, cancellationToken).ConfigureAwait(false);
             }
         }
     }
 
-    private async Task<IReadOnlyList<string>> ResolveEndpointsAsync(ServiceDiscoveryExecutionConfig config, CancellationToken cancellationToken)
+    private async Task<BindingState> ApplyStalePolicyAsync(string clusterId, BindingState state, CancellationToken cancellationToken)
     {
+        if (!state.TrafficRejected && IsStale(state) &&
+            string.Equals(state.Config.StalePolicy, "RejectNewTraffic", StringComparison.OrdinalIgnoreCase) &&
+            await PublishDestinationsAsync(clusterId, [], cancellationToken, state.Binding).ConfigureAwait(false))
+        {
+            return state with { TrafficRejected = true };
+        }
+        return state;
+    }
+
+    internal async Task<IReadOnlyList<string>> ResolveEndpointsAsync(ServiceDiscoveryExecutionConfig config, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
         if (string.Equals(config.Mode, "Static", StringComparison.OrdinalIgnoreCase))
         {
             return NormalizeEndpoints(config.StaticEndpoints);
@@ -187,8 +260,8 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
             throw new InvalidOperationException($"{config.Mode} service discovery requires an absolute HTTP or HTTPS endpoint.");
         }
 
-        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeout.CancelAfter(TimeSpan.FromSeconds(Math.Clamp(config.RequestTimeoutSeconds, 1, 60)));
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(Math.Clamp(config.RequestTimeoutSeconds, 1, 60)), _time);
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, deadline.Token);
         Interlocked.Increment(ref _httpRequests);
         using var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
         if (string.Equals(config.Mode, "Kubernetes", StringComparison.OrdinalIgnoreCase))
@@ -204,8 +277,8 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
             request.Headers.TryAddWithoutValidation("Accept", "application/json");
         }
 
-        using var response = await _httpClientFactory.CreateClient("service-discovery")
-            .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeout.Token).ConfigureAwait(false);
+        using var client = _httpClientFactory.CreateClient("service-discovery");
+        using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeout.Token).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
         await using var stream = await response.Content.ReadAsStreamAsync(timeout.Token).ConfigureAwait(false);
         using var document = await JsonDocument.ParseAsync(stream, new JsonDocumentOptions { MaxDepth = 32 }, timeout.Token).ConfigureAwait(false);
@@ -239,76 +312,102 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
     private static IEnumerable<string> ReadProviderEndpoints(ServiceDiscoveryExecutionConfig config, JsonElement root)
     {
         var scheme = config.Scheme is "https" ? "https" : "http";
-        if (string.Equals(config.Mode, "HttpJson", StringComparison.OrdinalIgnoreCase))
-        {
-            return ReadEndpointValues(root);
-        }
-
+        if (string.Equals(config.Mode, "HttpJson", StringComparison.OrdinalIgnoreCase)) { return ReadEndpointValues(root); }
         var results = new List<string>();
-        if (string.Equals(config.Mode, "Consul", StringComparison.OrdinalIgnoreCase) && root.ValueKind == JsonValueKind.Array)
+        switch (config.Mode.ToUpperInvariant())
         {
-            foreach (var item in root.EnumerateArray())
-            {
-                AddHostPort(results, scheme, GetString(item, "Service", "Address") ?? GetString(item, "Node", "Address"), GetInt(item, "Service", "Port"));
-            }
-        }
-        else if (string.Equals(config.Mode, "Nacos", StringComparison.OrdinalIgnoreCase) && root.TryGetProperty("hosts", out var hosts) && hosts.ValueKind == JsonValueKind.Array)
-        {
-            foreach (var item in hosts.EnumerateArray())
-            {
-                if (!item.TryGetProperty("healthy", out var healthy) || healthy.GetBoolean())
+            case "CONSUL":
+                RequireArray(root);
+                foreach (var item in root.EnumerateArray())
                 {
-                    AddHostPort(results, scheme, GetString(item, "ip"), GetInt(item, "port"));
-                }
-                else if (string.Equals(config.Mode, "Eureka", StringComparison.OrdinalIgnoreCase) && TryPath(root, out var instances, "application", "instance"))
-        {
-            if (instances.ValueKind == JsonValueKind.Array)
+                    RequireObject(item);
+                    if (item.TryGetProperty("Checks", out var checks))
                     {
-                        foreach (var instance in instances.EnumerateArray())
+                        RequireArray(checks);
+                        if (checks.EnumerateArray().Any(check => !string.Equals(GetString(check, "Status"), "passing", StringComparison.OrdinalIgnoreCase))) { continue; }
+                    }
+                    var address = GetString(item, "Service", "Address");
+                    AddHostPort(results, scheme, string.IsNullOrWhiteSpace(address) ? GetString(item, "Node", "Address") : address,
+                        GetInt(item, "Service", "Port"));
+                }
+                break;
+            case "NACOS":
+                var hosts = RequiredProperty(root, "hosts");
+                RequireArray(hosts);
+                foreach (var item in hosts.EnumerateArray())
+                {
+                    RequireObject(item);
+                    if ((!item.TryGetProperty("healthy", out var healthy) || healthy.GetBoolean()) &&
+                        (!item.TryGetProperty("enabled", out var enabled) || enabled.GetBoolean()))
+                    {
+                        AddHostPort(results, scheme, GetString(item, "ip"), GetInt(item, "port"));
+                    }
+                }
+                break;
+            case "EUREKA":
+                var instances = RequiredProperty(RequiredProperty(root, "application"), "instance");
+                if (instances.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var instance in instances.EnumerateArray()) { AddEurekaInstance(results, scheme, instance); }
+                }
+                else { RequireObject(instances); AddEurekaInstance(results, scheme, instances); }
+                break;
+            case "KUBERNETES":
+                RequireObject(root);
+                if (!root.TryGetProperty("subsets", out var subsets) && GetString(root, "kind") == "Endpoints") { break; }
+                RequireArray(subsets);
+                foreach (var subset in subsets.EnumerateArray())
+                {
+                    RequireObject(subset);
+                    // A subset can contain only notReadyAddresses. Those endpoints must not receive traffic.
+                    if (!subset.TryGetProperty("addresses", out var addresses)) { continue; }
+                    RequireArray(addresses);
+                    var ports = RequiredProperty(subset, "ports");
+                    RequireArray(ports);
+                    foreach (var address in addresses.EnumerateArray())
+                    {
+                        foreach (var port in ports.EnumerateArray())
                         {
-                            AddEurekaInstance(results, scheme, instance);
+                            var protocol = GetString(port, "protocol");
+                            if (protocol != null && protocol != "TCP") { continue; }
+                            AddHostPort(results, scheme, GetString(address, "ip"), GetInt(port, "port"));
                         }
                     }
-                    else
-                    {
-                        AddEurekaInstance(results, scheme, instances);
-                    }
                 }
-        else if (string.Equals(config.Mode, "Kubernetes", StringComparison.OrdinalIgnoreCase) && root.TryGetProperty("subsets", out var subsets) && subsets.ValueKind == JsonValueKind.Array)
-                {
-                    foreach (var subset in subsets.EnumerateArray())
-                    {
-                        if (subset.TryGetProperty("addresses", out var addresses) && subset.TryGetProperty("ports", out var ports))
-                        {
-                            foreach (var address in addresses.EnumerateArray())
-                            {
-                                foreach (var port in ports.EnumerateArray())
-                                {
-                                    AddHostPort(results, scheme, GetString(address, "ip"), GetInt(port, "port"));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+                break;
+            default: throw new JsonException("Unsupported discovery provider.");
         }
-
         return results;
     }
 
+    private static void RequireObject(JsonElement value)
+    {
+        if (value.ValueKind != JsonValueKind.Object) { throw new JsonException("Expected a discovery object."); }
+    }
+
+    private static void RequireArray(JsonElement value)
+    {
+        if (value.ValueKind != JsonValueKind.Array) { throw new JsonException("Expected a discovery array."); }
+    }
+
+    private static JsonElement RequiredProperty(JsonElement value, string name)
+    {
+        RequireObject(value);
+        return value.TryGetProperty(name, out var property) ? property : throw new JsonException("Missing discovery response field.");
+    }
+
     private static void AddHostPort(List<string> results, string scheme, string? host, int? port)
-    { if (!string.IsNullOrWhiteSpace(host) && port is > 0 and <= 65535)
+    {
+        if (string.IsNullOrWhiteSpace(host) || port is not (> 0 and <= 65535))
         {
-            results.Add($"{scheme}://{host}:{port}");
+            throw new JsonException("Invalid discovery host or port.");
         }
+        results.Add(new UriBuilder(scheme, host, port.Value).Uri.AbsoluteUri);
     }
 
     private static void AddEurekaInstance(List<string> results, string scheme, JsonElement instance)
     {
-        if (instance.ValueKind != JsonValueKind.Object)
-        {
-            return;
-        }
+        RequireObject(instance);
 
         // Only expose healthy instances; a missing status is treated as UP for compatibility.
         if (TryPath(instance, out var status, "status") && status.ValueKind == JsonValueKind.String &&
@@ -322,6 +421,10 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
             ?? GetEurekaPort(instance, "securePort", secure: true);
         if (port == null)
         {
+            if (!instance.TryGetProperty("port", out _) && !instance.TryGetProperty("securePort", out _))
+            {
+                throw new JsonException("Missing Eureka port.");
+            }
             return;
         }
 
@@ -342,11 +445,11 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
     }
 
     private static string? GetString(JsonElement element, params string[] path) => TryPath(element, out var value, path) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
-    private static int? GetInt(JsonElement element, params string[] path) => TryPath(element, out var value, path) && (value.ValueKind == JsonValueKind.Number ? value.TryGetInt32(out var number) : int.TryParse(value.GetString(), out number)) ? number : null;
+    private static int? GetInt(JsonElement element, params string[] path) => TryPath(element, out var value, path) && (value.ValueKind == JsonValueKind.Number ? value.TryGetInt32(out var number) : value.ValueKind == JsonValueKind.String && int.TryParse(value.GetString(), out number)) ? number : null;
     private static bool TryPath(JsonElement element, out JsonElement value, params string[] path)
     { value = element; foreach (var part in path) { if (part == "$" && value.ValueKind == JsonValueKind.Object && value.TryGetProperty("$", out var wrapped)) { value = wrapped; continue; } if (value.ValueKind != JsonValueKind.Object || !value.TryGetProperty(part, out value)) { return false; } } return true; }
 
-    private async Task PublishDestinationsAsync(string clusterId, IReadOnlyList<string> endpoints, CancellationToken cancellationToken, PluginBindingSnapshot? expectedBinding = null)
+    private async Task<bool> PublishDestinationsAsync(string clusterId, IReadOnlyList<string> endpoints, CancellationToken cancellationToken, PluginBindingSnapshot? expectedBinding = null)
     {
         await PublishLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -354,7 +457,7 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
             var binding = GatewayPublicationCoordinator.DiscoveryBinding(_snapshotPublisher.Current, clusterId);
             if (expectedBinding != null && binding != expectedBinding)
             {
-                return;
+                return false;
             }
 
             var routes = _configProvider.GetRoutes();
@@ -363,16 +466,13 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
                 .FirstOrDefault(item => string.Equals(item.cluster.ClusterId, clusterId, StringComparison.OrdinalIgnoreCase));
             if (index.cluster == null)
             {
-                return;
+                return false;
             }
 
             var destinations = endpoints.Select((address, position) => new KeyValuePair<string, DestinationConfig>(
                     "discovery-" + Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(address))), new DestinationConfig { Address = address }))
                 .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
-            if (DestinationsEqual(index.cluster.Destinations, destinations))
-            {
-                return;
-            }
+            if (DestinationsEqual(index.cluster.Destinations, destinations)) { return true; }
 
             var updatedClusters = clusters.ToArray();
             updatedClusters[index.position] = index.cluster with { Destinations = destinations };
@@ -386,6 +486,7 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
 
             _configProvider.Update(snapshot.Routes, snapshot.Clusters);
             Interlocked.Increment(ref _publishedSnapshots);
+            return true;
         }
         finally
         {
@@ -407,29 +508,15 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
 
         foreach (var item in root.EnumerateArray())
         {
-            if (item.ValueKind == JsonValueKind.String)
-            {
-                var value = item.GetString();
-                if (value != null)
-                {
-                    yield return value;
-                }
-            }
-            else if (item.ValueKind == JsonValueKind.Object && item.TryGetProperty("address", out var address) && address.ValueKind == JsonValueKind.String)
-            {
-                var value = address.GetString();
-                if (value != null)
-                {
-                    yield return value;
-                }
-            }
+            var value = item.ValueKind == JsonValueKind.String ? item.GetString() : GetString(item, "address");
+            if (string.IsNullOrWhiteSpace(value)) { throw new JsonException("Invalid discovery endpoint entry."); }
+            yield return value;
         }
     }
 
     private static string[] NormalizeEndpoints(IEnumerable<string> endpoints) => endpoints
-        .Select(value => value?.Trim())
-        .Where(value => Uri.TryCreate(value, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https")
-        .Select(value => new Uri(value!).AbsoluteUri)
+        .Select(value => Uri.TryCreate(value?.Trim(), UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https"
+            ? uri.AbsoluteUri : throw new JsonException("Discovery endpoints must use absolute HTTP or HTTPS URLs."))
         .Distinct(StringComparer.Ordinal)
         .OrderBy(value => value, StringComparer.Ordinal)
         .ToArray();

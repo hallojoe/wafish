@@ -49,3 +49,15 @@ Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in
 Redis keys include a versioned hash of algorithm, limit, window, and burst settings.
 Policy changes start fresh counters. Previous keys expire under their existing TTL.
 Deploy replicas together when changing this key format; mixed versions use separate counters.
+
+## Connection recovery
+
+Failed connection creation retries on later requests after delays of 1, 2, 4, 8, 16, then 30 seconds.
+Concurrent callers share one creation task per connection string. The store retains at most 32 connection entries.
+Caller cancellation stops that caller's wait. It does not cancel a shared connection attempt.
+Shutdown awaits pending creation and disposes successful connections.
+Established multiplexers retain their normal reconnection behavior. Command failures do not replay Lua operations.
+A cancelled or interrupted command can already have consumed a permit.
+`FailClosed` remains the default. Use distinct `keyPrefix` values to isolate deployments.
+
+Verification: [Redis and discovery recovery](../../tests/Wafish.Regression/evidence/recovery/README.md).

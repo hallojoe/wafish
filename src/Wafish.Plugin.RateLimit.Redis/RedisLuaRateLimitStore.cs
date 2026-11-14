@@ -12,11 +12,35 @@ public sealed class RedisRateLimitStoreOptions
 }
 
 /// <summary>Atomic Redis counters. Availability is separate from the route's failure policy.</summary>
-public sealed class RedisLuaRateLimitStore(ILogger<RedisLuaRateLimitStore> logger,
-    IOptions<RedisRateLimitStoreOptions>? options = null) : IDistributedRateLimitStore, IAsyncDisposable
+public sealed class RedisLuaRateLimitStore : IDistributedRateLimitStore, IAsyncDisposable
 {
     private readonly object _sync = new();
-    private readonly Dictionary<string, Lazy<Task<ConnectionMultiplexer>>> _connections = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, ConnectionEntry> _connections = new(StringComparer.Ordinal);
+    private readonly ILogger<RedisLuaRateLimitStore> _logger;
+    private readonly IOptions<RedisRateLimitStoreOptions>? _options;
+    private readonly TimeProvider _time;
+    private readonly Func<string, Task<IConnectionMultiplexer>> _connect;
+
+    public RedisLuaRateLimitStore(ILogger<RedisLuaRateLimitStore> logger,
+        IOptions<RedisRateLimitStoreOptions>? options = null)
+        : this(logger, options, TimeProvider.System, ConnectAsync) { }
+
+    internal RedisLuaRateLimitStore(ILogger<RedisLuaRateLimitStore> logger,
+        IOptions<RedisRateLimitStoreOptions>? options, TimeProvider time,
+        Func<string, Task<IConnectionMultiplexer>> connect)
+    {
+        _logger = logger;
+        _options = options;
+        _time = time;
+        _connect = connect;
+    }
+
+    private sealed class ConnectionEntry
+    {
+        public Task<IConnectionMultiplexer>? Task { get; set; }
+        public int Failures { get; set; }
+        public long FailedAt { get; set; }
+    }
     private bool _disposed;
     private long _lastFailureLog;
 
@@ -29,7 +53,7 @@ public sealed class RedisLuaRateLimitStore(ILogger<RedisLuaRateLimitStore> logge
             return DistributedRateLimitResult.Unavailable(limit);
         }
 
-        var connectionString = string.IsNullOrWhiteSpace(redisConnectionString) ? options?.Value.ConnectionString : redisConnectionString;
+        var connectionString = string.IsNullOrWhiteSpace(redisConnectionString) ? _options?.Value.ConnectionString : redisConnectionString;
         if (string.IsNullOrWhiteSpace(connectionString))
         {
             return DistributedRateLimitResult.Unavailable(limit);
@@ -37,22 +61,31 @@ public sealed class RedisLuaRateLimitStore(ILogger<RedisLuaRateLimitStore> logge
 
         try
         {
-            Lazy<Task<ConnectionMultiplexer>> connection;
+            Task<IConnectionMultiplexer> connection;
             lock (_sync)
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                if (!_connections.TryGetValue(connectionString, out connection!))
+                if (!_connections.TryGetValue(connectionString, out var entry))
                 {
                     if (_connections.Count >= 32)
                     {
                         return DistributedRateLimitResult.Unavailable(limit);
                     }
 
-                    connection = new(() => ConnectAsync(connectionString));
-                    _connections.Add(connectionString, connection);
+                    entry = new ConnectionEntry();
+                    _connections.Add(connectionString, entry);
                 }
+
+                if (entry.Task == null ||
+                    ((entry.Task.IsFaulted || entry.Task.IsCanceled) &&
+                     _time.GetElapsedTime(entry.FailedAt) >= TimeSpan.FromSeconds(Math.Min(30, 1 << Math.Min(5, entry.Failures - 1)))))
+                {
+                    // Start under the ownership lock so shutdown also awaits a pending connection.
+                    entry.Task = ConnectOwnedAsync(connectionString, entry);
+                }
+                connection = entry.Task;
             }
-            var multiplexer = await connection.Value.WaitAsync(cancellationToken);
+            var multiplexer = await connection.WaitAsync(cancellationToken).ConfigureAwait(false);
             var name = algorithm.ToUpperInvariant();
             RedisValue[] values = name switch
             {
@@ -82,14 +115,33 @@ public sealed class RedisLuaRateLimitStore(ILogger<RedisLuaRateLimitStore> logge
             var previous = Interlocked.Read(ref _lastFailureLog);
             if (now - previous >= 30000 && Interlocked.CompareExchange(ref _lastFailureLog, now, previous) == previous)
             {
-                logger.LogWarning("Redis rate-limit store unavailable ({FailureType}); the route failure policy applies.", ex.GetType().Name);
+                _logger.LogWarning("Redis rate-limit store unavailable ({FailureType}); the route failure policy applies.", ex.GetType().Name);
             }
 
             return DistributedRateLimitResult.Unavailable(limit);
         }
     }
 
-    private static Task<ConnectionMultiplexer> ConnectAsync(string connectionString)
+    private async Task<IConnectionMultiplexer> ConnectOwnedAsync(string connectionString, ConnectionEntry entry)
+    {
+        try
+        {
+            var connection = await _connect(connectionString).ConfigureAwait(false);
+            lock (_sync) { entry.Failures = 0; }
+            return connection;
+        }
+        catch
+        {
+            lock (_sync)
+            {
+                entry.Failures = Math.Min(6, entry.Failures + 1);
+                entry.FailedAt = _time.GetTimestamp();
+            }
+            throw;
+        }
+    }
+
+    private static async Task<IConnectionMultiplexer> ConnectAsync(string connectionString)
     {
         var config = ConfigurationOptions.Parse(connectionString);
         config.AbortOnConnectFail = false;
@@ -97,16 +149,22 @@ public sealed class RedisLuaRateLimitStore(ILogger<RedisLuaRateLimitStore> logge
         config.ConnectTimeout = 1000;
         config.AsyncTimeout = 1000;
         config.BacklogPolicy = BacklogPolicy.FailFast;
-        return ConnectionMultiplexer.ConnectAsync(config);
+        return await ConnectionMultiplexer.ConnectAsync(config).ConfigureAwait(false);
     }
 
     public async ValueTask DisposeAsync()
     {
-        Lazy<Task<ConnectionMultiplexer>>[] connections;
-        lock (_sync) { _disposed = true; connections = _connections.Values.ToArray(); _connections.Clear(); }
-        foreach (var connection in connections.Where(c => c.IsValueCreated))
+        Task<IConnectionMultiplexer>[] connections;
+        lock (_sync)
         {
-            try { await (await connection.Value).DisposeAsync(); }
+            if (_disposed) { return; }
+            _disposed = true;
+            connections = _connections.Values.Select(c => c.Task!).ToArray();
+            _connections.Clear();
+        }
+        foreach (var connection in connections)
+        {
+            try { await (await connection.ConfigureAwait(false)).DisposeAsync().ConfigureAwait(false); }
             catch (Exception) { /* A failed connection owns no usable multiplexer. */ }
         }
     }

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -78,6 +79,27 @@ public sealed class RequestRetryMiddleware : GatewayMiddlewareBase
             return;
         }
 
+        var clock = context.RequestServices?.GetService<TimeProvider>() ?? TimeProvider.System;
+        var callerCancellation = context.RequestAborted;
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(retryConfig.TotalTimeoutSeconds), clock);
+        using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(callerCancellation, deadline.Token);
+        context.RequestAborted = lifetime.Token;
+        try
+        {
+            await ExecuteAsync(context, proxyFeature, routeConfig, retryConfig, clock).ConfigureAwait(false);
+            lifetime.Token.ThrowIfCancellationRequested();
+        }
+        catch (OperationCanceledException) when (deadline.IsCancellationRequested && !callerCancellation.IsCancellationRequested)
+        {
+            if (context.Response.HasStarted) { context.Abort(); }
+            else { context.Response.Clear(); context.Response.StatusCode = StatusCodes.Status504GatewayTimeout; }
+        }
+        finally { context.RequestAborted = callerCancellation; }
+    }
+
+    private async Task ExecuteAsync(HttpContext context, IReverseProxyFeature? proxyFeature,
+        RouteConfig routeConfig, ParsedRetryConfig retryConfig, TimeProvider clock)
+    {
         if (!retryConfig.RetryNonIdempotent && NonIdempotentMethods.Contains(context.Request.Method))
         {
             await Next(context);
@@ -116,8 +138,8 @@ public sealed class RequestRetryMiddleware : GatewayMiddlewareBase
             if (length > 0)
             {
                 requestBuffer = ArrayPool<byte>.Shared.Rent(length);
-                using var preparationTimeout = CancellationTokenSource.CreateLinkedTokenSource(originalAborted);
-                preparationTimeout.CancelAfter(TimeSpan.FromSeconds(retryConfig.TimeoutSeconds));
+                using var preparationDeadline = new CancellationTokenSource(TimeSpan.FromSeconds(retryConfig.TimeoutSeconds), clock);
+                using var preparationTimeout = CancellationTokenSource.CreateLinkedTokenSource(originalAborted, preparationDeadline.Token);
                 var read = 0;
                 while (read < length)
                 {
@@ -150,8 +172,8 @@ public sealed class RequestRetryMiddleware : GatewayMiddlewareBase
                 using var response = new RetryResponseBody(context, originalFeature,
                     status => attempt < retryConfig.MaxRetries && retryConfig.StatusCodes.Contains(status));
                 context.Features.Set<IHttpResponseBodyFeature>(response);
-                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(originalAborted);
-                timeout.CancelAfter(TimeSpan.FromSeconds(retryConfig.TimeoutSeconds));
+                using var attemptDeadline = new CancellationTokenSource(TimeSpan.FromSeconds(retryConfig.TimeoutSeconds), clock);
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(originalAborted, attemptDeadline.Token);
                 context.RequestAborted = timeout.Token;
                 Exception? failure = null;
                 try
@@ -185,7 +207,8 @@ public sealed class RequestRetryMiddleware : GatewayMiddlewareBase
                     await response.CommitAsync(originalAborted);
                     return;
                 }
-                attempt++;
+                var retryAfter = context.Response.Headers.RetryAfter.ToString();
+                var nextAttempt = attempt + 1;
                 context.Response.StatusCode = StatusCodes.Status200OK;
                 context.Response.Headers.Clear();
                 foreach (var header in originalHeaders)
@@ -193,11 +216,19 @@ public sealed class RequestRetryMiddleware : GatewayMiddlewareBase
                     context.Response.Headers[header.Key] = header.Value;
                 }
 
-                var delay = (long)retryConfig.BackoffBaseMs * (1 << (attempt - 1)) +
-                    (retryConfig.JitterMs > 0 ? Random.Shared.Next(retryConfig.JitterMs) : 0);
-                _logger.LogDebug("Retry attempt {Attempt} for route {Route}", attempt, routeConfig.RouteId);
+                var delay = (long)retryConfig.BackoffBaseMs * (1 << (nextAttempt - 1)) +
+                    (retryConfig.JitterMs > 0 ? (context.RequestServices?.GetService<Random>() ?? Random.Shared).Next(retryConfig.JitterMs) : 0);
+                delay = Math.Min(delay, 300000);
+                if (RetryConditionHeaderValue.TryParse(retryAfter, out var upstream))
+                {
+                    var requested = upstream.Delta ?? (upstream.Date - clock.GetUtcNow()) ?? TimeSpan.Zero;
+                    var bounded = Math.Clamp(requested.TotalMilliseconds, 0, retryConfig.MaxRetryAfterSeconds * 1000d);
+                    delay = Math.Max(delay, (long)bounded);
+                }
+                _logger.LogDebug("Retry attempt {Attempt} for route {Route}", nextAttempt, routeConfig.RouteId);
                 await Task.Delay(TimeSpan.FromMilliseconds(Math.Min(delay, 300000)),
-                    context.RequestServices?.GetService<TimeProvider>() ?? TimeProvider.System, originalAborted);
+                    clock, originalAborted);
+                attempt = nextAttempt;
             }
         }
         finally
@@ -248,6 +279,8 @@ public sealed class RequestRetryMiddleware : GatewayMiddlewareBase
             configured.RetryOnExceptions,
             configured.UseDifferentDestination,
             configured.RetryNonIdempotent,
+            Math.Clamp(configured.TotalTimeoutSeconds, 1, 1800),
+            Math.Clamp(configured.MaxRetryAfterSeconds, 0, 300),
             statusCodes);
         return true;
     }
@@ -261,5 +294,7 @@ public sealed class RequestRetryMiddleware : GatewayMiddlewareBase
         bool RetryOnExceptions,
         bool UseDifferentDestination,
         bool RetryNonIdempotent,
+        int TotalTimeoutSeconds,
+        int MaxRetryAfterSeconds,
         HashSet<int> StatusCodes);
 }

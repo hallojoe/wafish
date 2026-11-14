@@ -56,6 +56,22 @@ Circuit outcomes belong to the selected forwarding attempt. Retry does not recor
 ## Review items 14–16
 
 Retry backoff uses `TimeProvider` from request services, with `TimeProvider.System` as fallback.
-Request and attempt cancellation deadlines retain their existing system timers.
+Request, attempt, and total deadlines also use the registered time provider.
 
 Verification: [review evidence](../../tests/Wafish.Regression/evidence/review141516/README.md).
+
+## Total deadline and upstream timing
+
+`totalTimeoutSeconds` defaults to 120, with a range of 1–1800 seconds.
+The deadline covers body preparation, attempts, and waits, including requests that cannot be replayed.
+An expired deadline returns 504 before response start. Started responses are aborted.
+Downstream handlers must observe cancellation. The middleware retains ownership until they return.
+Caller cancellation remains cancellation, without conversion to 504.
+
+`maxRetryAfterSeconds` defaults to 60, with a range of 0–300 seconds.
+Valid Retry-After seconds and HTTP dates establish a bounded minimum delay.
+The larger of upstream delay and local backoff applies. Invalid or past values use local backoff.
+A zero maximum disables the upstream delay contribution.
+All timers use the registered `TimeProvider`. Tests can register `Random` for repeatable jitter.
+These defaults introduce a total deadline for existing configured retry bindings.
+See [verification](../../tests/Wafish.Regression/evidence/async-retry/README.md).

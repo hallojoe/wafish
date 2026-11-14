@@ -8,7 +8,7 @@ The [root execution plan](../../PLAN.md) remains the historical and cross-projec
 
 ### IMP-01: Test Redis failover and reconnection
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
 
 Extend live tests to cover connection replacement and interrupted Lua operations.
 
@@ -16,7 +16,7 @@ Acceptance: Recovery preserves outage policy and shared quota behavior.
 
 ### IMP-02: Validate key isolation across deployments
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
 
 Test configured prefixes with identical routes and client addresses.
 
@@ -34,7 +34,7 @@ Acceptance: Missing or untrusted claims follow a documented policy and cannot cr
 
 ## Source review follow-up: 2026-11-14
 
-Static review findings follow. Implementation and acceptance checks remain pending.
+Static review findings follow. Completed items have verification evidence below.
 See [solution priorities and dependencies](../../DOTNET_REVIEW.md).
 
 ### IMP-03: Separate keys for incompatible algorithms
@@ -54,7 +54,7 @@ Keep fail-closed outage behavior.
 
 ### IMP-04: Recover a failed connection creation task
 
-Status: TODO. Priority: P2. Type: recovery risk.
+Status: DONE. Owner: Codex. Completed: 2026-11-14. Priority: P2. Type: recovery risk.
 
 Evidence: [RedisLuaRateLimitStore.cs](RedisLuaRateLimitStore.cs), the `_connections` dictionary.
 
@@ -86,3 +86,5 @@ Update [README.md](README.md) and [AGENTS.md](AGENTS.md) when the implemented be
 ## Implementation evidence
 
 Completed IMP-03 on 2026-11-14. [Verification](../../tests/Wafish.Regression/evidence/review4567/README.md).
+
+Completed IMP-01, IMP-02, IMP-04 on 2026-11-14. [Verification](../../tests/Wafish.Regression/evidence/recovery/README.md).

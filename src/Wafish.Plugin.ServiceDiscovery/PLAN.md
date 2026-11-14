@@ -8,7 +8,7 @@ The [root execution plan](../../PLAN.md) remains the historical and cross-projec
 
 ### IMP-01: Add provider response contract fixtures
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
 
 Cover empty sets, malformed JSON, unhealthy instances, and cancellation for every provider.
 
@@ -16,7 +16,7 @@ Acceptance: Each parser has repeatable success and failure cases.
 
 ### IMP-02: Control refresh backoff and stale visibility
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
 
 Expose refresh failures and stale age, and distribute retry timing.
 
@@ -34,7 +34,7 @@ Acceptance: Tests cover multiple slices, readiness changes, and endpoint removal
 
 ## Source review follow-up: 2026-11-14
 
-Static review findings follow. Implementation and acceptance checks remain pending.
+Static review findings follow. Completed items have verification evidence below.
 See [solution priorities and dependencies](../../DOTNET_REVIEW.md).
 
 ### IMP-03: Keep destination identities stable
@@ -53,7 +53,7 @@ New endpoints do not inherit another endpoint's circuit state.
 
 ### IMP-04: Preserve discovery failure health
 
-Status: TODO. Priority: P2. Type: health-reporting defect.
+Status: DONE. Owner: Codex. Completed: 2026-11-14. Priority: P2. Type: health-reporting defect.
 
 Evidence: [ServiceDiscoveryRefreshService.cs](ServiceDiscoveryRefreshService.cs), `RunAsync` and `RefreshDueBindingsAsync`.
 
@@ -66,7 +66,7 @@ A later successful refresh clears only the recovered binding.
 
 ### FEAT-02: Configure maximum destination staleness
 
-Status: TODO. Priority: P2. Type: feature.
+Status: DONE. Owner: Codex. Completed: 2026-11-14. Priority: P2. Type: feature.
 
 Evidence: [ServiceDiscoveryRefreshService.cs](ServiceDiscoveryRefreshService.cs) retains previous destinations after refresh failures.
 
@@ -86,3 +86,5 @@ Update [README.md](README.md) and [AGENTS.md](AGENTS.md) when the implemented be
 ## Implementation evidence
 
 Completed IMP-03 on 2026-11-14. [Verification](../../tests/Wafish.Regression/evidence/review4567/README.md).
+
+Completed IMP-01, IMP-02, IMP-04, FEAT-02 on 2026-11-14. [Verification](../../tests/Wafish.Regression/evidence/recovery/README.md).

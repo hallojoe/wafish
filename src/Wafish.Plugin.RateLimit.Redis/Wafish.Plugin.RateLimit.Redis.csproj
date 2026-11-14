@@ -21,4 +21,8 @@
     <ProjectReference Include="..\Wafish\Wafish.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Wafish.Regression" />
+  </ItemGroup>
+
 </Project>

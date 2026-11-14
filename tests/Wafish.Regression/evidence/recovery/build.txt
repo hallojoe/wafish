@@ -1,0 +1,46 @@
+  Sonar: (WafIsh.Plugin.Abstractions.csproj) The analysis targets file not found: /home/casko/code/wafish/.sonarqube/bin/targets/SonarQube.Integration.targets
+  WafIsh.Plugin.Abstractions -> /home/casko/code/wafish/src/WafIsh.Plugin.Abstractions/bin/Release/net10.0/WafIsh.Plugin.Abstractions.dll
+  Sonar: (WafIsh.Grpc.csproj) The analysis targets file not found: /home/casko/code/wafish/.sonarqube/bin/targets/SonarQube.Integration.targets
+  WafIsh.Grpc -> /home/casko/code/wafish/src/WafIsh.Grpc/bin/Release/net10.0/WafIsh.Grpc.dll
+  Sonar: (WafIsh.Storage.Abstractions.csproj) The analysis targets file not found: /home/casko/code/wafish/.sonarqube/bin/targets/SonarQube.Integration.targets
+  WafIsh.Storage.Abstractions -> /home/casko/code/wafish/src/WafIsh.Storage.Abstractions/bin/Release/net10.0/WafIsh.Storage.Abstractions.dll
+  Sonar: (WafIsh.Client.csproj) The analysis targets file not found: /home/casko/code/wafish/.sonarqube/bin/targets/SonarQube.Integration.targets
+  Sonar: (WafIsh.Storage.Sqlite.csproj) The analysis targets file not found: /home/casko/code/wafish/.sonarqube/bin/targets/SonarQube.Integration.targets
+  WafIsh.Client -> /home/casko/code/wafish/src/WafIsh.Client/bin/Release/net10.0/WafIsh.Client.dll
+  WafIsh.Storage.Sqlite -> /home/casko/code/wafish/src/WafIsh.Storage.Sqlite/bin/Release/net10.0/WafIsh.Storage.Sqlite.dll
+  Sonar: (WafIsh.csproj) The analysis targets file not found: /home/casko/code/wafish/.sonarqube/bin/targets/SonarQube.Integration.targets
+  WafIsh -> /home/casko/code/wafish/src/WafIsh/bin/Release/net10.0/WafIsh.dll
+  Sonar: (WafIsh.Plugin.ServiceDiscovery.csproj) The analysis targets file not found: /home/casko/code/wafish/.sonarqube/bin/targets/SonarQube.Integration.targets
+  Sonar: (WafIsh.Plugin.Compression.csproj) The analysis targets file not found: /home/casko/code/wafish/.sonarqube/bin/targets/SonarQube.Integration.targets
+  Sonar: (WafIsh.Plugin.ProxyLog.csproj) The analysis targets file not found: /home/casko/code/wafish/.sonarqube/bin/targets/SonarQube.Integration.targets
+  Sonar: (WafIsh.Plugin.Metrics.csproj) The analysis targets file not found: /home/casko/code/wafish/.sonarqube/bin/targets/SonarQube.Integration.targets
+  Sonar: (WafIsh.Plugin.RateLimit.Redis.csproj) The analysis targets file not found: /home/casko/code/wafish/.sonarqube/bin/targets/SonarQube.Integration.targets
+  Sonar: (WafIsh.Plugin.Retry.csproj) The analysis targets file not found: /home/casko/code/wafish/.sonarqube/bin/targets/SonarQube.Integration.targets
+  Sonar: (WafIsh.Plugin.RateLimit.csproj) The analysis targets file not found: /home/casko/code/wafish/.sonarqube/bin/targets/SonarQube.Integration.targets
+  WafIsh.Plugin.RateLimit -> /home/casko/code/wafish/src/WafIsh.Plugin.RateLimit/bin/Release/net10.0/WafIsh.Plugin.RateLimit.dll
+  WafIsh.Plugin.ProxyLog -> /home/casko/code/wafish/src/WafIsh.Plugin.ProxyLog/bin/Release/net10.0/WafIsh.Plugin.ProxyLog.dll
+  WafIsh.Plugin.Compression -> /home/casko/code/wafish/src/WafIsh.Plugin.Compression/bin/Release/net10.0/WafIsh.Plugin.Compression.dll
+  WafIsh.Plugin.ServiceDiscovery -> /home/casko/code/wafish/src/WafIsh.Plugin.ServiceDiscovery/bin/Release/net10.0/WafIsh.Plugin.ServiceDiscovery.dll
+  WafIsh.Plugin.Retry -> /home/casko/code/wafish/src/WafIsh.Plugin.Retry/bin/Release/net10.0/WafIsh.Plugin.Retry.dll
+  WafIsh.Plugin.Metrics -> /home/casko/code/wafish/src/WafIsh.Plugin.Metrics/bin/Release/net10.0/WafIsh.Plugin.Metrics.dll
+  Sonar: (WafIsh.Plugin.Waf.csproj) The analysis targets file not found: /home/casko/code/wafish/.sonarqube/bin/targets/SonarQube.Integration.targets
+  WafIsh.Plugin.Waf -> /home/casko/code/wafish/src/WafIsh.Plugin.Waf/bin/Release/net10.0/WafIsh.Plugin.Waf.dll
+  WafIsh.Plugin.RateLimit.Redis -> /home/casko/code/wafish/src/WafIsh.Plugin.RateLimit.Redis/bin/Release/net10.0/WafIsh.Plugin.RateLimit.Redis.dll
+  Sonar: (WafIsh.Plugin.CircuitBreaker.csproj) The analysis targets file not found: /home/casko/code/wafish/.sonarqube/bin/targets/SonarQube.Integration.targets
+  Sonar: (WafIsh.Plugin.Cache.csproj) The analysis targets file not found: /home/casko/code/wafish/.sonarqube/bin/targets/SonarQube.Integration.targets
+  WafIsh.Plugin.Cache -> /home/casko/code/wafish/src/WafIsh.Plugin.Cache/bin/Release/net10.0/WafIsh.Plugin.Cache.dll
+  WafIsh.Plugin.CircuitBreaker -> /home/casko/code/wafish/src/WafIsh.Plugin.CircuitBreaker/bin/Release/net10.0/WafIsh.Plugin.CircuitBreaker.dll
+  Sonar: (WafIsh.Runtime.csproj) The analysis targets file not found: /home/casko/code/wafish/.sonarqube/bin/targets/SonarQube.Integration.targets
+  WafIsh.Runtime -> /home/casko/code/wafish/src/WafIsh.Runtime/bin/Release/net10.0/WafIsh.Runtime.dll
+  Sonar: (WafIsh.Administration.csproj) The analysis targets file not found: /home/casko/code/wafish/.sonarqube/bin/targets/SonarQube.Integration.targets
+  WafIsh.Administration -> /home/casko/code/wafish/src/WafIsh.Administration/bin/Release/net10.0/WafIsh.Administration.dll
+  Sonar: (WafIsh.ReactUi.csproj) The analysis targets file not found: /home/casko/code/wafish/.sonarqube/bin/targets/SonarQube.Integration.targets
+  WafIsh.ReactUi -> /home/casko/code/wafish/src/WafIsh.ReactUi/bin/Release/net10.0/WafIsh.ReactUi.dll
+  Sonar: (WafIsh.Regression.csproj) The analysis targets file not found: /home/casko/code/wafish/.sonarqube/bin/targets/SonarQube.Integration.targets
+  WafIsh.Regression -> /home/casko/code/wafish/tests/WafIsh.Regression/bin/Release/net10.0/WafIsh.Regression.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.84

@@ -44,7 +44,11 @@ if (args is ["--migration-crash", var database, var ready])
 
 var registry = new RegressionCaseRegistry(report);
 await registry.DefineGroupAsync("runner", RegressionRegistryChecks.RunAsync);
+await registry.DefineGroupAsync("fault-schedules", FaultScheduleChecks.RunAsync);
 await registry.DefineGroupAsync("async-policy", AsyncConfigurationChecks.RunAsync);
+await registry.DefineGroupAsync("async-policy", RetryTimingChecks.RunAsync);
+await registry.DefineGroupAsync("recovery", RedisRecoveryChecks.RunAsync);
+await registry.DefineGroupAsync("recovery", DiscoveryRecoveryChecks.RunAsync);
 await registry.DefineGroupAsync("review-release", ReviewReleaseChecks.RunAsync);
 await registry.DefineGroupAsync("review-deployment", ReviewDeploymentChecks.RunAsync);
 await registry.DefineGroupAsync("review-accounting", ReviewAccountingChecks.RunAsync);

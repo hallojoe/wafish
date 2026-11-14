@@ -8,7 +8,9 @@ The [root execution plan](../../PLAN.md) remains the historical and cross-projec
 
 ### IMP-01: Test replay and response boundaries
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [async configuration and retry evidence](../../tests/Wafish.Regression/evidence/async-retry/README.md).
 
 Cover partial responses, streamed bodies, cancellation, and exhausted destinations.
 
@@ -16,7 +18,9 @@ Acceptance: Unsafe requests are not replayed and no response bytes are duplicate
 
 ### IMP-02: Make timing tests repeatable
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [async configuration and retry evidence](../../tests/Wafish.Regression/evidence/async-retry/README.md).
 
 Use controlled backoff and jitter sources in focused tests.
 
@@ -76,7 +80,9 @@ Successful retries do not mutate sent headers.
 
 ### FEAT-02: Honor upstream retry timing within a total deadline
 
-Status: TODO. Priority: P2. Type: feature.
+Status: DONE. Owner: Codex. Completed: 2026-11-14. Priority: P2. Type: feature.
+
+Verification: [async configuration and retry evidence](../../tests/Wafish.Regression/evidence/async-retry/README.md).
 
 Evidence: [RequestRetryMiddleware.cs](Middleware/RequestRetryMiddleware.cs) uses local exponential delay and per-attempt timeouts.
 

@@ -1,0 +1,9 @@
+PASS: Configuration async: delayed validation yields and cancellation preserves both revisions
+PASS: Configuration async: lock wait and startup loading observe caller cancellation
+PASS: Configuration async: cancellation after storage starts still completes activation and audit
+PASS: Configuration async: generated concurrent rename, delete, registration, and stale updates preserve identities
+PASS: Retry timing: upstream delta, date, invalid, and capped delays use controlled time
+PASS: Retry timing: total deadline interrupts upstream Retry-After without another attempt
+PASS: Retry timing: attempt limits and exponential jitter are deterministic
+PASS: Retry timing: caller cancellation stays distinct from deadline expiry
+PASS: Retry timing: body preparation and non-idempotent forwarding obey the total deadline

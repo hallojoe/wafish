@@ -55,3 +55,46 @@ Injected `TimeProvider` controls refresh intervals and loop delays.
 Refresh intervals use monotonic elapsed time; resource health timestamps use UTC.
 
 Verification: [review evidence](../../tests/Wafish.Regression/evidence/review141516/README.md).
+
+## Failure health and stale destinations
+
+Each binding retains its failure until that binding succeeds, changes, or becomes disabled.
+Successful empty responses remove destinations and count as healthy discovery.
+Malformed responses preserve the previous destination set and report a failure.
+Eureka and Kubernetes use independent provider parsers. Unhealthy or unready endpoints are excluded.
+
+Failed refreshes use exponential backoff with jitter between 80% and 100% of the current delay.
+The delay ceiling is 300 seconds, or `refreshSeconds` when that interval is longer.
+Successful refreshes restore the configured interval.
+
+Configure stale handling in the cluster binding:
+
+```json
+{
+  "enabled": true,
+  "mode": "HttpJson",
+  "endpoint": "http://registry/catalog",
+  "refreshSeconds": 30,
+  "requestTimeoutSeconds": 5,
+  "maxStaleSeconds": 120,
+  "stalePolicy": "RejectNewTraffic"
+}
+```
+
+- `maxStaleSeconds`: elapsed freshness limit, from 0 through 604800 seconds. Zero disables expiry.
+- `RetainLastKnown`: retain destinations after expiry and report degraded health. This is the default.
+- `RejectNewTraffic`: publish an empty runtime destination set after expiry. YARP rejects new requests with HTTP 503.
+
+Expiry uses monotonic time since the last successful refresh, including successful empty results.
+Before the first success, age starts when the binding is first observed.
+Expiry is checked each refresh cycle, independently of retry backoff, and after failed requests.
+The one-second loop, active provider requests, and publication contention can delay enforcement.
+Choose a limit above the normal refresh interval and request timeout.
+Persisted configuration and binding revisions remain unchanged. Successful discovery restores destinations with stable identities.
+Existing requests retain their captured runtime configuration.
+
+`GetBindingHealth()` exposes cluster identity, last-success UTC, stale age, failure count, failure type, and retry delay.
+It also reports stale status and whether traffic was rejected.
+Resource health includes failing, stale, and rejected binding counts. Failure diagnostics omit provider exception messages.
+
+Verification: [Redis and discovery recovery](../../tests/Wafish.Regression/evidence/recovery/README.md).

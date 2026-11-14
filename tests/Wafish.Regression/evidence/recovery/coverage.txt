@@ -1,0 +1,6 @@
+40/40 src/WafIsh.Plugin.RateLimit.Redis/RedisLuaRateLimitStore.cs missing []
+1/1 src/WafIsh.Plugin.ServiceDiscovery/HttpServiceDiscoveryPlugin.cs missing []
+3/3 src/WafIsh.Plugin.ServiceDiscovery/ServiceDiscoveryBindingHealth.cs missing []
+128/140 src/WafIsh.Plugin.ServiceDiscovery/ServiceDiscoveryRefreshService.cs missing [121, 122, 155, 219, 330, 331, 378, 403, 424, 426, 448, 469]
+1/1 src/WafIsh/Models/PluginExecutionConfigs.cs missing []
+TOTAL 173/185 = 93.51%

@@ -11,6 +11,10 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Keep failure and freshness state per binding. Successful peers must not clear another binding failure.
+- Apply stale rejection only to runtime destinations through the shared publication gate.
+- Preserve default retention. Distinguish valid empty results from malformed provider responses.
+
 - The canonical plugin ID is service-discovery.
 - Do not open discovery connections without an enabled cluster binding.
 - Preserve the last valid configuration when discovery cannot provide a valid replacement.

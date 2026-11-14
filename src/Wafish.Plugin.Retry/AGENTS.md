@@ -11,6 +11,8 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Keep body preparation, attempts, and delays inside the total deadline. Test timers with controlled time.
+
 - Keep non-idempotent retries opt-in.
 - Do not retry after response output makes replay unsafe.
 - Preserve cancellation and bounded request-body buffering.

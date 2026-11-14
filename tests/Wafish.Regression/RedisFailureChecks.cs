@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
+using StackExchange.Redis;
 using Wafish.Infrastructure.Middleware;
 using Wafish.Plugin.RateLimit.Redis;
 using Wafish.Services;
@@ -113,6 +114,41 @@ internal static class RedisFailureChecks
         }
         Console.WriteLine("PASS: Live Redis isolates algorithm and policy changes on the same logical key");
         Console.WriteLine("PASS: Live Redis shares fixed-window, sliding-window, and token-bucket counters across two clients");
+        foreach (var algorithm in new[] { "FixedWindow", "SlidingWindow", "TokenBucket" })
+        {
+            var prefix = "deployment-a:" + algorithm;
+            Check(await Invoke(first, "FailClosed", prefix, algorithm) == 200, "Deployment A rejected its first request.");
+            Check(await Invoke(second, "FailClosed", prefix, algorithm) == 200, "Replica did not share deployment A.");
+            Check(await Invoke(first, "FailClosed", prefix, algorithm) == 429, "Deployment A did not exhaust its quota.");
+            Check(await Invoke(second, "FailClosed", "deployment-b:" + algorithm, algorithm) == 200,
+                "Deployment A consumed deployment B's quota.");
+        }
+        Console.WriteLine("PASS: Live Redis isolates deployment prefixes for identical routes and clients");
+        var clock = new ReviewReleaseChecks.ManualTime();
+        var attempts = 0;
+        await using (var replacement = new RedisLuaRateLimitStore(NullLogger<RedisLuaRateLimitStore>.Instance, options, clock, async endpoint =>
+        {
+            if (Interlocked.Increment(ref attempts) == 1) { throw new IOException("Injected construction failure"); }
+            return await ConnectionMultiplexer.ConnectAsync(endpoint);
+        }))
+        {
+            Check(!(await replacement.TryAcquireAsync("FixedWindow", "replacement", 10, 30, 0, null)).Available, "Construction failure was ignored.");
+            clock.Advance(TimeSpan.FromSeconds(1));
+            var results = await Task.WhenAll(Enumerable.Range(0, 20).Select(_ => replacement.TryAcquireAsync("FixedWindow", "replacement", 10, 30, 0, null).AsTask()));
+            Check(attempts == 2 && results.All(r => r.Available) && results.Count(r => r.Allowed) == 10,
+                "Concurrent replacement failed shared quota enforcement.");
+            Check(!(await second.TryAcquireAsync("FixedWindow", "replacement", 10, 30, 0, null)).Allowed, "Replacement did not share Redis counters.");
+        }
+        Console.WriteLine("PASS: Live Redis recovers failed construction with one replacement and shared counters");
+        await using (var control = await ConnectionMultiplexer.ConnectAsync(options.Value.ConnectionString + ",allowAdmin=true"))
+        {
+            await control.GetDatabase().ExecuteAsync("CLIENT", "PAUSE", 10000, "ALL");
+            var interrupted = first.TryAcquireAsync("FixedWindow", "interrupted", 2, 30, 0, null).AsTask();
+            Check(!interrupted.IsCompleted, "Lua operation did not wait during the server pause.");
+            await server.StopAsync();
+            Check(!(await interrupted.WaitAsync(TimeSpan.FromSeconds(5))).Available, "Interrupted Lua operation reported success.");
+        }
+        Console.WriteLine("PASS: Live Redis classifies an interrupted Lua operation as unavailable");
         await server.StopAsync();
         Check(await Invoke(first, "FailClosed") == 503, "Live outage bypassed FailClosed.");
         Check(await Invoke(second, "FailOpen") == 200, "Live outage did not follow FailOpen.");
@@ -130,6 +166,12 @@ internal static class RedisFailureChecks
             await Task.Delay(100, timeout.Token);
         }
         Check(await Invoke(first, "FailClosed") == 200, "Recovered Redis did not resume traffic.");
+        while (!(await second.TryAcquireAsync("FixedWindow", "second-recovery", 1000, 30, 0, null, timeout.Token)).Available)
+        {
+            await Task.Delay(100, timeout.Token);
+        }
+        Check(await Invoke(second, "FailClosed") == 200 && await Invoke(first, "FailClosed") == 429,
+            "Recovered replicas did not enforce their shared quota.");
         using var canceled = new CancellationTokenSource();
         canceled.Cancel();
         try
@@ -141,7 +183,7 @@ internal static class RedisFailureChecks
         Console.WriteLine("PASS: Live Redis reconnects after restart and preserves cancellation");
     }
 
-    private static async Task<int> Invoke(IDistributedRateLimitStore store, string failureMode)
+    private static async Task<int> Invoke(IDistributedRateLimitStore store, string failureMode, string keyPrefix = "aneiang:rl", string algorithm = "FixedWindow")
     {
         var route = new RouteConfig { RouteId = "redis-test", Match = new() { Path = "/redis-test" } };
         var snapshots = new GatewaySnapshotPublisher();
@@ -150,7 +192,7 @@ internal static class RedisFailureChecks
             Version = 1, Routes = [route],
             RoutePlugins = ImmutableDictionary<string, ImmutableArray<PluginBindingSnapshot>>.Empty.Add(route.RouteId,
                 [new("redis-binding", "rate-limit-redis", PluginBindingScope.Route, route.RouteId,
-                    JsonSerializer.Serialize(new { enabled = true, failureMode, limit = 2, windowSeconds = 30 }), 1, 1, 0)])
+                    JsonSerializer.Serialize(new { enabled = true, failureMode, keyPrefix, algorithm, limit = 2, windowSeconds = 30 }), 1, 1, 0)])
         });
         var plans = new GatewayPluginExecutionPlanProvider(snapshots, NullLogger<GatewayPluginExecutionPlanProvider>.Instance);
         var middleware = new RedisRateLimitMiddleware(ctx => { ctx.Items["forwarded"] = true; return Task.CompletedTask; },
