@@ -1,0 +1,3 @@
+PASS: Sample contracts: both backend identities, headers, ping, echo, and trace context survive proxying
+PASS: Sample telemetry: configured probes are excluded while API traces and expected meters remain active
+All regression checks passed.

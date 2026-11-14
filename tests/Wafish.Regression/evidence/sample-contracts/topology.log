@@ -1,0 +1,6 @@
+dotnet-coverage v18.12.0.0 [linux-x64 - .NET 10.0.14]
+
+SessionId: 8d90189b-4c9d-4b62-b884-fface7bcdc1c
+PASS: gateway, both backends, and AppHost restart with stable credentials and persisted route identity.
+PASS: both registered backends preserve ping, echo, POST echo, instance headers, and W3C trace identity through the gateway.
+Code coverage results: /tmp/wafish-priority13-topology.xml.

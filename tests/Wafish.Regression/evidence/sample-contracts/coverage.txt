@@ -1,0 +1,6 @@
+7/7 samples/SampleLocalService/Controllers/LocalServiceController.cs missing []
+6/6 samples/SampleLocalService/Program.cs missing []
+9/9 samples/SampleLocalService/SampleInstanceIdentity.cs missing []
+2/2 samples/SampleServiceDefaults/Extensions.cs missing []
+9/9 samples/SampleServiceDefaults/HealthProbePaths.cs missing []
+TOTAL 33/33 = 100.00%

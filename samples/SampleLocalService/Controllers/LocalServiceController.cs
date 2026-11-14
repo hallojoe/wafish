@@ -4,7 +4,7 @@ namespace SampleLocalService.Controllers;
 
 [ApiController]
 [Route("/api/local-service/[action]")]
-public class LocalServiceController : ControllerBase
+public class LocalServiceController(SampleInstanceIdentity identity) : ControllerBase
 {
     [HttpGet]
     public IActionResult Ping()
@@ -13,7 +13,8 @@ public class LocalServiceController : ControllerBase
         {
             code = 200,
             service = "SampleLocalService",
-            instance = Environment.MachineName,
+            instance = identity.Value,
+            traceId = System.Diagnostics.Activity.Current?.TraceId.ToString(),
             time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
         });
     }
@@ -25,7 +26,8 @@ public class LocalServiceController : ControllerBase
         {
             code = 200,
             message = message ?? "hello from local service",
-            instance = Environment.MachineName
+            instance = identity.Value,
+            traceId = System.Diagnostics.Activity.Current?.TraceId.ToString()
         });
     }
 
@@ -36,7 +38,8 @@ public class LocalServiceController : ControllerBase
         {
             code = 200,
             received = body,
-            instance = Environment.MachineName
+            instance = identity.Value,
+            traceId = System.Diagnostics.Activity.Current?.TraceId.ToString()
         });
     }
 }

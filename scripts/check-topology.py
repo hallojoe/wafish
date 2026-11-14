@@ -77,6 +77,32 @@ def main():
                 body = json.load(response)
                 return (body, response.headers) if with_headers else body
 
+        def contracts():
+            routes = request("/aneiang/api/routes")["data"]
+            registered = next(route for route in routes if route["routeId"] == "sample-service-path0")
+            expected = {destination["name"].split(":")[0] for destination in registered["destinations"]}
+            assert expected == {"backend-one", "backend-two"}
+            for action in ("instance", "ping", "echo?message=contract", "echopost"):
+                observed = set()
+                for _ in range(16):
+                    trace = uuid.uuid4().hex
+                    body, headers = request("/api/local-service/" + action,
+                        {"value": 42} if action == "echopost" else None,
+                        "POST" if action == "echopost" else "GET", trace, True)
+                    identity = body["instance"]
+                    assert headers.get("X-Backend-Instance") == identity and identity in expected
+                    assert body["traceId"] == trace, "Proxied sample lost W3C trace identity."
+                    if action != "instance":
+                        assert body["code"] == 200
+                    if action.startswith("echo?"):
+                        assert body["message"] == "contract"
+                    if action == "echopost":
+                        assert body["received"] == {"value": 42}
+                    observed.add(identity)
+                    if observed == expected:
+                        break
+                assert observed == expected, "Endpoint did not identify both registered instances: " + action
+
         def backends():
             observed = set()
             for _ in range(80):
@@ -91,6 +117,7 @@ def main():
             address = endpoint()
             original_password = password()
             backends()
+            contracts()
             request("/aneiang/api/config/routes/restart-marker", {
                 "clusterId": "marker-cluster", "match": {"path": "/restart-marker"},
                 "destinations": {"one": "http://127.0.0.1:9/"}})
@@ -110,7 +137,9 @@ def main():
             assert password() == original_password, "AppHost restart changed persisted credentials."
             restored = next(route for route in request("/aneiang/api/routes")["data"] if route["routeId"] == "restart-marker")
             assert restored["routeUid"] == identity, "AppHost restart changed persisted route identity."
+            contracts()
             print("PASS: gateway, both backends, and AppHost restart with stable credentials and persisted route identity.")
+            print("PASS: both registered backends preserve ping, echo, POST echo, instance headers, and W3C trace identity through the gateway.")
         finally:
             if owned:
                 aspire("stop")

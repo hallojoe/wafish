@@ -1,14 +1,16 @@
 # SampleServiceDefaults: proposed work
 
 Reviewed against source on 2026-11-14.
-All items below are TODO proposals, not implemented capabilities or scheduled commitments.
+Completed items include verification evidence. Remaining items are proposals.
 The [root execution plan](../../PLAN.md) remains the historical and cross-project record.
 
 ## Improvements not yet implemented
 
 ### IMP-01: Test telemetry source registration
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [sample contracts](../../tests/Wafish.Regression/evidence/sample-contracts/README.md).
 
 Verify expected instruments, activity sources, and health endpoint filtering.
 
@@ -16,7 +18,9 @@ Acceptance: Gateway and backend traces remain correlated without health-request 
 
 ### IMP-02: Document exporter-free behavior
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [sample contracts](../../tests/Wafish.Regression/evidence/sample-contracts/README.md).
 
 Show how hosts behave when no OTLP endpoint is configured.
 
@@ -39,7 +43,9 @@ See [solution priorities and dependencies](../../DOTNET_REVIEW.md).
 
 ### IMP-03: Filter all configured health probes from traces
 
-Status: TODO. Priority: P2. Type: telemetry mismatch.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [sample contracts](../../tests/Wafish.Regression/evidence/sample-contracts/README.md). Priority: P2. Type: telemetry mismatch.
 
 Evidence: [Extensions.cs](Extensions.cs), `ConfigureOpenTelemetry`.
 The [gateway host](../SampleGateway/Program.cs) also exposes `/ready` and `/live`.

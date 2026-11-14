@@ -42,3 +42,6 @@ For documentation-only changes, check links and Mermaid rendering instead of sta
 Update the README when behavior or scope changes.
 Keep future work in PLAN.md until its acceptance checks pass.
 Record implementation evidence when completing a plan item.
+
+Filter exact configured health paths. Do not suppress normal API paths below a health prefix.
+Run `--sample-contracts` after instrumentation or exporter configuration changes.

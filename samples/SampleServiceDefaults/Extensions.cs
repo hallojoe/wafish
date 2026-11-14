@@ -44,6 +44,7 @@ public static class Extensions
 
     public static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
+        var probes = new HealthProbePaths(builder.Configuration);
         builder.Logging.AddOpenTelemetry(logging =>
         {
             logging.IncludeFormattedMessage = true;
@@ -63,9 +64,7 @@ public static class Extensions
                 tracing.AddSource(builder.Environment.ApplicationName, "Yarp.ReverseProxy")
                     .AddAspNetCoreInstrumentation(tracing =>
                         // Exclude health check requests from tracing
-                        tracing.Filter = context =>
-                            !context.Request.Path.StartsWithSegments(HealthEndpointPath)
-                            && !context.Request.Path.StartsWithSegments(AlivenessEndpointPath)
+                        tracing.Filter = context => !probes.IsProbe(context.Request.Path)
                     )
                     // Uncomment the following line to enable gRPC instrumentation (requires the OpenTelemetry.Instrumentation.GrpcNetClient package)
                     //.AddGrpcClientInstrumentation()

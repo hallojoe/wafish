@@ -43,3 +43,6 @@ For documentation-only changes, check links and Mermaid rendering instead of sta
 Update the README when behavior or scope changes.
 Keep future work in PLAN.md until its acceptance checks pass.
 Record implementation evidence when completing a plan item.
+
+Resolve one SampleInstanceIdentity per process and pass it to registration and every response.
+Run `--sample-contracts` and `scripts/check-topology.py` after endpoint identity changes.

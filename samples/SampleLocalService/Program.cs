@@ -1,4 +1,5 @@
 using Wafish.Extensions;
+using SampleLocalService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +20,9 @@ else
 }
 // Client: one-liner — auto-register on startup, auto-unregister on shutdown
 // Minimal config: just GatewayUrl in code or appsettings.json
-builder.Services.AddWafishClient();
+var identity = SampleInstanceIdentity.Resolve(builder.Configuration);
+builder.Services.AddSingleton(identity);
+builder.Services.AddWafishClient(options => options.InstanceId = identity.Value);
 
 // Or with code override (higher priority than config file):
 // builder.Services.AddWafishClient(options =>
@@ -34,14 +37,12 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 app.UseRouting();
+app.Use(async (context, next) => { identity.Apply(context); await next(context); });
 app.MapControllers();
 app.MapDefaultEndpoints();
-app.MapGet("/api/local-service/instance", (HttpContext context, IConfiguration configuration) =>
+app.MapGet("/api/local-service/instance", (SampleInstanceIdentity instance) =>
 {
-    var instance = configuration["Gateway:Registration:InstanceId"] ?? "standalone";
-    System.Diagnostics.Activity.Current?.SetTag("gateway.destination.instance", instance);
-    context.Response.Headers["X-Backend-Instance"] = instance;
-    return Results.Ok(new { instance, traceId = System.Diagnostics.Activity.Current?.TraceId.ToString() });
+    return Results.Ok(new { instance = instance.Value, traceId = System.Diagnostics.Activity.Current?.TraceId.ToString() });
 });
 
 Console.WriteLine("╔══════════════════════════════════════════════════╗");

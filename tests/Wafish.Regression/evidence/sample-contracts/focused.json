@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "suite": "main",
+  "cases": [
+    {
+      "name": "Sample contracts: both backend identities, headers, ping, echo, and trace context survive proxying",
+      "group": "sample-contracts",
+      "durationMs": 591.2083,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Sample telemetry: configured probes are excluded while API traces and expected meters remain active",
+      "group": "sample-contracts",
+      "durationMs": 157.4318,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    }
+  ]
+}
