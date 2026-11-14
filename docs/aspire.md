@@ -15,7 +15,10 @@ aspire wait backend-two --apphost Wafish.AppHost/Wafish.AppHost.csproj
 aspire describe --apphost Wafish.AppHost/Wafish.AppHost.csproj
 ```
 
-Use the reported gateway HTTP URL. Do not assume fixed service ports.
+Open **Gateway console** in the resource table to access `/console`.
+Open **Backend instance** to access `/api/local-service/instance` on either backend.
+Do not assume fixed service ports. Root paths have no page and return HTTP 404.
+The gRPC URL appears only in resource details. It requires an HTTP/2 client, not a browser.
 `/api/local-service/instance` identifies the selected backend and trace.
 The two instances share one service cluster and the same route definitions.
 HTTP and gRPC use separate dynamically assigned loopback endpoints.
@@ -99,7 +102,7 @@ Neither dashboard replaces the other.
 
 ## Performance runner
 
-Use the reported gateway URL in external mode:
+Use the gateway HTTP origin without `/console` in external mode:
 
 ```bash
 dotnet run --project tests/Wafish.Performance/Runner -c Release -- \

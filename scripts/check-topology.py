@@ -6,6 +6,7 @@ import pathlib
 import subprocess
 import tempfile
 import time
+import urllib.parse
 import urllib.request
 import uuid
 import xml.etree.ElementTree as ET
@@ -61,7 +62,27 @@ def main():
         def endpoint():
             resources = document(aspire("describe", "--format", "Json"))["resources"]
             gateway = next(resource for resource in resources if resource["displayName"] == "gateway")
-            return next(url["url"] for url in gateway["urls"] if url["name"] == "http")
+            url = next(url["url"] for url in gateway["urls"] if urllib.parse.urlsplit(url["url"]).path == "/console")
+            parsed = urllib.parse.urlsplit(url)
+            return urllib.parse.urlunsplit((parsed.scheme, parsed.netloc, "", "", ""))
+
+        def dashboard_links():
+            resources = document(aspire("describe", "--format", "Json"))["resources"]
+            for resource in resources:
+                name = resource["displayName"]
+                if name not in ("gateway", "backend-one", "backend-two"):
+                    continue
+                if name == "gateway":
+                    grpc = next(url for url in resource["urls"] if url["name"] == "grpc")
+                    assert grpc.get("isInternal") is True, "gRPC must not appear as a browser link in the resource table."
+                path = "/console" if name == "gateway" else "/api/local-service/instance"
+                url = next(url["url"] for url in resource["urls"] if urllib.parse.urlsplit(url["url"]).path == path)
+                with urllib.request.urlopen(url, timeout=10) as response:
+                    assert response.status == 200, "Dashboard link failed: " + name
+                    if name == "gateway":
+                        assert "text/html" in response.headers.get("Content-Type", "")
+                    else:
+                        assert json.load(response)["instance"] == name
 
         def request(path, payload=None, method=None, trace_id=None, with_headers=False):
             headers = {}
@@ -115,6 +136,7 @@ def main():
         try:
             start()
             address = endpoint()
+            dashboard_links()
             original_password = password()
             backends()
             contracts()
@@ -133,6 +155,7 @@ def main():
             owned = False
             start()
             address = endpoint()
+            dashboard_links()
             backends()
             assert password() == original_password, "AppHost restart changed persisted credentials."
             restored = next(route for route in request("/aneiang/api/routes")["data"] if route["routeId"] == "restart-marker")
@@ -140,6 +163,7 @@ def main():
             contracts()
             print("PASS: gateway, both backends, and AppHost restart with stable credentials and persisted route identity.")
             print("PASS: both registered backends preserve ping, echo, POST echo, instance headers, and W3C trace identity through the gateway.")
+            print("PASS: dashboard browser links serve the gateway console and backend instance details before and after restart.")
         finally:
             if owned:
                 aspire("stop")
