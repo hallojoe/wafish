@@ -66,3 +66,6 @@ They verify connection closure, exact notification accounting, and credential ex
 
 Mutation contract checks cover model validation, configuration and registration writes, plugin persistence faults, and AI plugin discovery.
 Error assertions require Problem Details, named outcomes, and nullable revision fields.
+
+Use `--permissions` for operation policy checks. Use `--previews` for permission and preview endpoint checks.
+The complete suite includes these checks and the controller authentication matrix.

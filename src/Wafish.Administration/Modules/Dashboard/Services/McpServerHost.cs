@@ -170,6 +170,7 @@ public sealed class McpServerHost : BackgroundService
             options.Limits.MaxRequestBodySize = 64 * 1024;
         });
 
+        builder.Services.AddHttpContextAccessor();
         var app = builder.Build();
 
         app.Use(async (context, next) =>
@@ -188,6 +189,9 @@ public sealed class McpServerHost : BackgroundService
 
                 return;
             }
+            if (!await _services.GetRequiredService<IDashboardPermissionService>().IsAllowedAsync(context,
+                DashboardPermission.Read, "Mcp.Read", context.RequestAborted))
+            { context.Response.StatusCode = 403; return; }
             context.Response.Headers.CacheControl = "no-store";
             if (HttpMethods.IsOptions(context.Request.Method))
             {

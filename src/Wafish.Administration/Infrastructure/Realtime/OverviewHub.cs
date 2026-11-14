@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Wafish.Dashboard.Infrastructure.Auth;
 using Microsoft.AspNetCore.SignalR;
 
@@ -25,7 +26,9 @@ public class OverviewHub : Hub
     public override async Task OnConnectedAsync()
     {
         var httpContext = Context.GetHttpContext();
-        if (httpContext == null || !await _authorizationService.IsAuthorizedAsync(httpContext))
+        if (httpContext == null || !await _authorizationService.IsAuthorizedAsync(httpContext) ||
+            !await httpContext.RequestServices.GetRequiredService<IDashboardPermissionService>().IsAllowedAsync(httpContext,
+                DashboardPermission.Read, "Realtime.Subscribe", Context.ConnectionAborted))
         {
             Context.Abort();
             return;

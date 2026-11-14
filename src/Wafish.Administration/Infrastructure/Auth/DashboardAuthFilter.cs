@@ -53,6 +53,11 @@ internal sealed class DashboardAuthFilter : IAsyncAuthorizationFilter
         // Use authorization service for unified check
         if (await _authService.IsAuthorizedAsync(context.HttpContext))
         {
+            var action = (ControllerActionDescriptor)context.ActionDescriptor;
+            var permissions = context.HttpContext.RequestServices.GetRequiredService<IDashboardPermissionService>();
+            if (!await permissions.IsAllowedAsync(context.HttpContext, DashboardPermissionService.Required(action, context.HttpContext.Request.Method),
+                action.ControllerName + "." + action.ActionName, context.HttpContext.RequestAborted))
+                context.Result = new JsonResult(new { code = 403, message = "Operation permission denied." }) { StatusCode = 403 };
             return;
         }
 

@@ -325,3 +325,14 @@ See [baseline policy](../tests/contracts/public-api/README.md) before changing c
 CI retains package and regression artifacts for 14 days. Audit reports remain available for 30 days.
 Dependency auditing includes transitive dependencies and fails for all reported vulnerability severities.
 Audit-source failures, warnings, invalid reports, and command failures also fail verification.
+
+## Administration operation permissions
+
+Existing hosts grant all permissions after authentication. Configure restrictions before granting access to readers.
+Shared credentials use `DashboardOptions.Auth.Permissions`. Authenticated permission claims can restrict individual users.
+`Auth.AuthorizeOperation` supplies custom rules. Authentication must still succeed.
+Read, configuration-write, plugin-management, and credential-management checks cover controllers and optional management tools.
+Realtime connections require Read and recheck permissions each second.
+Credential-management checks protect two-factor settings, AI credentials, webhook secrets, and database downloads.
+Audit denials include the actor and operation. Permission rules do not isolate routes, tenants, or AI conversations.
+Plugin code and direct in-process callers remain trusted. See [configuration](../src/Wafish.Administration/README.md#operation-permissions).

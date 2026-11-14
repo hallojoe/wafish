@@ -1,0 +1,34 @@
+@baseUrl = https://localhost:9443/dashboard
+@apiKey = replace-with-host-api-key
+@expectedVersion = 1
+@idempotencyKey = replace-with-unique-operation-id
+
+### Preview the complete desired configuration. Replace the revision and lists before use.
+POST {{baseUrl}}/api/config/changes/preview
+X-Api-Key: {{apiKey}}
+Content-Type: application/json
+
+{
+  "expectedVersion": {{expectedVersion}},
+  "routes": [{"routeId":"example","clusterId":"example","match":{"path":"/example/{**catch-all}"}}],
+  "clusters": [{"clusterId":"example","destinations":{"one":{"address":"http://localhost:8080/"}}}]
+}
+
+### Apply once. Repeat this identical request and key after an uncertain response.
+POST {{baseUrl}}/api/config/changes
+X-Api-Key: {{apiKey}}
+Idempotency-Key: {{idempotencyKey}}
+Content-Type: application/json
+
+{
+  "expectedVersion": {{expectedVersion}},
+  "routes": [{"routeId":"example","clusterId":"example","match":{"path":"/example/{**catch-all}"}}],
+  "clusters": [{"clusterId":"example","destinations":{"one":{"address":"http://localhost:8080/"}}}]
+}
+
+### Inspect a plugin candidate without activating it.
+POST {{baseUrl}}/api/plugins/preview
+X-Api-Key: {{apiKey}}
+Content-Type: application/json
+
+{"enabledPluginIds":["compression"]}

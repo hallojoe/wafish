@@ -137,7 +137,7 @@ internal static class SessionLifecycleChecks
     }
     private static HttpClient Client(WebApplication host) => new(new HttpClientHandler { UseCookies = false })
     { BaseAddress = new Uri(host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses.Single()), Timeout = TimeSpan.FromSeconds(10) };
-    private static async Task<ClientWebSocket> Connect(Uri address, string hub, string? token, string? header = null, string? value = null)
+    internal static async Task<ClientWebSocket> Connect(Uri address, string hub, string? token, string? header = null, string? value = null)
     {
         var socket = new ClientWebSocket();
         if (token != null) socket.Options.SetRequestHeader("Authorization", "Bearer " + token);
@@ -154,7 +154,7 @@ internal static class SessionLifecycleChecks
         }
         catch { socket.Dispose(); throw; }
     }
-    private static async Task Closed(ClientWebSocket socket)
+    internal static async Task Closed(ClientWebSocket socket)
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         var buffer = new byte[4096];

@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http;
+using Wafish.Dashboard.Infrastructure.Auth;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -107,6 +109,7 @@ public class AIFunctionService
     /// <summary>Execute a read tool and return the result as a JSON string.</summary>
     public async Task<string> ExecuteReadToolAsync(string toolName, JsonElement? arguments)
     {
+        if (!await AllowToolAsync(DashboardPermission.Read, toolName)) return "{\"code\":403,\"error\":\"Operation permission denied.\"}";
         try
         {
             return toolName switch
@@ -129,6 +132,8 @@ public class AIFunctionService
     /// <summary>Execute a write tool after user confirmation and return the result as a JSON string.</summary>
     public async Task<string> ExecuteWriteToolAsync(string toolName, JsonElement? arguments)
     {
+        var permission = toolName == "toggle_plugin" ? DashboardPermission.PluginManagement : DashboardPermission.ConfigurationWrite;
+        if (!await AllowToolAsync(permission, toolName)) return "{\"code\":403,\"error\":\"Operation permission denied.\"}";
         try
         {
             var dynamicConfig = _services.GetRequiredService<IDynamicYarpConfigService>();
@@ -145,6 +150,16 @@ public class AIFunctionService
         {
             return "{\"error\":\"" + ex.Message.Replace("\"", "\\\"") + "\"}";
         }
+    }
+
+    private async ValueTask<bool> AllowToolAsync(DashboardPermission permission, string toolName)
+    {
+        var context = _services.GetService<IHttpContextAccessor>()?.HttpContext;
+        // Direct in-process callers are trusted. Network callers retain their request context.
+        if (context is null) return true;
+        return await _services.GetRequiredService<IDashboardAuthorizationService>().IsAuthorizedAsync(context)
+            && await _services.GetRequiredService<IDashboardPermissionService>().IsAllowedAsync(context, permission,
+                "Tool." + toolName, context.RequestAborted);
     }
 
     private static async Task<string> ToggleRouteAsync(IDynamicYarpConfigService cfg, JsonElement? args)

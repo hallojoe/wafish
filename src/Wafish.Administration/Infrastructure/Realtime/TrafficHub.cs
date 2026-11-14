@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json.Serialization;
 using Wafish.Dashboard.Infrastructure.Auth;
 using Microsoft.AspNetCore.SignalR;
@@ -20,7 +21,9 @@ public class TrafficHub : Hub
     public async Task SubscribeToRoutes(string[] routeIds)
     {
         var httpContext = Context.GetHttpContext();
-        if (httpContext == null || !await _authorizationService.IsAuthorizedAsync(httpContext))
+        if (httpContext == null || !await _authorizationService.IsAuthorizedAsync(httpContext) ||
+            !await httpContext.RequestServices.GetRequiredService<IDashboardPermissionService>().IsAllowedAsync(httpContext,
+                DashboardPermission.Read, "Realtime.Subscribe", Context.ConnectionAborted))
         {
             Context.Abort();
             return;

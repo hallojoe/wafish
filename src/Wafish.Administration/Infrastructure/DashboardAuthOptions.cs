@@ -8,6 +8,11 @@ namespace Wafish.Dashboard.Infrastructure;
 /// </summary>
 public class DashboardAuthOptions
 {
+    /// <summary>Permissions for shared credentials. Null preserves administrator access; an empty array grants none.</summary>
+    public Auth.DashboardPermission[]? Permissions { get; set; }
+    /// <summary>Optional per-operation rule, evaluated after successful authentication.</summary>
+    public Func<HttpContext, Auth.DashboardPermission, CancellationToken, ValueTask<bool>>? AuthorizeOperation { get; set; }
+
     /// <summary>
     /// Authorization mode for accessing the dashboard.
     /// </summary>

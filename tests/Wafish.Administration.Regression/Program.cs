@@ -30,6 +30,18 @@ Directory.CreateDirectory(path);
 var key = Guid.NewGuid().ToString("N");
 try
 {
+    await OperationPermissionChecks.RunAsync(Check, configure => StartHost("ApiKey", enableAi: true, configure: configure, registration: false), key);
+    if (args is ["--permissions"])
+    {
+        foreach (var failure in failures) Console.Error.WriteLine(failure);
+        return failures.Count == 0 ? 0 : 1;
+    }
+    await PreviewEndpointChecks.RunAsync(Check, () => StartHost("ApiKey", registration: false), key);
+    if (args is ["--previews"])
+    {
+        foreach (var failure in failures) Console.Error.WriteLine(failure);
+        return failures.Count == 0 ? 0 : 1;
+    }
     await AuthorizationMatrixChecks.RunAsync(Check, configure => StartHost("ApiKey", enableAi: true, configure: configure, registration: false), key);
     if (args is ["--authorization-matrix"])
     {
@@ -364,6 +376,8 @@ try
         Require(call.RootElement.TryGetProperty("result", out _), "MCP tool call failed.");
         using var oversized = await mcp.PostAsync("/mcp", new StringContent(new string('x', 65537), Encoding.UTF8, "application/json"));
         Require(oversized.StatusCode == HttpStatusCode.RequestEntityTooLarge, "MCP body limit was bypassed.");
+        host.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<Wafish.Dashboard.Infrastructure.DashboardOptions>>().Value.Auth.Permissions = [];
+        Require((await mcp.GetAsync("/mcp")).StatusCode == HttpStatusCode.Forbidden, "MCP ignored operation permissions.");
         await host.StopAsync();
         using var socket = new System.Net.Sockets.TcpClient();
         try

@@ -41,7 +41,9 @@ public sealed class DashboardAuthorizationService : IDashboardAuthorizationServi
         // Priority 1: Custom delegate (highest)
         if (_options.Auth.AuthorizeRequest != null)
         {
-            return await _options.Auth.AuthorizeRequest(context);
+            var authorized = await _options.Auth.AuthorizeRequest(context);
+            if (authorized) context.Items[DashboardPermissionService.ActorKey] = context.User.Identity?.Name ?? "custom-caller";
+            return authorized;
         }
 
         if (_options.Auth.AuthMode is DashboardAuthMode.BasicAuth or DashboardAuthMode.ApiKey)
@@ -58,6 +60,7 @@ public sealed class DashboardAuthorizationService : IDashboardAuthorizationServi
             if (valid)
             {
                 refund();
+                context.Items[DashboardPermissionService.ActorKey] = _options.Auth.AuthMode == DashboardAuthMode.ApiKey ? "api-key" : _options.Auth.JwtUsername ?? "basic-user";
             }
 
             return valid;
@@ -129,7 +132,7 @@ public sealed class DashboardAuthorizationService : IDashboardAuthorizationServi
             return false;
         }
 
-        var (valid, _) = DashboardJwtHelper.ValidateToken(token, secret, _clock);
+        var (valid, username) = DashboardJwtHelper.ValidateToken(token, secret, _clock);
         valid = valid && (_sessions?.IsActive(token) ?? true);
         if (!valid)
         {
@@ -139,6 +142,7 @@ public sealed class DashboardAuthorizationService : IDashboardAuthorizationServi
                 context.Connection.RemoteIpAddress?.ToString() ?? "unknown");
         }
 
+        if (valid) context.Items[DashboardPermissionService.ActorKey] = username ?? "jwt-user";
         return valid;
     }
 

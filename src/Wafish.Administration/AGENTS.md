@@ -13,6 +13,8 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Enforce operation permissions after authentication on controllers, hubs, AI tools, and MCP requests.
+
 - Configuration mutation errors use numeric HTTP status and named outcome fields. Preserve endpoint data and nullable revisions.
 
 - Use the same controller scope for route prefixes and authorization. Revoke sessions only after successful security-state writes.

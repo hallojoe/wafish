@@ -101,3 +101,26 @@ Configuration and plugin writes return shared status, outcome, and nullable revi
 Failures use Problem Details. Endpoint-specific fields retain their locations.
 HTTP `status` is now numeric; read `outcome` for the application result.
 See [consumer migration and error mappings](../../docs/mutation-contracts.md).
+
+## Operation permissions
+
+Authentication runs before operation permissions. Existing hosts retain all four permissions by default.
+Set `DashboardOptions.Auth.Permissions` to restrict shared credentials.
+An omitted or null setting preserves administrator access. An empty array grants no permissions.
+For configuration files, use `Gateway:Dashboard:Auth:Permissions`, for example `["Read"]`.
+Supported values are `Read`, `ConfigurationWrite`, `PluginManagement`, and `CredentialManagement`.
+Authenticated principals can supply `wafish.permission` claims with these exact names.
+When present, these claims replace the shared permissions.
+`Auth.AuthorizeOperation` overrides both policies and receives the request cancellation token.
+Custom authentication must set an authenticated principal with a stable name for per-user rules.
+
+Read permits inspection, configuration previews, and realtime subscriptions.
+Configuration writes require `ConfigurationWrite`; plugin changes and activation previews require `PluginManagement`.
+Credential management includes two-factor setup, AI connection settings, webhook secrets, and database downloads.
+Denied operations record their actor, target operation, and required permission in the audit log.
+Realtime permissions are rechecked each second and at subscription changes.
+AI tools and MCP requests use the same policy. Direct in-process tool calls remain trusted.
+Login and logout retain their public authentication behavior.
+
+The new endpoints are `POST api/config/changes/preview`, `POST api/config/changes`, and `POST api/plugins/preview`.
+The configured administration prefix applies. See [request examples](../../docs/configuration-changes.http) and [workflow](../../docs/configuration-changes.md).

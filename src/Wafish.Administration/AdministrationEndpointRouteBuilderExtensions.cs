@@ -36,6 +36,9 @@ public static class AdministrationEndpointRouteBuilderExtensions
 
                     return;
                 }
+                if (!await context.RequestServices.GetRequiredService<IDashboardPermissionService>().IsAllowedAsync(context,
+                    DashboardPermission.Read, "Realtime.Connect", context.RequestAborted))
+                { context.Response.StatusCode = 403; return; }
                 var options = context.RequestServices.GetRequiredService<IOptions<DashboardOptions>>().Value.Auth;
                 var sessions = context.RequestServices.GetRequiredService<DashboardSessionStore>();
                 var lifetime = options.AuthorizeRequest == null && options.AuthMode is DashboardAuthMode.DefaultJwt or DashboardAuthMode.CustomJwt
@@ -62,7 +65,8 @@ public static class AdministrationEndpointRouteBuilderExtensions
             while (true)
             {
                 await Task.Delay(TimeSpan.FromSeconds(1), clock, cancellationToken);
-                if (!await authorization.IsAuthorizedAsync(context)) { context.Abort(); return; }
+                if (!await authorization.IsAuthorizedAsync(context) || !await context.RequestServices.GetRequiredService<IDashboardPermissionService>()
+                    .IsAllowedAsync(context, DashboardPermission.Read, "Realtime.Subscribe", cancellationToken)) { context.Abort(); return; }
             }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
