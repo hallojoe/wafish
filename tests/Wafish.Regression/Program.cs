@@ -45,6 +45,7 @@ if (args is ["--migration-crash", var database, var ready])
 var registry = new RegressionCaseRegistry(report);
 await registry.DefineGroupAsync("log-safety", PublicLogSafetyChecks.RunAsync);
 await registry.DefineGroupAsync("log-quotas", LogQuotaChecks.RunAsync);
+await registry.DefineGroupAsync("plugin-policy", PluginManifestPolicyChecks.RunAsync);
 await registry.DefineGroupAsync("runner", RegressionRegistryChecks.RunAsync);
 await registry.DefineGroupAsync("fault-schedules", FaultScheduleChecks.RunAsync);
 await registry.DefineGroupAsync("protocol-properties", ProtocolPropertyChecks.RunAsync);

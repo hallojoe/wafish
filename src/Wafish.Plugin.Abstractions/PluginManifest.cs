@@ -14,6 +14,13 @@ public sealed record PluginManifest(
     IReadOnlyList<PluginSchemaReference> Schemas,
     string Description = "")
 {
+    /// <summary>Enabled plugins that must execute after this plugin. Missing targets are invalid.</summary>
+    public IReadOnlyList<string> Before { get; init; } = [];
+    /// <summary>Enabled plugins that must execute before this plugin. Missing targets are invalid.</summary>
+    public IReadOnlyList<string> After { get; init; } = [];
+    /// <summary>Host contracts checked before plugin construction and service registration.</summary>
+    public IReadOnlyList<PluginHostCapabilityRequirement> RequiredHostCapabilities { get; init; } = [];
+
     /// <summary>Other plugins that must be enabled before this plugin can be enabled.</summary>
     public IReadOnlyList<PluginDependency> Dependencies { get; init; } = [];
 

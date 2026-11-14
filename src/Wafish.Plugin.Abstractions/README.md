@@ -46,3 +46,18 @@ Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in
 [Lifecycle requirements](../../docs/plugin-lifecycle-contract.md) cover repeat calls, cancellation, partial startup, and shutdown failures.
 Public API checks reject removals, record constructor changes, and new abstract requirements on existing contracts.
 Default interface additions remain supported. Plugin state results distinguish validation rejection from storage failure.
+
+## Ordering and host requirements
+
+Manifests can declare `before` and `after` lists of enabled plugin IDs.
+Missing targets and cycles reject preparation before plugin services are configured.
+Numeric `order`, then ordinal plugin ID, break ties between unconstrained plugins.
+The host preserves the built-in retry, cache, compression, logging, metrics, and circuit-breaker sequence.
+External plugins now participate in both middleware callbacks in the resolved order.
+A callback can remain empty when the plugin does not use that pipeline.
+
+`requiredHostCapabilities` declares objects with `name` and `minimumVersion` fields.
+Available contracts are `wafish.runtime`, `wafish.proxy-pipeline`, and `wafish.resource-lifecycle`, each at version 1.
+Names are case-sensitive. Versions are positive integers and represent compatible contract revisions.
+Unknown names or unsupported versions reject preparation before external plugin construction.
+Omitted requirements preserve legacy behavior. Rejected replacements leave the active domain unchanged.

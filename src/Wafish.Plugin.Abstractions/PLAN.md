@@ -34,7 +34,9 @@ Acceptance: Reference implementations and tests demonstrate each lifecycle outco
 
 ### FEAT-01: Declare host capability requirements
 
-Status: TODO.
+Status: DONE. Completed: 2026-11-14.
+Verification: Release build and `--plugin-policy` cases pass.
+Checks cover cycles, missing targets, capability versions, callback order, and unchanged active domains.
 
 Allow manifests to state required host capabilities and their versions.
 
@@ -60,7 +62,9 @@ Unknown extension statistics remain readable.
 
 ### FEAT-02: Declare pipeline ordering constraints
 
-Status: TODO. Priority: P2. Type: feature.
+Status: DONE. Completed: 2026-11-14.
+Verification: Release build and `--plugin-policy` cases pass.
+Checks cover cycles, missing targets, capability versions, callback order, and unchanged active domains. Priority: P2. Type: feature.
 
 Evidence: [PluginManifest.cs](PluginManifest.cs) supplies a numeric `Order` and dependency list.
 

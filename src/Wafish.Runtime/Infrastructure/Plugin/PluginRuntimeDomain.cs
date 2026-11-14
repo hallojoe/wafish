@@ -251,8 +251,6 @@ public sealed class PluginRuntimeDomainInitializer(
 public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IAsyncDisposable
 {
     private static readonly object PipelineContinuationKey = new();
-    private static readonly string[] ProxyPluginOrder =
-        ["rate-limit", "rate-limit-redis", "request-retry", "response-cache", "compression", "proxy-log", "traffic-metrics", "cluster-metrics", "circuit-breaker"];
 
     private readonly IServiceProvider _rootServices;
     private readonly Dictionary<string, IGatewayPlugin> _firstPartyPlugins;
@@ -302,6 +300,9 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
 
         var enabled = enabledPluginIds
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var candidates = _firstPartyPlugins.Values.Select(p => p.Manifest).Concat(_externalHost.Manifests)
+            .Where(m => enabled.Contains(m.Id));
+        PluginManifestPolicy.Resolve(candidates);
         var plugins = new Dictionary<string, IGatewayPlugin>(StringComparer.OrdinalIgnoreCase);
         var externalLoads = new List<IAsyncDisposable>();
         ServiceProvider? pluginServices = null;
@@ -335,6 +336,7 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
                 }
             }
 
+            PluginManifestPolicy.Resolve(plugins.Values.Select(p => p.Manifest));
             var services = new ServiceCollection();
             services.AddSingleton(_rootServices.GetRequiredService<IConfiguration>());
             services.AddSingleton(_rootServices.GetRequiredService<IHostEnvironment>());
@@ -670,9 +672,9 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
             }
         });
 
-        foreach (var pluginId in ProxyPluginOrder)
+        foreach (var manifest in PluginManifestPolicy.Resolve(plugins.Values.Select(p => p.Manifest)))
         {
-            if (plugins.TryGetValue(pluginId, out var plugin))
+            if (plugins.TryGetValue(manifest.Id, out var plugin))
             {
                 plugin.ConfigureProxyPipeline(builder);
             }
@@ -687,9 +689,9 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
         Dictionary<string, IGatewayPlugin> plugins)
     {
         var builder = new ApplicationBuilder(services);
-        if (plugins.TryGetValue("waf", out var waf))
+        foreach (var manifest in PluginManifestPolicy.Resolve(plugins.Values.Select(p => p.Manifest)))
         {
-            waf.ConfigureMiddleware(builder);
+            plugins[manifest.Id].ConfigureMiddleware(builder);
         }
 
         builder.Run(ContinueHostPipelineAsync);
