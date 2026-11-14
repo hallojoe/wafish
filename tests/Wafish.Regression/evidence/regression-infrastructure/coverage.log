@@ -1,0 +1,8 @@
+12/12 src/Wafish.Runtime/Modules/GatewayConfig/Services/ConfigChangeAuditLog.cs missing []
+46/49 tests/Shared/RegressionCaseRegistry.cs missing [12, 48, 51]
+10/12 tests/Shared/RegressionReport.cs missing [10, 11]
+0/3 tests/Wafish.ReactUi.Host/Program.cs missing [3, 4, 5]
+20/20 tests/Wafish.ReactUi.Host/UiTestFaults.cs missing []
+85/91 tests/Wafish.ReactUi.Host/UiTestFixture.cs missing [90, 105, 107, 108, 109, 110]
+14/27 tests/Wafish.ReactUi.Host/UiTestFixtureOptions.cs missing [17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+TOTAL 187/214 = 87.38%

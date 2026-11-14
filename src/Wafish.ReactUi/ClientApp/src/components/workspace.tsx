@@ -149,7 +149,10 @@ export function ErrorNotice({
   const { t } = useLocale();
   if (!error) return null;
   const apiError = error instanceof ApiError ? error : null;
-  const status = text(field(apiError?.result, "status"), "");
+  const status = text(
+    field(apiError?.result, "outcome") ?? field(apiError?.result, "status"),
+    "",
+  );
   const kind =
     /Activation/i.test(status) || status === "4"
       ? "Activation failure"
@@ -175,7 +178,7 @@ export function ErrorNotice({
         )}
         {["persistedVersion", "activeVersion"].map(
           (key, i) =>
-            field(apiError?.result, key) !== undefined && (
+            field(apiError?.result, key) != null && (
               <p key={key}>
                 {t(i === 0 ? "Stored revision" : "Active revision")}:{" "}
                 {text(field(apiError?.result, key))}

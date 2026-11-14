@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
   PageTitle,
+  QueryState,
   Panel,
   ErrorNotice,
   Field,
@@ -120,61 +121,67 @@ export function AssistantPage() {
       </PageTitle>
       <div className="grid gap-6 lg:grid-cols-[15rem_1fr]">
         <Panel title="Session">
-          <div className="space-y-3">
-            {rows(sessions.data).map((row) => {
-              const id = text(field(row, "sessionId") ?? field(row, "id"));
-              return (
-                <div key={id} className="space-y-2">
-                  <Button
-                    className="w-full justify-start overflow-hidden"
-                    variant={id === session ? "secondary" : "ghost"}
-                    disabled={busy}
-                    onClick={() => {
-                      setSession(id);
-                      setOutput("");
-                      setEvents([]);
-                    }}
-                  >
-                    {text(field(row, "title"), id)}
-                  </Button>
-                  <Confirm
-                    title="Confirm deletion"
-                    disabled={busy}
-                    onConfirm={async () => {
-                      await mutation.mutateAsync({
-                        path: `api/ai/sessions/${idPath(id)}`,
-                        method: "DELETE",
-                      });
-                      if (session === id) setSession("");
-                    }}
-                  >
-                    {t("Delete")}
-                  </Confirm>
-                </div>
-              );
-            })}
-          </div>
+          <QueryState query={sessions}>
+            <div className="space-y-3">
+              {rows(sessions.data).map((row) => {
+                const id = text(field(row, "sessionId") ?? field(row, "id"));
+                return (
+                  <div key={id} className="space-y-2">
+                    <Button
+                      className="w-full justify-start overflow-hidden"
+                      variant={id === session ? "secondary" : "ghost"}
+                      disabled={busy}
+                      onClick={() => {
+                        setSession(id);
+                        setOutput("");
+                        setEvents([]);
+                      }}
+                    >
+                      {text(field(row, "title"), id)}
+                    </Button>
+                    <Confirm
+                      title="Confirm deletion"
+                      disabled={busy}
+                      onConfirm={async () => {
+                        await mutation.mutateAsync({
+                          path: `api/ai/sessions/${idPath(id)}`,
+                          method: "DELETE",
+                        });
+                        if (session === id) setSession("");
+                      }}
+                    >
+                      {t("Delete")}
+                    </Confirm>
+                  </div>
+                );
+              })}
+            </div>
+          </QueryState>
         </Panel>
         <Panel title="Assistant">
           <div className="space-y-5">
             <div className="chat-messages">
-              {rows(messages.data).map((row, index) => (
-                <div
-                  key={index}
-                  className={
-                    field(row, "role") === "user"
-                      ? "chat-user"
-                      : "chat-assistant"
-                  }
-                >
-                  <p className="eyebrow mb-2">
-                    {t(field(row, "role") === "user" ? "You" : "Assistant")}
-                  </p>
-                  <div className="whitespace-pre-wrap break-words">
-                    {text(field(row, "content"))}
-                  </div>
-                </div>
-              ))}
+              {session && !busy && (
+                <QueryState query={messages}>
+                  {rows(messages.data).map((row, index) => (
+                    <div
+                      key={index}
+                      className={
+                        field(row, "role") === "user"
+                          ? "chat-user"
+                          : "chat-assistant"
+                      }
+                    >
+                      <p className="eyebrow mb-2">
+                        {t(field(row, "role") === "user" ? "You" : "Assistant")}
+                      </p>
+                      <div className="whitespace-pre-wrap break-words">
+                        {text(field(row, "content"))}
+                      </div>
+                    </div>
+                  ))}
+                </QueryState>
+              )}
               {output && (
                 <div
                   className="chat-assistant whitespace-pre-wrap break-words"

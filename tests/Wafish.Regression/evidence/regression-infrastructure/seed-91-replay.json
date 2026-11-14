@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "suite": "main",
+  "cases": [
+    {
+      "name": "Fault schedules: persistence, publication, and commit cancellation preserve revisions",
+      "group": "fault-schedules",
+      "durationMs": 1024.7357,
+      "status": "passed",
+      "error": null,
+      "schedules": [
+        {
+          "name": "configuration",
+          "seed": 91,
+          "operations": [
+            "cancel-owned-commit",
+            "arrive:cancel-owned-commit:save",
+            "cancel-caller",
+            "release:cancel-owned-commit:save",
+            "continue:cancel-owned-commit:save",
+            "outcome:Applied",
+            "publication-reject",
+            "arrive:publication-reject:save",
+            "release:publication-reject:save",
+            "continue:publication-reject:save",
+            "outcome:ActivationFailed",
+            "storage-reject",
+            "arrive:storage-reject:save",
+            "release:storage-reject:save",
+            "continue:storage-reject:save",
+            "outcome:StorageFailed"
+          ],
+          "replay": "dotnet run --project tests/Wafish.Regression -c Release -- --case \u0022Fault schedules: persistence, publication, and commit cancellation preserve revisions\u0022 --seed 91"
+        }
+      ]
+    },
+    {
+      "name": "Fault schedules: retry recovery and cancelled delays preserve attempt ownership",
+      "group": "fault-schedules",
+      "durationMs": 76.5242,
+      "status": "passed",
+      "error": null,
+      "schedules": [
+        {
+          "name": "retry",
+          "seed": 91,
+          "operations": [
+            "cancel-delay",
+            "attempt:1",
+            "cancel-caller",
+            "recover",
+            "attempt:1",
+            "advance:99ms",
+            "advance:1ms",
+            "attempt:2"
+          ],
+          "replay": "dotnet run --project tests/Wafish.Regression -c Release -- --case \u0022Fault schedules: retry recovery and cancelled delays preserve attempt ownership\u0022 --seed 91"
+        }
+      ]
+    },
+    {
+      "name": "Fault schedules: log drain cancellation accounts for queued and in-flight records",
+      "group": "fault-schedules",
+      "durationMs": 86.7818,
+      "status": "passed",
+      "error": null,
+      "schedules": [
+        {
+          "name": "log-drain",
+          "seed": 91,
+          "operations": [
+            "submit:300",
+            "arrive:write",
+            "cancel-drain",
+            "cancel:write",
+            "arrive:write",
+            "cancel:write",
+            "discarded:300",
+            "release:write"
+          ],
+          "replay": "dotnet run --project tests/Wafish.Regression -c Release -- --case \u0022Fault schedules: log drain cancellation accounts for queued and in-flight records\u0022 --seed 91"
+        }
+      ]
+    },
+    {
+      "name": "Fault schedules: audit loading retains recent writes within the capacity limit",
+      "group": "fault-schedules",
+      "durationMs": 16.1524,
+      "status": "passed",
+      "error": null,
+      "schedules": [
+        {
+          "name": "audit-load",
+          "seed": 91,
+          "operations": [
+            "arrive:load",
+            "release:load",
+            "continue:load",
+            "bounded-recent-entries-retained"
+          ],
+          "replay": "dotnet run --project tests/Wafish.Regression -c Release -- --case \u0022Fault schedules: audit loading retains recent writes within the capacity limit\u0022 --seed 91"
+        }
+      ]
+    }
+  ]
+}

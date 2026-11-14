@@ -13,6 +13,14 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Cover each workspace with component tests. Preserve drafts during failed writes and query refreshes.
+- Use matching locale query keys for realtime updates. Show assistant loading and query errors.
+- Wait for dialog animations before axe measurements. Keep keyboard focus assertions.
+
+- Prefer mutation outcome fields while retaining legacy status compatibility. Do not display unknown revisions.
+
+- Two-factor changes require a new sign-in. Keep the browser lifecycle check aligned with this behavior.
+
 - Preserve PathBase in shell URLs. Validate every manifest asset before embedding or packing.
 
 - Edit frontend source under ClientApp, not generated wwwroot assets.

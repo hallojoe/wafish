@@ -8,7 +8,9 @@ The [root execution plan](../../PLAN.md) remains the historical and cross-projec
 
 ### IMP-01: Expand page-level component coverage
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [regression infrastructure evidence](../../tests/Wafish.Regression/evidence/regression-infrastructure/README.md).
 
 Cover draft preservation, stale requests, and loading-to-error transitions for each workspace.
 
@@ -16,7 +18,9 @@ Acceptance: Each workspace has tests beyond the shared API client.
 
 ### IMP-02: Check accessibility across dynamic states
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [regression infrastructure evidence](../../tests/Wafish.Regression/evidence/regression-infrastructure/README.md).
 
 Test dialogs, validation errors, realtime disconnects, and mobile navigation.
 

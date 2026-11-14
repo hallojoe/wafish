@@ -11,6 +11,12 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Keep fixture options, lifecycle ownership, and process-selected fault profiles in the test host.
+- Do not add HTTP fault-control endpoints. Arm failures only after normal startup.
+- Preserve unpooled fixture connections and private directory ownership.
+
+- Keep test certificates in memory. Run browser tests through the parent runner to clean failed and interrupted fixtures.
+
 - Keep selectable path bases and nested prefixes covered across all supported browser authentication modes.
 
 - Require UI_TEST_PASSWORD; never add a fixed fallback credential.

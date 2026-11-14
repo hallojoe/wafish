@@ -1,14 +1,16 @@
 # Wafish.ReactUi.Host: proposed work
 
 Reviewed against source on 2026-11-14.
-All items below are TODO proposals, not implemented capabilities or scheduled commitments.
+Statuses distinguish completed work from remaining proposals.
 The [root execution plan](../../PLAN.md) remains the historical and cross-project record.
 
 ## Improvements not yet implemented
 
 ### IMP-01: Test cleanup after interrupted runs
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [administration lifecycle evidence](../Wafish.Regression/evidence/administration-lifecycle/README.md).
 
 Check temporary state handling when browser startup or a host process fails.
 
@@ -16,7 +18,9 @@ Acceptance: Interrupted runs leave no reusable test credentials or locked databa
 
 ### IMP-02: Make fixture setup reusable
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [regression infrastructure evidence](../Wafish.Regression/evidence/regression-infrastructure/README.md).
 
 Extract explicit fixture creation steps while preserving process isolation.
 
@@ -26,7 +30,9 @@ Acceptance: Authentication modes share setup behavior without sharing data.
 
 ### FEAT-01: Add selectable fixture profiles
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [regression infrastructure evidence](../Wafish.Regression/evidence/regression-infrastructure/README.md).
 
 Seed large route lists and representative plugin configurations through a test-only profile option.
 
@@ -39,11 +45,13 @@ See [solution priorities and dependencies](../../DOTNET_REVIEW.md).
 
 ### IMP-03: Make hosting boundaries selectable
 
-Status: IN PROGRESS. Priority: P2. Type: fixture coverage gap.
+Status: DONE. Owner: Codex. Completed: 2026-11-14. Priority: P2. Type: fixture coverage gap.
+
+Verification: [administration lifecycle evidence](../Wafish.Regression/evidence/administration-lifecycle/README.md).
 
 Path base and nested UI/API prefixes are implemented under review item 11.
 JWT, BasicAuth, and API-key browser cases pass under `/edge`.
-HTTPS fixture selection remains pending.
+HTTPS fixture selection is now verified across all three browser authentication modes.
 See [verification](../Wafish.Regression/evidence/review111213/README.md).
 
 Original evidence: [Program.cs](Program.cs) fixed the administration prefix and exposed an HTTP loopback listener.
@@ -56,7 +64,9 @@ Asset and API requests remain inside the configured path base.
 
 ### FEAT-02: Add controlled API failure profiles
 
-Status: TODO. Priority: P2. Type: test infrastructure feature.
+Status: DONE. Owner: Codex. Completed: 2026-11-14. Priority: P2. Type: test infrastructure feature.
+
+Verification: [regression infrastructure evidence](../Wafish.Regression/evidence/regression-infrastructure/README.md).
 
 Evidence: [Program.cs](Program.cs) seeds one working administration configuration.
 

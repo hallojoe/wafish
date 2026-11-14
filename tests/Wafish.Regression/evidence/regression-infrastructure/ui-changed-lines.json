@@ -1,0 +1,17 @@
+{
+  "src/Wafish.ReactUi/ClientApp/src/hooks/live.ts": [
+    9,
+    17,
+    40,
+    84
+  ],
+  "src/Wafish.ReactUi/ClientApp/src/pages/assistant.tsx": [
+    21,
+    124,
+    159,
+    164,
+    165,
+    183,
+    184
+  ]
+}

@@ -190,7 +190,8 @@ for (const [status, outcome, title] of [
         status,
         json: {
           code: status,
-          status: outcome,
+          status,
+          outcome,
           message: "Injected failure",
           persistedVersion: 11,
           activeVersion: 10,
@@ -475,7 +476,8 @@ test("plugin bindings, presets, and activation use real administration APIs", as
     .getByRole("button", { name: "Delete", exact: true })
     .click();
   const deletedBinding = page.waitForResponse(
-    (response) => response.request().method() === "DELETE" &&
+    (response) =>
+      response.request().method() === "DELETE" &&
       response.url().includes("/api/plugin-bindings/"),
   );
   await page
@@ -508,7 +510,7 @@ test("plugin bindings, presets, and activation use real administration APIs", as
     card.getByRole("button", { name: "Disable", exact: true }),
   ).toBeVisible();
 });
-test("two-factor setup, login challenge, and disable work", async ({
+test("two-factor changes revoke sessions and require a new sign-in", async ({
   page,
 }) => {
   await login(page);
@@ -518,10 +520,9 @@ test("two-factor setup, login challenge, and disable work", async ({
   await page.getByLabel("Verification code").fill(totp(secret));
   await page.getByRole("button", { name: "Verify and enable" }).click();
   await expect(
-    page.getByRole("button", { name: "Disable", exact: true }),
+    page.getByRole("button", { name: "Sign in", exact: true }),
   ).toBeVisible();
   try {
-    await page.getByRole("button", { name: "Sign out", exact: true }).click();
     await page.getByLabel("Username").fill("admin");
     await page.getByLabel("Password").fill(password);
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
@@ -534,7 +535,8 @@ test("two-factor setup, login challenge, and disable work", async ({
   } finally {
     await page.request.post("/aneiang/api/2fa/disable");
   }
-  await page.reload();
+  await login(page);
+  await open(page, "/settings/account", "Account");
   await expect(
     page.getByRole("button", { name: "Set up", exact: true }),
   ).toBeVisible();
@@ -574,5 +576,7 @@ test("assistant write tools require confirmation and retain returned results", a
     .click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   expect(executed).toBe(1);
-  await expect(page.getByRole("textbox", { name: "JSON data" })).toHaveValue(/confirmed/);
+  await expect(page.getByRole("textbox", { name: "JSON data" })).toHaveValue(
+    /confirmed/,
+  );
 });

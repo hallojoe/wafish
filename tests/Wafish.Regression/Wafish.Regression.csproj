@@ -15,6 +15,7 @@
     <None Update="fixtures/storage/*.db" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="../Wafish.ReactUi.Host/Wafish.ReactUi.Host.csproj" />
     <ProjectReference Include="../Fixtures/Wafish.CollectiblePlugin/Wafish.CollectiblePlugin.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../../tools/Wafish.Storage.Tool/Wafish.Storage.Tool.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../../src/Wafish.ReactUi/Wafish.ReactUi.csproj" />

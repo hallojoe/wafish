@@ -62,3 +62,23 @@ The package icon is staged separately because the repository contains both `logo
 Browser fixtures use ports 5219–5224, including three prefixed authentication hosts.
 
 [Verification](../../tests/Wafish.Regression/evidence/review111213/README.md).
+
+Browser verification covers HTTP and HTTPS with nested prefixes for JWT, Basic authentication, and API keys.
+Two-factor changes invalidate the current JWT session. The workspace requires a new sign-in.
+The browser runner owns fixture process and temporary-state cleanup.
+See [verification](../../tests/Wafish.Regression/evidence/administration-lifecycle/README.md).
+
+Mutation errors accept named `outcome` fields and legacy `status` values.
+Unknown revisions remain hidden. Validation, conflicts, storage failures, and activation failures retain distinct messages.
+See [HTTP migration](../../docs/mutation-contracts.md#consumer-migration).
+
+## Workspace state verification
+
+Page component checks cover all 18 workspaces, including route/cluster and log/audit variants.
+They exercise pending reads, failed reads, recovery, cancellation, stale results, and editable drafts.
+Assistant session and message panels show loading and failure states with retry controls.
+Overview events update the same locale-specific query that the page displays.
+Browser checks cover validation dialogs, realtime disconnection, and mobile navigation with keyboard and axe assertions.
+Large-list and plugin profiles verify pagination and seeded bindings.
+Process-selected failure profiles verify real mutation envelopes and delayed draft preservation.
+See [infrastructure evidence](../../tests/Wafish.Regression/evidence/regression-infrastructure/README.md).

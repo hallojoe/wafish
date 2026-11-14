@@ -84,18 +84,25 @@ describe("administration contract adapter", () => {
     await expect(api("api/routes")).rejects.toBeInstanceOf(ApiError);
     expect(expired).toHaveBeenCalledOnce();
   });
-  it.each([
-    [400, "ValidationRejected", "Validation rejected"],
-    [409, "VersionConflict", "Version conflict"],
-    [503, "StorageFailed", "Storage failure"],
-    [500, "ActivationFailed", "Activation failure"],
-  ])("renders %s failures and both revisions", (code, status, label) => {
+  it.each(
+    [
+      [400, "ValidationRejected", "Validation rejected"],
+      [409, "VersionConflict", "Version conflict"],
+      [503, "StorageFailed", "Storage failure"],
+      [500, "ActivationFailed", "Activation failure"],
+    ].flatMap(([code, status, label]) => [
+      [code, status, label, true],
+      [code, status, label, false],
+    ]),
+  )("renders %s failures and both revisions", (code, status, label, legacy) => {
     render(
       <LocaleProvider>
         <ErrorNotice
           error={
             new ApiError(Number(code), {
-              status,
+              ...(legacy
+                ? { status }
+                : { status: Number(code), outcome: status }),
               message: "Rejected",
               activeVersion: 7,
               persistedVersion: 8,
@@ -108,6 +115,25 @@ describe("administration contract adapter", () => {
     expect(screen.getByText("Your draft is preserved.")).toBeVisible();
     expect(screen.getByText("Stored revision: 8")).toBeVisible();
     expect(screen.getByText("Active revision: 7")).toBeVisible();
+  });
+  it("does not display unknown revision values", () => {
+    render(
+      <LocaleProvider>
+        <ErrorNotice
+          error={
+            new ApiError(400, {
+              status: 400,
+              outcome: "ValidationRejected",
+              message: "Invalid request",
+              persistedVersion: null,
+              activeVersion: null,
+            })
+          }
+        />
+      </LocaleProvider>,
+    );
+    expect(screen.queryByText(/Stored revision:/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Active revision:/)).not.toBeInTheDocument();
   });
   it("uses English when a saved locale is unsupported", () => {
     localStorage.setItem("gateway-locale", "fr-FR");

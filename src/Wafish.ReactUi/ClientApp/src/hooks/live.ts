@@ -6,6 +6,7 @@ import {
 } from "@microsoft/signalr";
 import { useQueryClient } from "@tanstack/react-query";
 import { authHeaders, config } from "@/api/client";
+import { useLocale } from "@/locales/i18n";
 export function useLive(
   hub: "overview" | "traffic",
   paused: boolean,
@@ -13,6 +14,7 @@ export function useLive(
 ) {
   const [state, setState] = useState("Connecting");
   const client = useQueryClient();
+  const { locale } = useLocale();
   const routes = JSON.stringify(routeIds);
   useEffect(() => {
     if (paused) return;
@@ -35,7 +37,7 @@ export function useLive(
       if (!disposed) setState("Connected");
     };
     connection.on("OverviewUpdate", (data) =>
-      client.setQueryData(["api/overview/snapshot"], data),
+      client.setQueryData(["api/overview/snapshot", locale], data),
     );
     connection.on("TrafficUpdate", () => {
       void client.invalidateQueries({
@@ -79,6 +81,6 @@ export function useLive(
       clearTimeout(timer);
       void connection.stop();
     };
-  }, [hub, paused, routes, client]);
+  }, [hub, paused, routes, client, locale]);
   return paused ? "Paused" : state;
 }
