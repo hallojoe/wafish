@@ -156,7 +156,11 @@ public static class WafIshServiceCollectionExtensions
 
                 var dashboard = config.GetSection("Gateway:Dashboard:Auth");
                 var mode = dashboard["AuthMode"];
-                if (mode == null) return;
+                if (mode == null)
+                {
+                    return;
+                }
+
                 options.Mode = ParseAuthMode(mode);
                 options.Username = string.Equals(mode, "CustomJwt", StringComparison.OrdinalIgnoreCase)
                     ? dashboard["JwtUsername"] : "admin";
@@ -169,7 +173,9 @@ public static class WafIshServiceCollectionExtensions
             .Configure<IServiceProvider>((options, provider) =>
             {
                 if (options.Mode == GatewayApiAuthMode.Jwt && string.IsNullOrWhiteSpace(options.JwtSecret))
+                {
                     options.JwtSecret = provider.GetRequiredService<JwtSecretProvider>().GetSecret(options.JwtSecret);
+                }
             })
             .Validate(options => Enum.IsDefined(options.Mode), "Unsupported gateway authentication mode.")
             .Validate(options => options.Mode != GatewayApiAuthMode.ApiKey ||
@@ -190,9 +196,15 @@ public static class WafIshServiceCollectionExtensions
     {
         if (string.Equals(value, "DefaultJwt", StringComparison.OrdinalIgnoreCase) ||
             string.Equals(value, "CustomJwt", StringComparison.OrdinalIgnoreCase))
+        {
             return GatewayApiAuthMode.Jwt;
+        }
+
         if (Enum.TryParse<GatewayApiAuthMode>(value, true, out var mode) && Enum.IsDefined(mode))
+        {
             return mode;
+        }
+
         throw new OptionsValidationException(nameof(GatewayApiAuthOptions), typeof(GatewayApiAuthOptions),
             ["Unsupported gateway authentication mode."]);
     }

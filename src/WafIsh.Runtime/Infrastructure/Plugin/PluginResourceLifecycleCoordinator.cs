@@ -46,9 +46,13 @@ public sealed class PluginResourceLifecycleCoordinator : BackgroundService, IPlu
                     var shouldRun = _pluginManager.IsPluginEnabled(resource.PluginId) && HasEnabledBinding(resource.PluginId, plan);
                     var current = await resource.CheckHealthAsync(cancellationToken).ConfigureAwait(false);
                     if (shouldRun && !current.Running)
+                    {
                         await resource.StartResourceAsync(cancellationToken).ConfigureAwait(false);
+                    }
                     else if (!shouldRun && current.Health != PluginResourceHealthStatus.Stopped)
+                    {
                         await resource.StopResourceAsync(cancellationToken).ConfigureAwait(false);
+                    }
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {

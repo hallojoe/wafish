@@ -61,7 +61,9 @@ public abstract class ConfigControllerBase : ControllerBase
     {
         var options = ConfigHistoryOptions.CurrentValue;
         if (!options.AutoSnapshotBeforeMutation)
+        {
             return;
+        }
 
         var clientIp = GetClientIp();
         if (options.AsyncSnapshotForLowRiskMutation)
@@ -92,7 +94,9 @@ public abstract class ConfigControllerBase : ControllerBase
             {
                 var actualId = value.GetString();
                 if (!string.IsNullOrWhiteSpace(actualId) && !string.Equals(actualId, expectedId, StringComparison.Ordinal))
+                {
                     return true;
+                }
             }
         }
         return false;
@@ -105,12 +109,19 @@ public abstract class ConfigControllerBase : ControllerBase
     protected global::Yarp.ReverseProxy.Configuration.ClusterConfig? BuildImplicitCluster(string clusterId, JsonElement config)
     {
         if (DynamicConfig.GetCluster(clusterId) != null)
+        {
             return null;
+        }
 
         if (!(config.TryGetProperty("destinations", out var destsProp) || config.TryGetProperty("Destinations", out destsProp)))
+        {
             return null;
+        }
+
         if (destsProp.ValueKind != JsonValueKind.Object)
+        {
             return null;
+        }
 
         var destinations = new Dictionary<string, string>();
         foreach (var dest in destsProp.EnumerateObject())
@@ -123,7 +134,9 @@ public abstract class ConfigControllerBase : ControllerBase
                         ? addrPascalProp.GetString() ?? string.Empty
                         : string.Empty;
             if (!string.IsNullOrEmpty(address))
+            {
                 destinations[dest.Name] = address;
+            }
         }
 
         return destinations.Count == 0 ? null : new global::Yarp.ReverseProxy.Configuration.ClusterConfig

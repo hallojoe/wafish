@@ -162,9 +162,14 @@ internal class RouteConfigManager : ConfigManagerBase, IRouteConfigManager
     string? createdBy = "dashboard-user")
     {
         if (string.IsNullOrWhiteSpace(route.RouteId))
+        {
             return new RouteOperationResult(false, "Route ID cannot be empty");
+        }
+
         if (string.IsNullOrWhiteSpace(route.ClusterId))
+        {
             return new RouteOperationResult(false, "Cluster ID cannot be empty");
+        }
 
         return await ExecuteWithLockAsync("AddOrUpdateRoute", route.RouteId, config =>
         {
@@ -199,7 +204,9 @@ internal class RouteConfigManager : ConfigManagerBase, IRouteConfigManager
 
             // Normalize comma-delimited transform values
             for (var ri = 0; ri < config.Routes.Count; ri++)
+            {
                 config.Routes[ri].Config = DynamicYarpConfigHelpers.NormalizeTransforms(config.Routes[ri].Config);
+            }
 
             var action = isNew ? "registered" : "updated";
             if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
@@ -231,7 +238,9 @@ internal class RouteConfigManager : ConfigManagerBase, IRouteConfigManager
     public async Task<RouteOperationResult> TryRemoveRoute(string routeName, string? clientIp = null, bool removeOrphanedCluster = true)
     {
         if (string.IsNullOrWhiteSpace(routeName))
+        {
             return new RouteOperationResult(false, "Route name cannot be empty");
+        }
 
         return await ExecuteWithLockAsync("RemoveRoute", routeName, config =>
         {
@@ -326,7 +335,9 @@ internal class RouteConfigManager : ConfigManagerBase, IRouteConfigManager
         string routeId, bool enabled, string? createdBy = "dashboard-user")
     {
         if (string.IsNullOrWhiteSpace(routeId))
+        {
             return new RouteOperationResult(false, "Route ID cannot be empty");
+        }
 
         return await ExecuteWithLockAsync("SetRouteEnabled", routeId, config =>
         {
@@ -339,8 +350,10 @@ internal class RouteConfigManager : ConfigManagerBase, IRouteConfigManager
             }
 
             if (dynRoute.Enabled == enabled)
+            {
                 return Task.FromResult(new RouteOperationResult(true,
                     $"Route '{routeId}' is already {(enabled ? "enabled" : "disabled")}"));
+            }
 
             dynRoute.Enabled = enabled;
 

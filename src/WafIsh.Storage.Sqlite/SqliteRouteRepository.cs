@@ -23,11 +23,19 @@ public sealed class SqliteRouteRepository : IRouteRepository
 
     private async ValueTask EnsureInitializedAsync(CancellationToken ct)
     {
-        if (_initialized) return;
+        if (_initialized)
+        {
+            return;
+        }
+
         await _initLock.WaitAsync(ct);
         try
         {
-            if (_initialized) return;
+            if (_initialized)
+            {
+                return;
+            }
+
             await InitializeAsync(ct);
         }
         finally { _initLock.Release(); }
@@ -60,7 +68,11 @@ public sealed class SqliteRouteRepository : IRouteRepository
         cmd.CommandText = """SELECT * FROM yarp_routes ORDER BY "order", route_id""";
         var list = new List<RouteEntity>();
         await using var reader = await cmd.ExecuteReaderAsync(ct);
-        while (await reader.ReadAsync(ct)) list.Add(Map(reader));
+        while (await reader.ReadAsync(ct))
+        {
+            list.Add(Map(reader));
+        }
+
         return list.AsReadOnly();
     }
 
@@ -74,7 +86,11 @@ public sealed class SqliteRouteRepository : IRouteRepository
         cmd.Parameters.AddWithValue("@cid", clusterId);
         var list = new List<RouteEntity>();
         await using var reader = await cmd.ExecuteReaderAsync(ct);
-        while (await reader.ReadAsync(ct)) list.Add(Map(reader));
+        while (await reader.ReadAsync(ct))
+        {
+            list.Add(Map(reader));
+        }
+
         return list.AsReadOnly();
     }
 

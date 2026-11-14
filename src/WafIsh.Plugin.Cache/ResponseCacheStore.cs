@@ -19,28 +19,52 @@ public sealed class ResponseCacheStore(IOptions<ResponseCacheBudgetOptions> opti
     private readonly LinkedList<string> _lru = new();
     private long _allocated;
     private long _generation = -1;
-    public long AllocatedBytes { get { lock (_sync) return _allocated; } }
+    public long AllocatedBytes { get { lock (_sync) { return _allocated; } } }
     public long SizeLimitBytes => Math.Max(0, options.Value.SizeLimitBytes);
 
     internal void SetGeneration(long generation)
     {
         lock (_sync)
         {
-            if (generation <= _generation) return;
-            foreach (var key in _entries.Keys.ToArray()) Remove(key);
+            if (generation <= _generation)
+            {
+                return;
+            }
+
+            foreach (var key in _entries.Keys.ToArray())
+            {
+                Remove(key);
+            }
+
             _generation = generation;
         }
     }
 
     internal Capture? Reserve(int capacity)
     {
-        if (capacity <= 0) return null;
+        if (capacity <= 0)
+        {
+            return null;
+        }
+
         var charge = (long)capacity + HeaderAllowance + EntryOverhead;
         lock (_sync)
         {
-            if (charge > SizeLimitBytes) return null;
-            while (_allocated + charge > SizeLimitBytes && _lru.First is { } first) Remove(first.Value);
-            if (_allocated + charge > SizeLimitBytes) return null;
+            if (charge > SizeLimitBytes)
+            {
+                return null;
+            }
+
+            while (_allocated + charge > SizeLimitBytes && _lru.First is { } first)
+            {
+                Remove(first.Value);
+            }
+
+            if (_allocated + charge > SizeLimitBytes)
+            {
+                return null;
+            }
+
             _allocated += charge;
         }
         try { return new Capture(this, new byte[capacity], charge); }
@@ -51,11 +75,19 @@ public sealed class ResponseCacheStore(IOptions<ResponseCacheBudgetOptions> opti
     {
         lock (_sync)
         {
-            if (!_entries.TryGetValue(key, out var entry)) return null;
+            if (!_entries.TryGetValue(key, out var entry))
+            {
+                return null;
+            }
+
             var elapsed = Age(entry);
             if (elapsed >= entry.Lifetime) { Remove(key); return null; }
             if ((maxAge is { } age && entry.InitialAge + elapsed > age) ||
-                (minFresh is { } fresh && entry.Lifetime - elapsed < fresh)) return null;
+                (minFresh is { } fresh && entry.Lifetime - elapsed < fresh))
+            {
+                return null;
+            }
+
             _lru.Remove(entry.Node!); _lru.AddLast(entry.Node!);
             entry.Readers++;
             return new ReadLease(this, entry);
@@ -67,7 +99,11 @@ public sealed class ResponseCacheStore(IOptions<ResponseCacheBudgetOptions> opti
     {
         lock (_sync)
         {
-            if (generation != _generation || capture.Buffer == null) return false;
+            if (generation != _generation || capture.Buffer == null)
+            {
+                return false;
+            }
+
             Remove(key);
             var entry = new Entry(capture.Buffer, length, status, headers, capture.Charge, lifetime, initialAge, timeProvider);
             capture.Transfer();
@@ -79,14 +115,29 @@ public sealed class ResponseCacheStore(IOptions<ResponseCacheBudgetOptions> opti
 
     private void Remove(string key)
     {
-        if (!_entries.Remove(key, out var entry)) return;
+        if (!_entries.Remove(key, out var entry))
+        {
+            return;
+        }
+
         _lru.Remove(entry.Node!); entry.Node = null;
-        if (entry.Readers == 0) _allocated -= entry.Charge;
+        if (entry.Readers == 0)
+        {
+            _allocated -= entry.Charge;
+        }
     }
-    private void Release(long bytes) { lock (_sync) _allocated -= bytes; }
+    private void Release(long bytes) { lock (_sync)
+        {
+            _allocated -= bytes;
+        }
+    }
     private void ReleaseRead(Entry entry)
     {
-        lock (_sync) { if (--entry.Readers == 0 && entry.Node == null) _allocated -= entry.Charge; }
+        lock (_sync) { if (--entry.Readers == 0 && entry.Node == null)
+            {
+                _allocated -= entry.Charge;
+            }
+        }
     }
 
     internal sealed class Entry(byte[] body, int length, int status, Dictionary<string, string> headers,

@@ -93,7 +93,10 @@ public class AIFunctionService
         var required = props.Where(p => p.Required).Select(p => p.Name).ToArray();
         var properties = new Dictionary<string, object>();
         foreach (var p in props)
+        {
             properties[p.Name] = new { type = p.Type, description = p.Desc };
+        }
+
         return new
         {
             type = "function",
@@ -149,7 +152,10 @@ public class AIFunctionService
         var routeId = GetArg(args, "routeId");
         var enabled = GetBoolArg(args, "enabled");
         if (string.IsNullOrEmpty(routeId))
+        {
             return "{\"error\":\"routeId is required\"}";
+        }
+
         var result = await cfg.TrySetRouteEnabled(routeId, enabled, "ai-assistant");
         return JsonSerializer.Serialize(new { routeId, enabled, success = result.Success, message = result.Message });
     }
@@ -161,14 +167,18 @@ public class AIFunctionService
         var clusterId = GetArg(args, "clusterId");
         var destination = GetArg(args, "destination");
         if (string.IsNullOrEmpty(routeId) || string.IsNullOrEmpty(path))
+        {
             return "{\"error\":\"routeId and path are required\"}";
+        }
 
         // Ensure the target cluster exists before creating the route.
         if (string.IsNullOrEmpty(destination))
         {
             var existingCluster = cfg.GetCluster(clusterId ?? "");
             if (existingCluster == null)
+            {
                 return "{\"error\":\"cluster '" + clusterId + "' does not exist. Provide a 'destination' to create it.\"}";
+            }
         }
         else
         {
@@ -178,7 +188,9 @@ public class AIFunctionService
                 var addCluster = await cfg.TryAddCluster(clusterId ?? routeId, new Dictionary<string, string> { ["d1"] = destination },
                     loadBalancingPolicy: null, healthCheck: null, source: "ai-assistant", createdBy: "ai-assistant");
                 if (!addCluster.Success)
+                {
                     return "{\"error\":\"Failed to create cluster: " + addCluster.Message + "\"}";
+                }
             }
         }
 
@@ -197,7 +209,10 @@ public class AIFunctionService
     {
         var routeId = GetArg(args, "routeId");
         if (string.IsNullOrEmpty(routeId))
+        {
             return "{\"error\":\"routeId is required\"}";
+        }
+
         var result = await cfg.TryRemoveRoute(routeId);
         return JsonSerializer.Serialize(new { routeId, success = result.Success, message = result.Message });
     }
@@ -206,26 +221,48 @@ public class AIFunctionService
     {
         var clusterId = GetArg(args, "clusterId");
         if (string.IsNullOrEmpty(clusterId))
+        {
             return "{\"error\":\"clusterId is required\"}";
+        }
+
         var result = await cfg.TryRemoveCluster(clusterId);
         return JsonSerializer.Serialize(new { clusterId, success = result.Success, message = result.Message });
     }
 
     private static string? GetArg(JsonElement? args, string name)
     {
-        if (args == null || args.Value.ValueKind != JsonValueKind.Object) return null;
+        if (args == null || args.Value.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
         if (args.Value.TryGetProperty(name, out var el))
+        {
             return el.ValueKind == JsonValueKind.String ? el.GetString() : el.ToString();
+        }
+
         return null;
     }
 
     private static bool GetBoolArg(JsonElement? args, string name)
     {
-        if (args == null || args.Value.ValueKind != JsonValueKind.Object) return false;
+        if (args == null || args.Value.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
         if (args.Value.TryGetProperty(name, out var el))
         {
-            if (el.ValueKind == JsonValueKind.True) return true;
-            if (el.ValueKind == JsonValueKind.False) return false;
+            if (el.ValueKind == JsonValueKind.True)
+            {
+                return true;
+            }
+
+            if (el.ValueKind == JsonValueKind.False)
+            {
+                return false;
+            }
+
             return string.Equals(el.GetString(), "true", StringComparison.OrdinalIgnoreCase);
         }
         return false;

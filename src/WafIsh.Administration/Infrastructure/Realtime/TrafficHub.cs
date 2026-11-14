@@ -28,7 +28,9 @@ public class TrafficHub : Hub
 
         // SignalR owns group membership and removes it when the connection closes.
         foreach (var routeId in routeIds.Distinct(StringComparer.Ordinal).Take(1000))
+        {
             await Groups.AddToGroupAsync(Context.ConnectionId, "traffic:" + routeId);
+        }
     }
 
 }

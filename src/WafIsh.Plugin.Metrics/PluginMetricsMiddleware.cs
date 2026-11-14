@@ -28,21 +28,45 @@ public sealed class PluginMetricStore
 
     private void Refresh()
     {
-        if (_snapshots is null || _snapshots.Current.Version == _version) return;
+        if (_snapshots is null || _snapshots.Current.Version == _version)
+        {
+            return;
+        }
+
         var snapshot = _snapshots.Current;
         _routes = snapshot.Routes.Select(r => r.RouteId).ToHashSet(StringComparer.OrdinalIgnoreCase);
         _clusters = snapshot.Clusters.Select(c => c.ClusterId).ToHashSet(StringComparer.OrdinalIgnoreCase);
         _destinations = snapshot.Clusters.SelectMany(c => (c.Destinations?.Keys ?? Enumerable.Empty<string>()).Select(d => $"{c.ClusterId}/{d}"))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        foreach (var key in _route.Keys.Where(k => !_routes.Contains(k))) _route.TryRemove(key, out _);
-        foreach (var key in _cluster.Keys.Where(k => !_clusters.Contains(k))) _cluster.TryRemove(key, out _);
-        foreach (var key in _destination.Keys.Where(k => !_destinations.Contains(k))) _destination.TryRemove(key, out _);
+        foreach (var key in _route.Keys.Where(k => !_routes.Contains(k)))
+        {
+            _route.TryRemove(key, out _);
+        }
+
+        foreach (var key in _cluster.Keys.Where(k => !_clusters.Contains(k)))
+        {
+            _cluster.TryRemove(key, out _);
+        }
+
+        foreach (var key in _destination.Keys.Where(k => !_destinations.Contains(k)))
+        {
+            _destination.TryRemove(key, out _);
+        }
+
         _version = snapshot.Version;
     }
     private static Counters? Admit(ConcurrentDictionary<string, Counters> counters, HashSet<string>? active, string key)
     {
-        if (active is not null && !active.Contains(key)) return null;
-        if (counters.TryGetValue(key, out var current)) return current;
+        if (active is not null && !active.Contains(key))
+        {
+            return null;
+        }
+
+        if (counters.TryGetValue(key, out var current))
+        {
+            return current;
+        }
+
         return counters.Count < MaximumSeriesPerScope ? counters.GetOrAdd(key, _ => new()) : null;
     }
 
@@ -58,10 +82,20 @@ public sealed class PluginMetricStore
         lock (_gate)
         {
             Refresh();
-            if (routeId != null && Admit(_route, _routes, routeId) is { } route) Record(route, statusCode, durationMicroseconds, requestBytes, responseBytes, outcome);
-            if (clusterId != null && Admit(_cluster, _clusters, clusterId) is { } cluster) Record(cluster, statusCode, durationMicroseconds, requestBytes, responseBytes, outcome);
+            if (routeId != null && Admit(_route, _routes, routeId) is { } route)
+            {
+                Record(route, statusCode, durationMicroseconds, requestBytes, responseBytes, outcome);
+            }
+
+            if (clusterId != null && Admit(_cluster, _clusters, clusterId) is { } cluster)
+            {
+                Record(cluster, statusCode, durationMicroseconds, requestBytes, responseBytes, outcome);
+            }
+
             if (clusterId != null && destinationId != null && Admit(_destination, _destinations, $"{clusterId}/{destinationId}") is { } destination)
+            {
                 Record(destination, statusCode, durationMicroseconds, requestBytes, responseBytes, outcome);
+            }
         }
     }
 
@@ -72,9 +106,20 @@ public sealed class PluginMetricStore
     private static void Record(Counters counters, int statusCode, long duration, long requestBytes, long responseBytes, PluginMetricOutcome outcome)
     {
         Interlocked.Increment(ref counters.Requests);
-        if (outcome == PluginMetricOutcome.Cancelled) Interlocked.Increment(ref counters.Cancellations);
-        else if (outcome == PluginMetricOutcome.Faulted || statusCode >= 500) Interlocked.Increment(ref counters.Errors);
-        if (outcome == PluginMetricOutcome.Faulted) Interlocked.Increment(ref counters.Exceptions);
+        if (outcome == PluginMetricOutcome.Cancelled)
+        {
+            Interlocked.Increment(ref counters.Cancellations);
+        }
+        else if (outcome == PluginMetricOutcome.Faulted || statusCode >= 500)
+        {
+            Interlocked.Increment(ref counters.Errors);
+        }
+
+        if (outcome == PluginMetricOutcome.Faulted)
+        {
+            Interlocked.Increment(ref counters.Exceptions);
+        }
+
         Interlocked.Add(ref counters.DurationMicroseconds, duration);
         Interlocked.Add(ref counters.RequestBytes, Math.Max(0, requestBytes));
         Interlocked.Add(ref counters.ResponseBytes, Math.Max(0, responseBytes));
@@ -128,7 +173,10 @@ public sealed class PluginMetricsMiddleware
         finally
         {
             if (outcome == PluginMetricOutcome.Completed && context.RequestAborted.IsCancellationRequested)
+            {
                 outcome = PluginMetricOutcome.Cancelled;
+            }
+
             var measuredStatus = outcome switch
             {
                 PluginMetricOutcome.Cancelled => 499,

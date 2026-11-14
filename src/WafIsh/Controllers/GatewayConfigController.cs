@@ -168,7 +168,9 @@ public class GatewayConfigController : ControllerBase
     {
         var updated = _dynamicConfig.UpdateHeartbeat(routeName, clientIp);
         if (!updated)
+        {
             return NotFound(new { code = 404, message = $"Route '{routeName}' not found" });
+        }
 
         return Ok(new { code = 200, message = "heartbeat" });
     }
@@ -182,7 +184,9 @@ public class GatewayConfigController : ControllerBase
     public async Task<IActionResult> BatchRegister([FromBody] BatchRegisterRequest request)
     {
         if (request.Routes.Count == 0)
+        {
             return BadRequest(new { code = 400, message = "At least one route is required" });
+        }
 
         var results = new List<object>();
         var allSucceeded = true;
@@ -194,7 +198,9 @@ public class GatewayConfigController : ControllerBase
                 var result = await _dynamicConfig.TryAddRoute(routeReq, request.Source ?? "batch", request.CreatedBy);
                 results.Add(new { route = routeReq.RouteName, success = result.Success, message = result.Message });
                 if (!result.Success)
+                {
                     allSucceeded = false;
+                }
             }
             catch (Exception ex)
             {
@@ -214,7 +220,9 @@ public class GatewayConfigController : ControllerBase
     public async Task<IActionResult> BatchDeleteRoutes([FromBody] BatchDeleteRoutesRequest request)
     {
         if (request.RouteNames.Count == 0)
+        {
             return BadRequest(new { code = 400, message = "At least one route name is required" });
+        }
 
         var results = new List<object>();
         var allSucceeded = true;
@@ -226,7 +234,9 @@ public class GatewayConfigController : ControllerBase
                 var result = await _dynamicConfig.TryRemoveRoute(routeName, request.ClientIp, request.RemoveOrphanedClusters);
                 results.Add(new { route = routeName, success = result.Success, message = result.Message });
                 if (!result.Success)
+                {
                     allSucceeded = false;
+                }
             }
             catch (Exception ex)
             {

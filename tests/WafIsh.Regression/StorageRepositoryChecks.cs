@@ -18,13 +18,20 @@ internal static class StorageRepositoryChecks
             var writer = new WafIsh.Plugin.ProxyLog.Services.SqliteProxyLogWriter(db.Get<IProxyLogRepository>(), Microsoft.Extensions.Logging.Abstractions.NullLogger<WafIsh.Plugin.ProxyLog.Services.SqliteProxyLogWriter>.Instance);
             var logger = new EnabledLogger<WafIsh.Plugin.ProxyLog.Services.AsyncLogPersistenceService>();
             var service = new WafIsh.Plugin.ProxyLog.Services.AsyncLogPersistenceService(store, writer, settings, null!, logger);
-            for (var i = 0; i < 100; i++) store.Add(new() { Timestamp = DateTime.Now, EventType = WafIsh.Plugin.ProxyLog.Models.LogEventType.ProxyResponse, Level = "Information", RouteId = "lifecycle", StatusCode = 200 });
+            for (var i = 0; i < 100; i++)
+            {
+                store.Add(new() { Timestamp = DateTime.Now, EventType = WafIsh.Plugin.ProxyLog.Models.LogEventType.ProxyResponse, Level = "Information", RouteId = "lifecycle", StatusCode = 200 });
+            }
+
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             try
             {
                 await service.StartResourceAsync(timeout.Token);
                 await service.StartResourceAsync(timeout.Token);
-                while (service.WrittenCount < 100) await Task.Delay(10, timeout.Token);
+                while (service.WrittenCount < 100)
+                {
+                    await Task.Delay(10, timeout.Token);
+                }
             }
             finally { await service.StopResourceAsync(timeout.Token); }
             await service.StopResourceAsync(timeout.Token);
@@ -190,7 +197,10 @@ internal static class StorageRepositoryChecks
             Check(loaded.Platforms["custom"][0].Secret == "local-secret" && loaded.PlatformEvents["custom"].Single() == "deleted" && loaded.TimeoutSeconds == 5, "Webhook settings mapping failed.");
             var history = db.Get<IWebhookDeliveryRecordRepository>();
             for (var i = 0; i < 3; i++)
+            {
                 await history.AddAsync(new() { Platform = "custom", EventType = "created", Target = i.ToString(), Success = i != 1, HttpStatusCode = i == 1 ? 500 : 200, Error = i == 1 ? "failed" : null, DurationMs = 10, CreatedAt = DateTime.Now.AddSeconds(i) }, maxRecords: 2);
+            }
+
             var recent = await history.GetRecentAsync();
             Check(recent.Count == 2 && recent[0].Target == "2" && recent[1].Error == "failed", "Delivery retention or mapping failed.");
             await history.ClearAsync();
@@ -202,7 +212,10 @@ internal static class StorageRepositoryChecks
             await using var db = new Database();
             var history = db.Get<IConfigHistoryRepository>();
             for (var i = 0; i < 3; i++)
+            {
                 await history.SaveConfigHistoryAsync(new() { VersionId = "v" + i, Description = "revision'" + i, CreatedBy = "tester", ClientIp = "127.0.0.1", ConfigData = "{}", DiffData = "[]", CreatedAt = DateTime.Now.AddSeconds(i) });
+            }
+
             Check((await history.GetConfigHistoryAsync("v1"))?.Description == "revision'1", "History values changed.");
             Check(await history.GetConfigHistoryAsync("missing") is null, "Missing version should return null.");
             await history.DeleteOldConfigHistoryAsync(2);
@@ -213,7 +226,10 @@ internal static class StorageRepositoryChecks
             Check((await history.GetConfigHistoryListAsync()).Count == 0, "History clear failed.");
             var audits = db.Get<IAuditLogRepository>();
             for (var i = 0; i < 3; i++)
+            {
                 await audits.SaveAuditLogAsync(new() { Id = "a" + i, Action = "update", Target = i == 0 ? "other" : "quoted'target", TargetType = "route", TargetUid = "uid", Operator = "tester", BeforeData = "{}", AfterData = "{}", Success = i != 1, ErrorMessage = i == 1 ? "failed" : null, Timestamp = DateTime.Now.AddSeconds(i) });
+            }
+
             Check((await audits.GetAuditLogsByTargetAsync("quoted'target")).Count == 2, "Audit target filter failed.");
             await audits.DeleteOldAuditLogsAsync(1);
             Check((await audits.GetAuditLogsAsync()).Single().Id == "a2", "Audit retention deleted the wrong row.");
@@ -267,7 +283,10 @@ internal static class StorageRepositoryChecks
 
     private static void Check(bool condition, string message)
     {
-        if (!condition) throw new InvalidOperationException(message);
+        if (!condition)
+        {
+            throw new InvalidOperationException(message);
+        }
     }
 
     private sealed class EnabledLogger<T> : Microsoft.Extensions.Logging.ILogger<T>
@@ -313,7 +332,10 @@ internal static class StorageRepositoryChecks
         public async ValueTask DisposeAsync()
         {
             await _provider.DisposeAsync();
-            foreach (var suffix in new[] { "", "-wal", "-shm" }) File.Delete(Path + suffix);
+            foreach (var suffix in new[] { "", "-wal", "-shm" })
+            {
+                File.Delete(Path + suffix);
+            }
         }
     }
 }

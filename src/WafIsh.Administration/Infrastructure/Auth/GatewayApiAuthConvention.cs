@@ -10,7 +10,11 @@ internal sealed class GatewayApiAuthConvention : IApplicationModelConvention
     public void Apply(ApplicationModel application)
     {
         var ctrl = application.Controllers.FirstOrDefault(c => c.ControllerType == typeof(GatewayConfigController));
-        if (ctrl == null) return;
+        if (ctrl == null)
+        {
+            return;
+        }
+
         ctrl.Filters.Add(new ServiceFilterAttribute(typeof(GatewayApiAuthFilter)) { IsReusable = true });
     }
 }

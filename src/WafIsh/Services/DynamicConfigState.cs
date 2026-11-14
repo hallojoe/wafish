@@ -49,7 +49,10 @@ internal class DynamicConfigState
     /// <summary>Ensures <see cref="Config"/> is never null.</summary>
     public void EnsureInitialized()
     {
-        if (_config == null) _config = new GatewayDynamicConfig();
+        if (_config == null)
+        {
+            _config = new GatewayDynamicConfig();
+        }
     }
 
     /// <summary>
@@ -58,7 +61,11 @@ internal class DynamicConfigState
     /// </summary>
     public string? ResolveClusterUid(string? clusterId)
     {
-        if (string.IsNullOrWhiteSpace(clusterId)) return null;
+        if (string.IsNullOrWhiteSpace(clusterId))
+        {
+            return null;
+        }
+
         return _config?.Clusters.FirstOrDefault(c =>
             string.Equals(c.Config.ClusterId, clusterId, StringComparison.OrdinalIgnoreCase))?.ClusterUid;
     }

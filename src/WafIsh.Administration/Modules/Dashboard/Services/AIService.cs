@@ -54,7 +54,9 @@ public class AIService
     {
         var opts = _config.Current;
         if (string.IsNullOrWhiteSpace(opts.ApiKey))
+        {
             return (false, "API Key is not configured");
+        }
 
         var baseUrl = opts.BaseUrl.TrimEnd('/');
         var body = JsonSerializer.Serialize(new
@@ -71,7 +73,10 @@ public class AIService
             req.Content = new StringContent(body, Encoding.UTF8, "application/json");
             using var resp = await _http.SendAsync(req);
             if (resp.IsSuccessStatusCode)
+            {
                 return (true, "Connection successful");
+            }
+
             var errBody = await resp.Content.ReadAsStringAsync();
             return (false, $"HTTP {(int)resp.StatusCode}: {Truncate(errBody, 200)}");
         }
@@ -90,7 +95,9 @@ public class AIService
     {
         var opts = _config.Current;
         if (!opts.IsConfigured)
+        {
             return (false, "AI is not configured");
+        }
 
         var baseUrl = opts.BaseUrl.TrimEnd('/');
         var payload = new Dictionary<string, object?>
@@ -123,10 +130,14 @@ public class AIService
             {
                 var message = choices[0].GetProperty("message");
                 if (message.TryGetProperty("content", out var c) && c.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(c.GetString()))
+                {
                     return (true, c.GetString()!.Trim());
+                }
                 // Some reasoning models put the answer in reasoning_content instead.
                 if (message.TryGetProperty("reasoning_content", out var r) && r.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(r.GetString()))
+                {
                     return (true, r.GetString()!.Trim());
+                }
             }
             return (true, "");
         }
@@ -192,7 +203,10 @@ public class AIService
         {
             eventCount++;
             if (evt.Type == "chunk" && evt.Content != null)
+            {
                 fullResponse.Append(evt.Content);
+            }
+
             if (evt.Type == "tool_call" && evt.ToolName != null)
             {
                 toolCallIds.Add(evt.ToolCallId ?? $"call_{Guid.NewGuid():N}");
@@ -255,9 +269,14 @@ public class AIService
             ["temperature"] = opts.Temperature
         };
         if (!string.IsNullOrEmpty(opts.ReasoningEffort) && opts.ReasoningEffort != "auto")
+        {
             requestPayload["reasoning_effort"] = opts.ReasoningEffort;
+        }
+
         if (tools != null && tools.Count > 0)
+        {
             requestPayload["tools"] = tools;
+        }
 
         var body = JsonSerializer.Serialize(requestPayload, JsonOpts);
 
@@ -306,21 +325,38 @@ public class AIService
 
         while (await reader.ReadLineAsync(ct) is { } line)
         {
-            if (!line.StartsWith("data: ") && !line.StartsWith("data:")) continue;
+            if (!line.StartsWith("data: ") && !line.StartsWith("data:"))
+            {
+                continue;
+            }
+
             dataLineCount++;
 
             // Extract data after "data: " or "data:"
             var data = line.StartsWith("data: ") ? line[6..] : line[5..];
-            if (data.StartsWith(' ')) data = data[1..];
-            if (data == "[DONE]") break;
+            if (data.StartsWith(' '))
+            {
+                data = data[1..];
+            }
+
+            if (data == "[DONE]")
+            {
+                break;
+            }
 
             ChatChunk? chunk;
             try { chunk = JsonSerializer.Deserialize<ChatChunk>(data, JsonOpts); }
             catch { continue; }
-            if (chunk?.Choices == null || chunk.Choices.Count == 0) continue;
+            if (chunk?.Choices == null || chunk.Choices.Count == 0)
+            {
+                continue;
+            }
 
             var delta = chunk.Choices[0].Delta;
-            if (delta == null) continue;
+            if (delta == null)
+            {
+                continue;
+            }
 
             // Stream content (some reasoning models put text in reasoning_content instead of content)
             if (!string.IsNullOrEmpty(delta.Content))
@@ -341,12 +377,26 @@ public class AIService
                 {
                     var idx = tc.Index ?? 0;
                     if (!toolCallAccumulator.ContainsKey(idx))
+                    {
                         toolCallAccumulator[idx] = (tc.Id ?? "", tc.Function?.Name ?? "", new StringBuilder());
+                    }
 
                     var entry = toolCallAccumulator[idx];
-                    if (!string.IsNullOrEmpty(tc.Id)) entry.id = tc.Id;
-                    if (!string.IsNullOrEmpty(tc.Function?.Name)) entry.name = tc.Function.Name;
-                    if (tc.Function?.Arguments != null) entry.args.Append(tc.Function.Arguments);
+                    if (!string.IsNullOrEmpty(tc.Id))
+                    {
+                        entry.id = tc.Id;
+                    }
+
+                    if (!string.IsNullOrEmpty(tc.Function?.Name))
+                    {
+                        entry.name = tc.Function.Name;
+                    }
+
+                    if (tc.Function?.Arguments != null)
+                    {
+                        entry.args.Append(tc.Function.Arguments);
+                    }
+
                     toolCallAccumulator[idx] = entry;
                 }
             }
@@ -406,7 +456,9 @@ public class AIService
             {
                 // Remove tools for the second call to force a text response
                 await foreach (var evt in StreamLLMCallAsync(messages, null, ct))
+                {
                     yield return evt;
+                }
             }
         }
     }

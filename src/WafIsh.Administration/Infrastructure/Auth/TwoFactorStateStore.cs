@@ -18,7 +18,10 @@ public static class TwoFactorStateStore
             catch (DirectoryNotFoundException) { return fallback; }
             var state = JsonSerializer.Deserialize<State>(json) ?? throw new InvalidDataException("Invalid two-factor state.");
             if (state.Enabled && string.IsNullOrWhiteSpace(state.Secret))
+            {
                 throw new InvalidDataException("Missing two-factor secret.");
+            }
+
             return state;
         }
     }
@@ -34,7 +37,11 @@ public static class TwoFactorStateStore
             try
             {
                 var options = new FileStreamOptions { Mode = FileMode.CreateNew, Access = FileAccess.Write, Share = FileShare.None };
-                if (!OperatingSystem.IsWindows()) options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+                if (!OperatingSystem.IsWindows())
+                {
+                    options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+                }
+
                 using (var stream = new FileStream(temporary, options))
                 {
                     JsonSerializer.Serialize(stream, state);
@@ -42,7 +49,11 @@ public static class TwoFactorStateStore
                 }
                 File.Move(temporary, path, overwrite: true);
             }
-            finally { if (File.Exists(temporary)) File.Delete(temporary); }
+            finally { if (File.Exists(temporary))
+                {
+                    File.Delete(temporary);
+                }
+            }
         }
     }
 }

@@ -29,7 +29,11 @@ public static class ReactUiExtensions
             .Validate(o => o.RoutePrefix.Trim('/').Length > 0 &&
                 o.RoutePrefix.Trim('/').Split('/').All(s => s.Length > 0 && s.All(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_')),
                 "React UI prefix must contain valid path segments.").ValidateOnStart();
-        if (configure != null) services.Configure(configure);
+        if (configure != null)
+        {
+            services.Configure(configure);
+        }
+
         services.AddOptions<WafIsh.Infrastructure.Middleware.GatewayMiddlewareOptions>()
             .Configure<IOptions<ReactUiOptions>>((runtime, options) =>
                 runtime.AdditionalAdministrationPrefixes = runtime.AdditionalAdministrationPrefixes.Append(options.Value.RoutePrefix).Distinct().ToArray());
@@ -43,7 +47,10 @@ public static class ReactUiExtensions
         var uiBase = "/" + ui.RoutePrefix.Trim('/');
         var apiBase = "/" + dashboard.RoutePrefix.Trim('/');
         if (uiBase.Equals(apiBase, StringComparison.OrdinalIgnoreCase))
+        {
             throw new InvalidOperationException("React UI and administration API prefixes must be different.");
+        }
+
         var assembly = typeof(ReactUiExtensions).Assembly;
         var contentTypes = new FileExtensionContentTypeProvider();
         var assets = assembly.GetManifestResourceNames().Where(n => n.StartsWith("ReactUi/", StringComparison.Ordinal))
@@ -64,7 +71,10 @@ public static class ReactUiExtensions
             if (!policy.IsAllowed(context, dashboard.Auth.AuthMode == DashboardAuthMode.None))
             { context.Response.StatusCode = 403; return; }
             if (!assets.TryGetValue("index.html", out var index))
+            {
                 throw new InvalidOperationException("React assets are missing. Run npm ci and npm run build in ClientApp.");
+            }
+
             await using var stream = assembly.GetManifestResourceStream(index)!;
             using var reader = new StreamReader(stream, Encoding.UTF8);
             var features = context.RequestServices.GetRequiredService<AdministrationFeatures>();

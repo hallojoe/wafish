@@ -24,9 +24,17 @@ public sealed class RedisLuaRateLimitStore(ILogger<RedisLuaRateLimitStore> logge
         int windowSeconds, int burstBalance, string? redisConnectionString, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (limit <= 0 || windowSeconds <= 0) return DistributedRateLimitResult.Unavailable(limit);
+        if (limit <= 0 || windowSeconds <= 0)
+        {
+            return DistributedRateLimitResult.Unavailable(limit);
+        }
+
         var connectionString = string.IsNullOrWhiteSpace(redisConnectionString) ? options?.Value.ConnectionString : redisConnectionString;
-        if (string.IsNullOrWhiteSpace(connectionString)) return DistributedRateLimitResult.Unavailable(limit);
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            return DistributedRateLimitResult.Unavailable(limit);
+        }
+
         try
         {
             Lazy<Task<ConnectionMultiplexer>> connection;
@@ -35,7 +43,11 @@ public sealed class RedisLuaRateLimitStore(ILogger<RedisLuaRateLimitStore> logge
                 ObjectDisposedException.ThrowIf(_disposed, this);
                 if (!_connections.TryGetValue(connectionString, out connection!))
                 {
-                    if (_connections.Count >= 32) return DistributedRateLimitResult.Unavailable(limit);
+                    if (_connections.Count >= 32)
+                    {
+                        return DistributedRateLimitResult.Unavailable(limit);
+                    }
+
                     connection = new(() => ConnectAsync(connectionString));
                     _connections.Add(connectionString, connection);
                 }
@@ -53,7 +65,11 @@ public sealed class RedisLuaRateLimitStore(ILogger<RedisLuaRateLimitStore> logge
             key += ":v2:" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(policy)));
             var script = name switch { "SLIDINGWINDOW" => SlidingWindowScript, "TOKENBUCKET" => TokenBucketScript, _ => FixedWindowScript };
             var reply = (RedisResult[]?)await multiplexer.GetDatabase().ScriptEvaluateAsync(script, [(RedisKey)key], values).WaitAsync(cancellationToken);
-            if (reply is not { Length: 3 }) return DistributedRateLimitResult.Unavailable(limit);
+            if (reply is not { Length: 3 })
+            {
+                return DistributedRateLimitResult.Unavailable(limit);
+            }
+
             var allowed = (long)reply[0] == 1;
             var capacity = name == "TOKENBUCKET" ? limit + Math.Max(0, burstBalance) : limit;
             return new(allowed, capacity, allowed ? Math.Max(0, (long)reply[1]) : 0,
@@ -65,7 +81,10 @@ public sealed class RedisLuaRateLimitStore(ILogger<RedisLuaRateLimitStore> logge
             var now = Environment.TickCount64;
             var previous = Interlocked.Read(ref _lastFailureLog);
             if (now - previous >= 30000 && Interlocked.CompareExchange(ref _lastFailureLog, now, previous) == previous)
+            {
                 logger.LogWarning("Redis rate-limit store unavailable ({FailureType}); the route failure policy applies.", ex.GetType().Name);
+            }
+
             return DistributedRateLimitResult.Unavailable(limit);
         }
     }

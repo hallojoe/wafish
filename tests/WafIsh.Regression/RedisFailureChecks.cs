@@ -44,7 +44,10 @@ internal static class RedisFailureChecks
                     context.Features.Set<IReverseProxyFeature>(new ReverseProxyFeature { Route = new RouteModel(route, null!, HttpTransformer.Default) });
                     await using var body = new MemoryStream(); context.Response.Body = body;
                     await middleware.InvokeAsync(context);
-                    if (attempt == 0) Check(context.Response.StatusCode == 200, "First permit was rejected.");
+                    if (attempt == 0)
+                    {
+                        Check(context.Response.StatusCode == 200, "First permit was rejected.");
+                    }
                     else
                     {
                         Check(context.Response.StatusCode == 429 && context.Response.Headers.RetryAfter == "60", "Exhausted limit lost status or retry guidance.");
@@ -119,7 +122,11 @@ internal static class RedisFailureChecks
         while (true)
         {
             var recovered = await first.TryAcquireAsync("FixedWindow", "recovery-probe", 1000, 30, 0, null, timeout.Token);
-            if (recovered.Available) break;
+            if (recovered.Available)
+            {
+                break;
+            }
+
             await Task.Delay(100, timeout.Token);
         }
         Check(await Invoke(first, "FailClosed") == 200, "Recovered Redis did not resume traffic.");
@@ -185,13 +192,20 @@ internal static class RedisFailureChecks
         {
             var start = new ProcessStartInfo(_executable) { UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
             foreach (var value in new[] { "--bind", "127.0.0.1", "--protected-mode", "yes", "--port", Port.ToString(), "--save", "", "--appendonly", "no", "--dir", _directory, "--logfile", Path.Combine(_directory, "redis.log") })
+            {
                 start.ArgumentList.Add(value);
+            }
+
             _process = Process.Start(start) ?? throw new Exception("Redis failed to start.");
             _process.BeginOutputReadLine(); _process.BeginErrorReadLine();
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             while (true)
             {
-                if (_process.HasExited) throw new Exception("Redis exited during startup: " + File.ReadAllText(Path.Combine(_directory, "redis.log")));
+                if (_process.HasExited)
+                {
+                    throw new Exception("Redis exited during startup: " + File.ReadAllText(Path.Combine(_directory, "redis.log")));
+                }
+
                 using var socket = new TcpClient();
                 try { await socket.ConnectAsync(IPAddress.Loopback, Port, timeout.Token); return; }
                 catch (SocketException) { await Task.Delay(20, timeout.Token); }
@@ -199,12 +213,24 @@ internal static class RedisFailureChecks
         }
         public async Task StopAsync()
         {
-            if (_process == null) return;
-            if (!_process.HasExited) _process.Kill(entireProcessTree: true);
+            if (_process == null)
+            {
+                return;
+            }
+
+            if (!_process.HasExited)
+            {
+                _process.Kill(entireProcessTree: true);
+            }
+
             await _process.WaitForExitAsync();
             _process.Dispose(); _process = null;
         }
         public async ValueTask DisposeAsync() { await StopAsync(); Directory.Delete(_directory, true); }
     }
-    private static void Check(bool condition, string message) { if (!condition) throw new Exception(message); }
+    private static void Check(bool condition, string message) { if (!condition)
+        {
+            throw new Exception(message);
+        }
+    }
 }

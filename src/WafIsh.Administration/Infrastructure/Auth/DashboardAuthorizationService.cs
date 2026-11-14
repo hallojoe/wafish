@@ -31,7 +31,9 @@ public sealed class DashboardAuthorizationService : IDashboardAuthorizationServi
     public async Task<bool> IsAuthorizedAsync(HttpContext context)
     {
         if (!_policy.IsAllowed(context, _options.Auth.AuthMode == DashboardAuthMode.None && _options.Auth.AuthorizeRequest == null))
+        {
             return false;
+        }
         // Priority 1: Custom delegate (highest)
         if (_options.Auth.AuthorizeRequest != null)
         {
@@ -40,12 +42,20 @@ public sealed class DashboardAuthorizationService : IDashboardAuthorizationServi
 
         if (_options.Auth.AuthMode is DashboardAuthMode.BasicAuth or DashboardAuthMode.ApiKey)
         {
-            if (!_attempts.TryAcquire(context, "direct", out var refund)) return false;
+            if (!_attempts.TryAcquire(context, "direct", out var refund))
+            {
+                return false;
+            }
+
             var valid = _options.Auth.AuthMode == DashboardAuthMode.BasicAuth
                 ? ControlPlaneCredentials.ValidateBasic(context.Request.Headers.Authorization,
                     _options.Auth.JwtUsername, _options.Auth.JwtPassword)
                 : !string.IsNullOrWhiteSpace(_options.Auth.ApiKey) && CheckApiKey(context);
-            if (valid) refund();
+            if (valid)
+            {
+                refund();
+            }
+
             return valid;
         }
 
@@ -63,7 +73,9 @@ public sealed class DashboardAuthorizationService : IDashboardAuthorizationServi
     public string GetAuthModeDescription()
     {
         if (_options.Auth.AuthorizeRequest != null)
+        {
             return "Custom Delegate";
+        }
 
         return _options.Auth.AuthMode switch
         {
@@ -103,11 +115,15 @@ public sealed class DashboardAuthorizationService : IDashboardAuthorizationServi
     {
         var secret = _options.Auth.JwtSecret;
         if (string.IsNullOrEmpty(secret))
+        {
             return false;
+        }
 
         var token = ExtractJwtToken(context);
         if (string.IsNullOrEmpty(token))
+        {
             return false;
+        }
 
         var (valid, _) = DashboardJwtHelper.ValidateToken(token, secret);
         if (!valid)
@@ -137,7 +153,9 @@ public sealed class DashboardAuthorizationService : IDashboardAuthorizationServi
         {
             var queryToken = context.Request.Query["access_token"].FirstOrDefault();
             if (!string.IsNullOrEmpty(queryToken))
+            {
                 return queryToken;
+            }
         }
 
         // dashboard_token cookie (for browser page loads)

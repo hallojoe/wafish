@@ -91,7 +91,9 @@ public class DashboardSettingsController : Controller
     {
         var dbPath = ResolveDatabasePath(_storageOptions);
         if (!System.IO.File.Exists(dbPath))
+        {
             return Json(new { code = 404, message = "Database file not found" });
+        }
 
         var fileName = Path.GetFileName(dbPath);
         return PhysicalFile(dbPath, "application/octet-stream", fileName);
@@ -103,7 +105,9 @@ public class DashboardSettingsController : Controller
     {
         var dbPath = ResolveDatabasePath(_storageOptions);
         if (!System.IO.File.Exists(dbPath))
+        {
             return Json(new { code = 404, message = "Database file not found" });
+        }
 
         var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
         var tempPath = Path.Combine(Path.GetTempPath(), $"gw-backup-{timestamp}-{Guid.NewGuid():N}.db");
@@ -123,7 +127,11 @@ public class DashboardSettingsController : Controller
         catch
         {
             // Copying a live database can omit committed WAL transactions.
-            if (System.IO.File.Exists(tempPath)) System.IO.File.Delete(tempPath);
+            if (System.IO.File.Exists(tempPath))
+            {
+                System.IO.File.Delete(tempPath);
+            }
+
             return StatusCode(503, new { code = 503, message = "Database backup failed. No backup was created." });
         }
 
@@ -139,19 +147,26 @@ public class DashboardSettingsController : Controller
         const string prefix = "Data Source=";
 
         int idx = cs.IndexOf(prefix, StringComparison.OrdinalIgnoreCase);
-        if (idx < 0) return string.Empty;
+        if (idx < 0)
+        {
+            return string.Empty;
+        }
 
         var value = cs[(idx + prefix.Length)..].Trim();
 
         int semi = value.IndexOf(';');
         if (semi >= 0)
+        {
             value = value[..semi].Trim();
+        }
 
         if (!Path.IsPathRooted(value))
         {
             var rooted = Path.GetFullPath(value);
             if (System.IO.File.Exists(rooted))
+            {
                 return rooted;
+            }
         }
 
         return value;

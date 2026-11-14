@@ -32,12 +32,17 @@ partial class YarpConfigParser
 
     private static RouteMatch? ParseMatch(IConfigurationSection section)
     {
-        if (!section.Exists()) return null;
+        if (!section.Exists())
+        {
+            return null;
+        }
 
         // Short form: "Path": "/api/{**catch-all}"
         var path = section.Value;
         if (!string.IsNullOrEmpty(path))
+        {
             return new RouteMatch { Path = path };
+        }
 
         // Full form: Path, Methods, Hosts, Headers, QueryParameters
         var methods = section.GetSection("Methods").GetChildren()
@@ -61,7 +66,11 @@ partial class YarpConfigParser
 
     private static List<RouteHeader>? ParseRouteHeaders(IConfigurationSection section)
     {
-        if (!section.Exists()) return null;
+        if (!section.Exists())
+        {
+            return null;
+        }
+
         var list = new List<RouteHeader>();
         foreach (var child in section.GetChildren())
         {
@@ -83,7 +92,11 @@ partial class YarpConfigParser
 
     private static List<RouteQueryParameter>? ParseRouteQueryParameters(IConfigurationSection section)
     {
-        if (!section.Exists()) return null;
+        if (!section.Exists())
+        {
+            return null;
+        }
+
         var list = new List<RouteQueryParameter>();
         foreach (var child in section.GetChildren())
         {
@@ -113,7 +126,10 @@ partial class YarpConfigParser
 
     private static List<Dictionary<string, string>>? ParseTransforms(IConfigurationSection section)
     {
-        if (!section.Exists()) return null;
+        if (!section.Exists())
+        {
+            return null;
+        }
 
         var list = new List<Dictionary<string, string>>();
         foreach (var t in section.GetChildren())
@@ -121,7 +137,10 @@ partial class YarpConfigParser
             var dict = new Dictionary<string, string>();
             foreach (var entry in t.GetChildren())
             {
-                if (entry.Value == null) continue;
+                if (entry.Value == null)
+                {
+                    continue;
+                }
 
                 if (_apiCompatibleTransformKeys.Contains(entry.Key))
                 {
@@ -132,7 +151,10 @@ partial class YarpConfigParser
                     dict[entry.Key] = entry.Value;
                 }
             }
-            if (dict.Count > 0) list.Add(dict);
+            if (dict.Count > 0)
+            {
+                list.Add(dict);
+            }
         }
         return list.Count > 0 ? list : null;
     }

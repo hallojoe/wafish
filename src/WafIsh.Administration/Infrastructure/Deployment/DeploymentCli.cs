@@ -16,20 +16,37 @@ public static class DeploymentCli
     public static WebApplicationBuilder ConfigureDeploymentCli(this WebApplicationBuilder builder)
     {
         var args = Environment.GetCommandLineArgs();
-        if (args.Length == 0) return builder;
+        if (args.Length == 0)
+        {
+            return builder;
+        }
 
         var parsed = ParseArgs(args);
 
         if (parsed.TryGetValue("deployment", out var mode))
+        {
             builder.Configuration["Gateway:Deployment:Mode"] = mode;
+        }
+
         if (parsed.TryGetValue("proxy-url", out var proxyUrl))
+        {
             builder.Configuration["Kestrel:Endpoints:Proxy:Url"] = proxyUrl;
+        }
+
         if (parsed.TryGetValue("dashboard-url", out var dashUrl))
+        {
             builder.Configuration["Kestrel:Endpoints:Dashboard:Url"] = dashUrl;
+        }
+
         if (parsed.TryGetValue("admin-url", out var adminUrl))
+        {
             builder.Configuration["Kestrel:Endpoints:Admin:Url"] = adminUrl;
+        }
+
         if (parsed.TryGetValue("health-url", out var healthUrl))
+        {
             builder.Configuration["Kestrel:Endpoints:Health:Url"] = healthUrl;
+        }
 
         return builder;
     }

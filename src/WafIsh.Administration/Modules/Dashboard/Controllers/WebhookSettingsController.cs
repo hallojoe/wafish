@@ -51,14 +51,19 @@ public sealed partial class WebhookSettingsController : ControllerBase
         }
         // Always include known platforms so the UI can render empty cards.
         foreach (var platform in WebhookPlatforms.All)
+        {
             data.TryAdd(platform, Array.Empty<object>());
+        }
 
         // Preserve unknown custom platform keys as endpoints too.
         data["enabledEvents"] = settings.EnabledEvents;
 
         var platformEvents = new Dictionary<string, object>();
         foreach (var (platform, events) in settings.PlatformEvents)
+        {
             platformEvents[platform] = events;
+        }
+
         data["platformEvents"] = platformEvents;
 
         data["cooldownSeconds"] = settings.CooldownSeconds;
@@ -73,7 +78,9 @@ public sealed partial class WebhookSettingsController : ControllerBase
     public async Task<IActionResult> SaveSettings([FromBody] WebhookSettingsSaveRequest request, CancellationToken ct)
     {
         if (request is null)
+        {
             return BadRequest(new { code = 400, message = "Invalid request body" });
+        }
 
         var settings = new WebhookSettingsData
         {
@@ -89,7 +96,10 @@ public sealed partial class WebhookSettingsController : ControllerBase
 
         foreach (var (platform, platformInput) in request.Platforms ?? new Dictionary<string, WebhookPlatformInput>())
         {
-            if (string.IsNullOrWhiteSpace(platform)) continue;
+            if (string.IsNullOrWhiteSpace(platform))
+            {
+                continue;
+            }
 
             var endpoints = (platformInput?.Endpoints ?? [])
                 .Select(e => new WebhookEndpointConfig
@@ -104,12 +114,17 @@ public sealed partial class WebhookSettingsController : ControllerBase
                 .ToList();
 
             if (endpoints.Count > 0)
+            {
                 settings.Platforms[platform.Trim()] = endpoints;
+            }
         }
 
         foreach (var (platform, events) in request.PlatformEvents ?? new Dictionary<string, List<string>>())
         {
-            if (string.IsNullOrWhiteSpace(platform)) continue;
+            if (string.IsNullOrWhiteSpace(platform))
+            {
+                continue;
+            }
             // Empty lists are meaningful: an explicit "subscribe to nothing" that
             // overrides the global fallback (EnabledEvents).
             settings.PlatformEvents[platform.Trim()] = (events ?? [])
@@ -137,11 +152,15 @@ public sealed partial class WebhookSettingsController : ControllerBase
     public async Task<IActionResult> SavePlatform([FromBody] WebhookPlatformSaveRequest request, CancellationToken ct)
     {
         if (request is null || string.IsNullOrWhiteSpace(request.Platform))
+        {
             return BadRequest(new { code = 400, message = "platform is required" });
+        }
 
         var platform = request.Platform.Trim();
         if (!WebhookPlatforms.IsKnown(platform))
+        {
             return BadRequest(new { code = 400, message = "unknown platform" });
+        }
 
         var endpoints = (request.Endpoints ?? [])
             .Select(e => new WebhookEndpointConfig
@@ -157,9 +176,13 @@ public sealed partial class WebhookSettingsController : ControllerBase
 
         var settings = await _webhooks.GetSettingsAsync(ct);
         if (endpoints.Count == 0)
+        {
             settings.Platforms.Remove(platform);
+        }
         else
+        {
             settings.Platforms[platform] = endpoints;
+        }
 
         await _webhooks.SaveSettingsAsync(settings, ct);
         if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
@@ -176,7 +199,9 @@ public sealed partial class WebhookSettingsController : ControllerBase
     public async Task<IActionResult> Test([FromBody] WebhookTestRequest request, CancellationToken ct)
     {
         if (request is null || string.IsNullOrWhiteSpace(request.Platform))
+        {
             return BadRequest(new { code = 400, message = "platform is required" });
+        }
 
         var platform = request.Platform.Trim();
 
@@ -272,7 +297,11 @@ public sealed partial class WebhookSettingsController : ControllerBase
     /// <summary>Hide access tokens / secrets in endpoint URLs before echoing them to the client.</summary>
     private static string MaskUrl(string url)
     {
-        if (string.IsNullOrEmpty(url)) return url;
+        if (string.IsNullOrEmpty(url))
+        {
+            return url;
+        }
+
         try
         {
             // Mask the value of common token-bearing query parameters.

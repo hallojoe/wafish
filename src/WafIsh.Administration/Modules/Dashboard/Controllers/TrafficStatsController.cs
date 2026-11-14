@@ -108,7 +108,11 @@ public class TrafficStatsController : Controller
 
     private static double Percentile(List<double> sortedValues, double percentile)
     {
-        if (sortedValues.Count == 0) return 0;
+        if (sortedValues.Count == 0)
+        {
+            return 0;
+        }
+
         var index = (int)Math.Ceiling(percentile * sortedValues.Count) - 1;
         return sortedValues[Math.Max(0, Math.Min(index, sortedValues.Count - 1))];
     }

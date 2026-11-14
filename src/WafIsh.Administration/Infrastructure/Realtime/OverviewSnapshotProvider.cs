@@ -58,11 +58,17 @@ public sealed class OverviewSnapshotProvider : IOverviewSnapshotProvider
             foreach (var c in clusters)
             {
                 if (c.UnhealthyCount > 0)
+                {
                     unhealthyCount++;
+                }
                 else if (c.HealthyCount > 0)
+                {
                     healthyCount++;
+                }
                 else
+                {
                     unknownCount++;
+                }
             }
         }
         catch (Exception ex)
@@ -111,7 +117,9 @@ public sealed class OverviewSnapshotProvider : IOverviewSnapshotProvider
             foreach (var entry in snapshot.Entries)
             {
                 if (entry.EventType == LogEventType.ProxyResponse && entry.Timestamp >= cutoff)
+                {
                     relevantEntries.Add(entry);
+                }
             }
 
             if (relevantEntries.Count > 0)
@@ -197,12 +205,24 @@ public sealed class OverviewSnapshotProvider : IOverviewSnapshotProvider
 
     private static double CalculateP99(List<double> sorted)
     {
-        if (sorted.Count == 0) return 0;
-        if (sorted.Count == 1) return sorted[0];
+        if (sorted.Count == 0)
+        {
+            return 0;
+        }
+
+        if (sorted.Count == 1)
+        {
+            return sorted[0];
+        }
+
         var idx = 0.99 * (sorted.Count - 1);
         var lower = (int)Math.Floor(idx);
         var upper = (int)Math.Ceiling(idx);
-        if (lower == upper) return sorted[lower];
+        if (lower == upper)
+        {
+            return sorted[lower];
+        }
+
         return sorted[lower] + (sorted[upper] - sorted[lower]) * (idx - lower);
     }
 }

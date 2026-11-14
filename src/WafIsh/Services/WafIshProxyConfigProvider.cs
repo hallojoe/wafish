@@ -89,7 +89,11 @@ public sealed class WafIshProxyConfigProvider : IProxyConfigProvider
             Routes = snap.DynamicRoutes.ToList(),
             Clusters = snap.DynamicClusters.Select(c =>
             {
-                if (_heartbeats.TryGetValue(c.Config.ClusterId ?? string.Empty, out var hb)) c.LastHeartbeat = hb;
+                if (_heartbeats.TryGetValue(c.Config.ClusterId ?? string.Empty, out var hb))
+                {
+                    c.LastHeartbeat = hb;
+                }
+
                 return c;
             }).ToList()
         };
@@ -145,7 +149,11 @@ public sealed class WafIshProxyConfigProvider : IProxyConfigProvider
     /// Also performs periodic cleanup of stale heartbeat entries.</summary>
     public bool UpdateHeartbeat(string clusterId)
     {
-        if (string.IsNullOrWhiteSpace(clusterId)) return false;
+        if (string.IsNullOrWhiteSpace(clusterId))
+        {
+            return false;
+        }
+
         _heartbeats[clusterId] = DateTime.Now;
 
         // Periodic cleanup: remove heartbeat entries for clusters not in current config
@@ -161,7 +169,9 @@ public sealed class WafIshProxyConfigProvider : IProxyConfigProvider
             {
                 // Remove if cluster no longer exists in config OR entry is too old
                 if (!activeClusterIds.Contains(kvp.Key) || now - kvp.Value > MaxHeartbeatAge)
+                {
                     _heartbeats.TryRemove(kvp.Key, out _);
+                }
             }
         }
 

@@ -24,9 +24,15 @@ public sealed class SqliteConfigurationSnapshotRepository(SqliteConnectionFactor
         await conn.OpenAsync(ct);
         await using var tx = (SqliteTransaction)await conn.BeginTransactionAsync(ct);
         var actual = await ReadVersion(conn, tx, ct);
-        if (actual != expectedVersion) throw new ConfigurationVersionConflictException(expectedVersion, actual);
+        if (actual != expectedVersion)
+        {
+            throw new ConfigurationVersionConflictException(expectedVersion, actual);
+        }
+
         if (snapshot.Version != expectedVersion + 1)
+        {
             throw new ArgumentException("The next configuration version must increase by one.", nameof(snapshot));
+        }
         // Capture legacy binding identities before rows are replaced or renamed.
         await BindIdentities(conn, tx, ct);
         // Bindings use stable UIDs and have no cascading relationship with these rows.
@@ -37,7 +43,10 @@ public sealed class SqliteConfigurationSnapshotRepository(SqliteConnectionFactor
             await clear.ExecuteNonQueryAsync(ct);
         }
         foreach (var cluster in snapshot.Clusters)
+        {
             await SqliteClusterRepository.SaveOneAsync(conn, tx, cluster, ct);
+        }
+
         foreach (var route in snapshot.Routes)
         {
             await using var cmd = conn.CreateCommand();
@@ -122,7 +131,11 @@ public sealed class SqliteConfigurationSnapshotRepository(SqliteConnectionFactor
         };
         var items = new List<T>();
         await using var reader = await cmd.ExecuteReaderAsync(ct);
-        while (await reader.ReadAsync(ct)) items.Add(map(reader));
+        while (await reader.ReadAsync(ct))
+        {
+            items.Add(map(reader));
+        }
+
         return items;
     }
 }

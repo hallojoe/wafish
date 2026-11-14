@@ -35,11 +35,19 @@ public sealed class SqliteWebhookSettingsRepository : IWebhookSettingsRepository
 
     private async ValueTask EnsureInitializedAsync(CancellationToken ct)
     {
-        if (_initialized) return;
+        if (_initialized)
+        {
+            return;
+        }
+
         await _initLock.WaitAsync(ct);
         try
         {
-            if (_initialized) return;
+            if (_initialized)
+            {
+                return;
+            }
+
             await SqliteRepositoryInitializer.EnsureTableExistsAsync(_connections, "webhook_settings", ct);
             _initialized = true;
         }
@@ -59,7 +67,9 @@ public sealed class SqliteWebhookSettingsRepository : IWebhookSettingsRepository
 
         var json = await cmd.ExecuteScalarAsync(ct) as string;
         if (string.IsNullOrWhiteSpace(json))
+        {
             return new WebhookSettingsData();
+        }
 
         try
         {

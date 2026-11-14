@@ -13,24 +13,35 @@ public sealed class IpAccessRuleChecker : IWafRuleChecker
 
     public WafCheckResult Check(WafCheckContext context)
     {
-        if (!context.Options.EnableIpCheck) return WafCheckResult.Passed;
+        if (!context.Options.EnableIpCheck)
+        {
+            return WafCheckResult.Passed;
+        }
 
         var clientIp = ClientIpResolver.GetClientIp(context.HttpContext);
-        if (string.IsNullOrEmpty(clientIp)) return WafCheckResult.Passed;
+        if (string.IsNullOrEmpty(clientIp))
+        {
+            return WafCheckResult.Passed;
+        }
 
         var opts = context.Options;
 
         if (opts.IpWhitelist.Count > 0)
         {
             if (!opts.IpWhitelist.Any(ip => IpMatcher.Matches(ip.Trim(), clientIp)))
+            {
                 return WafCheckResult.Blocked("IpBlocked");
+            }
+
             return WafCheckResult.Passed;
         }
 
         if (opts.IpBlacklist.Count > 0)
         {
             if (opts.IpBlacklist.Any(ip => IpMatcher.Matches(ip.Trim(), clientIp)))
+            {
                 return WafCheckResult.Blocked("IpBlocked");
+            }
         }
 
         return WafCheckResult.Passed;

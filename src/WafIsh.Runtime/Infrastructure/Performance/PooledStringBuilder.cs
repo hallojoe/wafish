@@ -68,7 +68,10 @@ internal static class StringBuilderExtensions
     public static StringBuilder AppendKeyValue(this StringBuilder sb, string key, string? value, string separator = ", ")
     {
         if (sb.Length > 0)
+        {
             sb.Append(separator);
+        }
+
         sb.Append(key).Append('=').Append(value ?? "null");
         return sb;
     }
@@ -79,7 +82,10 @@ internal static class StringBuilderExtensions
     public static StringBuilder AppendQueryParam(this StringBuilder sb, string key, string? value, bool isFirst = false)
     {
         if (!isFirst)
+        {
             sb.Append('&');
+        }
+
         sb.Append(key).Append('=').Append(Uri.EscapeDataString(value ?? ""));
         return sb;
     }
@@ -90,7 +96,10 @@ internal static class StringBuilderExtensions
     public static StringBuilder AppendJsonProperty(this StringBuilder sb, string name, string? value, bool isFirst = false)
     {
         if (!isFirst)
+        {
             sb.Append(',');
+        }
+
         sb.Append('"').Append(name).Append("\":\"");
         if (!string.IsNullOrEmpty(value))
         {

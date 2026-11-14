@@ -103,7 +103,11 @@ public sealed class RequestRetryMiddleware : GatewayMiddlewareBase
         var originalHeaders = context.Response.Headers.ToArray();
         context.Response.OnStarting(() =>
         {
-            if (attempt > 0) context.Response.Headers["X-Retry-Count"] = attempt.ToString();
+            if (attempt > 0)
+            {
+                context.Response.Headers["X-Retry-Count"] = attempt.ToString();
+            }
+
             return Task.CompletedTask;
         });
         try
@@ -118,7 +122,11 @@ public sealed class RequestRetryMiddleware : GatewayMiddlewareBase
                 while (read < length)
                 {
                     var count = await originalRequestBody.ReadAsync(requestBuffer.AsMemory(read, length - read), preparationTimeout.Token);
-                    if (count == 0) throw new BadHttpRequestException("Incomplete request body", StatusCodes.Status400BadRequest);
+                    if (count == 0)
+                    {
+                        throw new BadHttpRequestException("Incomplete request body", StatusCodes.Status400BadRequest);
+                    }
+
                     read += count;
                 }
             }
@@ -134,7 +142,11 @@ public sealed class RequestRetryMiddleware : GatewayMiddlewareBase
                     return;
                 }
                 using var replay = requestBuffer is null ? null : new MemoryStream(requestBuffer, 0, length, writable: false);
-                if (replay != null) context.Request.Body = replay;
+                if (replay != null)
+                {
+                    context.Request.Body = replay;
+                }
+
                 using var response = new RetryResponseBody(context, originalFeature,
                     status => attempt < retryConfig.MaxRetries && retryConfig.StatusCodes.Contains(status));
                 context.Features.Set<IHttpResponseBodyFeature>(response);
@@ -166,14 +178,21 @@ public sealed class RequestRetryMiddleware : GatewayMiddlewareBase
                     failure == null && !retryConfig.StatusCodes.Contains(context.Response.StatusCode))
                 {
                     if (attempt > 0 && !context.Response.HasStarted)
+                    {
                         context.Response.Headers["X-Retry-Count"] = attempt.ToString();
+                    }
+
                     await response.CommitAsync(originalAborted);
                     return;
                 }
                 attempt++;
                 context.Response.StatusCode = StatusCodes.Status200OK;
                 context.Response.Headers.Clear();
-                foreach (var header in originalHeaders) context.Response.Headers[header.Key] = header.Value;
+                foreach (var header in originalHeaders)
+                {
+                    context.Response.Headers[header.Key] = header.Value;
+                }
+
                 var delay = (long)retryConfig.BackoffBaseMs * (1 << (attempt - 1)) +
                     (retryConfig.JitterMs > 0 ? Random.Shared.Next(retryConfig.JitterMs) : 0);
                 _logger.LogDebug("Retry attempt {Attempt} for route {Route}", attempt, routeConfig.RouteId);
@@ -187,8 +206,15 @@ public sealed class RequestRetryMiddleware : GatewayMiddlewareBase
             context.Request.ContentLength = originalLength;
             context.RequestAborted = originalAborted;
             context.Features.Set(originalFeature);
-            if (originalPosition.HasValue) originalRequestBody.Position = originalPosition.Value;
-            if (requestBuffer != null) ArrayPool<byte>.Shared.Return(requestBuffer, clearArray: true);
+            if (originalPosition.HasValue)
+            {
+                originalRequestBody.Position = originalPosition.Value;
+            }
+
+            if (requestBuffer != null)
+            {
+                ArrayPool<byte>.Shared.Return(requestBuffer, clearArray: true);
+            }
         }
     }
 
@@ -198,7 +224,9 @@ public sealed class RequestRetryMiddleware : GatewayMiddlewareBase
     {
         config = null!;
         if (!_executionPlans.Current.RetryByRoute.TryGetValue(routeId, out var configured) || !configured.Enabled)
+        {
             return false;
+        }
 
         const int retryCapacity = 5;
         var delayCapacity = Math.Max(0, configured.BackoffBaseMs);
@@ -206,7 +234,10 @@ public sealed class RequestRetryMiddleware : GatewayMiddlewareBase
         var statusCodes = configured.RetryOnStatusCodes
             .Where(code => code is >= 100 and <= 599)
             .ToHashSet();
-        if (statusCodes.Count == 0) return false;
+        if (statusCodes.Count == 0)
+        {
+            return false;
+        }
 
         config = new ParsedRetryConfig(
             true,

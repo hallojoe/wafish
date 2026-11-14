@@ -105,7 +105,9 @@ public sealed class YarpRequestCaptureMiddleware
             var clusterId = proxyFeature?.Route?.Config?.ClusterId;
 
             if (settings.ErrorsOnly && context.Response.StatusCode < 400)
+            {
                 return;
+            }
 
             // ── Phase 5: Process response data ──
             var responseBodyText = responseBodyStream != null && ProxyLogBodyReader.IsResponseBodyCaptureSafe(context.Response)
@@ -156,7 +158,9 @@ public sealed class YarpRequestCaptureMiddleware
     {
         truncated = false;
         if (string.IsNullOrEmpty(text) || text.Length <= maxLength)
+        {
             return text;
+        }
 
         truncated = true;
         return text[..maxLength] + "\n... [TRUNCATED]";

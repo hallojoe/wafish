@@ -33,6 +33,7 @@ internal static class ReviewAccountingChecks
     public static async Task RunAsync(Func<string, Func<Task>, Task> run)
     {
         foreach (var mode in new[] { "cancel-write", "cancel-fill", "exhaust-retries", "transient", "cancel-drain" })
+        {
             await run("Accounting: log batches preserve ownership during " + mode, async () =>
             {
                 await using var host = await Fixture.Create();
@@ -45,7 +46,11 @@ internal static class ReviewAccountingChecks
                 proxy.BeforeWrite = async ct =>
                 {
                     var call = Interlocked.Increment(ref calls);
-                    if (mode == "exhaust-retries" || mode == "transient" && call == 1) throw new IOException("Injected write failure");
+                    if (mode == "exhaust-retries" || mode == "transient" && call == 1)
+                    {
+                        throw new IOException("Injected write failure");
+                    }
+
                     if ((mode is "cancel-write" or "cancel-drain") && call == 1)
                     {
                         entered.SetResult();
@@ -58,11 +63,25 @@ internal static class ReviewAccountingChecks
                     new SqliteProxyLogWriter(repo, NullLogger<SqliteProxyLogWriter>.Instance),
                     new ProxyLogRuntimeSettings(Options.Create(new ProxyLogPluginOptions())), null!, NullLogger<AsyncLogPersistenceService>.Instance);
                 var count = mode == "cancel-fill" ? 1 : 100;
-                for (var i = 0; i < count; i++) store.Add(new() { Timestamp = DateTime.UtcNow, EventType = LogEventType.ProxyResponse, StatusCode = 200 });
+                for (var i = 0; i < count; i++)
+                {
+                    store.Add(new() { Timestamp = DateTime.UtcNow, EventType = LogEventType.ProxyResponse, StatusCode = 200 });
+                }
+
                 await service.StartResourceAsync(default);
-                if (mode is "cancel-write" or "cancel-drain") await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
-                else if (mode == "cancel-fill") await Until(() => store.PersistenceReader.Count == 0);
-                else await Until(() => service.WrittenCount + service.DroppedCount == count);
+                if (mode is "cancel-write" or "cancel-drain")
+                {
+                    await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                }
+                else if (mode == "cancel-fill")
+                {
+                    await Until(() => store.PersistenceReader.Count == 0);
+                }
+                else
+                {
+                    await Until(() => service.WrittenCount + service.DroppedCount == count);
+                }
+
                 if (mode == "cancel-drain")
                 {
                     try { await service.StopResourceAsync(new CancellationToken(true)); }
@@ -75,8 +94,12 @@ internal static class ReviewAccountingChecks
                     $"Unaccounted or duplicate batch: stored={stored}, written={service.WrittenCount}, dropped={service.DroppedCount}.");
                 Check(store.PendingCount == 0 && store.SubmittedCount == stored + discarded, "Persistence accounting did not balance.");
                 var health = await service.CheckHealthAsync();
-                if (mode == "exhaust-retries") Check(health.Statistics["failures"] == 3, "Write failures were not counted.");
+                if (mode == "exhaust-retries")
+                {
+                    Check(health.Statistics["failures"] == 3, "Write failures were not counted.");
+                }
             });
+        }
 
         await run("Accounting: concurrent notification overflow and shutdown count every event", async () =>
         {
@@ -154,7 +177,11 @@ internal static class ReviewAccountingChecks
             await using (var reader = await command.ExecuteReaderAsync())
             {
                 var details = new List<string>();
-                while (await reader.ReadAsync()) details.Add(reader.GetString(3));
+                while (await reader.ReadAsync())
+                {
+                    details.Add(reader.GetString(3));
+                }
+
                 Check(details.Any(d => d.Contains("ix_proxy_logs_meta_utc", StringComparison.Ordinal)), "Time range lost its index.");
             }
             await repo.CleanupAsync(1, 1);
@@ -205,9 +232,21 @@ internal static class ReviewAccountingChecks
                 context.Request.ContentLength = 7; context.Response.ContentLength = 11;
                 var middleware = new PluginMetricsMiddleware(c =>
                 {
-                    if (mode == "exception") throw new IOException("injected");
-                    if (mode == "cancellation") throw new OperationCanceledException();
-                    if (mode == "aborted") c.RequestAborted = new CancellationToken(true);
+                    if (mode == "exception")
+                    {
+                        throw new IOException("injected");
+                    }
+
+                    if (mode == "cancellation")
+                    {
+                        throw new OperationCanceledException();
+                    }
+
+                    if (mode == "aborted")
+                    {
+                        c.RequestAborted = new CancellationToken(true);
+                    }
+
                     c.Response.StatusCode = mode == "status" ? 503 : 200;
                     return Task.CompletedTask;
                 }, plans, statistics, metrics);
@@ -238,7 +277,10 @@ internal static class ReviewAccountingChecks
         var state = host.Config.GetDynamicConfig()!;
         var mutations = host.App.Services.GetRequiredService<IPluginBindingMutationService>();
         foreach (var (id, json) in new[] { ("request-retry", "{\"enabled\":true,\"maxRetries\":2,\"backoffBaseMs\":1,\"backoffJitterMs\":0}"), ("traffic-metrics", "{\"enabled\":true}") })
+        {
             await mutations.UpsertAsync(new() { Id = id, PluginId = id, PluginVersion = "1.0", Scope = PluginBindingScope.Route, ScopeId = "metrics", RouteUid = state.Routes.Single().RouteUid, ConfigJson = json });
+        }
+
         await mutations.UpsertAsync(new() { Id = "cluster-metrics", PluginId = "cluster-metrics", PluginVersion = "1.0", Scope = PluginBindingScope.Cluster, ScopeId = "shared", ClusterUid = state.Clusters.Single().ClusterUid, ConfigJson = "{\"enabled\":true}" });
         host.App.Urls.Add("http://127.0.0.1:0"); host.App.UseRouting(); host.App.MapWafIshProxy();
         await host.App.StartAsync();
@@ -266,7 +308,11 @@ internal static class ReviewAccountingChecks
         public Func<CancellationToken, Task> BeforeWrite { get; set; } = _ => Task.CompletedTask;
         protected override object? Invoke(MethodInfo? method, object?[]? args)
         {
-            if (method!.Name != nameof(IProxyLogRepository.WriteBatchAsync)) return method.Invoke(Inner, args);
+            if (method!.Name != nameof(IProxyLogRepository.WriteBatchAsync))
+            {
+                return method.Invoke(Inner, args);
+            }
+
             return WriteAsync(args!);
         }
         private async Task WriteAsync(object?[] args)
@@ -298,7 +344,14 @@ internal static class ReviewAccountingChecks
     private static async Task Until(Func<bool> ready)
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(8));
-        while (!ready()) await Task.Delay(10, timeout.Token);
+        while (!ready())
+        {
+            await Task.Delay(10, timeout.Token);
+        }
     }
-    private static void Check(bool condition, string message) { if (!condition) throw new Exception(message); }
+    private static void Check(bool condition, string message) { if (!condition)
+        {
+            throw new Exception(message);
+        }
+    }
 }

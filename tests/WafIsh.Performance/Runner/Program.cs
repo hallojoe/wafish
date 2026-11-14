@@ -24,12 +24,22 @@ var externalUrl = ReadStringArgument(args, "--external-url", "");
 if (!string.IsNullOrWhiteSpace(externalUrl))
 {
     if (!Uri.TryCreate(externalUrl, UriKind.Absolute, out var endpoint) || endpoint.Scheme is not ("http" or "https") || endpoint.UserInfo.Length != 0)
+    {
         throw new ArgumentException("--external-url requires an HTTP(S) URL without credentials.");
+    }
+
     if (durationSeconds <= 0 || warmupSeconds < 0 || concurrency <= 0 || repetitions <= 0)
+    {
         throw new ArgumentException("Duration, concurrency, and repetitions must be positive. Warmup cannot be negative.");
+    }
+
     var scenario = Scenario.Get("external", ReadStringArgument(args, "--path", "/api/local-service/instance"));
     Console.WriteLine($"External endpoint: {endpoint}. The runner does not manage processes or databases.");
-    if (warmupSeconds > 0) await RunLoadAsync(0, scenario, concurrency, TimeSpan.FromSeconds(warmupSeconds), null, endpoint);
+    if (warmupSeconds > 0)
+    {
+        await RunLoadAsync(0, scenario, concurrency, TimeSpan.FromSeconds(warmupSeconds), null, endpoint);
+    }
+
     for (var repetition = 1; repetition <= repetitions; repetition++)
     {
         var result = await RunLoadAsync(0, scenario, concurrency, TimeSpan.FromSeconds(durationSeconds), null, endpoint);
@@ -42,7 +52,11 @@ if (!string.IsNullOrWhiteSpace(externalUrl))
         "Keep telemetry settings identical when comparing hosts. Services remain running after this test.\n");
     await File.WriteAllTextAsync(Path.ChangeExtension(report, ".csv"), BuildCsv(results, summary));
     Console.WriteLine($"Report: {report}; failures: {results.Sum(r => r.Failures)}");
-    if (results.Any(r => r.Failures > 0)) Environment.ExitCode = 1;
+    if (results.Any(r => r.Failures > 0))
+    {
+        Environment.ExitCode = 1;
+    }
+
     return;
 }
 
@@ -107,20 +121,31 @@ try
     var summary = BuildSummary(results);
     var csvPath = Path.Combine(resultsDirectory, $"performance-{timestamp}.csv");
     var markdownPath = Path.Combine(resultsDirectory, $"performance-{timestamp}.md");
-    if (results.Any(r => r.Failures > 0 || r.Requests == 0)) Environment.ExitCode = 1;
+    if (results.Any(r => r.Failures > 0 || r.Requests == 0))
+    {
+        Environment.ExitCode = 1;
+    }
+
     await File.WriteAllTextAsync(csvPath, BuildCsv(results, summary), Encoding.UTF8);
     await File.WriteAllTextAsync(markdownPath, BuildMarkdown(summary, durationSeconds, warmupSeconds, concurrency, repetitions), Encoding.UTF8);
 
     Console.WriteLine();
     Console.WriteLine("Median results:");
     foreach (var item in summary)
+    {
         Console.WriteLine($"{item.Gateway,-18} {item.Scenario,-12} {item.RequestsPerSecond,10:N0} RPS  P95 {item.P95Ms,7:N2} ms  P99 {item.P99Ms,7:N2} ms  CPU {item.CpuPercent,6:N1}%  Memory {item.WorkingSetMb,7:N1} MB");
+    }
+
     Console.WriteLine($"CSV: {csvPath}");
     Console.WriteLine($"Report: {markdownPath}");
 }
 finally
 {
-    foreach (var process in processes.ToArray()) StopProcess(process);
+    foreach (var process in processes.ToArray())
+    {
+        StopProcess(process);
+    }
+
     CleanupDatabases(root);
 }
 
@@ -161,8 +186,14 @@ static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int
                 using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(10));
                 using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, deadline.Token);
                 await response.Content.CopyToAsync(Stream.Null, deadline.Token);
-                if (allowPolicyRejections && response.StatusCode == HttpStatusCode.TooManyRequests) Interlocked.Increment(ref policyRejections);
-                else if (!response.IsSuccessStatusCode) Interlocked.Increment(ref failed);
+                if (allowPolicyRejections && response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    Interlocked.Increment(ref policyRejections);
+                }
+                else if (!response.IsSuccessStatusCode)
+                {
+                    Interlocked.Increment(ref failed);
+                }
             }
             catch
             {
@@ -195,7 +226,11 @@ static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int
 
 static double Percentile(double[] values, double percentile)
 {
-    if (values.Length == 0) return 0;
+    if (values.Length == 0)
+    {
+        return 0;
+    }
+
     return values[(int)Math.Clamp(Math.Ceiling(percentile * values.Length) - 1, 0, values.Length - 1)];
 }
 
@@ -245,7 +280,11 @@ static async Task RunFirstBatchAsync(string root, string resultsDirectory, strin
 
         var csvPath = Path.Combine(resultsDirectory, $"performance-first-{timestamp}.csv");
         var markdownPath = Path.Combine(resultsDirectory, $"performance-first-{timestamp}.md");
-        if (records.Any(r => !r.Passed)) Environment.ExitCode = 1;
+        if (records.Any(r => !r.Passed))
+        {
+            Environment.ExitCode = 1;
+        }
+
         await File.WriteAllTextAsync(csvPath, BuildExtendedCsv(records), Encoding.UTF8);
         await File.WriteAllTextAsync(markdownPath, BuildExtendedMarkdown(records, durationSeconds, soakSeconds), Encoding.UTF8);
         Console.WriteLine($"CSV: {csvPath}");
@@ -253,7 +292,11 @@ static async Task RunFirstBatchAsync(string root, string resultsDirectory, strin
     }
     finally
     {
-        foreach (var process in processes.ToArray()) StopProcess(process);
+        foreach (var process in processes.ToArray())
+        {
+            StopProcess(process);
+        }
+
         CleanupDatabases(root);
     }
 }
@@ -340,7 +383,10 @@ static string BuildExtendedCsv(IEnumerable<ExtendedResult> records)
 {
     var sb = new StringBuilder("Group,Scenario,Concurrency,RPS,P50Ms,P95Ms,P99Ms,NonSuccessPercent,BackendRequests,Statuses,Passed,Notes\n");
     foreach (var x in records)
+    {
         sb.AppendLine(string.Join(',', Csv(x.Group), Csv(x.Scenario), x.Concurrency, F(x.RequestsPerSecond), F(x.P50Ms), F(x.P95Ms), F(x.P99Ms), F(x.NonSuccessPercent), x.BackendRequests, Csv(x.Statuses), x.Passed, Csv(x.Notes)));
+    }
+
     return sb.ToString();
 }
 
@@ -354,16 +400,27 @@ static string BuildExtendedMarkdown(IEnumerable<ExtendedResult> records, int dur
     sb.AppendLine("| Group | Scenario | C | RPS | P95 ms | P99 ms | Non-success % | Backend calls | Check |");
     sb.AppendLine("|---|---|---:|---:|---:|---:|---:|---:|---|");
     foreach (var x in rows)
+    {
         sb.AppendLine($"| {x.Group} | {x.Scenario} | {x.Concurrency} | {x.RequestsPerSecond:N0} | {x.P95Ms:N2} | {x.P99Ms:N2} | {x.NonSuccessPercent:N2} | {x.BackendRequests} | {(x.Passed ? "PASS" : "FAIL")} |");
+    }
+
     sb.AppendLine().AppendLine("## Functional Assertions").AppendLine();
-    foreach (var x in rows.Where(x => !string.IsNullOrEmpty(x.Notes))) sb.AppendLine($"- {x.Group}/{x.Scenario}: {(x.Passed ? "PASS" : "FAIL")} - {x.Notes}; observed `{x.Statuses}`.");
+    foreach (var x in rows.Where(x => !string.IsNullOrEmpty(x.Notes)))
+    {
+        sb.AppendLine($"- {x.Group}/{x.Scenario}: {(x.Passed ? "PASS" : "FAIL")} - {x.Notes}; observed `{x.Statuses}`.");
+    }
+
     sb.AppendLine().AppendLine("> Same-machine closed-loop benchmark. Policy rejection percentages are expected for rate-limit and WAF scenarios and are not transport failures.");
     return sb.ToString();
 }
 
 static Process StartService(string name, string dll, string workingDirectory, IReadOnlyList<string>? arguments = null)
 {
-    if (!File.Exists(dll)) throw new FileNotFoundException($"Build output for {name} was not found.", dll);
+    if (!File.Exists(dll))
+    {
+        throw new FileNotFoundException($"Build output for {name} was not found.", dll);
+    }
+
     var argumentText = $"\"{dll}\"" + (arguments is { Count: > 0 } ? " " + string.Join(' ', arguments) : "");
     var process = Process.Start(new ProcessStartInfo("dotnet", argumentText)
     {
@@ -389,11 +446,18 @@ static async Task WaitForHealthyAsync(string url, Process process)
     using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(1) };
     for (var i = 0; i < 60; i++)
     {
-        if (process.HasExited) throw new InvalidOperationException($"Service exited during startup with code {process.ExitCode}.");
+        if (process.HasExited)
+        {
+            throw new InvalidOperationException($"Service exited during startup with code {process.ExitCode}.");
+        }
+
         try
         {
             using var response = await client.GetAsync(url);
-            if (response.IsSuccessStatusCode) return;
+            if (response.IsSuccessStatusCode)
+            {
+                return;
+            }
         }
         catch { }
         await Task.Delay(250);
@@ -428,7 +492,10 @@ static string BuildCsv(List<BenchmarkResult> results, List<BenchmarkResult> summ
 {
     var sb = new StringBuilder("Kind,Gateway,Scenario,Repetition,RPS,P50Ms,P95Ms,P99Ms,ErrorRatePercent,CpuPercent,WorkingSetMb,Requests,Failures,PolicyRejections,TransportFailures\n");
     foreach (var item in results.Select(x => (Kind: "run", Item: x)).Concat(summary.Select(x => (Kind: "median", Item: x))))
+    {
         sb.AppendLine(string.Join(',', item.Kind, Csv(item.Item.Gateway), Csv(item.Item.Scenario), item.Item.Repetition, F(item.Item.RequestsPerSecond), F(item.Item.P50Ms), F(item.Item.P95Ms), F(item.Item.P99Ms), F(item.Item.ErrorRatePercent), F(item.Item.CpuPercent), F(item.Item.WorkingSetMb), item.Item.Requests, item.Item.Failures, item.Item.PolicyRejections, item.Item.TransportFailures));
+    }
+
     return sb.ToString();
 }
 
@@ -445,14 +512,23 @@ static string BuildMarkdown(List<BenchmarkResult> summary, int duration, int war
     sb.AppendLine("| Gateway | Scenario | RPS | P50 ms | P95 ms | P99 ms | Errors % | CPU % | Memory MB |");
     sb.AppendLine("|---|---|---:|---:|---:|---:|---:|---:|---:|");
     foreach (var item in summary)
+    {
         sb.AppendLine($"| {item.Gateway} | {item.Scenario} | {item.RequestsPerSecond:N0} | {item.P50Ms:N2} | {item.P95Ms:N2} | {item.P99Ms:N2} | {item.ErrorRatePercent:N3} | {item.CpuPercent:N1} | {item.WorkingSetMb:N1} |");
+    }
+
     sb.AppendLine().AppendLine("## Relative throughput versus Native YARP").AppendLine();
     foreach (var scenario in summary.Select(x => x.Scenario).Distinct())
     {
         var baseline = summary.FirstOrDefault(x => x.Scenario == scenario && x.Gateway == "Native YARP");
-        if (baseline == null) continue;
+        if (baseline == null)
+        {
+            continue;
+        }
+
         foreach (var item in summary.Where(x => x.Scenario == scenario && x.Gateway != "Native YARP"))
+        {
             sb.AppendLine($"- {item.Gateway} / {scenario}: {(item.RequestsPerSecond / baseline.RequestsPerSecond - 1) * 100:N1}% RPS, {(item.P99Ms / baseline.P99Ms - 1) * 100:N1}% P99 latency.");
+        }
     }
     sb.AppendLine().AppendLine("> Same-machine closed-loop benchmark. Use the relative differences to assess middleware overhead; do not treat these numbers as production capacity planning without cross-machine load generation.");
     return sb.ToString();
@@ -473,7 +549,11 @@ static string ReadStringArgument(string[] args, string name, string fallback)
 static string FindRepositoryRoot()
 {
     var directory = new DirectoryInfo(AppContext.BaseDirectory);
-    while (directory != null && !File.Exists(Path.Combine(directory.FullName, "WafIsh.slnx"))) directory = directory.Parent;
+    while (directory != null && !File.Exists(Path.Combine(directory.FullName, "WafIsh.slnx")))
+    {
+        directory = directory.Parent;
+    }
+
     return directory?.FullName ?? throw new DirectoryNotFoundException("Repository root was not found.");
 }
 

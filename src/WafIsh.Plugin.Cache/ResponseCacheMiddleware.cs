@@ -32,7 +32,15 @@ public sealed class ResponseCacheMiddleware(RequestDelegate next, ResponseCacheS
         { await next(context); return; }
         if (requestControl is { NoCache: true } or { NoStore: true } || requestControl?.MaxAge == TimeSpan.Zero ||
             request.Headers.Pragma.ToString().Contains("no-cache", StringComparison.OrdinalIgnoreCase))
-        { if (requestControl?.OnlyIfCached == true) context.Response.StatusCode = 504; else await next(context); return; }
+        { if (requestControl?.OnlyIfCached == true)
+            {
+                context.Response.StatusCode = 504;
+            }
+            else
+            {
+                await next(context);
+            }
+            return; }
 
         var key = Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new
         {
@@ -48,10 +56,18 @@ public sealed class ResponseCacheMiddleware(RequestDelegate next, ResponseCacheS
             {
                 var entry = hit.Value;
                 context.Response.StatusCode = entry.Status;
-                foreach (var header in entry.Headers) context.Response.Headers[header.Key] = header.Value;
+                foreach (var header in entry.Headers)
+                {
+                    context.Response.Headers[header.Key] = header.Value;
+                }
+
                 context.Response.ContentLength = entry.Length;
                 context.Response.Headers.Age = Math.Max(0, (long)(entry.InitialAge + cache.Age(entry)).TotalSeconds).ToString(CultureInfo.InvariantCulture);
-                if (request.Method != "HEAD") await context.Response.Body.WriteAsync(entry.Body.AsMemory(0, entry.Length), context.RequestAborted);
+                if (request.Method != "HEAD")
+                {
+                    await context.Response.Body.WriteAsync(entry.Body.AsMemory(0, entry.Length), context.RequestAborted);
+                }
+
                 return;
             }
         }
@@ -68,40 +84,83 @@ public sealed class ResponseCacheMiddleware(RequestDelegate next, ResponseCacheS
             await next(context);
             if (!stream.Complete || context.RequestAborted.IsCancellationRequested ||
                 !config.CacheStatusCodes.Contains(context.Response.StatusCode) || context.Response.StatusCode is 204 or 205 or 304 ||
-                context.Response.Headers.ContainsKey("Set-Cookie") || context.Response.Headers.ContainsKey("Content-Range")) return;
+                context.Response.Headers.ContainsKey("Set-Cookie") || context.Response.Headers.ContainsKey("Content-Range"))
+            {
+                return;
+            }
+
             if (!CacheControlHeaderValue.TryParse(context.Response.Headers.CacheControl.ToString(), out var control) ||
-                control is not { Public: true, Private: false, NoStore: false, NoCache: false }) return;
+                control is not { Public: true, Private: false, NoStore: false, NoCache: false })
+            {
+                return;
+            }
+
             var vary = context.Response.Headers.Vary.ToString().Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-            if (vary.Any(h => h == "*" || ExcludedKeyHeaders.Contains(h))) return;
+            if (vary.Any(h => h == "*" || ExcludedKeyHeaders.Contains(h)))
+            {
+                return;
+            }
+
             var now = cache.UtcNow;
             var responseHeaders = context.Response.Headers;
             var age = TimeSpan.Zero;
             if (responseHeaders.ContainsKey("Age"))
             {
-                if (!long.TryParse(responseHeaders.Age, NumberStyles.None, CultureInfo.InvariantCulture, out var seconds) || seconds > 315360000) return;
+                if (!long.TryParse(responseHeaders.Age, NumberStyles.None, CultureInfo.InvariantCulture, out var seconds) || seconds > 315360000)
+                {
+                    return;
+                }
+
                 age = TimeSpan.FromSeconds(seconds);
             }
             DateTimeOffset? responseDate = null, responseExpires = null;
             if (responseHeaders.ContainsKey("Date"))
             {
-                if (!HeaderUtilities.TryParseDate(responseHeaders.Date.ToString(), out var parsed)) return;
+                if (!HeaderUtilities.TryParseDate(responseHeaders.Date.ToString(), out var parsed))
+                {
+                    return;
+                }
+
                 responseDate = parsed;
-                if (now - parsed > age) age = now - parsed;
+                if (now - parsed > age)
+                {
+                    age = now - parsed;
+                }
             }
             if (responseHeaders.ContainsKey("Expires"))
             {
-                if (!HeaderUtilities.TryParseDate(responseHeaders.Expires.ToString(), out var parsed)) return;
+                if (!HeaderUtilities.TryParseDate(responseHeaders.Expires.ToString(), out var parsed))
+                {
+                    return;
+                }
+
                 responseExpires = parsed;
             }
             var freshness = control.SharedMaxAge ?? control.MaxAge ??
                 (responseExpires is { } expires ? expires - (responseDate ?? now) : TimeSpan.FromSeconds(config.TtlSeconds));
             var lifetime = freshness - age;
-            if (lifetime > TimeSpan.FromSeconds(config.TtlSeconds)) lifetime = TimeSpan.FromSeconds(config.TtlSeconds);
-            if (lifetime <= TimeSpan.Zero) return;
-            if (context.Response.Headers.Count > 128 || context.Response.Headers.Sum(HeaderSize) > ResponseCacheStore.HeaderAllowance) return;
+            if (lifetime > TimeSpan.FromSeconds(config.TtlSeconds))
+            {
+                lifetime = TimeSpan.FromSeconds(config.TtlSeconds);
+            }
+
+            if (lifetime <= TimeSpan.Zero)
+            {
+                return;
+            }
+
+            if (context.Response.Headers.Count > 128 || context.Response.Headers.Sum(HeaderSize) > ResponseCacheStore.HeaderAllowance)
+            {
+                return;
+            }
+
             var excluded = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             { "Connection", "Keep-Alive", "Proxy-Authenticate", "Proxy-Authorization", "TE", "Trailer", "Transfer-Encoding", "Upgrade", "Content-Length" };
-            foreach (var token in context.Response.Headers.Connection.ToString().Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)) excluded.Add(token);
+            foreach (var token in context.Response.Headers.Connection.ToString().Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+            {
+                excluded.Add(token);
+            }
+
             var savedHeaders = context.Response.Headers.Where(h => !excluded.Contains(h.Key))
                 .ToDictionary(h => h.Key, h => h.Value.ToString(), StringComparer.OrdinalIgnoreCase);
             cache.Store(capture, key, plan.SnapshotVersion, context.Response.StatusCode, savedHeaders, stream.CapturedLength, lifetime, age);
@@ -111,7 +170,11 @@ public sealed class ResponseCacheMiddleware(RequestDelegate next, ResponseCacheS
     private static long HeaderSize(KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues> header)
     {
         long size = (long)header.Key.Length * 2 + 128;
-        foreach (var value in header.Value) size += (long)(value?.Length ?? 0) * 2;
+        foreach (var value in header.Value)
+        {
+            size += (long)(value?.Length ?? 0) * 2;
+        }
+
         return size;
     }
 

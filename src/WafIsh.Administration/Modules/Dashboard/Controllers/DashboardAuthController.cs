@@ -61,16 +61,25 @@ public class DashboardAuthController : Controller
     public IActionResult Login([FromBody] LoginRequest request)
     {
         if (!_attempts.TryAcquire(HttpContext, "login", out _))
+        {
             return StatusCode(429, new { code = 429, message = "Too many authentication attempts. Retry later." });
+        }
+
         if (request == null || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
+        {
             return Json(new { code = 400, message = "Username and password are required" });
+        }
 
         var account = _authMode == DashboardAuthMode.DefaultJwt ? "admin" : _jwtUsername;
         if (string.Equals(request.Username, account, StringComparison.Ordinal) && !_attempts.TryAcquireAccount(HttpContext))
+        {
             return StatusCode(429, new { code = 429, message = "Too many authentication attempts. Retry later." });
+        }
 
         if (request.Password.Length < _minPasswordLength)
+        {
             return Json(new { code = 400, message = $"Password must be at least {_minPasswordLength} characters" });
+        }
 
         bool valid = _authMode switch
         {
@@ -82,7 +91,9 @@ public class DashboardAuthController : Controller
         };
 
         if (!valid)
+        {
             return Json(new { code = 401, message = "Invalid credentials" });
+        }
 
         // 2FA verification
         bool twoFactorEnabled; string? twoFactorSecret;
@@ -91,12 +102,19 @@ public class DashboardAuthController : Controller
         if (twoFactorEnabled)
         {
             if (string.IsNullOrWhiteSpace(twoFactorSecret))
+            {
                 return Json(new { code = 503, message = "Two-factor authentication is unavailable" });
+            }
+
             if (string.IsNullOrWhiteSpace(request.TwoFactorCode))
+            {
                 return Json(new { code = 202, message = "Two-factor authentication required", requiresTwoFactor = true });
+            }
 
             if (!TotpHelper.ValidateCode(twoFactorSecret, request.TwoFactorCode))
+            {
                 return Json(new { code = 401, message = "Invalid two-factor code" });
+            }
         }
 
         var token = DashboardJwtHelper.GenerateToken(request.Username, _jwtSecret!);
@@ -153,10 +171,14 @@ public class DashboardAuthController : Controller
         var secret = body.TryGetProperty("secret", out var secretEl) ? secretEl.GetString() : null;
 
         if (string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(secret))
+        {
             return Json(new { code = 400, message = "Code and secret are required" });
+        }
 
         if (!TotpHelper.ValidateCode(secret, code))
+        {
             return Json(new { code = 400, message = "Invalid two-factor code" });
+        }
 
         try { SaveTwoFactorState(true, secret); }
         catch { return StatusCode(503, new { code = 503, message = "Two-factor state could not be saved" }); }

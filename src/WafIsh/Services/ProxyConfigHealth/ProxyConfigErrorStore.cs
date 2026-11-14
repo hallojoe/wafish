@@ -82,7 +82,10 @@ public sealed class ProxyConfigErrorStore : IProxyConfigErrorStore
     private static IReadOnlyList<ProxyConfigError> Dedupe(IEnumerable<ProxyConfigError> errors)
     {
         var list = errors as IReadOnlyList<ProxyConfigError> ?? errors.ToList();
-        if (list.Count <= 1) return list;
+        if (list.Count <= 1)
+        {
+            return list;
+        }
 
         // reload is the authoritative apply result → highest priority (lowest rank).
         var priority = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
@@ -107,7 +110,10 @@ public sealed class ProxyConfigErrorStore : IProxyConfigErrorStore
     /// <inheritdoc />
     public void ReplaceErrors(string source, IEnumerable<ProxyConfigError> errors)
     {
-        if (string.IsNullOrEmpty(source)) return;
+        if (string.IsNullOrEmpty(source))
+        {
+            return;
+        }
 
         var newErrors = (errors ?? Enumerable.Empty<ProxyConfigError>()).ToList();
         var latestAt = newErrors.Count > 0

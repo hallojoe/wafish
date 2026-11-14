@@ -22,7 +22,9 @@ internal static class MigrationHelper
         SqliteConnection conn, SqliteTransaction transaction, string table, string column, string definition, CancellationToken ct)
     {
         if (!await ColumnExistsAsync(conn, transaction, table, column, ct))
+        {
             await ExecuteAsync(conn, transaction, $"ALTER TABLE {table} ADD COLUMN {column} {definition}", ct);
+        }
     }
 
     internal static async Task<int> ExecuteAsync(SqliteConnection conn, SqliteTransaction transaction, string sql, CancellationToken ct)

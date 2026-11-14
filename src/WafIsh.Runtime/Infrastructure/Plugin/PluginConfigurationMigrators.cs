@@ -18,18 +18,25 @@ public sealed class CircuitBreakerConfigMigrator : IPluginConfigurationMigrator
         ConfigMigratorHelper.TryMigrate(configJson, out migratedConfigJson, out error, (doc, writer) =>
         {
             foreach (var prop in doc.RootElement.EnumerateObject())
+            {
                 prop.WriteTo(writer);
+            }
 
             if (!doc.RootElement.TryGetProperty("circuitOpenStatusCodes", out _))
             {
                 writer.WriteStartArray("circuitOpenStatusCodes");
                 foreach (var code in DefaultOpenStatusCodes)
+                {
                     writer.WriteNumberValue(code);
+                }
+
                 writer.WriteEndArray();
             }
 
             if (!doc.RootElement.TryGetProperty("onOpenWebhookUrl", out _))
+            {
                 writer.WriteString("onOpenWebhookUrl", (string?)null);
+            }
         });
 }
 
@@ -89,16 +96,24 @@ public sealed class WafConfigMigrator : IPluginConfigurationMigrator
         ConfigMigratorHelper.TryMigrate(configJson, out migratedConfigJson, out error, (doc, writer) =>
         {
             foreach (var prop in doc.RootElement.EnumerateObject())
+            {
                 prop.WriteTo(writer);
+            }
 
             if (!doc.RootElement.TryGetProperty("enableBotDetection", out _))
+            {
                 writer.WriteBoolean("enableBotDetection", false);
+            }
 
             if (!doc.RootElement.TryGetProperty("enableRateLimitIntegration", out _))
+            {
                 writer.WriteBoolean("enableRateLimitIntegration", false);
+            }
 
             if (!doc.RootElement.TryGetProperty("blockedAction", out _))
+            {
                 writer.WriteString("blockedAction", "Block");
+            }
         });
 }
 
@@ -116,10 +131,14 @@ public sealed class RateLimitConfigMigrator : IPluginConfigurationMigrator
         ConfigMigratorHelper.TryMigrate(configJson, out migratedConfigJson, out error, (doc, writer) =>
         {
             foreach (var prop in doc.RootElement.EnumerateObject())
+            {
                 prop.WriteTo(writer);
+            }
 
             if (!doc.RootElement.TryGetProperty("ipHeaderName", out _))
+            {
                 writer.WriteNull("ipHeaderName");
+            }
 
             if (!doc.RootElement.TryGetProperty("exemptIps", out _))
             {
@@ -143,13 +162,19 @@ public sealed class ProxyLogConfigMigrator : IPluginConfigurationMigrator
         ConfigMigratorHelper.TryMigrate(configJson, out migratedConfigJson, out error, (doc, writer) =>
         {
             foreach (var prop in doc.RootElement.EnumerateObject())
+            {
                 prop.WriteTo(writer);
+            }
 
             if (!doc.RootElement.TryGetProperty("captureGrpcMetadata", out _))
+            {
                 writer.WriteBoolean("captureGrpcMetadata", false);
+            }
 
             if (!doc.RootElement.TryGetProperty("redactAuthorizationHeader", out _))
+            {
                 writer.WriteBoolean("redactAuthorizationHeader", true);
+            }
         });
 }
 

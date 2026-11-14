@@ -13,7 +13,11 @@ internal sealed class RegressionReport(string suite) : IDisposable
     public void Dispose()
     {
         var path = Environment.GetEnvironmentVariable("WAFISH_TEST_REPORT");
-        if (string.IsNullOrWhiteSpace(path)) return;
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return;
+        }
+
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
         File.WriteAllText(path, JsonSerializer.Serialize(new { schemaVersion = 1, suite, cases = _cases }, new JsonSerializerOptions { WriteIndented = true }));
     }

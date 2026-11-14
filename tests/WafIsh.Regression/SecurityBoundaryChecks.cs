@@ -53,7 +53,11 @@ internal static class SecurityBoundaryChecks
                 new { sub = "", iss = "WafIsh.Dashboard", exp = expiry },
                 new { sub = "operator", iss = "WafIsh.Dashboard", exp = 0 },
                 new { sub = "operator", iss = "WafIsh.Dashboard", exp = "bad" }
-            }) Check(!DashboardJwtHelper.ValidateToken(Token(payload, secret), secret).Valid);
+            })
+            {
+                Check(!DashboardJwtHelper.ValidateToken(Token(payload, secret), secret).Valid);
+            }
+
             Check(!DashboardJwtHelper.ValidateToken(Token(new { sub = "operator", iss = "WafIsh.Dashboard", exp = expiry }, secret, "none"), secret).Valid);
             Check(!DashboardJwtHelper.ValidateToken(DashboardJwtHelper.GenerateToken("operator", secret), new string('x', 32)).Valid);
             return Task.CompletedTask;
@@ -89,5 +93,9 @@ internal static class SecurityBoundaryChecks
         var input = Encode(JsonSerializer.SerializeToUtf8Bytes(new { alg = algorithm, typ = "JWT" })) + "." + Encode(JsonSerializer.SerializeToUtf8Bytes(payload));
         return input + "." + Encode(HMACSHA256.HashData(Encoding.UTF8.GetBytes(secret), Encoding.UTF8.GetBytes(input)));
     }
-    private static void Check(bool value) { if (!value) throw new Exception("Security boundary assertion failed."); }
+    private static void Check(bool value) { if (!value)
+        {
+            throw new Exception("Security boundary assertion failed.");
+        }
+    }
 }

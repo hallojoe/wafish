@@ -117,7 +117,9 @@ public static class KestrelExtensions
         {
             var configuredPort = configuration.GetValue<int?>(GrpcPortConfigKey);
             if (configuredPort.HasValue)
+            {
                 return configuredPort.Value;
+            }
         }
         return mainPort + 1;
     }

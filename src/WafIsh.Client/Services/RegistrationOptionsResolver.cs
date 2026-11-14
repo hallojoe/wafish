@@ -35,7 +35,11 @@ internal static class RegistrationOptionsResolver
     public static string GetMatchPath(GatewayRegistrationOptions options)
     {
         var path = !string.IsNullOrWhiteSpace(options.MatchPath) ? options.MatchPath : "/{**catch-all}";
-        if (!path.StartsWith('/')) path = "/" + path;
+        if (!path.StartsWith('/'))
+        {
+            path = "/" + path;
+        }
+
         return path;
     }
 
@@ -51,7 +55,11 @@ internal static class RegistrationOptionsResolver
             .Select(p => p.StartsWith('/') ? p : "/" + p)
             .ToList();
 
-        if (paths.Count > 0) return paths;
+        if (paths.Count > 0)
+        {
+            return paths;
+        }
+
         return new List<string> { GetMatchPath(options) };
     }
 
@@ -86,7 +94,9 @@ internal static class RegistrationOptionsResolver
     {
         // Priority 1: User-defined custom transforms
         if (options.Transforms != null && options.Transforms.Count > 0)
+        {
             return options.Transforms;
+        }
 
         // Priority 2: DownstreamPathPrefix override
         if (!string.IsNullOrWhiteSpace(options.DownstreamPathPrefix))
@@ -103,7 +113,10 @@ internal static class RegistrationOptionsResolver
     /// <summary>Resolves the destination address (auto-detects from Kestrel if not set).</summary>
     public static string? GetDestinationAddress(GatewayRegistrationOptions options, IServiceProvider sp)
     {
-        if (!string.IsNullOrWhiteSpace(options.DestinationAddress)) return options.DestinationAddress;
+        if (!string.IsNullOrWhiteSpace(options.DestinationAddress))
+        {
+            return options.DestinationAddress;
+        }
 
         var config = sp.GetRequiredService<IConfiguration>();
         var endpoints = new List<string>();
@@ -117,7 +130,9 @@ internal static class RegistrationOptionsResolver
             {
                 var url = ep["Url"]?.Trim();
                 if (!string.IsNullOrEmpty(url) && url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                {
                     endpoints.Add(url);
+                }
             }
         }
 
@@ -129,7 +144,9 @@ internal static class RegistrationOptionsResolver
             {
                 var trimmed = u.Trim();
                 if (trimmed.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                {
                     endpoints.Add(trimmed);
+                }
             }
         }
 
@@ -141,7 +158,9 @@ internal static class RegistrationOptionsResolver
             {
                 var trimmed = u.Trim();
                 if (trimmed.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                {
                     endpoints.Add(trimmed);
+                }
             }
         }
 
@@ -156,10 +175,16 @@ internal static class RegistrationOptionsResolver
             : endpoints.FirstOrDefault(e => e.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
                                            && !e.StartsWith("https://", StringComparison.OrdinalIgnoreCase));
 
-        if (preferred != null) return preferred;
+        if (preferred != null)
+        {
+            return preferred;
+        }
 
         // Fallback: use first available endpoint
-        if (endpoints.Count > 0) return endpoints[0];
+        if (endpoints.Count > 0)
+        {
+            return endpoints[0];
+        }
 
         // Default fallback
         var env = sp.GetRequiredService<IHostEnvironment>();

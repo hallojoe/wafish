@@ -46,7 +46,10 @@ internal static class ReviewSecurityChecks
             {
                 using var compressed = new MemoryStream();
                 using (Stream encoder = encoding switch { "gzip" => new GZipStream(compressed, CompressionLevel.SmallestSize, true), "br" => new BrotliStream(compressed, CompressionLevel.SmallestSize, true), _ => new DeflateStream(compressed, CompressionLevel.SmallestSize, true) })
+                {
                     encoder.Write(Encoding.UTF8.GetBytes(new string('a', 1024 * 1024)));
+                }
+
                 var context = new DefaultHttpContext();
                 context.Request.Body = compressed;
                 context.Request.ContentLength = compressed.Length;
@@ -152,5 +155,9 @@ internal static class ReviewSecurityChecks
             Require(bytes.CanRead && corrupt.CanRead, "Decoder disposed caller streams.");
         });
     }
-    private static void Require(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); }
+    private static void Require(bool condition, string message) { if (!condition)
+        {
+            throw new InvalidOperationException(message);
+        }
+    }
 }

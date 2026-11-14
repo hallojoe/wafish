@@ -60,7 +60,9 @@ internal static class GrpcGatewayRegistryMapper
         foreach (var dest in request.Destinations)
         {
             if (string.IsNullOrWhiteSpace(dest.Address))
+            {
                 continue;
+            }
 
             var destId = string.IsNullOrWhiteSpace(dest.DestinationId)
                 ? $"dest-{Guid.NewGuid():N}"
@@ -74,10 +76,14 @@ internal static class GrpcGatewayRegistryMapper
     public static string BuildRouteName(RegisterServiceRequest request)
     {
         if (!string.IsNullOrWhiteSpace(request.ServiceId))
+        {
             return request.ServiceId;
+        }
 
         if (!string.IsNullOrWhiteSpace(request.ServiceName))
+        {
             return request.ServiceName;
+        }
 
         return "grpc-service";
     }
@@ -85,7 +91,9 @@ internal static class GrpcGatewayRegistryMapper
     public static string BuildClusterName(RegisterServiceRequest request)
     {
         if (!string.IsNullOrWhiteSpace(request.ServiceName))
+        {
             return request.ServiceName;
+        }
 
         return BuildRouteName(request);
     }
@@ -106,10 +114,14 @@ internal static class GrpcGatewayRegistryMapper
     {
         var trimmed = path.Trim();
         if (string.IsNullOrWhiteSpace(trimmed))
+        {
             return "/{**catch-all}";
+        }
 
         if (!trimmed.StartsWith('/'))
+        {
             trimmed = "/" + trimmed;
+        }
 
         if (!trimmed.Contains("{**catch-all}", StringComparison.OrdinalIgnoreCase) &&
             !trimmed.Contains("{**catchAll}", StringComparison.OrdinalIgnoreCase))

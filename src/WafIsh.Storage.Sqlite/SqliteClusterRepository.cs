@@ -15,11 +15,19 @@ public sealed class SqliteClusterRepository : IClusterRepository
 
     private async ValueTask EnsureInitializedAsync(CancellationToken ct)
     {
-        if (_initialized) return;
+        if (_initialized)
+        {
+            return;
+        }
+
         await _initLock.WaitAsync(ct);
         try
         {
-            if (_initialized) return;
+            if (_initialized)
+            {
+                return;
+            }
+
             await InitializeAsync(ct);
         }
         finally { _initLock.Release(); }
@@ -53,7 +61,11 @@ public sealed class SqliteClusterRepository : IClusterRepository
         cmd.CommandText = "SELECT * FROM yarp_clusters ORDER BY cluster_id";
         var list = new List<ClusterEntity>();
         await using var reader = await cmd.ExecuteReaderAsync(ct);
-        while (await reader.ReadAsync(ct)) list.Add(MapCluster(reader));
+        while (await reader.ReadAsync(ct))
+        {
+            list.Add(MapCluster(reader));
+        }
+
         return list.AsReadOnly();
     }
 
@@ -105,7 +117,11 @@ public sealed class SqliteClusterRepository : IClusterRepository
         cmd.Parameters.AddWithValue("@cid", clusterId);
         var list = new List<DestinationEntity>();
         await using var reader = await cmd.ExecuteReaderAsync(ct);
-        while (await reader.ReadAsync(ct)) list.Add(MapDestination(reader));
+        while (await reader.ReadAsync(ct))
+        {
+            list.Add(MapDestination(reader));
+        }
+
         return list.AsReadOnly();
     }
 

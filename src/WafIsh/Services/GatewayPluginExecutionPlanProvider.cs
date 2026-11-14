@@ -36,7 +36,9 @@ public sealed class GatewayPluginExecutionPlanProvider
         {
             var snapshot = _publisher.Current;
             if (ReferenceEquals(snapshot, Volatile.Read(ref _snapshot)))
+            {
                 return Volatile.Read(ref _plan);
+            }
 
             lock (_sync)
             {
@@ -68,7 +70,11 @@ public sealed class GatewayPluginExecutionPlanProvider
 
         foreach (var route in snapshot.Routes)
         {
-            if (!snapshot.RoutePlugins.TryGetValue(route.RouteId, out var bindings)) continue;
+            if (!snapshot.RoutePlugins.TryGetValue(route.RouteId, out var bindings))
+            {
+                continue;
+            }
+
             CompileBinding(bindings, "waf", route.RouteId, WebJson, waf);
             CompileBinding(bindings, "request-retry", route.RouteId, WebJson, retry);
             CompileBinding(bindings, "rate-limit", route.RouteId, EnumJson, rateLimit,
@@ -82,7 +88,11 @@ public sealed class GatewayPluginExecutionPlanProvider
 
         foreach (var cluster in snapshot.Clusters)
         {
-            if (!snapshot.ClusterPlugins.TryGetValue(cluster.ClusterId, out var bindings)) continue;
+            if (!snapshot.ClusterPlugins.TryGetValue(cluster.ClusterId, out var bindings))
+            {
+                continue;
+            }
+
             CompileBinding(bindings, "circuit-breaker", cluster.ClusterId, EnumJson, circuitBreaker);
             CompileBinding(bindings, "cluster-metrics", cluster.ClusterId, WebJson, clusterMetrics);
             CompileBinding(bindings, "service-discovery", cluster.ClusterId, WebJson, serviceDiscovery);
@@ -113,12 +123,18 @@ public sealed class GatewayPluginExecutionPlanProvider
     {
         var binding = bindings.FirstOrDefault(candidate =>
             string.Equals(candidate.PluginId, pluginId, StringComparison.OrdinalIgnoreCase));
-        if (binding == null || string.IsNullOrWhiteSpace(binding.ConfigJson)) return;
+        if (binding == null || string.IsNullOrWhiteSpace(binding.ConfigJson))
+        {
+            return;
+        }
 
         try
         {
             var config = JsonSerializer.Deserialize<T>(binding.ConfigJson, options);
-            if (config != null) destination[key] = transform == null ? config : transform(config);
+            if (config != null)
+            {
+                destination[key] = transform == null ? config : transform(config);
+            }
         }
         catch (JsonException exception)
         {

@@ -103,7 +103,10 @@ public class GatewayPluginManager : IGatewayPluginManager, IPluginActivationStat
     public bool IsPluginEnabled(string pluginId)
     {
         if (!_enabledPlugins.TryGetValue(pluginId, out var enabled))
+        {
             return false;
+        }
+
         return enabled;
     }
 
@@ -147,7 +150,9 @@ public class GatewayPluginManager : IGatewayPluginManager, IPluginActivationStat
                 .Where(d => !_enabledPlugins.TryGetValue(d.PluginId, out var dependencyEnabled) || !dependencyEnabled)
                 .Select(d => d.PluginId).ToArray();
             if (missing.Length > 0)
+            {
                 return new(false, $"Dependencies must be enabled first: {string.Join(", ", missing)}.");
+            }
         }
         else
         {
@@ -155,11 +160,15 @@ public class GatewayPluginManager : IGatewayPluginManager, IPluginActivationStat
                 .Where(m => _enabledPlugins.GetValueOrDefault(m.Id) && m.Dependencies.Any(d => string.Equals(d.PluginId, pluginId, StringComparison.OrdinalIgnoreCase)))
                 .Select(m => m.Id).ToArray();
             if (dependents.Length > 0)
+            {
                 return new(false, $"Disable dependents first: {string.Join(", ", dependents)}.");
+            }
 
             var bindingTargets = GetBindingTargets(pluginId);
             if (bindingTargets.Length > 0)
+            {
                 return new(false, $"Remove plugin bindings first: {string.Join(", ", bindingTargets)}.");
+            }
         }
 
         return PluginStateChangeResult.Success;
@@ -169,15 +178,22 @@ public class GatewayPluginManager : IGatewayPluginManager, IPluginActivationStat
     {
         var validation = ValidatePluginStateChange(pluginId, enabled);
         if (!validation.Succeeded)
+        {
             return validation;
+        }
 
         var previous = _enabledPlugins[pluginId];
         var previousEnabledAt = _pluginEnabledAt.TryGetValue(pluginId, out var previousAt) ? previousAt : (DateTimeOffset?)null;
         _enabledPlugins[pluginId] = enabled;
         if (enabled && !_pluginEnabledAt.ContainsKey(pluginId))
+        {
             _pluginEnabledAt[pluginId] = DateTimeOffset.UtcNow;
+        }
         else if (!enabled)
+        {
             _pluginEnabledAt.Remove(pluginId);
+        }
+
         try
         {
             SaveStateOrThrow();
@@ -191,9 +207,14 @@ public class GatewayPluginManager : IGatewayPluginManager, IPluginActivationStat
         {
             _enabledPlugins[pluginId] = previous;
             if (previousEnabledAt.HasValue)
+            {
                 _pluginEnabledAt[pluginId] = previousEnabledAt.Value;
+            }
             else
+            {
                 _pluginEnabledAt.Remove(pluginId);
+            }
+
             _logger.LogError(ex, "Failed to persist plugin '{PluginId}' state", pluginId);
             return new(false, ex.Message);
         }
@@ -213,7 +234,11 @@ public class GatewayPluginManager : IGatewayPluginManager, IPluginActivationStat
 
     private void CleanupNativeBindings()
     {
-        if (_bindingRepository is null) return;
+        if (_bindingRepository is null)
+        {
+            return;
+        }
+
         try
         {
             var bindings = _bindingRepository.GetBindingsAsync(CancellationToken.None).GetAwaiter().GetResult();
@@ -221,7 +246,11 @@ public class GatewayPluginManager : IGatewayPluginManager, IPluginActivationStat
                 .Where(b => b.PluginId.StartsWith("native.route.", StringComparison.OrdinalIgnoreCase)
                          || b.PluginId.StartsWith("native.cluster.", StringComparison.OrdinalIgnoreCase))
                 .ToArray();
-            if (orphans.Length == 0) return;
+            if (orphans.Length == 0)
+            {
+                return;
+            }
+
             foreach (var orphan in orphans)
             {
                 try { _bindingRepository.DeleteBindingAsync(orphan.Id, CancellationToken.None).GetAwaiter().GetResult(); }
@@ -254,7 +283,9 @@ public class GatewayPluginManager : IGatewayPluginManager, IPluginActivationStat
     private void SaveStateOrThrow()
     {
         if (_pluginRepository == null)
+        {
             throw new InvalidOperationException("Plugin state persistence is unavailable because no gateway plugin repository is registered.");
+        }
 
         SaveStateAsync().GetAwaiter().GetResult();
     }
@@ -307,9 +338,16 @@ public class GatewayPluginManager : IGatewayPluginManager, IPluginActivationStat
                     ?? throw new InvalidDataException("Legacy plugin state must be a JSON object.");
                 foreach (var (id, enabled) in legacy)
                 {
-                    if (!_manifests.ContainsKey(id)) continue;
+                    if (!_manifests.ContainsKey(id))
+                    {
+                        continue;
+                    }
+
                     _enabledPlugins[id] = enabled;
-                    if (!enabled) _pluginEnabledAt.Remove(id);
+                    if (!enabled)
+                    {
+                        _pluginEnabledAt.Remove(id);
+                    }
                 }
                 // Keep the source until all imported states have been persisted.
                 SaveStateOrThrow();
@@ -322,13 +360,20 @@ public class GatewayPluginManager : IGatewayPluginManager, IPluginActivationStat
             {
                 _persistedPlugins[row.PluginId] = row;
                 if (!_manifests.ContainsKey(row.PluginId))
+                {
                     continue;
+                }
 
                 _enabledPlugins[row.PluginId] = row.Enabled;
                 if (row.Enabled && row.EnabledAt.HasValue)
+                {
                     _pluginEnabledAt[row.PluginId] = row.EnabledAt.Value;
+                }
                 else if (!row.Enabled)
+                {
                     _pluginEnabledAt.Remove(row.PluginId);
+                }
+
                 if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
                 {
                     _logger.LogInformation("Plugin '{PluginId}' state loaded from gateway_plugins: {Enabled}", row.PluginId, row.Enabled);
@@ -345,7 +390,9 @@ public class GatewayPluginManager : IGatewayPluginManager, IPluginActivationStat
     public PluginStateChangeResult InstallPlugin(string sourceDirectory)
     {
         if (!_externalPluginHost.TryInstall(sourceDirectory, out var error))
+        {
             return new(false, error);
+        }
 
         // Register the newly installed manifest
         var newManifests = _externalPluginHost.Manifests
@@ -366,17 +413,25 @@ public class GatewayPluginManager : IGatewayPluginManager, IPluginActivationStat
     {
         var registration = GetExternalRegistration(pluginId);
         if (registration == null)
+        {
             return new(false, $"Plugin '{pluginId}' is a built-in plugin and cannot be uninstalled.");
+        }
 
         if (IsPluginEnabled(pluginId))
+        {
             return new(false, "Plugin must be disabled before uninstalling.");
+        }
 
         var bindingTargets = GetBindingTargets(pluginId);
         if (bindingTargets.Length > 0)
+        {
             return new(false, $"Remove plugin bindings first: {string.Join(", ", bindingTargets)}.");
+        }
 
         if (!_externalPluginHost.TryUninstall(pluginId, out var error))
+        {
             return new(false, error);
+        }
 
         _manifests.Remove(pluginId);
         _enabledPlugins.Remove(pluginId);
@@ -401,13 +456,19 @@ public class GatewayPluginManager : IGatewayPluginManager, IPluginActivationStat
     {
         var registration = GetExternalRegistration(pluginId);
         if (registration == null)
+        {
             return new(false, $"Plugin '{pluginId}' is a built-in plugin and cannot be upgraded.");
+        }
 
         if (IsPluginEnabled(pluginId))
+        {
             return new(false, "Plugin must be disabled before upgrading.");
+        }
 
         if (!_externalPluginHost.TryUpgrade(pluginId, sourceDirectory, out var error))
+        {
             return new(false, error);
+        }
 
         // Update manifest in catalog
         var updatedRegistration = GetExternalRegistration(pluginId);

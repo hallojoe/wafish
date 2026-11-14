@@ -56,7 +56,11 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
 
     public ValueTask StartResourceAsync(CancellationToken cancellationToken)
     {
-        if (_runTask is { IsCompleted: false }) return ValueTask.CompletedTask;
+        if (_runTask is { IsCompleted: false })
+        {
+            return ValueTask.CompletedTask;
+        }
+
         _runCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         _startedAt = _time.GetUtcNow();
         _stoppedAt = null;
@@ -69,7 +73,11 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
     {
         var cancellation = Interlocked.Exchange(ref _runCancellation, null);
         var task = Interlocked.Exchange(ref _runTask, null);
-        if (cancellation == null) return;
+        if (cancellation == null)
+        {
+            return;
+        }
+
         await cancellation.CancelAsync().ConfigureAwait(false);
         if (task != null)
         {
@@ -125,17 +133,27 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
         var now = _time.GetTimestamp();
         var capturedSnapshot = _snapshotPublisher.Current;
         var plan = _executionPlans.Current;
-        if (plan.SnapshotVersion != capturedSnapshot.Version) return;
+        if (plan.SnapshotVersion != capturedSnapshot.Version)
+        {
+            return;
+        }
+
         var bindings = plan.ServiceDiscoveryByCluster
             .Where(pair => pair.Value.Enabled)
             .ToArray();
         var activeClusters = bindings.Select(pair => pair.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var stale in _nextRefresh.Keys.Where(clusterId => !activeClusters.Contains(clusterId)).ToArray())
+        {
             _nextRefresh.Remove(stale);
+        }
 
         foreach (var (clusterId, config) in bindings)
         {
-            if (_nextRefresh.TryGetValue(clusterId, out var dueAt) && _time.GetElapsedTime(dueAt.Started, now) < dueAt.Interval) continue;
+            if (_nextRefresh.TryGetValue(clusterId, out var dueAt) && _time.GetElapsedTime(dueAt.Started, now) < dueAt.Interval)
+            {
+                continue;
+            }
+
             _nextRefresh[clusterId] = (now, TimeSpan.FromSeconds(Math.Clamp(config.RefreshSeconds, 5, 3600)));
 
             try
@@ -160,9 +178,14 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
     private async Task<IReadOnlyList<string>> ResolveEndpointsAsync(ServiceDiscoveryExecutionConfig config, CancellationToken cancellationToken)
     {
         if (string.Equals(config.Mode, "Static", StringComparison.OrdinalIgnoreCase))
+        {
             return NormalizeEndpoints(config.StaticEndpoints);
+        }
+
         if (!Uri.TryCreate(BuildProviderUri(config), UriKind.Absolute, out var endpoint) || endpoint.Scheme is not ("http" or "https"))
+        {
             throw new InvalidOperationException($"{config.Mode} service discovery requires an absolute HTTP or HTTPS endpoint.");
+        }
 
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(TimeSpan.FromSeconds(Math.Clamp(config.RequestTimeoutSeconds, 1, 60)));
@@ -171,10 +194,16 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
         if (string.Equals(config.Mode, "Kubernetes", StringComparison.OrdinalIgnoreCase))
         {
             var tokenPath = "/var/run/secrets/kubernetes.io/serviceaccount/token";
-            if (File.Exists(tokenPath)) request.Headers.Authorization = new("Bearer", await File.ReadAllTextAsync(tokenPath, timeout.Token));
+            if (File.Exists(tokenPath))
+            {
+                request.Headers.Authorization = new("Bearer", await File.ReadAllTextAsync(tokenPath, timeout.Token));
+            }
         }
         if (string.Equals(config.Mode, "Eureka", StringComparison.OrdinalIgnoreCase))
+        {
             request.Headers.TryAddWithoutValidation("Accept", "application/json");
+        }
+
         using var response = await _httpClientFactory.CreateClient("service-discovery")
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeout.Token).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
@@ -185,9 +214,16 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
 
     private static string BuildProviderUri(ServiceDiscoveryExecutionConfig config)
     {
-        if (string.Equals(config.Mode, "HttpJson", StringComparison.OrdinalIgnoreCase)) return config.Endpoint ?? "";
+        if (string.Equals(config.Mode, "HttpJson", StringComparison.OrdinalIgnoreCase))
+        {
+            return config.Endpoint ?? "";
+        }
+
         if (string.IsNullOrWhiteSpace(config.Endpoint) || string.IsNullOrWhiteSpace(config.ServiceName))
+        {
             throw new InvalidOperationException($"{config.Mode} requires endpoint and serviceName.");
+        }
+
         var root = config.Endpoint.TrimEnd('/');
         var service = Uri.EscapeDataString(config.ServiceName);
         return config.Mode.ToUpperInvariant() switch
@@ -203,40 +239,92 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
     private static IEnumerable<string> ReadProviderEndpoints(ServiceDiscoveryExecutionConfig config, JsonElement root)
     {
         var scheme = config.Scheme is "https" ? "https" : "http";
-        if (string.Equals(config.Mode, "HttpJson", StringComparison.OrdinalIgnoreCase)) return ReadEndpointValues(root);
+        if (string.Equals(config.Mode, "HttpJson", StringComparison.OrdinalIgnoreCase))
+        {
+            return ReadEndpointValues(root);
+        }
+
         var results = new List<string>();
         if (string.Equals(config.Mode, "Consul", StringComparison.OrdinalIgnoreCase) && root.ValueKind == JsonValueKind.Array)
-            foreach (var item in root.EnumerateArray()) AddHostPort(results, scheme, GetString(item, "Service", "Address") ?? GetString(item, "Node", "Address"), GetInt(item, "Service", "Port"));
+        {
+            foreach (var item in root.EnumerateArray())
+            {
+                AddHostPort(results, scheme, GetString(item, "Service", "Address") ?? GetString(item, "Node", "Address"), GetInt(item, "Service", "Port"));
+            }
+        }
         else if (string.Equals(config.Mode, "Nacos", StringComparison.OrdinalIgnoreCase) && root.TryGetProperty("hosts", out var hosts) && hosts.ValueKind == JsonValueKind.Array)
-            foreach (var item in hosts.EnumerateArray()) if (!item.TryGetProperty("healthy", out var healthy) || healthy.GetBoolean()) AddHostPort(results, scheme, GetString(item, "ip"), GetInt(item, "port"));
-        else if (string.Equals(config.Mode, "Eureka", StringComparison.OrdinalIgnoreCase) && TryPath(root, out var instances, "application", "instance"))
+        {
+            foreach (var item in hosts.EnumerateArray())
+            {
+                if (!item.TryGetProperty("healthy", out var healthy) || healthy.GetBoolean())
+                {
+                    AddHostPort(results, scheme, GetString(item, "ip"), GetInt(item, "port"));
+                }
+                else if (string.Equals(config.Mode, "Eureka", StringComparison.OrdinalIgnoreCase) && TryPath(root, out var instances, "application", "instance"))
         {
             if (instances.ValueKind == JsonValueKind.Array)
-                foreach (var instance in instances.EnumerateArray()) AddEurekaInstance(results, scheme, instance);
-            else
-                AddEurekaInstance(results, scheme, instances);
-        }
+                    {
+                        foreach (var instance in instances.EnumerateArray())
+                        {
+                            AddEurekaInstance(results, scheme, instance);
+                        }
+                    }
+                    else
+                    {
+                        AddEurekaInstance(results, scheme, instances);
+                    }
+                }
         else if (string.Equals(config.Mode, "Kubernetes", StringComparison.OrdinalIgnoreCase) && root.TryGetProperty("subsets", out var subsets) && subsets.ValueKind == JsonValueKind.Array)
-            foreach (var subset in subsets.EnumerateArray()) if (subset.TryGetProperty("addresses", out var addresses) && subset.TryGetProperty("ports", out var ports)) foreach (var address in addresses.EnumerateArray()) foreach (var port in ports.EnumerateArray()) AddHostPort(results, scheme, GetString(address, "ip"), GetInt(port, "port"));
+                {
+                    foreach (var subset in subsets.EnumerateArray())
+                    {
+                        if (subset.TryGetProperty("addresses", out var addresses) && subset.TryGetProperty("ports", out var ports))
+                        {
+                            foreach (var address in addresses.EnumerateArray())
+                            {
+                                foreach (var port in ports.EnumerateArray())
+                                {
+                                    AddHostPort(results, scheme, GetString(address, "ip"), GetInt(port, "port"));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         return results;
     }
 
     private static void AddHostPort(List<string> results, string scheme, string? host, int? port)
-    { if (!string.IsNullOrWhiteSpace(host) && port is > 0 and <= 65535) results.Add($"{scheme}://{host}:{port}"); }
+    { if (!string.IsNullOrWhiteSpace(host) && port is > 0 and <= 65535)
+        {
+            results.Add($"{scheme}://{host}:{port}");
+        }
+    }
 
     private static void AddEurekaInstance(List<string> results, string scheme, JsonElement instance)
     {
-        if (instance.ValueKind != JsonValueKind.Object) return;
+        if (instance.ValueKind != JsonValueKind.Object)
+        {
+            return;
+        }
 
         // Only expose healthy instances; a missing status is treated as UP for compatibility.
         if (TryPath(instance, out var status, "status") && status.ValueKind == JsonValueKind.String &&
             !string.Equals(status.GetString(), "UP", StringComparison.OrdinalIgnoreCase))
+        {
             return;
+        }
 
         var host = GetString(instance, "ipAddr") ?? GetString(instance, "hostName");
         var port = GetEurekaPort(instance, "port", secure: false)
             ?? GetEurekaPort(instance, "securePort", secure: true);
-        if (port == null) return;
+        if (port == null)
+        {
+            return;
+        }
+
         AddHostPort(results, port.Value.Secure ? "https" : scheme, host, port.Value.Port);
     }
 
@@ -244,7 +332,11 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
     {
         // Eureka wraps ports as {"$": 8080, "@enabled": "true"}; honor the flag, defaulting to enabled when absent.
         var enabled = GetString(instance, propertyName, "@enabled");
-        if (enabled != null && (!bool.TryParse(enabled, out var isEnabled) || !isEnabled)) return null;
+        if (enabled != null && (!bool.TryParse(enabled, out var isEnabled) || !isEnabled))
+        {
+            return null;
+        }
+
         var port = GetInt(instance, propertyName, "$");
         return port is > 0 and <= 65535 ? (port.Value, secure) : null;
     }
@@ -252,7 +344,7 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
     private static string? GetString(JsonElement element, params string[] path) => TryPath(element, out var value, path) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
     private static int? GetInt(JsonElement element, params string[] path) => TryPath(element, out var value, path) && (value.ValueKind == JsonValueKind.Number ? value.TryGetInt32(out var number) : int.TryParse(value.GetString(), out number)) ? number : null;
     private static bool TryPath(JsonElement element, out JsonElement value, params string[] path)
-    { value = element; foreach (var part in path) { if (part == "$" && value.ValueKind == JsonValueKind.Object && value.TryGetProperty("$", out var wrapped)) { value = wrapped; continue; } if (value.ValueKind != JsonValueKind.Object || !value.TryGetProperty(part, out value)) return false; } return true; }
+    { value = element; foreach (var part in path) { if (part == "$" && value.ValueKind == JsonValueKind.Object && value.TryGetProperty("$", out var wrapped)) { value = wrapped; continue; } if (value.ValueKind != JsonValueKind.Object || !value.TryGetProperty(part, out value)) { return false; } } return true; }
 
     private async Task PublishDestinationsAsync(string clusterId, IReadOnlyList<string> endpoints, CancellationToken cancellationToken, PluginBindingSnapshot? expectedBinding = null)
     {
@@ -260,24 +352,38 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
         try
         {
             var binding = GatewayPublicationCoordinator.DiscoveryBinding(_snapshotPublisher.Current, clusterId);
-            if (expectedBinding != null && binding != expectedBinding) return;
+            if (expectedBinding != null && binding != expectedBinding)
+            {
+                return;
+            }
+
             var routes = _configProvider.GetRoutes();
             var clusters = _configProvider.GetClusters();
             var index = clusters.Select((cluster, position) => (cluster, position))
                 .FirstOrDefault(item => string.Equals(item.cluster.ClusterId, clusterId, StringComparison.OrdinalIgnoreCase));
-            if (index.cluster == null) return;
+            if (index.cluster == null)
+            {
+                return;
+            }
 
             var destinations = endpoints.Select((address, position) => new KeyValuePair<string, DestinationConfig>(
                     "discovery-" + Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(address))), new DestinationConfig { Address = address }))
                 .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
-            if (DestinationsEqual(index.cluster.Destinations, destinations)) return;
+            if (DestinationsEqual(index.cluster.Destinations, destinations))
+            {
+                return;
+            }
 
             var updatedClusters = clusters.ToArray();
             updatedClusters[index.position] = index.cluster with { Destinations = destinations };
             var version = _snapshotPublisher.Current.Version + 1;
             var snapshot = await _snapshotCompiler.CompileAsync(routes, updatedClusters, version, cancellationToken).ConfigureAwait(false);
             _snapshotPublisher.Publish(snapshot);
-            if (binding != null) GatewayPublicationCoordinator.For(_snapshotPublisher).RememberDiscovery(clusterId, binding, destinations);
+            if (binding != null)
+            {
+                GatewayPublicationCoordinator.For(_snapshotPublisher).RememberDiscovery(clusterId, binding, destinations);
+            }
+
             _configProvider.Update(snapshot.Routes, snapshot.Clusters);
             Interlocked.Increment(ref _publishedSnapshots);
         }
@@ -289,21 +395,33 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
 
     private static IEnumerable<string> ReadEndpointValues(JsonElement root)
     {
-        if (root.ValueKind == JsonValueKind.Object && root.TryGetProperty("endpoints", out var endpoints)) root = endpoints;
+        if (root.ValueKind == JsonValueKind.Object && root.TryGetProperty("endpoints", out var endpoints))
+        {
+            root = endpoints;
+        }
+
         if (root.ValueKind != JsonValueKind.Array)
+        {
             throw new JsonException("Service discovery response must be an array or an object containing an endpoints array.");
+        }
 
         foreach (var item in root.EnumerateArray())
         {
             if (item.ValueKind == JsonValueKind.String)
             {
                 var value = item.GetString();
-                if (value != null) yield return value;
+                if (value != null)
+                {
+                    yield return value;
+                }
             }
             else if (item.ValueKind == JsonValueKind.Object && item.TryGetProperty("address", out var address) && address.ValueKind == JsonValueKind.String)
             {
                 var value = address.GetString();
-                if (value != null) yield return value;
+                if (value != null)
+                {
+                    yield return value;
+                }
             }
         }
     }
@@ -320,7 +438,11 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
         IReadOnlyDictionary<string, DestinationConfig>? current,
         Dictionary<string, DestinationConfig> next)
     {
-        if (current == null || current.Count != next.Count) return false;
+        if (current == null || current.Count != next.Count)
+        {
+            return false;
+        }
+
         return current.OrderBy(pair => pair.Key, StringComparer.Ordinal)
             .Select(pair => (pair.Key, pair.Value.Address))
             .SequenceEqual(next.OrderBy(pair => pair.Key, StringComparer.Ordinal)

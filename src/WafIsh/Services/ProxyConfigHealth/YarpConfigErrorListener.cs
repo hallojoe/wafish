@@ -94,7 +94,10 @@ public sealed partial class YarpConfigErrorListener : IConfigChangeListener
 
     private static void FlattenCore(Exception exception, List<Exception> result, HashSet<Exception> visited)
     {
-        if (exception == null || !visited.Add(exception)) return;
+        if (exception == null || !visited.Add(exception))
+        {
+            return;
+        }
 
         if (exception is AggregateException agg)
         {
@@ -124,7 +127,10 @@ public sealed partial class YarpConfigErrorListener : IConfigChangeListener
         for (var ex = exception; ex != null; ex = ex.InnerException)
         {
             var msg = ex.Message;
-            if (string.IsNullOrEmpty(msg)) continue;
+            if (string.IsNullOrEmpty(msg))
+            {
+                continue;
+            }
 
             Match clusterMatch;
             Match routeMatch;

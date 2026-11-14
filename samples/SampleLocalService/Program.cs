@@ -6,10 +6,17 @@ builder.AddServiceDefaults();
 if (builder.Configuration.GetValue<bool>("Sample:Orchestrated"))
 {
     var port = builder.Configuration.GetValue<int>("BACKEND_HTTP_PORT");
-    if (port <= 0) throw new InvalidOperationException("Aspire must assign a backend HTTP port.");
+    if (port <= 0)
+    {
+        throw new InvalidOperationException("Aspire must assign a backend HTTP port.");
+    }
+
     builder.WebHost.UseUrls($"http://127.0.0.1:{port}");
 }
-else builder.UseYarpKestrelAutoConfig();
+else
+{
+    builder.UseYarpKestrelAutoConfig();
+}
 // Client: one-liner — auto-register on startup, auto-unregister on shutdown
 // Minimal config: just GatewayUrl in code or appsettings.json
 builder.Services.AddWafIshClient();

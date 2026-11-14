@@ -68,9 +68,14 @@ internal sealed class TrafficBroadcastService : BackgroundService
         foreach (var entry in snapshot.Entries)
         {
             if (entry.EventType != LogEventType.ProxyResponse)
+            {
                 continue;
+            }
+
             if (entry.Timestamp < cutoff)
+            {
                 continue;
+            }
 
             var routeId = entry.RouteId ?? "unknown";
 
@@ -83,18 +88,24 @@ internal sealed class TrafficBroadcastService : BackgroundService
             metrics.TotalRequests++;
 
             if (entry.StatusCode >= 400)
+            {
                 metrics.ErrorCount++;
+            }
 
             if (entry.ElapsedMs.HasValue)
             {
                 metrics.LatencySum += entry.ElapsedMs.Value;
                 metrics.LatencyCount++;
                 if (entry.ElapsedMs.Value > metrics.MaxLatency)
+                {
                     metrics.MaxLatency = entry.ElapsedMs.Value;
+                }
             }
 
             if (entry.Timestamp > metrics.LastSeen)
+            {
                 metrics.LastSeen = entry.Timestamp;
+            }
         }
 
         var broadcasts = routeMetrics.Values
@@ -129,8 +140,10 @@ internal sealed class TrafficBroadcastService : BackgroundService
         if (broadcasts.Count > 0)
         {
             foreach (var traffic in broadcasts)
+            {
                 await _hubContext.Clients.Group("traffic:" + traffic.RouteId).SendCoreAsync(
                     "TrafficUpdate", new object[] { new[] { traffic } }, ct);
+            }
         }
     }
 

@@ -91,7 +91,10 @@ public sealed class McpServerHost : BackgroundService
                 {
                     int requestedPort = mcp.Port;
                     if (requestedPort <= 0 || requestedPort > 65535)
+                    {
                         throw new InvalidOperationException("MCP port must be between 1 and 65535.");
+                    }
+
                     var boundPort = requestedPort;
                     app = BuildApp(boundPort);
                     await app.StartAsync(stoppingToken);
@@ -141,7 +144,10 @@ public sealed class McpServerHost : BackgroundService
         var contentRoot = AppContext.BaseDirectory;
         var authOptions = _services.GetRequiredService<IOptions<DashboardOptions>>().Value.Auth;
         if (authOptions.AuthMode == DashboardAuthMode.None && authOptions.AuthorizeRequest == null)
+        {
             throw new InvalidOperationException("MCP requires authenticated administration, including on loopback.");
+        }
+
         var authorization = _services.GetRequiredService<IDashboardAuthorizationService>();
         var policy = _services.GetRequiredService<ControlPlaneAccessPolicy>();
 
@@ -175,7 +181,11 @@ public sealed class McpServerHost : BackgroundService
             }
             if (!await authorization.IsAuthorizedAsync(context))
             {
-                if (context.Response.StatusCode != 429) context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                if (context.Response.StatusCode != 429)
+                {
+                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                }
+
                 return;
             }
             context.Response.Headers.CacheControl = "no-store";
@@ -364,9 +374,11 @@ public sealed class McpServerHost : BackgroundService
                     : "";
                 JsonElement? args = null;
                 if (prm.ValueKind == JsonValueKind.Object && prm.TryGetProperty("arguments", out var a) && a.ValueKind == JsonValueKind.Object)
-                    args = a.Clone();
+                    {
+                        args = a.Clone();
+                    }
 
-                string text;
+                    string text;
                 try
                 {
                     text = await tools.ExecuteReadToolAsync(name, args);
@@ -416,7 +428,9 @@ public sealed class McpServerHost : BackgroundService
             ["message"] = message
         };
         if (data != null)
+        {
             errorObj["data"] = data;
+        }
 
         var envelope = new JsonObject
         {
@@ -460,10 +474,12 @@ public sealed class McpServerHost : BackgroundService
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
             if (logLevel >= LogLevel.Warning)
+            {
                 if (host.IsEnabled(logLevel))
                 {
                     host.Log(logLevel, eventId, "[McpServer] {Message}", formatter(state, exception));
                 }
+            }
         }
     }
 }

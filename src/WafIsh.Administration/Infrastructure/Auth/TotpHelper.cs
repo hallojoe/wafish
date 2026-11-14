@@ -24,7 +24,9 @@ public static class TotpHelper
     public static bool ValidateCode(string base32Secret, string code)
     {
         if (string.IsNullOrWhiteSpace(code) || code.Length != Digits)
+        {
             return false;
+        }
 
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         for (var offset = -1; offset <= 1; offset++)
@@ -34,7 +36,9 @@ public static class TotpHelper
             if (CryptographicOperations.FixedTimeEquals(
                 Encoding.ASCII.GetBytes(expected.PadLeft(Digits, '0')),
                 Encoding.ASCII.GetBytes(code.PadLeft(Digits, '0'))))
+            {
                 return true;
+            }
         }
         return false;
     }
@@ -57,7 +61,10 @@ public static class TotpHelper
     private static string GenerateCode(byte[] secret, long counter)
     {
         var counterBytes = BitConverter.GetBytes(counter);
-        if (BitConverter.IsLittleEndian) Array.Reverse(counterBytes);
+        if (BitConverter.IsLittleEndian)
+        {
+            Array.Reverse(counterBytes);
+        }
 
         using var hmac = new HMACSHA1(secret);
         var hash = hmac.ComputeHash(counterBytes);
@@ -82,7 +89,11 @@ public static class TotpHelper
         foreach (var c in base32)
         {
             var val = alphabet.IndexOf(c);
-            if (val < 0) continue;
+            if (val < 0)
+            {
+                continue;
+            }
+
             buffer = (buffer << 5) | val;
             bitsLeft += 5;
             if (bitsLeft >= 8)
@@ -114,7 +125,9 @@ public static class TotpHelper
         }
 
         if (bitsLeft > 0)
+        {
             result.Append(alphabet[(buffer << (5 - bitsLeft)) & 0x1F]);
+        }
 
         return result.ToString();
     }

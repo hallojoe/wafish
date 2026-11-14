@@ -12,14 +12,20 @@ public static partial class SafeErrorMessages
     {
         var env = httpContext.RequestServices.GetService<IHostEnvironment>();
         if (env?.IsDevelopment() == true)
+        {
             return $"{operation}: {Redact(exception.Message)}";
+        }
 
         return $"{operation}. TraceId: {httpContext.TraceIdentifier}";
     }
 
     public static string Redact(string? value)
     {
-        if (string.IsNullOrEmpty(value)) return string.Empty;
+        if (string.IsNullOrEmpty(value))
+        {
+            return string.Empty;
+        }
+
         var text = value;
         text = SecretAssignmentRegex().Replace(text, "$1=***REDACTED***");
         text = ConnectionStringPasswordRegex().Replace(text, "$1=***REDACTED***");

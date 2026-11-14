@@ -19,9 +19,17 @@ public sealed class GatewayPublicationCoordinator
     {
         var clusters = candidate.Clusters.Select(cluster =>
         {
-            if (!_discoveries.TryGetValue(cluster.ClusterId, out var discovered)) return cluster;
+            if (!_discoveries.TryGetValue(cluster.ClusterId, out var discovered))
+            {
+                return cluster;
+            }
+
             var binding = DiscoveryBinding(candidate, cluster.ClusterId);
-            if (binding == discovered.Binding) return cluster with { Destinations = discovered.Destinations };
+            if (binding == discovered.Binding)
+            {
+                return cluster with { Destinations = discovered.Destinations };
+            }
+
             return cluster;
         }).ToImmutableArray();
         return candidate with { Clusters = clusters };
@@ -30,7 +38,12 @@ public sealed class GatewayPublicationCoordinator
     public void Published(GatewaySnapshot snapshot)
     {
         foreach (var (clusterId, discovery) in _discoveries.ToArray())
-            if (DiscoveryBinding(snapshot, clusterId) != discovery.Binding) _discoveries.Remove(clusterId);
+        {
+            if (DiscoveryBinding(snapshot, clusterId) != discovery.Binding)
+            {
+                _discoveries.Remove(clusterId);
+            }
+        }
     }
 
     public static PluginBindingSnapshot? DiscoveryBinding(GatewaySnapshot snapshot, string clusterId) =>

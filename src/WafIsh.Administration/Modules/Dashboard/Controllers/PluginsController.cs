@@ -86,13 +86,25 @@ public class PluginsController : ControllerBase
     {
         var declared = new List<object>();
         if (resources.RequestMiddleware)
+        {
             declared.Add(new { type = "RequestMiddleware" });
+        }
+
         if (resources.BackgroundServices)
+        {
             declared.Add(new { type = "BackgroundService" });
+        }
+
         if (resources.Database)
+        {
             declared.Add(new { type = "Database" });
+        }
+
         if (resources.NetworkConnections)
+        {
             declared.Add(new { type = "NetworkConnection" });
+        }
+
         return declared.ToArray();
     }
 
@@ -102,9 +114,14 @@ public class PluginsController : ControllerBase
         CancellationToken cancellationToken)
     {
         if (!enabled)
+        {
             return new PluginHealthProbeResult(PluginHealthStatus.Disabled, null, DateTimeOffset.UtcNow);
+        }
+
         if (plugin is not IPluginHealthProbe probe)
+        {
             return null;
+        }
 
         try
         {
@@ -126,7 +143,9 @@ public class PluginsController : ControllerBase
     {
         var manifest = _manager.GetManifest(pluginId);
         if (manifest == null)
+        {
             return NotFound(new { code = 404, message = $"Plugin '{pluginId}' not found" });
+        }
 
         return Ok(new
         {
@@ -156,18 +175,24 @@ public class PluginsController : ControllerBase
     {
         var manifest = _manager.GetManifest(pluginId);
         if (manifest == null)
+        {
             return NotFound(new { code = 404, message = $"Plugin '{pluginId}' not found" });
+        }
 
         await TransitionGate.WaitAsync(cancellationToken);
         try
         {
             var previousEnabled = _manager.IsPluginEnabled(pluginId);
             if (previousEnabled == request.Enabled)
+            {
                 return Ok(new { code = 200, data = new { pluginId, enabled = previousEnabled, refreshed = false } });
+            }
 
             var validation = _manager.ValidatePluginStateChange(pluginId, request.Enabled);
             if (!validation.Succeeded)
+            {
                 return Conflict(new { code = 409, message = validation.Error });
+            }
 
             var targetEnabled = _manager.GetAllManifests()
                 .Where(item => string.Equals(item.Id, pluginId, StringComparison.OrdinalIgnoreCase)
@@ -178,11 +203,15 @@ public class PluginsController : ControllerBase
             await using var preparation = await _runtimeDomains.PrepareAsync(targetEnabled, cancellationToken);
             var health = await preparation.CheckHealthAsync(cancellationToken);
             if (health.Status == PluginHealthStatus.Unhealthy)
+            {
                 return Conflict(new { code = 409, message = health.Message });
+            }
 
             var persisted = _manager.SetPluginEnabled(pluginId, request.Enabled);
             if (!persisted.Succeeded)
+            {
                 return Conflict(new { code = 409, message = persisted.Error });
+            }
 
             try
             {
@@ -219,13 +248,17 @@ public class PluginsController : ControllerBase
             await using var preparation = await _runtimeDomains.PrepareAsync(targetEnabled, cancellationToken);
             var health = await preparation.CheckHealthAsync(cancellationToken);
             if (health.Status == PluginHealthStatus.Unhealthy)
+            {
                 return Conflict(new { code = 409, message = health.Message });
+            }
 
             foreach (var manifest in manifests.Where(item => !previous[item.Id]))
             {
                 var result = _manager.SetPluginEnabled(manifest.Id, true);
                 if (result.Succeeded)
+                {
                     continue;
+                }
 
                 RestorePluginStates(previous);
                 return Conflict(new { code = 409, message = result.Error });
@@ -258,11 +291,15 @@ public class PluginsController : ControllerBase
     public IActionResult InstallPlugin([FromBody] InstallPluginRequest request)
     {
         if (string.IsNullOrWhiteSpace(request?.SourceDirectory))
+        {
             return BadRequest(new { code = 400, message = "SourceDirectory is required." });
+        }
 
         var result = _manager.InstallPlugin(request.SourceDirectory);
         if (!result.Succeeded)
+        {
             return Conflict(new { code = 409, message = result.Error });
+        }
 
         _dynamicConfig.RefreshConfig();
         return Ok(new { code = 200, message = "Plugin installed successfully" });
@@ -274,7 +311,9 @@ public class PluginsController : ControllerBase
     {
         var result = _manager.UninstallPlugin(pluginId);
         if (!result.Succeeded)
+        {
             return Conflict(new { code = 409, message = result.Error });
+        }
 
         _dynamicConfig.RefreshConfig();
         return Ok(new { code = 200, message = "Plugin uninstalled successfully" });
@@ -285,11 +324,15 @@ public class PluginsController : ControllerBase
     public IActionResult UpgradePlugin(string pluginId, [FromBody] InstallPluginRequest request)
     {
         if (string.IsNullOrWhiteSpace(request?.SourceDirectory))
+        {
             return BadRequest(new { code = 400, message = "SourceDirectory is required." });
+        }
 
         var result = _manager.UpgradePlugin(pluginId, request.SourceDirectory);
         if (!result.Succeeded)
+        {
             return Conflict(new { code = 409, message = result.Error });
+        }
 
         _dynamicConfig.RefreshConfig();
         return Ok(new { code = 200, message = "Plugin upgraded successfully" });
@@ -305,7 +348,9 @@ public class PluginsController : ControllerBase
         foreach (var (pluginId, enabled) in previous)
         {
             if (_manager.IsPluginEnabled(pluginId) != enabled)
+            {
                 _manager.SetPluginEnabled(pluginId, enabled);
+            }
         }
     }
 }

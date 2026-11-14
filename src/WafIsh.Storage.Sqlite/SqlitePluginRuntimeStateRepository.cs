@@ -46,7 +46,9 @@ public sealed class SqlitePluginRuntimeStateRepository : IPluginRuntimeStateRepo
 
         await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
         if (!await reader.ReadAsync(cancellationToken))
+        {
             return null;
+        }
 
         return MapEntity(reader);
     }
@@ -68,7 +70,9 @@ public sealed class SqlitePluginRuntimeStateRepository : IPluginRuntimeStateRepo
         var results = new List<PluginRuntimeStateEntity>();
         await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken))
+        {
             results.Add(MapEntity(reader));
+        }
 
         return results;
     }
@@ -93,7 +97,9 @@ public sealed class SqlitePluginRuntimeStateRepository : IPluginRuntimeStateRepo
         var results = new List<PluginRuntimeStateEntity>();
         await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken))
+        {
             results.Add(MapEntity(reader));
+        }
 
         return results;
     }

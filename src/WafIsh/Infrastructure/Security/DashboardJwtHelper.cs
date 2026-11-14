@@ -45,9 +45,15 @@ public static class DashboardJwtHelper
     public static (bool Valid, string? Username) ValidateToken(string token, string secret)
     {
         if (string.IsNullOrWhiteSpace(secret) || string.IsNullOrWhiteSpace(token) || token.Length > 16384)
+        {
             return (false, null);
+        }
+
         var parts = token.Split('.');
-        if (parts.Length != 3) return (false, null);
+        if (parts.Length != 3)
+        {
+            return (false, null);
+        }
 
         var signingInput = $"{parts[0]}.{parts[1]}";
         var expectedSig = ComputeSignature(signingInput, secret);
@@ -66,20 +72,33 @@ public static class DashboardJwtHelper
         }
 
         if (!ConstantTimeEquals(actualSig, expectedSig))
+        {
             return (false, null);
+        }
 
         try
         {
             using var header = JsonDocument.Parse(Base64UrlDecode(parts[0]));
             if (header.RootElement.GetProperty("alg").GetString() != "HS256" ||
-                header.RootElement.GetProperty("typ").GetString() != "JWT") return (false, null);
+                header.RootElement.GetProperty("typ").GetString() != "JWT")
+            {
+                return (false, null);
+            }
+
             using var doc = JsonDocument.Parse(payloadBytes);
             var root = doc.RootElement;
 
             if (!root.TryGetProperty("exp", out var expiry) || !expiry.TryGetInt64(out var exp) ||
-                exp <= DateTimeOffset.UtcNow.ToUnixTimeSeconds()) return (false, null);
-            if (!root.TryGetProperty("iss", out var issuer) || issuer.GetString() != "WafIsh.Dashboard")
+                exp <= DateTimeOffset.UtcNow.ToUnixTimeSeconds())
+            {
                 return (false, null);
+            }
+
+            if (!root.TryGetProperty("iss", out var issuer) || issuer.GetString() != "WafIsh.Dashboard")
+            {
+                return (false, null);
+            }
+
             var username = root.TryGetProperty("sub", out var subEl) ? subEl.GetString() : null;
             return (!string.IsNullOrWhiteSpace(username), username);
         }
@@ -103,18 +122,32 @@ public static class DashboardJwtHelper
     {
         var b64 = input.Replace('-', '+').Replace('_', '/');
         var pad = b64.Length % 4;
-        if (pad == 2) b64 += "==";
-        else if (pad == 3) b64 += "=";
+        if (pad == 2)
+        {
+            b64 += "==";
+        }
+        else if (pad == 3)
+        {
+            b64 += "=";
+        }
+
         return Convert.FromBase64String(b64);
     }
 
     /// <summary>Constant-time comparison to prevent timing attacks.</summary>
     private static bool ConstantTimeEquals(byte[] a, byte[] b)
     {
-        if (a.Length != b.Length) return false;
+        if (a.Length != b.Length)
+        {
+            return false;
+        }
+
         var diff = 0;
         for (int i = 0; i < a.Length; i++)
+        {
             diff |= a[i] ^ b[i];
+        }
+
         return diff == 0;
     }
 }

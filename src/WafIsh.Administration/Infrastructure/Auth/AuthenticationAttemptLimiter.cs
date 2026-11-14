@@ -30,7 +30,10 @@ public sealed class AuthenticationAttemptLimiter(TimeProvider? timeProvider = nu
         {
             var now = _clock.GetTimestamp();
             foreach (var expired in _counters.Where(x => _clock.GetElapsedTime(x.Value.Start, now) >= Window).Select(x => x.Key).ToArray())
+            {
                 _counters.Remove(expired);
+            }
+
             if (!_counters.TryGetValue(key, out var counter))
             {
                 if (_counters.Count >= PartitionLimit)

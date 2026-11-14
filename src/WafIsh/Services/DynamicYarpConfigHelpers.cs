@@ -14,7 +14,10 @@ internal static class DynamicYarpConfigHelpers
     /// </summary>
     public static RouteConfig NormalizeTransforms(RouteConfig route)
     {
-        if (route.Transforms == null || route.Transforms.Count == 0) return route;
+        if (route.Transforms == null || route.Transforms.Count == 0)
+        {
+            return route;
+        }
 
         var normalized = new List<IReadOnlyDictionary<string, string>>();
         var changed = false;
@@ -59,12 +62,18 @@ internal static class DynamicYarpConfigHelpers
     /// </summary>
     public static string? PatchRouteConfigJson(string? existingJson, string clusterId, string matchPath, int order, List<Dictionary<string, string>>? transforms)
     {
-        if (string.IsNullOrWhiteSpace(existingJson)) return null;
+        if (string.IsNullOrWhiteSpace(existingJson))
+        {
+            return null;
+        }
 
         RouteConfig? parsed;
         try { parsed = Serialization.YarpJsonConfig.DeserializeRoute(existingJson); }
         catch { return null; }
-        if (parsed == null) return null;
+        if (parsed == null)
+        {
+            return null;
+        }
 
         var patched = parsed with
         {
@@ -92,12 +101,18 @@ internal static class DynamicYarpConfigHelpers
     /// </summary>
     public static string? PatchClusterConfigJson(string? existingJson, Dictionary<string, string> destinations, string? loadBalancingPolicy)
     {
-        if (string.IsNullOrWhiteSpace(existingJson)) return null;
+        if (string.IsNullOrWhiteSpace(existingJson))
+        {
+            return null;
+        }
 
         ClusterConfig? parsed;
         try { parsed = Serialization.YarpJsonConfig.DeserializeCluster(existingJson); }
         catch { return null; }
-        if (parsed == null) return null;
+        if (parsed == null)
+        {
+            return null;
+        }
 
         var existingDestinations = parsed.Destinations;
         var patchedDestinations = destinations.ToDictionary(
@@ -105,7 +120,10 @@ internal static class DynamicYarpConfigHelpers
             d =>
             {
                 if (existingDestinations != null && existingDestinations.TryGetValue(d.Key, out var existing))
+                {
                     return existing with { Address = d.Value };
+                }
+
                 return new DestinationConfig { Address = d.Value };
             });
 
@@ -123,7 +141,10 @@ internal static class DynamicYarpConfigHelpers
     /// </summary>
     public static HealthCheckConfig? BuildClusterHealthCheck(Models.HealthCheckConfig? config)
     {
-        if (config == null) return null;
+        if (config == null)
+        {
+            return null;
+        }
 
         return new HealthCheckConfig
         {

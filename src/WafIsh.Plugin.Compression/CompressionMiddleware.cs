@@ -30,11 +30,19 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
 
     private static string? SelectEncoding(string?[] values)
     {
-        if (!StringWithQualityHeaderValue.TryParseList(values.Select(v => v ?? "").ToArray(), out var parsed)) return null;
+        if (!StringWithQualityHeaderValue.TryParseList(values.Select(v => v ?? "").ToArray(), out var parsed))
+        {
+            return null;
+        }
+
         double Quality(string encoding)
         {
             var exact = parsed.Where(p => p.Value.Equals(encoding, StringComparison.OrdinalIgnoreCase)).ToArray();
-            if (exact.Length > 0) return exact.Min(p => p.Quality ?? 1);
+            if (exact.Length > 0)
+            {
+                return exact.Min(p => p.Quality ?? 1);
+            }
+
             return parsed.Where(p => p.Value == "*").Select(p => p.Quality ?? 1).DefaultIfEmpty(0).Min();
         }
         var br = Quality("br"); var gzip = Quality("gzip");
@@ -55,7 +63,10 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
     private static void AppendVary(IHeaderDictionary headers)
     {
         var vary = headers.Vary.ToString().Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-        if (!vary.Any(v => v == "*" || v.Equals("Accept-Encoding", StringComparison.OrdinalIgnoreCase))) headers.Append("Vary", "Accept-Encoding");
+        if (!vary.Any(v => v == "*" || v.Equals("Accept-Encoding", StringComparison.OrdinalIgnoreCase)))
+        {
+            headers.Append("Vary", "Accept-Encoding");
+        }
     }
 
     private sealed class CompressionWriteStream(HttpContext context, Stream destination, CompressionExecutionConfig config, string encoding) : Stream
@@ -74,12 +85,24 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
                 context.Response.ContentLength = null;
                 // A strong entity tag identifies the original representation only.
                 var etag = context.Response.Headers.ETag.ToString();
-                if (etag.Length > 0 && !etag.StartsWith("W/", StringComparison.OrdinalIgnoreCase)) context.Response.Headers.ETag = "W/" + etag;
+                if (etag.Length > 0 && !etag.StartsWith("W/", StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Response.Headers.ETag = "W/" + etag;
+                }
+
                 var level = config.CompressionLevel switch { "Fastest" => CompressionLevel.Fastest, "NoCompression" => CompressionLevel.NoCompression, _ => CompressionLevel.Optimal };
                 _output = encoding == "br" ? new BrotliStream(destination, level, true) : new GZipStream(destination, level, true);
             }
-            else _output = destination;
-            if (_count > 0) await _output.WriteAsync(_prefix!.AsMemory(0, _count), token);
+            else
+            {
+                _output = destination;
+            }
+
+            if (_count > 0)
+            {
+                await _output.WriteAsync(_prefix!.AsMemory(0, _count), token);
+            }
+
             _prefix = null; _count = 0;
         }
 
@@ -87,13 +110,25 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
         {
             cancellationToken.ThrowIfCancellationRequested();
             ObjectDisposedException.ThrowIf(_completed, this);
-            if (buffer.IsEmpty) return;
+            if (buffer.IsEmpty)
+            {
+                return;
+            }
+
             if (_output == null)
             {
-                if (!CanCompress(context, config)) await SelectAsync(false, cancellationToken);
-                else if (context.Response.ContentLength == null && config.MinResponseSize > 64 * 1024) await SelectAsync(false, cancellationToken);
+                if (!CanCompress(context, config))
+                {
+                    await SelectAsync(false, cancellationToken);
+                }
+                else if (context.Response.ContentLength == null && config.MinResponseSize > 64 * 1024)
+                {
+                    await SelectAsync(false, cancellationToken);
+                }
                 else if (context.Response.ContentLength != null || (long)_count + buffer.Length >= config.MinResponseSize)
+                {
                     await SelectAsync(true, cancellationToken);
+                }
                 else
                 {
                     _prefix ??= new byte[Math.Max(1, config.MinResponseSize)];
@@ -105,16 +140,31 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
         }
         public async Task CompleteAsync(CancellationToken token)
         {
-            if (_completed) return;
+            if (_completed)
+            {
+                return;
+            }
+
             token.ThrowIfCancellationRequested();
-            if (_output == null) await SelectAsync(false, token);
+            if (_output == null)
+            {
+                await SelectAsync(false, token);
+            }
+
             _completed = true;
-            if (_output != destination) await _output!.DisposeAsync();
+            if (_output != destination)
+            {
+                await _output!.DisposeAsync();
+            }
         }
         public override async Task FlushAsync(CancellationToken cancellationToken)
         {
             // Flush must not wait for the minimum size, including event streams.
-            if (_output == null) await SelectAsync(context.Response.ContentLength is > 0 && CanCompress(context, config), cancellationToken);
+            if (_output == null)
+            {
+                await SelectAsync(context.Response.ContentLength is > 0 && CanCompress(context, config), cancellationToken);
+            }
+
             await _output!.FlushAsync(cancellationToken);
         }
         public override void Flush() => FlushAsync(context.RequestAborted).GetAwaiter().GetResult();

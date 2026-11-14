@@ -47,7 +47,9 @@ internal sealed class Migration004_ColumnAdditions : ISchemaMigration
         };
 
         foreach (var (table, column, definition) in columns)
+        {
             await AddColumnIfNotExistsAsync(conn, transaction, table, column, definition, ct);
+        }
 
         // Rebuild yarp_destinations with composite PK if old single-PK exists
         var createSql = await ExecuteScalarStringAsync(conn, transaction,

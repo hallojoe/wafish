@@ -49,7 +49,9 @@ public class PresetsController : ControllerBase
     {
         var preset = await _repository.GetPresetAsync(id, ct);
         if (preset == null)
+        {
             return NotFound(new { code = 404, message = "Preset not found" });
+        }
 
         return Ok(new
         {
@@ -73,9 +75,14 @@ public class PresetsController : ControllerBase
     public async Task<IActionResult> SavePreset([FromBody] SavePresetRequest request, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(request?.Name))
+        {
             return BadRequest(new { code = 400, message = "Name is required" });
+        }
+
         if (string.IsNullOrWhiteSpace(request?.PluginId))
+        {
             return BadRequest(new { code = 400, message = "PluginId is required" });
+        }
 
         var preset = new PluginConfigPresetEntity
         {
@@ -99,7 +106,9 @@ public class PresetsController : ControllerBase
     {
         var deleted = await _repository.DeletePresetAsync(id, ct);
         if (!deleted)
+        {
             return NotFound(new { code = 404, message = "Preset not found" });
+        }
 
         return Ok(new { code = 200, message = "Preset deleted" });
     }
@@ -109,18 +118,26 @@ public class PresetsController : ControllerBase
     public async Task<IActionResult> ApplyPreset(string id, [FromBody] ApplyPresetRequest request, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(request?.BindingId))
+        {
             return BadRequest(new { code = 400, message = "BindingId is required" });
+        }
 
         var preset = await _repository.GetPresetAsync(id, ct);
         if (preset == null)
+        {
             return NotFound(new { code = 404, message = "Preset not found" });
+        }
 
         var binding = await _repository.GetBindingAsync(request.BindingId!, ct);
         if (binding == null)
+        {
             return NotFound(new { code = 404, message = "Binding not found" });
+        }
 
         if (!string.Equals(binding.PluginId, preset.PluginId, StringComparison.OrdinalIgnoreCase))
+        {
             return Conflict(new { code = 409, message = $"Preset is for plugin '{preset.PluginId}' but binding uses '{binding.PluginId}'" });
+        }
 
         binding.ConfigJson = preset.ConfigJson;
         binding.SchemaVersion = preset.SchemaVersion;

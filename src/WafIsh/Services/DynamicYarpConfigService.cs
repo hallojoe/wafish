@@ -117,7 +117,9 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
             var thisStartupStaticClusters = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var route in _state.StaticRoutes)
+            {
                 thisStartupStaticRoutes.Add(route.RouteId ?? string.Empty);
+            }
 
             // Only remove routes that came from appsettings.json (config source).
             // Routes added via Dashboard/Api (Source="dashboard"/"dynamic") must survive restart.
@@ -132,12 +134,16 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
                 var existing = config.Routes.FirstOrDefault(r =>
                     string.Equals(r.Config.RouteId, routeId, StringComparison.OrdinalIgnoreCase));
                 if (existing == null)
+                {
                     config.Routes.Add(new DynamicRouteConfig { Config = normalizedRoute, ClusterUid = DynamicConfigState.ResolveClusterUid(config, route.ClusterId ?? string.Empty), Source = "config", CreatedAt = DateTime.Now, CreatedBy = "appsettings.json" });
+                }
                 else { existing.Config = normalizedRoute; existing.ClusterUid = DynamicConfigState.ResolveClusterUid(config, route.ClusterId ?? string.Empty); }
             }
 
             foreach (var cluster in _state.StaticClusters)
+            {
                 thisStartupStaticClusters.Add(cluster.ClusterId ?? string.Empty);
+            }
 
             // Only remove clusters that came from appsettings.json (config source).
             config.Clusters.RemoveAll(c =>
@@ -150,12 +156,21 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
                 var existing = config.Clusters.FirstOrDefault(c =>
                     string.Equals(c.Config.ClusterId, clusterId, StringComparison.OrdinalIgnoreCase));
                 if (existing == null)
+                {
                     config.Clusters.Add(new DynamicClusterConfig { Config = cluster, Source = "config", CreatedAt = DateTime.Now, CreatedBy = "appsettings.json" });
-                else existing.Config = cluster;
+                }
+                else
+                {
+                    existing.Config = cluster;
+                }
             }
 
             var result = await mutation.CommitAsync("MarkStaticConfig");
-            if (!result.Success) throw new ConfigurationUpdateException(result);
+            if (!result.Success)
+            {
+                throw new ConfigurationUpdateException(result);
+            }
+
             if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Debug))
             {
                 _logger.LogDebug("Synced {TotalRoutes} routes and {TotalClusters} clusters. Static route IDs: [{StaticRoutes}], Static cluster IDs: [{StaticClusters}]",
@@ -250,7 +265,10 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
         {
             using var mutation = BeginMutation();
             var result = await mutation.CommitAsync("SaveDynamicConfig");
-            if (!result.Success) throw new ConfigurationUpdateException(result);
+            if (!result.Success)
+            {
+                throw new ConfigurationUpdateException(result);
+            }
         }
         finally { _semaphore.Release(); }
     }
@@ -268,7 +286,9 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
         string source = "import", string? createdBy = "dashboard-user", IReadOnlyDictionary<string, bool>? routeActivation = null)
     {
         if (clusters.Count == 0 && routes.Count == 0)
+        {
             return new RouteOperationResult(true, "Nothing to import");
+        }
 
         await _semaphore.WaitAsync();
         try
@@ -323,12 +343,21 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
             }
 
             if (routeActivation != null)
+            {
                 foreach (var imported in routes)
-                    if (routeActivation.TryGetValue(imported.RouteId, out var enabled)) routeMap[imported.RouteId].Enabled = enabled;
+                {
+                    if (routeActivation.TryGetValue(imported.RouteId, out var enabled))
+                    {
+                        routeMap[imported.RouteId].Enabled = enabled;
+                    }
+                }
+            }
 
             // Normalize comma-delimited transform values (same as single-route add).
             for (var ri = 0; ri < config.Routes.Count; ri++)
+            {
                 config.Routes[ri].Config = DynamicYarpConfigHelpers.NormalizeTransforms(config.Routes[ri].Config);
+            }
 
             if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
             {
@@ -352,7 +381,9 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
         IReadOnlyList<string> clusterIds, string? createdBy = "dashboard-user")
     {
         if (clusterIds == null || clusterIds.Count == 0)
+        {
             return BatchOperationResult.From(Array.Empty<BatchItemResult>(), "No clusters to delete");
+        }
 
         await _semaphore.WaitAsync();
         try
@@ -422,7 +453,9 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
         string? createdBy = "dashboard-user")
     {
         if (routeIds == null || routeIds.Count == 0)
+        {
             return BatchOperationResult.From(Array.Empty<BatchItemResult>(), "No routes to delete");
+        }
 
         await _semaphore.WaitAsync();
         try
@@ -504,7 +537,9 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
         IReadOnlyList<string> routeIds, bool enabled, string? createdBy = "dashboard-user")
     {
         if (routeIds == null || routeIds.Count == 0)
+        {
             return BatchOperationResult.From(Array.Empty<BatchItemResult>(), "No routes to update");
+        }
 
         await _semaphore.WaitAsync();
         try
@@ -589,18 +624,31 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
             foreach (var cluster in newClusters)
             {
                 if (existingClusters.TryGetValue(cluster.ClusterId ?? string.Empty, out var ec)) { ec.Config = cluster; config.Clusters.Add(ec); }
-                else config.Clusters.Add(new DynamicClusterConfig { Config = cluster, Source = source, CreatedAt = DateTime.Now, CreatedBy = createdBy });
+                else
+                {
+                    config.Clusters.Add(new DynamicClusterConfig { Config = cluster, Source = source, CreatedAt = DateTime.Now, CreatedBy = createdBy });
+                }
             }
             foreach (var route in newRoutes)
             {
                 var nr = route.Order == null ? route with { Order = int.MaxValue } : route;
                 if (existingRoutes.TryGetValue(route.RouteId ?? string.Empty, out var er)) { er.Config = nr; er.ClusterUid = DynamicConfigState.ResolveClusterUid(config, route.ClusterId); config.Routes.Add(er); }
-                else config.Routes.Add(new DynamicRouteConfig { Config = nr, ClusterUid = DynamicConfigState.ResolveClusterUid(config, route.ClusterId), Source = source, CreatedAt = DateTime.Now, CreatedBy = createdBy });
+                else
+                {
+                    config.Routes.Add(new DynamicRouteConfig { Config = nr, ClusterUid = DynamicConfigState.ResolveClusterUid(config, route.ClusterId), Source = source, CreatedAt = DateTime.Now, CreatedBy = createdBy });
+                }
             }
 
             if (routeActivation != null)
+            {
                 foreach (var route in config.Routes)
-                    if (routeActivation.TryGetValue(route.Config.RouteId, out var enabled)) route.Enabled = enabled;
+                {
+                    if (routeActivation.TryGetValue(route.Config.RouteId, out var enabled))
+                    {
+                        route.Enabled = enabled;
+                    }
+                }
+            }
 
             if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
             {
@@ -608,7 +656,10 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
             }
             _auditLog.RecordSuccess("RollbackConfig", "full config", createdBy, null, null, new { routeCount = newRoutes.Count, clusterCount = newClusters.Count });
             var result = await mutation.CommitAsync("ReplaceAllConfig", "full config");
-            if (!result.Success) throw new ConfigurationUpdateException(result);
+            if (!result.Success)
+            {
+                throw new ConfigurationUpdateException(result);
+            }
         }
         finally { _semaphore.Release(); }
     }
@@ -633,7 +684,11 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
             _state.EnsureInitialized();
             var config = DynamicConfigState.Clone(_state.Config);
             var route = config.Routes.FirstOrDefault(r => (r.Config.RouteId ?? string.Empty).Equals(routeName, StringComparison.OrdinalIgnoreCase));
-            if (route == null) return false;
+            if (route == null)
+            {
+                return false;
+            }
+
             var cluster = config.Clusters.FirstOrDefault(c => (c.Config.ClusterId ?? string.Empty).Equals(route.Config.ClusterId ?? string.Empty, StringComparison.OrdinalIgnoreCase));
             if (cluster != null) { cluster.LastHeartbeat = DateTime.Now; _state.Config = config; return true; }
             return false;

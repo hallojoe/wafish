@@ -20,7 +20,11 @@ public sealed class LogSampler : ILogSampler
     public bool ShouldSample()
     {
         var settings = _runtimeSettings.Current;
-        if (!settings.SamplingEnabled || settings.SamplingRate >= 1.0) return true;
+        if (!settings.SamplingEnabled || settings.SamplingRate >= 1.0)
+        {
+            return true;
+        }
+
         return settings.SamplingRate > 0 && Random.Shared.NextDouble() < settings.SamplingRate;
     }
 }

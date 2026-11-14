@@ -60,7 +60,9 @@ public sealed class TeeResponseCaptureStream : Stream
     private void Capture(ReadOnlySpan<byte> buffer)
     {
         if (_capturedBytes >= _limitBytes || buffer.Length == 0)
+        {
             return;
+        }
 
         var remaining = _limitBytes - _capturedBytes;
         var bytesToCapture = Math.Min(remaining, buffer.Length);
@@ -71,7 +73,10 @@ public sealed class TeeResponseCaptureStream : Stream
     protected override void Dispose(bool disposing)
     {
         if (disposing)
+        {
             CapturedBody.Dispose();
+        }
+
         base.Dispose(disposing);
     }
 }

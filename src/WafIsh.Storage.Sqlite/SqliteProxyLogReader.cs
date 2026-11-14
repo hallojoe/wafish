@@ -72,7 +72,9 @@ internal sealed class SqliteProxyLogReader
         await using (var reader = await dataCmd.ExecuteReaderAsync(ct))
         {
             while (await reader.ReadAsync(ct))
+            {
                 items.Add(MapMeta(reader));
+            }
         }
 
         return (items, totalCount);
@@ -121,14 +123,22 @@ internal sealed class SqliteProxyLogReader
 
     private int SafeReadInt32(SqliteDataReader r, string name)
     {
-        if (!HasColumn(name)) return 0;
+        if (!HasColumn(name))
+        {
+            return 0;
+        }
+
         var ordinal = r.GetOrdinal(name);
         return r.IsDBNull(ordinal) ? 0 : r.GetInt32(ordinal);
     }
 
     private double SafeReadDouble(SqliteDataReader r, string name)
     {
-        if (!HasColumn(name)) return 0;
+        if (!HasColumn(name))
+        {
+            return 0;
+        }
+
         var ordinal = r.GetOrdinal(name);
         return r.IsDBNull(ordinal) ? 0 : r.GetDouble(ordinal);
     }
@@ -140,21 +150,64 @@ internal sealed class SqliteProxyLogReader
         string? keyword, string? eventType)
     {
         var conditions = new List<string> { "1=1" };
-        if (routeId != null && HasColumn("RouteId")) conditions.Add("RouteId = @ri");
-        if (clusterId != null && HasColumn("ClusterId")) conditions.Add("ClusterId = @ci");
-        if (level != null) conditions.Add("Level = @lv");
-        if (statusCodeMin != null && HasColumn("StatusCode")) conditions.Add("StatusCode >= @scmin");
-        if (statusCodeMax != null && HasColumn("StatusCode")) conditions.Add("StatusCode <= @scmax");
-        if (startTime != null) conditions.Add("julianday(Timestamp) >= julianday(@st)");
-        if (endTime != null) conditions.Add("julianday(Timestamp) <= julianday(@et)");
+        if (routeId != null && HasColumn("RouteId"))
+        {
+            conditions.Add("RouteId = @ri");
+        }
+
+        if (clusterId != null && HasColumn("ClusterId"))
+        {
+            conditions.Add("ClusterId = @ci");
+        }
+
+        if (level != null)
+        {
+            conditions.Add("Level = @lv");
+        }
+
+        if (statusCodeMin != null && HasColumn("StatusCode"))
+        {
+            conditions.Add("StatusCode >= @scmin");
+        }
+
+        if (statusCodeMax != null && HasColumn("StatusCode"))
+        {
+            conditions.Add("StatusCode <= @scmax");
+        }
+
+        if (startTime != null)
+        {
+            conditions.Add("julianday(Timestamp) >= julianday(@st)");
+        }
+
+        if (endTime != null)
+        {
+            conditions.Add("julianday(Timestamp) <= julianday(@et)");
+        }
+
         if (keyword != null)
         {
             var kwParts = new List<string>();
-            if (HasColumn("UpstreamPath")) kwParts.Add("UpstreamPath LIKE @kw");
-            if (HasColumn("TraceId")) kwParts.Add("TraceId LIKE @kw2");
-            if (kwParts.Count > 0) conditions.Add($"({string.Join(" OR ", kwParts)})");
+            if (HasColumn("UpstreamPath"))
+            {
+                kwParts.Add("UpstreamPath LIKE @kw");
+            }
+
+            if (HasColumn("TraceId"))
+            {
+                kwParts.Add("TraceId LIKE @kw2");
+            }
+
+            if (kwParts.Count > 0)
+            {
+                conditions.Add($"({string.Join(" OR ", kwParts)})");
+            }
         }
-        if (eventType != null && HasColumn("EventType")) conditions.Add("EventType = @evt");
+        if (eventType != null && HasColumn("EventType"))
+        {
+            conditions.Add("EventType = @evt");
+        }
+
         return string.Join(" AND ", conditions);
     }
 
@@ -166,19 +219,57 @@ internal sealed class SqliteProxyLogReader
         string? keyword, string? eventType)
     {
         var parameters = command.Parameters;
-        if (routeId != null && HasColumn("RouteId")) parameters.AddWithValue("@ri", routeId);
-        if (clusterId != null && HasColumn("ClusterId")) parameters.AddWithValue("@ci", clusterId);
-        if (level != null) parameters.AddWithValue("@lv", level);
-        if (statusCodeMin != null && HasColumn("StatusCode")) parameters.AddWithValue("@scmin", statusCodeMin.Value);
-        if (statusCodeMax != null && HasColumn("StatusCode")) parameters.AddWithValue("@scmax", statusCodeMax.Value);
-        if (startTime != null) parameters.AddWithValue("@st", StorageTimestamp.Format(startTime.Value));
-        if (endTime != null) parameters.AddWithValue("@et", StorageTimestamp.Format(endTime.Value));
+        if (routeId != null && HasColumn("RouteId"))
+        {
+            parameters.AddWithValue("@ri", routeId);
+        }
+
+        if (clusterId != null && HasColumn("ClusterId"))
+        {
+            parameters.AddWithValue("@ci", clusterId);
+        }
+
+        if (level != null)
+        {
+            parameters.AddWithValue("@lv", level);
+        }
+
+        if (statusCodeMin != null && HasColumn("StatusCode"))
+        {
+            parameters.AddWithValue("@scmin", statusCodeMin.Value);
+        }
+
+        if (statusCodeMax != null && HasColumn("StatusCode"))
+        {
+            parameters.AddWithValue("@scmax", statusCodeMax.Value);
+        }
+
+        if (startTime != null)
+        {
+            parameters.AddWithValue("@st", StorageTimestamp.Format(startTime.Value));
+        }
+
+        if (endTime != null)
+        {
+            parameters.AddWithValue("@et", StorageTimestamp.Format(endTime.Value));
+        }
+
         if (keyword != null)
         {
             var pattern = $"%{keyword}%";
-            if (HasColumn("UpstreamPath")) parameters.AddWithValue("@kw", pattern);
-            if (HasColumn("TraceId")) parameters.AddWithValue("@kw2", pattern);
+            if (HasColumn("UpstreamPath"))
+            {
+                parameters.AddWithValue("@kw", pattern);
+            }
+
+            if (HasColumn("TraceId"))
+            {
+                parameters.AddWithValue("@kw2", pattern);
+            }
         }
-        if (eventType != null && HasColumn("EventType")) parameters.AddWithValue("@evt", eventType);
+        if (eventType != null && HasColumn("EventType"))
+        {
+            parameters.AddWithValue("@evt", eventType);
+        }
     }
 }

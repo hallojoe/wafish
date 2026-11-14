@@ -61,7 +61,10 @@ internal sealed class Migration006_DataBackfill : ISchemaMigration
         countCmd.CommandTimeout = 30;
         countCmd.CommandText = $"SELECT COUNT(*) FROM {table} WHERE {whereClause}";
         var rowsToFix = Convert.ToInt64(await countCmd.ExecuteScalarAsync(ct));
-        if (rowsToFix <= 0) return;
+        if (rowsToFix <= 0)
+        {
+            return;
+        }
 
         const int BatchSize = 1000;
         while (!ct.IsCancellationRequested)
@@ -77,7 +80,10 @@ internal sealed class Migration006_DataBackfill : ISchemaMigration
                 await tx.CommitAsync(ct);
             }
             catch { try { await tx.RollbackAsync(CancellationToken.None); } catch { } throw; }
-            if (affected <= 0) break;
+            if (affected <= 0)
+            {
+                break;
+            }
         }
     }
 
@@ -86,7 +92,10 @@ internal sealed class Migration006_DataBackfill : ISchemaMigration
         await using var countCmd = conn.CreateCommand();
         countCmd.Transaction = transaction;
         countCmd.CommandText = "SELECT COUNT(*) FROM policy_targets";
-        if (Convert.ToInt32(await countCmd.ExecuteScalarAsync(ct)) > 0) return;
+        if (Convert.ToInt32(await countCmd.ExecuteScalarAsync(ct)) > 0)
+        {
+            return;
+        }
 
         var policies = new List<(string Uid, string Id, string Type, string? Applied, DateTime Updated)>();
         await using (var cmd = conn.CreateCommand())
@@ -112,7 +121,10 @@ internal sealed class Migration006_DataBackfill : ISchemaMigration
         {
             List<string>? targets;
             try { targets = JsonSerializer.Deserialize<List<string>>(p.Applied ?? "[]"); } catch { continue; }
-            if (targets == null) continue;
+            if (targets == null)
+            {
+                continue;
+            }
 
             foreach (var key in targets.Where(t => !string.IsNullOrWhiteSpace(t)).Distinct(StringComparer.OrdinalIgnoreCase))
             {

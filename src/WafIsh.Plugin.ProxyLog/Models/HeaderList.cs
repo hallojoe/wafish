@@ -30,7 +30,9 @@ public sealed class HeaderList : List<KeyValuePair<string, string>>
         foreach (var kvp in this)
         {
             if (string.Equals(kvp.Key, key, StringComparison.OrdinalIgnoreCase))
+            {
                 return kvp.Value;
+            }
         }
         return null;
     }
@@ -46,7 +48,9 @@ public sealed class HeaderListJsonConverter : JsonConverter<HeaderList?>
     public override HeaderList? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.Null)
+        {
             return null;
+        }
 
         // Read as JSON object {"key":"value"}
         using var doc = JsonDocument.ParseValue(ref reader);

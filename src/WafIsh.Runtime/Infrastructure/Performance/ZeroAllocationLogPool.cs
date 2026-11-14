@@ -143,15 +143,32 @@ public readonly struct InlineStringBuffer
     public override string ToString()
     {
         if (_hasExternal != 0)
+        {
             return $"[External:{_data0}]";
-            
+        }
+
         Span<byte> bytes = stackalloc byte[36];
         BinaryPrimitives.WriteUInt64LittleEndian(bytes, _data0);
-        if (_length > 8) BinaryPrimitives.WriteUInt64LittleEndian(bytes.Slice(8), _data1);
-        if (_length > 16) BinaryPrimitives.WriteUInt64LittleEndian(bytes.Slice(16), _data2);
-        if (_length > 24) BinaryPrimitives.WriteUInt64LittleEndian(bytes.Slice(24), _data3);
-        if (_length > 32) BinaryPrimitives.WriteUInt32LittleEndian(bytes.Slice(32), _data4);
-        
+        if (_length > 8)
+        {
+            BinaryPrimitives.WriteUInt64LittleEndian(bytes.Slice(8), _data1);
+        }
+
+        if (_length > 16)
+        {
+            BinaryPrimitives.WriteUInt64LittleEndian(bytes.Slice(16), _data2);
+        }
+
+        if (_length > 24)
+        {
+            BinaryPrimitives.WriteUInt64LittleEndian(bytes.Slice(24), _data3);
+        }
+
+        if (_length > 32)
+        {
+            BinaryPrimitives.WriteUInt32LittleEndian(bytes.Slice(32), _data4);
+        }
+
         return Encoding.UTF8.GetString(bytes.Slice(0, _length));
     }
 }
@@ -261,8 +278,10 @@ internal sealed class LogBatch : IDisposable
     public bool TryAdd(in LogEntryStruct entry)
     {
         if (Count >= Entries.Length)
+        {
             return false;
-            
+        }
+
         Entries[Count++] = entry;
         return true;
     }
@@ -279,7 +298,11 @@ internal sealed class LogBatch : IDisposable
 
     public void Dispose()
     {
-        if (Entries.Length == 0) return;
+        if (Entries.Length == 0)
+        {
+            return;
+        }
+
         _pool.ReturnStructs(Entries, clearArray: true);
         Entries = [];
         Count = 0;
@@ -309,7 +332,9 @@ internal sealed class DefaultObjectProvider<T> where T : class
         {
             var item = Interlocked.Exchange(ref _pool[idx], null);
             if (item != null)
+            {
                 return item;
+            }
         }
         return _factory();
     }

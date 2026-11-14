@@ -28,8 +28,15 @@ internal static class AuthenticationSecurityChecks
             {
                 var context = Context("192.0.2.1");
                 context.Request.Headers["X-Forwarded-For"] = "198.51.100." + i;
-                if (limiter.TryAcquire(context, "login", out _)) Interlocked.Increment(ref accepted);
-                else Require(context.Response.StatusCode == 429 && context.Response.Headers.RetryAfter == "60", "Throttle response missing.");
+                if (limiter.TryAcquire(context, "login", out _))
+                {
+                    Interlocked.Increment(ref accepted);
+                }
+                else
+                {
+                    Require(context.Response.StatusCode == 429 && context.Response.Headers.RetryAfter == "60", "Throttle response missing.");
+                }
+
                 return ValueTask.CompletedTask;
             });
             Require(accepted == AuthenticationAttemptLimiter.AttemptLimit, "Concurrent attempts exceeded the limit.");
@@ -37,11 +44,18 @@ internal static class AuthenticationSecurityChecks
             refund(); refund();
             clock.Advance(TimeSpan.FromMinutes(1));
             Require(limiter.TryAcquire(Context("192.0.2.1"), "login", out _), "Window did not expire.");
-            for (var i = 0; i < 100; i++) Require(limiter.TryAcquireAccount(Context("192.0.2.3")), "Account quota too small.");
+            for (var i = 0; i < 100; i++)
+            {
+                Require(limiter.TryAcquireAccount(Context("192.0.2.3")), "Account quota too small.");
+            }
+
             Require(!limiter.TryAcquireAccount(Context("192.0.2.4")), "Distributed account attempts bypassed the limit.");
             var bounded = new AuthenticationAttemptLimiter(clock);
             for (var i = 0; i < AuthenticationAttemptLimiter.PartitionLimit; i++)
+            {
                 Require(bounded.TryAcquire(Context($"2001:db8::{i:x}"), "login", out _), "Premature capacity rejection.");
+            }
+
             Require(!bounded.TryAcquire(Context("192.0.2.9"), "login", out _), "Partition capacity exceeded.");
             clock.Advance(TimeSpan.FromMinutes(1));
             Require(bounded.TryAcquire(Context("192.0.2.9"), "login", out _), "Expired partitions were retained.");
@@ -57,12 +71,22 @@ internal static class AuthenticationSecurityChecks
                 for (var i = 0; i < 50; i++)
                 {
                     var valid = Context("192.0.2.1");
-                    if (mode == DashboardAuthMode.ApiKey) valid.Request.Headers["X-Api-Key"] = password;
-                    else valid.Request.Headers.Authorization = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes("admin:" + password));
+                    if (mode == DashboardAuthMode.ApiKey)
+                    {
+                        valid.Request.Headers["X-Api-Key"] = password;
+                    }
+                    else
+                    {
+                        valid.Request.Headers.Authorization = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes("admin:" + password));
+                    }
+
                     Require(await service.IsAuthorizedAsync(valid), "Successful requests consumed the failure budget.");
                 }
                 for (var i = 0; i < AuthenticationAttemptLimiter.AttemptLimit; i++)
+                {
                     Require(!await service.IsAuthorizedAsync(Context("192.0.2.1")), "Missing credentials passed.");
+                }
+
                 var blocked = Context("192.0.2.1");
                 Require(!await service.IsAuthorizedAsync(blocked) && blocked.Response.StatusCode == 429, "Direct attempts were not throttled.");
             }
@@ -85,7 +109,10 @@ internal static class AuthenticationSecurityChecks
             };
             using var client = new HttpClient(handler) { BaseAddress = https, Timeout = TimeSpan.FromSeconds(10) };
             using (var login = await client.PostAsJsonAsync("/ops/login", new { username = "admin", password }))
+            {
                 Require(login.IsSuccessStatusCode && cookies.GetCookies(https)["dashboard_token"] != null, "Login did not store a cookie.");
+            }
+
             Require((await client.GetAsync("/ops/api/info")).StatusCode == HttpStatusCode.OK, "Cookie did not authenticate.");
             Require((await client.GetAsync(new Uri(http, "/ops/api/info"))).StatusCode == HttpStatusCode.Unauthorized, "Secure cookie reached HTTP.");
             Require(cookies.GetCookieHeader(new UriBuilder(https) { Host = "localhost" }.Uri) == "", "Cookie escaped its host.");
@@ -99,7 +126,11 @@ internal static class AuthenticationSecurityChecks
                 sameOrigin.Headers.Add("Origin", https.GetLeftPart(UriPartial.Authority));
                 Require((await client.SendAsync(sameOrigin)).IsSuccessStatusCode, "Same-origin cookie was rejected.");
             }
-            using (var logout = await client.PostAsync("/ops/logout", null)) Require(logout.IsSuccessStatusCode, "Logout failed.");
+            using (var logout = await client.PostAsync("/ops/logout", null))
+            {
+                Require(logout.IsSuccessStatusCode, "Logout failed.");
+            }
+
             Require((await client.GetAsync("/ops/api/info")).StatusCode == HttpStatusCode.Unauthorized, "Logout retained authentication.");
             cookies.Add(https, new Cookie("dashboard_token", ExpiredToken(), "/") { Secure = true, HttpOnly = true });
             Require((await client.GetAsync("/ops/api/info")).StatusCode == HttpStatusCode.Unauthorized, "Expired token was accepted.");
@@ -125,7 +156,10 @@ internal static class AuthenticationSecurityChecks
                         ? await client.PostAsJsonAsync("/ops/login", new { username = "admin", password = mode == "Totp" ? password : "incorrect-password", twoFactorCode = "invalid" })
                         : await client.GetAsync("/ops/api/info");
                     if (i == AuthenticationAttemptLimiter.AttemptLimit)
+                    {
                         Require(response.StatusCode == HttpStatusCode.TooManyRequests && response.Headers.RetryAfter != null, "Throttle status was overwritten.");
+                    }
+
                     Require(!response.Headers.Contains("Set-Cookie"), "Failed attempts issued a cookie.");
                 }
                 await host.StopAsync();
@@ -151,5 +185,9 @@ internal static class AuthenticationSecurityChecks
         public override long GetTimestamp() => _ticks;
         public void Advance(TimeSpan duration) => _ticks += duration.Ticks;
     }
-    private static void Require(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); }
+    private static void Require(bool condition, string message) { if (!condition)
+        {
+            throw new InvalidOperationException(message);
+        }
+    }
 }

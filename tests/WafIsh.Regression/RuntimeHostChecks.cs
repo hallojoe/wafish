@@ -93,16 +93,25 @@ internal static class RuntimeHostChecks
                 await app.StartAsync();
                 using var client = new HttpClient { BaseAddress = new Uri(Address(app)), Timeout = TimeSpan.FromSeconds(10) };
                 var response = await client.GetStringAsync("/hello");
-                if (response != "runtime-ok") throw new InvalidOperationException($"Gateway response was incorrect: {response}");
+                if (response != "runtime-ok")
+                {
+                    throw new InvalidOperationException($"Gateway response was incorrect: {response}");
+                }
+
                 using var cached = await client.GetAsync("/hello");
                 if (await cached.Content.ReadAsStringAsync() != "runtime-ok" || upstreamCalls != 1)
+                {
                     throw new InvalidOperationException($"Configured cache plugin did not run: calls={upstreamCalls}, headers={cached.Headers}, body={await cached.Content.ReadAsStringAsync()}");
+                }
+
                 using (var crossOrigin = new HttpRequestMessage(HttpMethod.Get, "/hello"))
                 {
                     crossOrigin.Headers.Add("Origin", "https://untrusted.example");
                     using var crossOriginResponse = await client.SendAsync(crossOrigin);
                     if (crossOriginResponse.Headers.Contains("Access-Control-Allow-Origin"))
+                    {
                         throw new InvalidOperationException("The default gateway granted cross-origin access.");
+                    }
                 }
                 foreach (var encoding in new[] { "gzip", "br", "identity" })
                 {
@@ -113,29 +122,67 @@ internal static class RuntimeHostChecks
                         request.Headers.AcceptEncoding.ParseAdd(encoding);
                         using var compressed = await client.SendAsync(request);
                         compressed.EnsureSuccessStatusCode();
-                        if (encoding != "identity" && !compressed.Content.Headers.ContentEncoding.Contains(encoding)) throw new InvalidOperationException($"Missing encoding {encoding} on request {i}: {compressed.Headers} {compressed.Content.Headers}");
+                        if (encoding != "identity" && !compressed.Content.Headers.ContentEncoding.Contains(encoding))
+                        {
+                            throw new InvalidOperationException($"Missing encoding {encoding} on request {i}: {compressed.Headers} {compressed.Content.Headers}");
+                        }
+
                         using var bytes = new MemoryStream(await compressed.Content.ReadAsByteArrayAsync());
                         using Stream decoded = encoding switch { "gzip" => new GZipStream(bytes, CompressionMode.Decompress), "br" => new BrotliStream(bytes, CompressionMode.Decompress), _ => bytes };
                         using var reader = new StreamReader(decoded, Encoding.UTF8);
-                        if (await reader.ReadToEndAsync() != compressibleBody) throw new InvalidOperationException("Compressed HTTP body mismatch.");
-                        if (!compressed.Headers.Vary.Contains("Accept-Encoding")) throw new InvalidOperationException("Missing compression Vary.");
+                        if (await reader.ReadToEndAsync() != compressibleBody)
+                        {
+                            throw new InvalidOperationException("Compressed HTTP body mismatch.");
+                        }
+
+                        if (!compressed.Headers.Vary.Contains("Accept-Encoding"))
+                        {
+                            throw new InvalidOperationException("Missing compression Vary.");
+                        }
                     }
-                    if (upstreamCalls != before + 1) throw new InvalidOperationException("Compressed HTTP variant did not cache.");
+                    if (upstreamCalls != before + 1)
+                    {
+                        throw new InvalidOperationException("Compressed HTTP variant did not cache.");
+                    }
                 }
-                if (!cached.Headers.Contains("X-Runtime")) throw new InvalidOperationException("Runtime response transforms were skipped.");
-                if (administrationConfigured) throw new InvalidOperationException("Proxy-only mode configured administration.");
+                if (!cached.Headers.Contains("X-Runtime"))
+                {
+                    throw new InvalidOperationException("Runtime response transforms were skipped.");
+                }
+
+                if (administrationConfigured)
+                {
+                    throw new InvalidOperationException("Proxy-only mode configured administration.");
+                }
+
                 using var unavailable = await client.GetAsync("/limited");
-                if (unavailable.StatusCode != System.Net.HttpStatusCode.ServiceUnavailable) throw new InvalidOperationException("Redis pipeline failure policy was skipped.");
+                if (unavailable.StatusCode != System.Net.HttpStatusCode.ServiceUnavailable)
+                {
+                    throw new InvalidOperationException("Redis pipeline failure policy was skipped.");
+                }
+
                 foreach (var endpoint in new[] { "/live", "/ready", "/health" })
+                {
                     (await client.GetAsync(endpoint)).EnsureSuccessStatusCode();
+                }
+
                 var actions = app.Services.GetRequiredService<IActionDescriptorCollectionProvider>().ActionDescriptors.Items;
                 if (actions.OfType<ControllerActionDescriptor>().Any(a => a.ControllerTypeInfo.Namespace?.Contains("Dashboard") == true))
+                {
                     throw new InvalidOperationException("Runtime registered dashboard controllers.");
+                }
+
                 if (app.Services.GetServices<IHostedService>().Count(s => s is DynamicYarpConfigService) != 1)
+                {
                     throw new InvalidOperationException("Configuration startup was registered more than once.");
+                }
+
                 if (typeof(GatewayRuntimeExtensions).Assembly.GetReferencedAssemblies().Any(a =>
                     a.Name is "WafIsh.Dashboard" or "WafIsh.Administration"))
+                {
                     throw new InvalidOperationException("Runtime depends on administration or presentation.");
+                }
+
                 await app.StopAsync();
                 await upstream.StopAsync();
             }
@@ -175,7 +222,10 @@ internal static class RuntimeHostChecks
             context.Request.Path = path;
             context.Response.Body = new MemoryStream();
             await middleware.InvokeAsync(context);
-            if (passed != allowed) throw new InvalidOperationException($"Unexpected endpoint access: {mode}, {port}, {path}");
+            if (passed != allowed)
+            {
+                throw new InvalidOperationException($"Unexpected endpoint access: {mode}, {port}, {path}");
+            }
         }
     }
 

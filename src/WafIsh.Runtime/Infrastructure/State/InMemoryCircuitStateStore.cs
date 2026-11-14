@@ -69,7 +69,9 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
             .ToList();
 
         foreach (var key in keysToRemove)
+        {
             _circuits.TryRemove(key, out _);
+        }
     }
 
     public void ResetAll()
@@ -88,7 +90,10 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
         foreach (var state in _circuits.Values)
         {
             if (!string.Equals(state.ClusterKeySnapshot, oldClusterId, StringComparison.OrdinalIgnoreCase))
+            {
                 continue;
+            }
+
             lock (_stateLock)
             {
                 state.ClusterKeySnapshot = newClusterId;
@@ -114,7 +119,11 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
     public bool IsCircuitOpen(string clusterId, string? destinationId = null, string? clusterUid = null)
     {
         var key = BuildCircuitKey(clusterUid, clusterId, destinationId);
-        if (!_circuits.TryGetValue(key, out var state)) return false;
+        if (!_circuits.TryGetValue(key, out var state))
+        {
+            return false;
+        }
+
         lock (state.SyncRoot)
         {
             return state.Status == CircuitStatus.Open && OpenElapsed(state) < state.RecoveryTimeout;
@@ -131,7 +140,11 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
         var state = _circuits.GetOrAdd(key, _ => new CircuitState());
         lock (state.SyncRoot)
         {
-            if (config != null) state.ApplyConfig(config);
+            if (config != null)
+            {
+                state.ApplyConfig(config);
+            }
+
             state.ClusterUid = clusterUid ?? StableUid.FromKey("cluster", clusterId);
             state.ClusterKeySnapshot = clusterId;
             state.DestinationUid = ResolveDestinationUid(destinationId);
@@ -139,7 +152,11 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
             Touch(state);
             if (state.Status == CircuitStatus.Open)
             {
-                if (OpenElapsed(state) < state.RecoveryTimeout) return false;
+                if (OpenElapsed(state) < state.RecoveryTimeout)
+                {
+                    return false;
+                }
+
                 state.Generation++;
                 state.Status = CircuitStatus.HalfOpen;
                 state.HalfOpenRequests = 0;
@@ -147,7 +164,11 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
 
             if (state.Status == CircuitStatus.HalfOpen)
             {
-                if (state.HalfOpenRequests >= state.MaxHalfOpenAttempts) return false;
+                if (state.HalfOpenRequests >= state.MaxHalfOpenAttempts)
+                {
+                    return false;
+                }
+
                 state.HalfOpenRequests++;
             }
 
@@ -160,11 +181,19 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
         var key = BuildCircuitKey(null, clusterId, destinationId);
         lock (_stateLock)
         {
-            if (!_circuits.ContainsKey(key) && _circuits.Count >= 10_000) return null;
+            if (!_circuits.ContainsKey(key) && _circuits.Count >= 10_000)
+            {
+                return null;
+            }
+
             var state = _circuits.GetOrAdd(key, _ => new CircuitState());
             lock (state.SyncRoot)
             {
-                if (!TryAcquire(clusterId, destinationId, config: config)) return null;
+                if (!TryAcquire(clusterId, destinationId, config: config))
+                {
+                    return null;
+                }
+
                 state.ActiveAttempts++;
                 var generation = state.Generation;
                 var probe = state.Status == CircuitStatus.HalfOpen;
@@ -173,9 +202,19 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
                     lock (state.SyncRoot)
                     {
                         state.ActiveAttempts--;
-                        if (generation != state.Generation || !_circuits.TryGetValue(key, out var current) || !ReferenceEquals(current, state)) return;
-                        if (failed.HasValue) RecordOutcome(clusterId, destinationId, failed.Value, config: config);
-                        else if (probe) state.HalfOpenRequests = Math.Max(0, state.HalfOpenRequests - 1);
+                        if (generation != state.Generation || !_circuits.TryGetValue(key, out var current) || !ReferenceEquals(current, state))
+                        {
+                            return;
+                        }
+
+                        if (failed.HasValue)
+                        {
+                            RecordOutcome(clusterId, destinationId, failed.Value, config: config);
+                        }
+                        else if (probe)
+                        {
+                            state.HalfOpenRequests = Math.Max(0, state.HalfOpenRequests - 1);
+                        }
                     }
                 });
             }
@@ -193,7 +232,11 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
         var state = _circuits.GetOrAdd(key, _ => new CircuitState());
         lock (state.SyncRoot)
         {
-            if (config != null) state.ApplyConfig(config);
+            if (config != null)
+            {
+                state.ApplyConfig(config);
+            }
+
             var now = _time.GetUtcNow().UtcDateTime;
             Touch(state);
             if (state.Status == CircuitStatus.HalfOpen)
@@ -212,16 +255,27 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
                 return;
             }
 
-            if (state.Status != CircuitStatus.Closed) return;
+            if (state.Status != CircuitStatus.Closed)
+            {
+                return;
+            }
+
             state.Samples.Enqueue((now, failed));
-            if (failed) state.SampleFailures++;
+            if (failed)
+            {
+                state.SampleFailures++;
+            }
+
             var samples = _timing.GetOrCreateValue(state).Samples;
             samples.Enqueue(_time.GetTimestamp());
             while (state.Samples.TryPeek(out var sample) && samples.TryPeek(out var timestamp) && _time.GetElapsedTime(timestamp) > state.SamplingDuration)
             {
                 state.Samples.Dequeue();
                 samples.Dequeue();
-                if (sample.Failed) state.SampleFailures--;
+                if (sample.Failed)
+                {
+                    state.SampleFailures--;
+                }
             }
             state.ConsecutiveFailures = state.SampleFailures;
             if (state.Samples.Count >= state.MinimumThroughput &&
@@ -270,11 +324,19 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
     {
         var now = _time.GetUtcNow().UtcDateTime;
         lock (_stateLock)
+        {
             foreach (var pair in _circuits)
+            {
                 lock (pair.Value.SyncRoot)
+                {
                     if (pair.Value.ActiveAttempts == 0 && pair.Value.Status == CircuitStatus.Closed && (_timing.TryGetValue(pair.Value, out var timing) && timing.AccessedAt == pair.Value.LastAccessedAt
                         ? _time.GetElapsedTime(timing.Accessed) : now - pair.Value.LastAccessedAt.ToUniversalTime()) > threshold)
+                    {
                         _circuits.TryRemove(pair.Key, out _);
+                    }
+                }
+            }
+        }
     }
 
     /// <summary>Acquires the internal lock for state mutations. Use sparingly.</summary>
@@ -301,7 +363,11 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
     internal static (string ClusterId, string? DestinationId) ParseCircuitKey(string key)
     {
         var lastColon = key.LastIndexOf(':');
-        if (lastColon < 0) return (key, null);
+        if (lastColon < 0)
+        {
+            return (key, null);
+        }
+
         var cluster = key[..lastColon];
         var dest = key[(lastColon + 1)..];
         return dest == "any" ? (cluster, null) : (cluster, dest);

@@ -22,7 +22,10 @@ public sealed class SqliteGatewayPluginRepository : IGatewayPluginRepository
         cmd.CommandText = "SELECT plugin_id, version, enabled, is_built_in, source_path, registration_status, last_error, installed_at, updated_at FROM gateway_plugins ORDER BY plugin_id";
         await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken))
+        {
             result.Add(Map(reader));
+        }
+
         return result;
     }
 
@@ -43,7 +46,10 @@ public sealed class SqliteGatewayPluginRepository : IGatewayPluginRepository
         ArgumentException.ThrowIfNullOrWhiteSpace(plugin.Version);
         var now = DateTime.UtcNow;
         if (plugin.InstalledAt == default)
+        {
             plugin.InstalledAt = now;
+        }
+
         plugin.UpdatedAt = now;
 
         await using var conn = await _connections.CreateConnectionAsync(cancellationToken);

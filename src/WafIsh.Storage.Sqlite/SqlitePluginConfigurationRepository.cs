@@ -21,7 +21,11 @@ public sealed class SqlitePluginConfigurationRepository : IPluginConfigurationRe
         cmd.CommandText = $"SELECT {BindingColumns} FROM plugin_bindings ORDER BY scope, scope_id, sort_order, plugin_id";
         await using var reader = await cmd.ExecuteReaderAsync(ct);
         var result = new List<PluginBindingEntity>();
-        while (await reader.ReadAsync(ct)) result.Add(ReadBinding(reader));
+        while (await reader.ReadAsync(ct))
+        {
+            result.Add(ReadBinding(reader));
+        }
+
         return result;
     }
 
@@ -38,7 +42,11 @@ public sealed class SqlitePluginConfigurationRepository : IPluginConfigurationRe
         cmd.Parameters.AddWithValue("@scopeId", scopeId);
         await using var reader = await cmd.ExecuteReaderAsync(ct);
         var result = new List<PluginBindingEntity>();
-        while (await reader.ReadAsync(ct)) result.Add(ReadBinding(reader));
+        while (await reader.ReadAsync(ct))
+        {
+            result.Add(ReadBinding(reader));
+        }
+
         return result;
     }
 
@@ -69,16 +77,30 @@ public sealed class SqlitePluginConfigurationRepository : IPluginConfigurationRe
         ArgumentNullException.ThrowIfNull(binding);
         ArgumentException.ThrowIfNullOrWhiteSpace(binding.Id);
         ArgumentException.ThrowIfNullOrWhiteSpace(binding.PluginId);
-        if (!Enum.IsDefined(binding.Scope)) throw new ArgumentOutOfRangeException(nameof(binding), binding.Scope, "Invalid Scope.");
+        if (!Enum.IsDefined(binding.Scope))
+        {
+            throw new ArgumentOutOfRangeException(nameof(binding), binding.Scope, "Invalid Scope.");
+        }
+
         var stableUid = binding.Scope == PluginBindingScope.Route ? binding.RouteUid : binding.ClusterUid;
         if (string.IsNullOrWhiteSpace(stableUid))
+        {
             stableUid = binding.ScopeId;
+        }
+
         ArgumentException.ThrowIfNullOrWhiteSpace(stableUid);
         binding.ScopeId = string.IsNullOrWhiteSpace(binding.ScopeId) ? stableUid : binding.ScopeId;
         binding.RouteUid = binding.Scope == PluginBindingScope.Route ? stableUid : null;
         binding.ClusterUid = binding.Scope == PluginBindingScope.Cluster ? stableUid : null;
-        if (binding.SchemaVersion < 1) throw new ArgumentOutOfRangeException(nameof(binding), binding.SchemaVersion, "Invalid SchemaVersion.");
-        if (binding.ConfigVersion < 1) throw new ArgumentOutOfRangeException(nameof(binding), binding.ConfigVersion, "Invalid ConfigVersion.");
+        if (binding.SchemaVersion < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(binding), binding.SchemaVersion, "Invalid SchemaVersion.");
+        }
+
+        if (binding.ConfigVersion < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(binding), binding.ConfigVersion, "Invalid ConfigVersion.");
+        }
 
         binding.UpdatedAt = DateTime.UtcNow;
         await using var cmd = conn.CreateCommand();
@@ -132,7 +154,13 @@ public sealed class SqlitePluginConfigurationRepository : IPluginConfigurationRe
         cmd.CommandText = $"SELECT {BindingColumns} FROM plugin_bindings ORDER BY id";
         var bindings = new List<PluginBindingEntity>();
         await using (var reader = await cmd.ExecuteReaderAsync(ct))
-            while (await reader.ReadAsync(ct)) bindings.Add(ReadBinding(reader));
+        {
+            while (await reader.ReadAsync(ct))
+            {
+                bindings.Add(ReadBinding(reader));
+            }
+        }
+
         await transaction.CommitAsync(ct);
         return new(revision, bindings);
     }
@@ -147,7 +175,11 @@ public sealed class SqlitePluginConfigurationRepository : IPluginConfigurationRe
         cmd.Transaction = transaction;
         cmd.CommandText = "SELECT revision FROM plugin_binding_revision WHERE id = 1";
         var revision = Convert.ToInt64(await cmd.ExecuteScalarAsync(ct));
-        if (revision != expectedRevision) throw new BindingRevisionConflictException(expectedRevision, revision);
+        if (revision != expectedRevision)
+        {
+            throw new BindingRevisionConflictException(expectedRevision, revision);
+        }
+
         foreach (var id in deletes)
         {
             cmd.CommandText = "DELETE FROM plugin_bindings WHERE id = @id";
@@ -155,7 +187,11 @@ public sealed class SqlitePluginConfigurationRepository : IPluginConfigurationRe
             cmd.Parameters.AddWithValue("@id", id);
             await cmd.ExecuteNonQueryAsync(ct);
         }
-        foreach (var binding in upserts) await UpsertAsync(conn, transaction, binding, ct);
+        foreach (var binding in upserts)
+        {
+            await UpsertAsync(conn, transaction, binding, ct);
+        }
+
         cmd.CommandText = "SELECT revision FROM plugin_binding_revision WHERE id = 1";
         cmd.Parameters.Clear();
         revision = Convert.ToInt64(await cmd.ExecuteScalarAsync(ct));
@@ -171,7 +207,11 @@ public sealed class SqlitePluginConfigurationRepository : IPluginConfigurationRe
         cmd.CommandText = "SELECT plugin_id, schema_version, schema_json, created_at, updated_at FROM plugin_schemas ORDER BY plugin_id, schema_version";
         await using var reader = await cmd.ExecuteReaderAsync(ct);
         var result = new List<PluginSchemaEntity>();
-        while (await reader.ReadAsync(ct)) result.Add(ReadSchema(reader));
+        while (await reader.ReadAsync(ct))
+        {
+            result.Add(ReadSchema(reader));
+        }
+
         return result;
     }
 
@@ -192,7 +232,11 @@ public sealed class SqlitePluginConfigurationRepository : IPluginConfigurationRe
     {
         ArgumentNullException.ThrowIfNull(schema);
         ArgumentException.ThrowIfNullOrWhiteSpace(schema.PluginId);
-        if (schema.SchemaVersion < 1) throw new ArgumentOutOfRangeException(nameof(schema), schema.SchemaVersion, "Invalid SchemaVersion.");
+        if (schema.SchemaVersion < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(schema), schema.SchemaVersion, "Invalid SchemaVersion.");
+        }
+
         schema.UpdatedAt = DateTime.UtcNow;
         await using var conn = await _connections.CreateConnectionAsync(ct);
         await conn.OpenAsync(ct);
@@ -234,7 +278,11 @@ public sealed class SqlitePluginConfigurationRepository : IPluginConfigurationRe
         cmd.CommandText = $"SELECT {PresetColumns} FROM plugin_config_presets ORDER BY plugin_id, name";
         await using var reader = await cmd.ExecuteReaderAsync(ct);
         var result = new List<PluginConfigPresetEntity>();
-        while (await reader.ReadAsync(ct)) result.Add(ReadPreset(reader));
+        while (await reader.ReadAsync(ct))
+        {
+            result.Add(ReadPreset(reader));
+        }
+
         return result;
     }
 
@@ -248,7 +296,11 @@ public sealed class SqlitePluginConfigurationRepository : IPluginConfigurationRe
         cmd.Parameters.AddWithValue("@pluginId", pluginId);
         await using var reader = await cmd.ExecuteReaderAsync(ct);
         var result = new List<PluginConfigPresetEntity>();
-        while (await reader.ReadAsync(ct)) result.Add(ReadPreset(reader));
+        while (await reader.ReadAsync(ct))
+        {
+            result.Add(ReadPreset(reader));
+        }
+
         return result;
     }
 

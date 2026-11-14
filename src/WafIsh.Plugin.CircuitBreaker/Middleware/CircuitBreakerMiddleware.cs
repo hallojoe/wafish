@@ -57,7 +57,10 @@ public sealed class CircuitBreakerMiddleware : GatewayMiddlewareBase
         var now = Environment.TickCount64;
         var last = Interlocked.Read(ref _lastCleanup);
         if (now - last > 10_800_000 && Interlocked.CompareExchange(ref _lastCleanup, now, last) == last)
+        {
             _circuitStore.CleanupStale(TimeSpan.FromHours(3));
+        }
+
         var destination = feature!.AvailableDestinations.Count == 1 ? feature.AvailableDestinations[0] : null;
         using var attempt = destination == null ? null : _circuitStore.TryAcquireAttempt(clusterId, destination.DestinationId, config);
         if (attempt == null)
@@ -69,7 +72,9 @@ public sealed class CircuitBreakerMiddleware : GatewayMiddlewareBase
         {
             await Next(context);
             if (!context.RequestAborted.IsCancellationRequested)
+            {
                 attempt.Complete(config.FailureStatusCodes.Contains(context.Response.StatusCode) || context.Response.StatusCode >= 500);
+            }
         }
         catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested) { throw; }
         catch { attempt.Complete(true); throw; }

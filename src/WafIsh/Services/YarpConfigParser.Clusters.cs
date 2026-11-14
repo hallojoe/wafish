@@ -45,7 +45,11 @@ partial class YarpConfigParser
 
     private static SessionAffinityConfig? ParseSessionAffinity(IConfigurationSection section)
     {
-        if (!section.Exists()) return null;
+        if (!section.Exists())
+        {
+            return null;
+        }
+
         return new SessionAffinityConfig
         {
             Enabled = bool.TryParse(section["Enabled"], out var enabled) && enabled,
@@ -57,7 +61,11 @@ partial class YarpConfigParser
 
     private static global::Yarp.ReverseProxy.Configuration.HealthCheckConfig? ParseHealthCheck(IConfigurationSection section)
     {
-        if (!section.Exists()) return null;
+        if (!section.Exists())
+        {
+            return null;
+        }
+
         var active = section.GetSection("Active");
         var passive = section.GetSection("Passive");
         return new global::Yarp.ReverseProxy.Configuration.HealthCheckConfig
@@ -88,7 +96,11 @@ partial class YarpConfigParser
 
     private static HttpClientConfig? ParseHttpClientConfig(IConfigurationSection section)
     {
-        if (!section.Exists()) return null;
+        if (!section.Exists())
+        {
+            return null;
+        }
+
         return new HttpClientConfig
         {
             SslProtocols = section["SslProtocols"] is { Length: > 0 } sp
@@ -107,7 +119,11 @@ partial class YarpConfigParser
 
     private static WebProxyConfig? ParseWebProxyConfig(IConfigurationSection section)
     {
-        if (!section.Exists()) return null;
+        if (!section.Exists())
+        {
+            return null;
+        }
+
         var address = section["Address"];
         return new WebProxyConfig
         {
@@ -121,7 +137,11 @@ partial class YarpConfigParser
 
     private static ForwarderRequestConfig? ParseForwarderRequestConfig(IConfigurationSection section)
     {
-        if (!section.Exists()) return null;
+        if (!section.Exists())
+        {
+            return null;
+        }
+
         return new ForwarderRequestConfig
         {
             ActivityTimeout = section["ActivityTimeout"] is { Length: > 0 } a

@@ -76,7 +76,10 @@ public class AIController : Controller
     public IActionResult SaveConfig([FromBody] AIConfigSaveRequest request)
     {
         if (request.McpServer?.Enabled == true && !_features.Mcp)
+        {
             return BadRequest(new { code = 400, message = "MCP is not registered by this host." });
+        }
+
         var current = _configStore.Current;
         var updated = new AIOptions
         {
@@ -114,7 +117,10 @@ public class AIController : Controller
     public async Task<IActionResult> TestConnection()
     {
         if (!_configStore.IsConfigured)
+        {
             return Json(new { ok = false, message = "AI is not configured. Please set API Key and model." });
+        }
+
         var (ok, message) = await _aiService.TestConnectionAsync();
         return Json(new { ok, message });
     }

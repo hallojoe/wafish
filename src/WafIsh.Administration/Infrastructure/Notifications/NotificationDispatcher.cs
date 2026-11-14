@@ -73,7 +73,10 @@ public sealed class NotificationDispatcher : BackgroundService
     private void Enqueue(WebhookNotificationMessage message)
     {
         Interlocked.Increment(ref _submitted);
-        if (!_queue.Writer.TryWrite(message)) Interlocked.Increment(ref _discarded);
+        if (!_queue.Writer.TryWrite(message))
+        {
+            Interlocked.Increment(ref _discarded);
+        }
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
@@ -81,12 +84,18 @@ public sealed class NotificationDispatcher : BackgroundService
         _queue.Writer.TryComplete();
         await base.StopAsync(cancellationToken);
         // BackgroundService can cancel its scheduled task before ExecuteAsync begins.
-        if (ExecuteTask is null || ExecuteTask.IsCompleted) DiscardQueued();
+        if (ExecuteTask is null || ExecuteTask.IsCompleted)
+        {
+            DiscardQueued();
+        }
     }
 
     private void DiscardQueued()
     {
-        while (_queue.Reader.TryRead(out _)) Interlocked.Increment(ref _discarded);
+        while (_queue.Reader.TryRead(out _))
+        {
+            Interlocked.Increment(ref _discarded);
+        }
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -150,7 +159,10 @@ public sealed class NotificationDispatcher : BackgroundService
             return DispatchOutcome.Failed;
         }
 
-        if (settings.Platforms.Count == 0) return DispatchOutcome.Suppressed;
+        if (settings.Platforms.Count == 0)
+        {
+            return DispatchOutcome.Suppressed;
+        }
 
         // Route: platforms with an explicit subscription list only receive their
         // subscribed events; platforms without one fall back to the global list.
@@ -162,10 +174,15 @@ public sealed class NotificationDispatcher : BackgroundService
                 : settings.EnabledEvents.Contains(message.EventType, StringComparer.OrdinalIgnoreCase);
 
             if (subscribed)
+            {
                 platforms.Add(platform);
+            }
         }
 
-        if (platforms.Count == 0) return DispatchOutcome.Suppressed;
+        if (platforms.Count == 0)
+        {
+            return DispatchOutcome.Suppressed;
+        }
 
         // Cooldown dedup per (platform, event, target).
         var cooldown = TimeSpan.FromSeconds(Math.Clamp(settings.CooldownSeconds, 0, 3600));
@@ -178,13 +195,18 @@ public sealed class NotificationDispatcher : BackgroundService
                 {
                     var key = $"{p}|{message.EventType}|{message.Target ?? "-"}";
                     if (_cooldownUntil.TryGetValue(key, out var until) && until > now)
+                    {
                         return true;
+                    }
+
                     _cooldownUntil[key] = now + cooldown;
                     return false;
                 });
 
                 if (_cooldownUntil.Count > 5000)
+                {
                     _cooldownUntil.Clear(); // safety valve for unbounded key growth
+                }
             }
 
             if (platforms.Count == 0)
@@ -198,7 +220,11 @@ public sealed class NotificationDispatcher : BackgroundService
         }
 
         var report = await sender.SendToPlatformsAsync(message, platforms, ct: ct);
-        if (!report.Success) ct.ThrowIfCancellationRequested();
+        if (!report.Success)
+        {
+            ct.ThrowIfCancellationRequested();
+        }
+
         if (report.Total > 0 && !report.Success)
         {
             _logger.LogWarning(

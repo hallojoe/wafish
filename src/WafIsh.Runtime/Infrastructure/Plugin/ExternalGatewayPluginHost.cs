@@ -68,7 +68,9 @@ public sealed class ExternalGatewayPluginHost : IDisposable
         {
             var pluginId = registration.Manifest.Id;
             if (registration.Status == ExternalPluginRegistrationStatus.InvalidManifest)
+            {
                 continue;
+            }
 
             if (!isEnabled(pluginId))
             {
@@ -100,7 +102,9 @@ public sealed class ExternalGatewayPluginHost : IDisposable
         }
 
         if (_loaded.ContainsKey(pluginId))
+        {
             return true;
+        }
 
         var dependencyErrors = PluginDependencyValidator.Validate(registration.Manifest, availableManifests);
         if (dependencyErrors.Count > 0)
@@ -126,13 +130,17 @@ public sealed class ExternalGatewayPluginHost : IDisposable
         }
 
         if (_registrations.ContainsKey(pluginId))
+        {
             UpdateStatus(pluginId, ExternalPluginRegistrationStatus.Disabled);
+        }
     }
 
     private void Discover()
     {
         if (!Directory.Exists(_pluginRoot))
+        {
             return;
+        }
 
         foreach (var manifestPath in Directory.EnumerateFiles(_pluginRoot, "plugin.json", SearchOption.AllDirectories))
         {
@@ -143,7 +151,9 @@ public sealed class ExternalGatewayPluginHost : IDisposable
                     ?? throw new InvalidDataException("Manifest is empty.");
                 ValidateManifest(manifest, manifestPath);
                 if (_registrations.ContainsKey(manifest.Id))
+                {
                     throw new InvalidDataException($"Duplicate plugin id '{manifest.Id}'.");
+                }
 
                 _registrations[manifest.Id] = new ExternalPluginRegistration(
                     manifest, manifestPath, ExternalPluginRegistrationStatus.Discovered);
@@ -174,7 +184,10 @@ public sealed class ExternalGatewayPluginHost : IDisposable
     public ExternalPluginRuntimeLoad LoadRuntime(string pluginId)
     {
         if (!_registrations.TryGetValue(pluginId, out var registration))
+        {
             throw new KeyNotFoundException($"External plugin manifest '{pluginId}' was not discovered.");
+        }
+
         CollectiblePluginLoadContext? context = null;
         try
         {
@@ -182,20 +195,29 @@ public sealed class ExternalGatewayPluginHost : IDisposable
             var pluginDirectory = Path.GetDirectoryName(registration.ManifestPath)!;
             var assemblyPath = Path.GetFullPath(Path.Combine(pluginDirectory, manifest.EntryAssembly!));
             if (!assemblyPath.StartsWith(Path.GetFullPath(pluginDirectory) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            {
                 throw new InvalidDataException("entryAssembly must stay inside the plugin directory.");
+            }
+
             if (!File.Exists(assemblyPath))
+            {
                 throw new FileNotFoundException("Plugin entry assembly was not found.", assemblyPath);
+            }
 
             context = new CollectiblePluginLoadContext(assemblyPath);
             var assembly = context.LoadFromAssemblyPath(assemblyPath);
             var entryType = assembly.GetType(manifest.EntryType!, throwOnError: true, ignoreCase: false)!;
             if (!typeof(IGatewayPlugin).IsAssignableFrom(entryType))
+            {
                 throw new InvalidCastException($"Entry type '{manifest.EntryType}' does not implement {nameof(IGatewayPlugin)}.");
+            }
 
             var plugin = (IGatewayPlugin)(Activator.CreateInstance(entryType)
                 ?? throw new InvalidOperationException($"Could not create plugin entry type '{manifest.EntryType}'."));
             if (!string.Equals(plugin.PluginId, manifest.Id, StringComparison.OrdinalIgnoreCase))
+            {
                 throw new InvalidDataException($"Entry plugin id '{plugin.PluginId}' does not match manifest id '{manifest.Id}'.");
+            }
 
             UpdateStatus(manifest.Id, ExternalPluginRegistrationStatus.Loaded, isCollectible: true, isLoadContextAlive: true);
             if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
@@ -240,12 +262,36 @@ public sealed class ExternalGatewayPluginHost : IDisposable
 
     private static void ValidateManifest(PluginManifest manifest, string manifestPath)
     {
-        if (string.IsNullOrWhiteSpace(manifest.Id)) throw new InvalidDataException("id is required.");
-        if (string.IsNullOrWhiteSpace(manifest.Name)) throw new InvalidDataException("name is required.");
-        if (!SemanticVersion.TryParse(manifest.Version, out _)) throw new InvalidDataException($"version '{manifest.Version}' is not semantic versioning compatible.");
-        if (string.IsNullOrWhiteSpace(manifest.EntryAssembly)) throw new InvalidDataException("entryAssembly is required for external plugins.");
-        if (string.IsNullOrWhiteSpace(manifest.EntryType)) throw new InvalidDataException("entryType is required for external plugins.");
-        if (Path.IsPathRooted(manifest.EntryAssembly)) throw new InvalidDataException("entryAssembly must be relative to plugin.json.");
+        if (string.IsNullOrWhiteSpace(manifest.Id))
+        {
+            throw new InvalidDataException("id is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(manifest.Name))
+        {
+            throw new InvalidDataException("name is required.");
+        }
+
+        if (!SemanticVersion.TryParse(manifest.Version, out _))
+        {
+            throw new InvalidDataException($"version '{manifest.Version}' is not semantic versioning compatible.");
+        }
+
+        if (string.IsNullOrWhiteSpace(manifest.EntryAssembly))
+        {
+            throw new InvalidDataException("entryAssembly is required for external plugins.");
+        }
+
+        if (string.IsNullOrWhiteSpace(manifest.EntryType))
+        {
+            throw new InvalidDataException("entryType is required for external plugins.");
+        }
+
+        if (Path.IsPathRooted(manifest.EntryAssembly))
+        {
+            throw new InvalidDataException("entryAssembly must be relative to plugin.json.");
+        }
+
         _ = manifestPath;
     }
 
@@ -316,7 +362,10 @@ public sealed class ExternalGatewayPluginHost : IDisposable
 
             var targetDir = Path.Combine(_pluginRoot, manifest.Id);
             if (Directory.Exists(targetDir))
+            {
                 Directory.Delete(targetDir, recursive: true);
+            }
+
             CopyDirectory(sourceDirectory, targetDir);
 
             var newManifestPath = Path.Combine(targetDir, "plugin.json");
@@ -363,7 +412,9 @@ public sealed class ExternalGatewayPluginHost : IDisposable
         {
             var pluginDir = Path.GetDirectoryName(registration.ManifestPath);
             if (!string.IsNullOrEmpty(pluginDir) && Directory.Exists(pluginDir))
+            {
                 Directory.Delete(pluginDir, recursive: true);
+            }
 
             _registrations.Remove(pluginId);
             _unloadingContexts.Remove(pluginId);
@@ -457,7 +508,10 @@ public sealed class ExternalGatewayPluginHost : IDisposable
     public void Dispose()
     {
         foreach (var pluginId in _loaded.Keys.ToArray())
+        {
             Deactivate(pluginId);
+        }
+
         _loaded.Clear();
     }
 
@@ -477,7 +531,9 @@ public sealed class ExternalGatewayPluginHost : IDisposable
         protected override Assembly? Load(AssemblyName assemblyName)
         {
             if (string.Equals(assemblyName.Name, _contractAssemblyName, StringComparison.OrdinalIgnoreCase))
+            {
                 return null;
+            }
 
             var path = _resolver.ResolveAssemblyToPath(assemblyName);
             return path == null ? null : LoadFromAssemblyPath(path);
@@ -517,7 +573,10 @@ public sealed class ExternalPluginRuntimeLoad : IAsyncDisposable
             catch { }
         }
         if (Plugin is IDisposable disposable)
+        {
             disposable.Dispose();
+        }
+
         var context = Interlocked.Exchange(ref _context, null);
         if (context != null)
         {
@@ -550,7 +609,9 @@ public static class PluginDependencyValidator
             }
 
             if (!SemanticVersionConstraint.IsSatisfied(actual, dependency.MinimumVersion, out var constraintError))
+            {
                 errors.Add($"Dependency '{dependency.PluginId}' version {dependencyManifest.Version} does not satisfy '{dependency.MinimumVersion}': {constraintError}");
+            }
         }
         return errors;
     }
@@ -561,17 +622,37 @@ internal readonly record struct SemanticVersion(int Major, int Minor, int Patch,
     public static bool TryParse(string? value, out SemanticVersion version)
     {
         version = default;
-        if (string.IsNullOrWhiteSpace(value)) return false;
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
         var coreAndMetadata = value.Trim().TrimStart('v', 'V').Split('+', 2)[0];
         var parts = coreAndMetadata.Split('-', 2);
         var numbers = parts[0].Split('.');
-        if (numbers.Length is < 1 or > 3 || !TryParseCoreNumber(numbers[0], out var major)) return false;
+        if (numbers.Length is < 1 or > 3 || !TryParseCoreNumber(numbers[0], out var major))
+        {
+            return false;
+        }
+
         var minor = 0;
         var patch = 0;
-        if (numbers.Length > 1 && !TryParseCoreNumber(numbers[1], out minor)) return false;
-        if (numbers.Length > 2 && !TryParseCoreNumber(numbers[2], out patch)) return false;
+        if (numbers.Length > 1 && !TryParseCoreNumber(numbers[1], out minor))
+        {
+            return false;
+        }
+
+        if (numbers.Length > 2 && !TryParseCoreNumber(numbers[2], out patch))
+        {
+            return false;
+        }
+
         var preRelease = parts.Length == 2 ? parts[1] : null;
-        if (preRelease != null && !IsValidPreRelease(preRelease)) return false;
+        if (preRelease != null && !IsValidPreRelease(preRelease))
+        {
+            return false;
+        }
+
         version = new SemanticVersion(major, minor, patch, preRelease);
         return true;
     }
@@ -588,14 +669,37 @@ internal readonly record struct SemanticVersion(int Major, int Minor, int Patch,
     public int CompareTo(SemanticVersion other)
     {
         var result = Major.CompareTo(other.Major);
-        if (result != 0) return result;
+        if (result != 0)
+        {
+            return result;
+        }
+
         result = Minor.CompareTo(other.Minor);
-        if (result != 0) return result;
+        if (result != 0)
+        {
+            return result;
+        }
+
         result = Patch.CompareTo(other.Patch);
-        if (result != 0) return result;
-        if (PreRelease == null && other.PreRelease != null) return 1;
-        if (PreRelease != null && other.PreRelease == null) return -1;
-        if (PreRelease == null) return 0;
+        if (result != 0)
+        {
+            return result;
+        }
+
+        if (PreRelease == null && other.PreRelease != null)
+        {
+            return 1;
+        }
+
+        if (PreRelease != null && other.PreRelease == null)
+        {
+            return -1;
+        }
+
+        if (PreRelease == null)
+        {
+            return 0;
+        }
 
         var identifiers = PreRelease.Split('.');
         var otherIdentifiers = other.PreRelease!.Split('.');
@@ -618,7 +722,10 @@ internal readonly record struct SemanticVersion(int Major, int Minor, int Patch,
                 result = string.Compare(identifier, otherIdentifier, StringComparison.Ordinal);
             }
 
-            if (result != 0) return result;
+            if (result != 0)
+            {
+                return result;
+            }
         }
 
         return identifiers.Length.CompareTo(otherIdentifiers.Length);
@@ -630,7 +737,10 @@ internal static class SemanticVersionConstraint
     public static bool IsSatisfied(SemanticVersion actual, string? constraint, out string? error)
     {
         error = null;
-        if (string.IsNullOrWhiteSpace(constraint)) return true;
+        if (string.IsNullOrWhiteSpace(constraint))
+        {
+            return true;
+        }
 
         var comparators = constraint.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         foreach (var comparator in comparators)
@@ -659,7 +769,10 @@ internal static class SemanticVersionConstraint
                 "=" => comparison == 0,
                 _ => false
             };
-            if (!satisfied) return false;
+            if (!satisfied)
+            {
+                return false;
+            }
         }
 
         return true;

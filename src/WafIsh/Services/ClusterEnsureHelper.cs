@@ -147,20 +147,26 @@ internal static class ClusterEnsureHelper
             string.Equals(c.ClusterId, clusterId, StringComparison.OrdinalIgnoreCase));
 
         if (cluster == null)
+        {
             return (clusters, destKey, false, false);
+        }
 
         var destinations = cluster.Destinations?.ToDictionary(
             d => d.Key, d => d.Value) ?? new Dictionary<string, DestinationConfig>();
 
         if (!destinations.Remove(destKey))
+        {
             return (clusters, destKey, false, false); // destination not present
+        }
 
         var mutable = new List<ClusterConfig>(clusters);
         var idx = mutable.FindIndex(c =>
             string.Equals(c.ClusterId, clusterId, StringComparison.OrdinalIgnoreCase));
 
         if (idx < 0)
+        {
             return (clusters, destKey, false, true);
+        }
 
         if (destinations.Count == 0)
         {

@@ -18,7 +18,10 @@ internal static class SqliteEncryptionChecks
             var cipher = await Scalar(connection, "SELECT sqlite3mc_version()");
             if (!Version.TryParse(sqlite, out var sqliteVersion) || sqliteVersion < new Version(3, 54, 1) ||
                 !Version.TryParse(cipher?.Replace("SQLite3 Multiple Ciphers ", "", StringComparison.Ordinal), out var cipherVersion) || cipherVersion < new Version(2, 7, 0))
+            {
                 throw new InvalidOperationException("The loaded native database engine is below the reviewed security floor.");
+            }
+
             Console.WriteLine($"Native storage: SQLite3MC {cipher}; SQLite {sqlite}");
         });
 
@@ -39,19 +42,29 @@ internal static class SqliteEncryptionChecks
                         await using var connection = await provider.GetRequiredService<SqliteConnectionFactory>().CreateConnectionAsync();
                         await connection.OpenAsync();
                         if (await Scalar(connection, "SELECT value FROM compatibility_probe") != "legacy-data-retained")
+                        {
                             throw new InvalidOperationException("Legacy data was lost during migration.");
+                        }
+
                         await Scalar(connection, "INSERT INTO compatibility_probe VALUES ('new-data-retained'); SELECT count(*) FROM yarp_routes");
                         if (await Scalar(connection, "PRAGMA integrity_check") != "ok")
+                        {
                             throw new InvalidOperationException("Migrated database failed its integrity check.");
+                        }
                     }
                     await using var reopened = CreateProvider(settings.ToString());
                     await using var read = await reopened.GetRequiredService<SqliteConnectionFactory>().CreateConnectionAsync();
                     await read.OpenAsync();
                     if (await Scalar(read, "SELECT count(*) FROM compatibility_probe") != "2")
+                    {
                         throw new InvalidOperationException("Legacy database did not retain the new write.");
+                    }
+
                     var header = (await File.ReadAllBytesAsync(path)).Take(16).ToArray();
                     if (System.Text.Encoding.ASCII.GetString(header).StartsWith("SQLite format 3") == encrypted)
+                    {
                         throw new InvalidOperationException("The migration changed database encryption unexpectedly.");
+                    }
                 }
                 finally { DeleteDatabase(path); }
             });
@@ -72,10 +85,15 @@ internal static class SqliteEncryptionChecks
                 await using var connection = await provider.GetRequiredService<SqliteConnectionFactory>().CreateConnectionAsync();
                 var actual = new SqliteConnectionStringBuilder(connection.ConnectionString);
                 if (actual.DataSource != settings.DataSource || actual.Pooling)
+                {
                     throw new InvalidOperationException("Explicit connection settings changed.");
+                }
+
                 await connection.OpenAsync();
                 if (await Scalar(connection, "SELECT value FROM compatibility_probe") != "legacy-data-retained")
+                {
                     throw new InvalidOperationException("Explicit SQLCipher options did not open legacy data.");
+                }
             }
             finally { DeleteDatabase(path); }
         });
@@ -108,7 +126,10 @@ internal static class SqliteEncryptionChecks
                     command.CommandText = "SELECT sqlite3mc_version()";
                     var cipherVersion = await command.ExecuteScalarAsync() as string;
                     if (string.IsNullOrWhiteSpace(cipherVersion))
+                    {
                         throw new InvalidOperationException("The maintained encryption provider did not load.");
+                    }
+
                     command.CommandText = "SELECT sqlite_version()";
                     Console.WriteLine($"Encrypted storage: SQLite3MC {cipherVersion}; SQLite {await command.ExecuteScalarAsync()}");
                     // Reuse the actual URI configuration for invalid-key checks below.
@@ -124,7 +145,9 @@ internal static class SqliteEncryptionChecks
                     await using var command = connection.CreateCommand();
                     command.CommandText = "SELECT value FROM migration_probe";
                     if (await command.ExecuteScalarAsync() as string != "retained")
+                    {
                         throw new InvalidOperationException("Encrypted data was lost after reopening the database.");
+                    }
                 }
 
                 foreach (var invalidPassword in new[] { "", "incorrect-key" })
@@ -175,6 +198,9 @@ internal static class SqliteEncryptionChecks
     private static void DeleteDatabase(string path)
     {
         SqliteConnection.ClearAllPools();
-        foreach (var suffix in new[] { "", "-wal", "-shm" }) File.Delete(path + suffix);
+        foreach (var suffix in new[] { "", "-wal", "-shm" })
+        {
+            File.Delete(path + suffix);
+        }
     }
 }

@@ -28,7 +28,9 @@ public sealed class PluginConfigurationSchemaValidator : IPluginConfigurationSch
             }
 
             if (!Validate(instance.RootElement, schema.RootElement, "$", out error))
+            {
                 return false;
+            }
 
             normalizedJson = instance.RootElement.GetRawText();
             return true;
@@ -47,7 +49,10 @@ public sealed class PluginConfigurationSchemaValidator : IPluginConfigurationSch
         {
             foreach (var branch in allOf.EnumerateArray())
             {
-                if (branch.ValueKind == JsonValueKind.Object && !Validate(value, branch, path, out error)) return false;
+                if (branch.ValueKind == JsonValueKind.Object && !Validate(value, branch, path, out error))
+                {
+                    return false;
+                }
             }
         }
         if (schema.TryGetProperty("oneOf", out var oneOf) && oneOf.ValueKind == JsonValueKind.Array)
@@ -86,13 +91,24 @@ public sealed class PluginConfigurationSchemaValidator : IPluginConfigurationSch
         }
 
         if (value.ValueKind == JsonValueKind.Object && !ValidateObject(value, schema, path, out error))
+        {
             return false;
+        }
+
         if (value.ValueKind == JsonValueKind.Array && !ValidateArray(value, schema, path, out error))
+        {
             return false;
+        }
+
         if (value.ValueKind == JsonValueKind.String && !ValidateString(value, schema, path, out error))
+        {
             return false;
+        }
+
         if (value.ValueKind == JsonValueKind.Number && !ValidateNumber(value, schema, path, out error))
+        {
             return false;
+        }
 
         return true;
     }
@@ -132,7 +148,9 @@ public sealed class PluginConfigurationSchemaValidator : IPluginConfigurationSch
             if (properties.ValueKind == JsonValueKind.Object && properties.TryGetProperty(property.Name, out var propertySchema))
             {
                 if (!Validate(property.Value, propertySchema, AppendProperty(path, property.Name), out error))
+                {
                     return false;
+                }
             }
             else if (schema.TryGetProperty("additionalProperties", out var additional) && additional.ValueKind == JsonValueKind.False)
             {
@@ -183,7 +201,9 @@ public sealed class PluginConfigurationSchemaValidator : IPluginConfigurationSch
             for (var i = 0; i < items.Length; i++)
             {
                 if (!Validate(items[i], itemSchema, $"{path}[{i}]", out error))
+                {
                     return false;
+                }
             }
         }
 
@@ -270,7 +290,10 @@ public sealed class PluginConfigurationSchemaValidator : IPluginConfigurationSch
     private static bool MatchesType(JsonElement value, JsonElement type)
     {
         if (type.ValueKind == JsonValueKind.String)
+        {
             return MatchesType(value, type.GetString());
+        }
+
         return type.ValueKind == JsonValueKind.Array && type.EnumerateArray().Any(candidate =>
             candidate.ValueKind == JsonValueKind.String && MatchesType(value, candidate.GetString()));
     }
@@ -290,7 +313,9 @@ public sealed class PluginConfigurationSchemaValidator : IPluginConfigurationSch
     private static bool JsonEquals(JsonElement left, JsonElement right)
     {
         if (left.ValueKind != right.ValueKind)
+        {
             return false;
+        }
 
         return left.ValueKind switch
         {
@@ -326,7 +351,10 @@ public sealed class PluginConfigurationSchemaValidator : IPluginConfigurationSch
     private static string AppendProperty(string path, string propertyName)
     {
         if (propertyName.All(character => char.IsLetterOrDigit(character) || character == '_'))
+        {
             return $"{path}.{propertyName}";
+        }
+
         return $"{path}['{propertyName.Replace("'", "\\'", StringComparison.Ordinal)}']";
     }
 }
@@ -347,7 +375,9 @@ public sealed class PluginConfigurationMigrationService : IPluginConfigurationMi
         migratedConfigJson = configJson;
         error = string.Empty;
         if (fromVersion == toVersion)
+        {
             return true;
+        }
 
         var direction = Math.Sign(toVersion - fromVersion);
         var currentVersion = fromVersion;

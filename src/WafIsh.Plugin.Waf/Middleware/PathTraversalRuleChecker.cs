@@ -21,15 +21,22 @@ public sealed class PathTraversalRuleChecker : IWafRuleChecker
 
     public WafCheckResult Check(WafCheckContext context)
     {
-        if (!context.Options.EnablePathTraversalDetection) return WafCheckResult.Passed;
+        if (!context.Options.EnablePathTraversalDetection)
+        {
+            return WafCheckResult.Passed;
+        }
 
         // Check raw path (un-normalized — preserves ../ that ASP.NET might strip)
         if (Pattern.IsMatch(context.RawRequestPath))
+        {
             return WafCheckResult.Blocked("PathTraversalBlocked", context.RawRequestPath);
+        }
 
         // Check decoded query string
         if (!string.IsNullOrEmpty(context.DecodedQueryString) && Pattern.IsMatch(context.DecodedQueryString))
+        {
             return WafCheckResult.Blocked("PathTraversalInQueryBlocked", context.DecodedQueryString);
+        }
 
         return WafCheckResult.Passed;
     }

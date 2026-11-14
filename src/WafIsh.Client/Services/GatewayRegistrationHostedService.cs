@@ -132,13 +132,18 @@ internal sealed class GatewayRegistrationHostedService : IHostedService, IAsyncD
     {
         // Stop heartbeat
         await _heartbeatLifetime.CancelAsync();
-        if (_heartbeatTask != null) await _heartbeatTask.ConfigureAwait(false);
+        if (_heartbeatTask != null)
+        {
+            await _heartbeatTask.ConfigureAwait(false);
+        }
 
         _logger.LogInformation("Auto-unregistration starting...");
         try
         {
             if (await _client.UnregisterAsync(ct).ConfigureAwait(false))
+            {
                 _logger.LogInformation("Auto-unregistration complete");
+            }
         }
         catch (Exception ex)
         {
@@ -191,7 +196,11 @@ internal sealed class GatewayRegistrationHostedService : IHostedService, IAsyncD
     public async ValueTask DisposeAsync()
     {
         await _heartbeatLifetime.CancelAsync();
-        if (_heartbeatTask != null) await _heartbeatTask.ConfigureAwait(false);
+        if (_heartbeatTask != null)
+        {
+            await _heartbeatTask.ConfigureAwait(false);
+        }
+
         _heartbeatLifetime.Dispose();
     }
 
@@ -206,11 +215,16 @@ internal sealed class GatewayRegistrationHostedService : IHostedService, IAsyncD
                 {
                     var healthy = await _client.HeartbeatAsync(ct).ConfigureAwait(false);
                     ct.ThrowIfCancellationRequested();
-                    if (healthy) _consecutiveHeartbeatFailures = 0;
+                    if (healthy)
+                    {
+                        _consecutiveHeartbeatFailures = 0;
+                    }
                     else if (++_consecutiveHeartbeatFailures >= MaxConsecutiveHeartbeatFailures)
                     {
                         if (await _client.RegisterAsync(ct).ConfigureAwait(false))
+                        {
                             _consecutiveHeartbeatFailures = 0;
+                        }
                     }
                 }
                 catch (OperationCanceledException) when (ct.IsCancellationRequested) { break; }

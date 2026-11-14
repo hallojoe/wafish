@@ -47,18 +47,27 @@ public sealed class LockFreeStatistics
         Interlocked.Increment(ref _totalRequests.Value);
 
         if (statusCode >= 200 && statusCode < 400)
+        {
             Interlocked.Increment(ref _successCount.Value);
+        }
         else if (statusCode >= 400)
+        {
             Interlocked.Increment(ref _errorCount.Value);
+        }
 
         Interlocked.Add(ref _totalLatencyMicros.Value, latencyMicros);
         RecordLatency(latencyMicros);
         _statusCodes.Increment(statusCode);
 
         if (routeIdHash != 0)
+        {
             _routeCounts.Increment(routeIdHash);
+        }
+
         if (clusterIdHash != 0)
+        {
             _clusterCounts.Increment(clusterIdHash);
+        }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -146,7 +155,9 @@ public sealed class ConcurrentIntDictionary
         finally
         {
             if (lockTaken)
+            {
                 _locks[stripeIdx].Exit(false);
+            }
         }
     }
 
@@ -164,7 +175,9 @@ public sealed class ConcurrentIntDictionary
         finally
         {
             if (lockTaken)
+            {
                 _locks[stripeIdx].Exit(false);
+            }
         }
     }
 
@@ -183,7 +196,9 @@ public sealed class ConcurrentIntDictionary
             finally
             {
                 if (lockTaken)
+                {
                     _locks[i].Exit(false);
+                }
             }
         }
 
@@ -209,7 +224,9 @@ public sealed class ConcurrentIntDictionary
             finally
             {
                 if (lockTaken)
+                {
                     _locks[i].Exit(false);
+                }
             }
         }
     }

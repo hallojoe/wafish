@@ -36,9 +36,16 @@ try
     builder.Services.AddWafIshAI();
     await using var app = builder.Build();
     if (app.Services.GetService<Microsoft.AspNetCore.Mvc.Razor.IRazorViewEngine>() != null || File.Exists(Path.Combine(AppContext.BaseDirectory, "WafIsh.Dashboard.dll")))
+    {
         throw new InvalidOperationException("React UI must run without Razor or the dashboard assembly.");
+    }
+
     var pathBase = Environment.GetEnvironmentVariable("UI_TEST_PATH_BASE");
-    if (!string.IsNullOrEmpty(pathBase)) app.UsePathBase(pathBase);
+    if (!string.IsNullOrEmpty(pathBase))
+    {
+        app.UsePathBase(pathBase);
+    }
+
     app.UseWafIshRuntime();
     app.MapWafIshAdministration();
     app.MapWafIshReactUi();

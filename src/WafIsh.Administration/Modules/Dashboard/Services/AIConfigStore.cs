@@ -51,16 +51,26 @@ public class AIConfigStore
         lock (_lock)
         {
             if (options.McpServer.Enabled && options.McpServer.Port is < 1 or > 65535)
+            {
                 throw new ArgumentException("MCP port must be between 1 and 65535.");
+            }
+
             var dir = Path.GetDirectoryName(_configPath);
             if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+            {
                 Directory.CreateDirectory(dir);
+            }
+
             var json = JsonSerializer.Serialize(options, FileJsonOpts);
             var temporary = _configPath + "." + Guid.NewGuid().ToString("N");
             try
             {
                 var fileOptions = new FileStreamOptions { Mode = FileMode.CreateNew, Access = FileAccess.Write, Share = FileShare.None };
-                if (!OperatingSystem.IsWindows()) fileOptions.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+                if (!OperatingSystem.IsWindows())
+                {
+                    fileOptions.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+                }
+
                 using (var stream = new FileStream(temporary, fileOptions))
                 {
                     var bytes = System.Text.Encoding.UTF8.GetBytes(json);
@@ -70,7 +80,11 @@ public class AIConfigStore
                 File.Move(temporary, _configPath, overwrite: true);
                 _current = JsonSerializer.Deserialize<AIOptions>(json, FileJsonOpts)!;
             }
-            finally { if (File.Exists(temporary)) File.Delete(temporary); }
+            finally { if (File.Exists(temporary))
+                {
+                    File.Delete(temporary);
+                }
+            }
         }
     }
 
@@ -78,7 +92,11 @@ public class AIConfigStore
     {
         try
         {
-            if (!File.Exists(_configPath)) return null;
+            if (!File.Exists(_configPath))
+            {
+                return null;
+            }
+
             var json = File.ReadAllText(_configPath);
             return JsonSerializer.Deserialize<AIOptions>(json, FileJsonOpts);
         }
@@ -97,14 +115,24 @@ public class AIConfigStore
             {
                 var start = idx + "Data Source=".Length;
                 var end = connStr.IndexOf(';', start);
-                if (end < 0) end = connStr.Length;
+                if (end < 0)
+                {
+                    end = connStr.Length;
+                }
+
                 dbFileName = connStr[start..end].Trim();
                 if (!Path.IsPathRooted(dbFileName))
+                {
                     dbFileName = Path.GetFullPath(dbFileName);
+                }
             }
         }
         var dir = Path.GetDirectoryName(dbFileName);
-        if (string.IsNullOrEmpty(dir)) dir = AppContext.BaseDirectory;
+        if (string.IsNullOrEmpty(dir))
+        {
+            dir = AppContext.BaseDirectory;
+        }
+
         return Path.Combine(dir, "ai-config.json");
     }
 }

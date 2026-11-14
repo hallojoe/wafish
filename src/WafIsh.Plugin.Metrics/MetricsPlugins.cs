@@ -20,7 +20,11 @@ public sealed class TrafficMetricsPlugin : IGatewayPlugin
     internal static void ConfigureMetricsPipeline(IReverseProxyApplicationBuilder pipeline)
     {
         const string key = "WafIsh.Metrics.Pipeline";
-        if (pipeline.Properties.ContainsKey(key)) return;
+        if (pipeline.Properties.ContainsKey(key))
+        {
+            return;
+        }
+
         pipeline.Properties[key] = true;
         pipeline.UseMiddleware<PluginMetricsMiddleware>();
     }

@@ -25,14 +25,20 @@ internal sealed class ConfigurationMutation : IDisposable
     public async Task<RouteOperationResult> CommitAsync(string operation, string? target = null, string? message = null)
     {
         if (_state.Version != _state.PersistedVersion)
+        {
             return Failure(ConfigurationUpdateStatus.ActivationFailed,
                 "A stored revision is not active. Restart the host before another update.");
+        }
+
         Config = DynamicConfigState.Clone(Config);
         Config.Version = _state.PersistedVersion + 1;
         Config.LastModified = DateTime.UtcNow;
         // Always repair references after implicit cluster creation or renaming.
         foreach (var route in Config.Routes)
+        {
             route.ClusterUid = DynamicConfigState.ResolveClusterUid(Config, route.Config.ClusterId);
+        }
+
         Action activate;
         try { activate = _publisher.Prepare(Config, Config.Version); }
         catch (Exception ex) { return Failure(ConfigurationUpdateStatus.ValidationRejected, ex.Message); }

@@ -24,7 +24,11 @@ internal static class ReviewReleaseChecks
         {
             var clock = new ManualTime(); var store = new InMemoryCircuitStateStore(clock);
             var policy = new CircuitBreakerConfig { MinimumThroughput = 1, RecoveryTimeoutSeconds = 30, SamplingDurationSeconds = 20 };
-            using (var attempt = store.TryAcquireAttempt("c", "d", policy)) attempt!.Complete(true);
+            using (var attempt = store.TryAcquireAttempt("c", "d", policy))
+            {
+                attempt!.Complete(true);
+            }
+
             clock.ShiftUtc(TimeSpan.FromHours(12));
             Check(store.IsCircuitOpen("c", "d"), "Wall-clock adjustment bypassed circuit recovery.");
             clock.Advance(TimeSpan.FromSeconds(31));
@@ -94,7 +98,11 @@ internal static class ReviewReleaseChecks
             publisher.Publish(GatewaySnapshot.Empty with { Version = 81 });
             Check(store.GetRoutes().Count == 0 && store.GetDestinations().Count == 0, "Snapshot reads retained obsolete series.");
             var bounded = new PluginMetricStore();
-            for (var i = 0; i < PluginMetricStore.MaximumSeriesPerScope + 10; i++) bounded.Record(i.ToString(), null, null, 200, 1, 0, 0);
+            for (var i = 0; i < PluginMetricStore.MaximumSeriesPerScope + 10; i++)
+            {
+                bounded.Record(i.ToString(), null, null, 200, 1, 0, 0);
+            }
+
             Check(bounded.GetRoutes().Count == PluginMetricStore.MaximumSeriesPerScope, "Standalone series budget failed.");
             return Task.CompletedTask;
         });
@@ -120,16 +128,31 @@ internal static class ReviewReleaseChecks
         private DateTimeOffset _utc = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
         private readonly List<ManualTimer> _timers = [];
         private readonly object _gate = new();
-        public int TimerCount { get { lock (_gate) return _timers.Count; } }
+        public int TimerCount { get { lock (_gate) { return _timers.Count; } } }
         public override long TimestampFrequency => TimeSpan.TicksPerSecond;
-        public override long GetTimestamp() { lock (_gate) return _ticks; }
-        public override DateTimeOffset GetUtcNow() { lock (_gate) return _utc; }
-        public void ShiftUtc(TimeSpan duration) { lock (_gate) _utc += duration; }
+        public override long GetTimestamp() { lock (_gate)
+            {
+                return _ticks;
+            }
+        }
+        public override DateTimeOffset GetUtcNow() { lock (_gate)
+            {
+                return _utc;
+            }
+        }
+        public void ShiftUtc(TimeSpan duration) { lock (_gate)
+            {
+                _utc += duration;
+            }
+        }
         public void Advance(TimeSpan duration)
         {
             ManualTimer[] timers;
             lock (_gate) { _ticks += duration.Ticks; _utc += duration; timers = _timers.ToArray(); }
-            foreach (var timer in timers) timer.Fire();
+            foreach (var timer in timers)
+            {
+                timer.Fire();
+            }
         }
         public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
         {
@@ -139,7 +162,7 @@ internal static class ReviewReleaseChecks
         {
             private long _due = long.MaxValue, _period;
             public bool Change(TimeSpan dueTime, TimeSpan period) { lock (clock._gate) { _due = dueTime == Timeout.InfiniteTimeSpan ? long.MaxValue : clock._ticks + dueTime.Ticks; _period = period.Ticks; return true; } }
-            public void Fire() { lock (clock._gate) { if (_due > clock._ticks) return; _due = _period > 0 ? clock._ticks + _period : long.MaxValue; } callback(state); }
+            public void Fire() { lock (clock._gate) { if (_due > clock._ticks) { return; } _due = _period > 0 ? clock._ticks + _period : long.MaxValue; } callback(state); }
             public void Dispose() { lock (clock._gate) { _due = long.MaxValue; clock._timers.Remove(this); } }
             public ValueTask DisposeAsync() { Dispose(); return ValueTask.CompletedTask; }
         }
@@ -147,7 +170,14 @@ internal static class ReviewReleaseChecks
     private static async Task Until(Func<bool> ready)
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        while (!ready()) await Task.Delay(5, timeout.Token);
+        while (!ready())
+        {
+            await Task.Delay(5, timeout.Token);
+        }
     }
-    private static void Check(bool value, string message) { if (!value) throw new Exception(message); }
+    private static void Check(bool value, string message) { if (!value)
+        {
+            throw new Exception(message);
+        }
+    }
 }

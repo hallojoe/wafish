@@ -134,7 +134,9 @@ public static class ConfigEntityMapper
         {
             var parsed = Serialization.YarpJsonConfig.DeserializeCluster(entity.ConfigJson);
             if (parsed != null)
+            {
                 return parsed with { ClusterId = entity.ClusterId };
+            }
         }
 
         return new ClusterConfig

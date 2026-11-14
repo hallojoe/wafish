@@ -59,7 +59,9 @@ internal static class DashboardRouteMapper
         dynamicRoutes?.TryGetValue(route.RouteId ?? string.Empty, out dynamicRoute);
         DynamicClusterConfig? dynamicCluster = null;
         if (!string.IsNullOrWhiteSpace(route.ClusterId))
+        {
             dynamicClusters?.TryGetValue(route.ClusterId, out dynamicCluster);
+        }
 
         // Pre-calculate metadata dictionary if needed
         Dictionary<string, string>? metadataDict = null;
@@ -112,7 +114,9 @@ internal static class DashboardRouteMapper
     private static List<RouteHeaderInfo>? MapHeaders(IReadOnlyList<RouteHeader>? headers)
     {
         if (headers == null || headers.Count == 0)
+        {
             return null;
+        }
 
         var result = new List<RouteHeaderInfo>(headers.Count);
         foreach (var h in headers)
@@ -134,7 +138,9 @@ internal static class DashboardRouteMapper
     private static List<RouteQueryParameterInfo>? MapQueryParameters(IReadOnlyList<RouteQueryParameter>? parameters)
     {
         if (parameters == null || parameters.Count == 0)
+        {
             return null;
+        }
 
         var result = new List<RouteQueryParameterInfo>(parameters.Count);
         foreach (var q in parameters)

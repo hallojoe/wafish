@@ -59,7 +59,9 @@ public class ClusterConfigController : ConfigControllerBase
             }
 
             if (cluster == null)
+            {
                 return BadRequest(new { code = 400, message = "Cluster configuration is required" });
+            }
 
             cluster = cluster with { ClusterId = clusterId };
 
@@ -76,13 +78,19 @@ public class ClusterConfigController : ConfigControllerBase
             }
 
             if (cluster.Destinations == null || cluster.Destinations.Count == 0)
+            {
                 return BadRequest(new { code = 400, message = "At least one destination is required" });
+            }
 
             SnapshotScheduler.QueueSnapshot($"After cluster '{clusterId}' saved via dashboard", GetClientIp());
 
             var result = await DynamicConfig.TryAddClusterConfig(cluster, "dashboard", "dashboard-user");
 
-            if (result.Success) InvalidateQueryCaches();
+            if (result.Success)
+            {
+                InvalidateQueryCaches();
+            }
+
             return result.Success
                 ? Ok(new { code = 200, status = result.Status, activeVersion = result.ActiveVersion, persistedVersion = result.PersistedVersion, message = result.Message, clusterId = clusterId })
                 : result.ToHttpResult();
@@ -111,7 +119,11 @@ public class ClusterConfigController : ConfigControllerBase
 
             var result = await DynamicConfig.TryRemoveCluster(clusterId);
 
-            if (result.Success) InvalidateQueryCaches();
+            if (result.Success)
+            {
+                InvalidateQueryCaches();
+            }
+
             return result.Success
                 ? Ok(new { code = 200, status = result.Status, activeVersion = result.ActiveVersion, persistedVersion = result.PersistedVersion, message = result.Message, clusterId = clusterId })
                 : result.ToHttpResult();
@@ -138,12 +150,18 @@ public class ClusterConfigController : ConfigControllerBase
 
             string? newClusterId = null;
             if (config.TryGetProperty("newClusterId", out var newIdProp))
+            {
                 newClusterId = newIdProp.GetString();
+            }
             else if (config.TryGetProperty("clusterId", out var newIdProp2))
+            {
                 newClusterId = newIdProp2.GetString();
+            }
 
             if (string.IsNullOrWhiteSpace(newClusterId))
+            {
                 return BadRequest(new { code = 400, message = "newClusterId is required" });
+            }
 
             Dictionary<string, string> destinations = new();
             if (config.TryGetProperty("destinations", out var destsProp) || config.TryGetProperty("Destinations", out destsProp))
@@ -160,21 +178,29 @@ public class ClusterConfigController : ConfigControllerBase
                                     ? addrPascalProp.GetString() ?? string.Empty
                                     : string.Empty;
                         if (!string.IsNullOrEmpty(address))
+                        {
                             destinations[dest.Name] = address;
+                        }
                     }
                 }
             }
 
             string? loadBalancingPolicy = null;
             if (config.TryGetProperty("loadBalancingPolicy", out var lbpProp))
+            {
                 loadBalancingPolicy = lbpProp.GetString();
+            }
 
             var result = await _identityService.RenameClusterAsync(
                 clusterId, newClusterId, destinations, loadBalancingPolicy,
                 clientIp: GetClientIp(), operatorName: "dashboard-user",
                 ct: HttpContext.RequestAborted);
 
-            if (result.Success) InvalidateQueryCaches();
+            if (result.Success)
+            {
+                InvalidateQueryCaches();
+            }
+
             return result.Success
                 ? Ok(new { code = 200, status = result.Status, activeVersion = result.ActiveVersion, persistedVersion = result.PersistedVersion, message = result.Message, oldClusterId = clusterId, newClusterId = newClusterId })
                 : result.ToHttpResult();
@@ -194,7 +220,9 @@ public class ClusterConfigController : ConfigControllerBase
     public async Task<IActionResult> BatchDeleteClusters([FromBody] BatchDeleteClustersRequest request)
     {
         if (request is null || request.ClusterIds is null || request.ClusterIds.Count == 0)
+        {
             return BadRequest(new { code = 400, message = "clusterIds is required and must be non-empty" });
+        }
 
         try
         {
@@ -205,7 +233,10 @@ public class ClusterConfigController : ConfigControllerBase
             await PersistenceService.SaveSnapshotAsync($"Before batch delete {request.ClusterIds.Count} cluster(s) via dashboard", GetClientIp());
 
             var result = await DynamicConfig.BatchDeleteClustersAsync(request.ClusterIds, "dashboard-user");
-            if (result.Succeeded > 0) InvalidateQueryCaches();
+            if (result.Succeeded > 0)
+            {
+                InvalidateQueryCaches();
+            }
 
             return StatusCode(ConfigurationUpdateHttp.StatusCode(result.Status), new
             {

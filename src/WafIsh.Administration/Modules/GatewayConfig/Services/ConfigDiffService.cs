@@ -54,13 +54,37 @@ public class ConfigDiffService : IConfigDiffService
     /// <inheritdoc />
     public string ResolveHistoryChangeType(string? description)
     {
-        if (string.IsNullOrWhiteSpace(description)) return "manual";
+        if (string.IsNullOrWhiteSpace(description))
+        {
+            return "manual";
+        }
+
         var text = description.ToLowerInvariant();
-        if (text.Contains("rollback")) return "rollback";
-        if (text.Contains("import")) return "import";
-        if (text.Contains("deleted") || text.Contains("remove")) return "delete";
-        if (text.Contains("renamed")) return "rename";
-        if (text.Contains("saved") || text.Contains("update")) return "update";
+        if (text.Contains("rollback"))
+        {
+            return "rollback";
+        }
+
+        if (text.Contains("import"))
+        {
+            return "import";
+        }
+
+        if (text.Contains("deleted") || text.Contains("remove"))
+        {
+            return "delete";
+        }
+
+        if (text.Contains("renamed"))
+        {
+            return "rename";
+        }
+
+        if (text.Contains("saved") || text.Contains("update"))
+        {
+            return "update";
+        }
+
         return "manual";
     }
 
@@ -69,19 +93,29 @@ public class ConfigDiffService : IConfigDiffService
     {
         var routes = new List<SnapshotRoute>();
         var reverseProxy = GetReverseProxySection(config);
-        if (reverseProxy.ValueKind != JsonValueKind.Object) return routes;
-        if (!(reverseProxy.TryGetProperty("routes", out var routesElement) || reverseProxy.TryGetProperty("Routes", out routesElement)))
+        if (reverseProxy.ValueKind != JsonValueKind.Object)
+        {
             return routes;
+        }
+
+        if (!(reverseProxy.TryGetProperty("routes", out var routesElement) || reverseProxy.TryGetProperty("Routes", out routesElement)))
+        {
+            return routes;
+        }
 
         if (routesElement.ValueKind == JsonValueKind.Array)
         {
             foreach (var route in routesElement.EnumerateArray())
+            {
                 routes.Add(ParseSnapshotRoute(route, null));
+            }
         }
         else if (routesElement.ValueKind == JsonValueKind.Object)
         {
             foreach (var route in routesElement.EnumerateObject())
+            {
                 routes.Add(ParseSnapshotRoute(route.Value, route.Name));
+            }
         }
 
         return routes.Where(r => !string.IsNullOrWhiteSpace(r.RouteId)).ToList();
@@ -92,11 +126,20 @@ public class ConfigDiffService : IConfigDiffService
     {
         var clusters = new List<SnapshotCluster>();
         var reverseProxy = GetReverseProxySection(config);
-        if (reverseProxy.ValueKind != JsonValueKind.Object) return clusters;
-        if (!(reverseProxy.TryGetProperty("clusters", out var clustersElement) || reverseProxy.TryGetProperty("Clusters", out clustersElement)))
+        if (reverseProxy.ValueKind != JsonValueKind.Object)
+        {
             return clusters;
+        }
 
-        if (clustersElement.ValueKind != JsonValueKind.Object) return clusters;
+        if (!(reverseProxy.TryGetProperty("clusters", out var clustersElement) || reverseProxy.TryGetProperty("Clusters", out clustersElement)))
+        {
+            return clusters;
+        }
+
+        if (clustersElement.ValueKind != JsonValueKind.Object)
+        {
+            return clusters;
+        }
 
         foreach (var kvp in clustersElement.EnumerateObject())
         {
@@ -256,7 +299,9 @@ public class ConfigDiffService : IConfigDiffService
         if (route.TryGetProperty("match", out var match) || route.TryGetProperty("Match", out match))
         {
             if (match.TryGetProperty("path", out var path) || match.TryGetProperty("Path", out path))
+            {
                 matchPath = path.GetString() ?? string.Empty;
+            }
         }
 
         var order = route.TryGetProperty("order", out var ord) ? ord.GetInt32() :

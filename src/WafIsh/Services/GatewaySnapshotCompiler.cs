@@ -175,7 +175,9 @@ public sealed class GatewaySnapshotPublisher : IGatewaySnapshotPublisher
         {
             observed = Current;
             if (snapshot.Version <= observed.Version)
+            {
                 throw new InvalidOperationException($"Snapshot version {snapshot.Version} must be greater than current version {observed.Version}.");
+            }
         }
         while (!ReferenceEquals(Interlocked.CompareExchange(ref _current, snapshot, observed), observed));
         return snapshot;

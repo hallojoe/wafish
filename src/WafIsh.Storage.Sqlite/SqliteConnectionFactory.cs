@@ -78,10 +78,18 @@ public sealed class SqliteConnectionFactory : IDbConnectionFactory
 
     private static void EnsureProvider()
     {
-        if (_providerSet) return;
+        if (_providerSet)
+        {
+            return;
+        }
+
         lock (_providerLock)
         {
-            if (_providerSet) return;
+            if (_providerSet)
+            {
+                return;
+            }
+
             SQLitePCL.Batteries_V2.Init();
             _providerSet = true;
         }
@@ -107,7 +115,10 @@ public sealed class SqliteConnectionFactory : IDbConnectionFactory
                 cipher = "sqlcipher";
             }
             if (string.Equals(cipher, "sqlcipher", StringComparison.OrdinalIgnoreCase) && !query.ContainsKey("legacy"))
+            {
                 source = QueryHelpers.AddQueryString(source, "legacy", "4");
+            }
+
             builder.DataSource = source;
         }
         return builder.ToString();

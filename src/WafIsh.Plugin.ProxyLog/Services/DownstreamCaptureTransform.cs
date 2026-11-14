@@ -44,7 +44,9 @@ public sealed class DownstreamCaptureTransformProvider : ITransformProvider
                 _runtimeSettings.Current,
                 out var settings) ||
             !settings.RequestBodyCaptureEnabled)
+        {
             return;
+        }
 
         // Add at the END so metadata reflects the final transformed request.
         context.RequestTransforms?.Add(new DownstreamCaptureTransform());

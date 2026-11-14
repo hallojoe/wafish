@@ -21,7 +21,10 @@ var mode = args.FirstOrDefault(x => x.StartsWith("--mode=", StringComparison.Ord
 if (mode is not ("core" or "storage" or "services" or "host-native" or "minimal" or "full" or "waf" or "waf-attack"
     or "retry" or "circuit" or "rate-fixed" or "rate-sliding" or "rate-token" or "rate-concurrency"
     or "log-meta" or "log-request" or "log-response" or "log-bodies" or "log-sqlite"))
+{
     throw new ArgumentException("Unknown benchmark mode.");
+}
+
 var retryEnabled = mode.StartsWith("retry", StringComparison.OrdinalIgnoreCase);
 var circuitEnabled = mode.StartsWith("circuit", StringComparison.OrdinalIgnoreCase);
 
@@ -71,7 +74,10 @@ else
     if (!coreOnly)
     {
         builder.Services.AddWafIshStorage();
-        if (!storageOnly) builder.Services.AddWafIshAdministration();
+        if (!storageOnly)
+        {
+            builder.Services.AddWafIshAdministration();
+        }
     }
 }
 
@@ -112,7 +118,10 @@ if (!coreOnly && !storageOnly && !servicesOnly && !nativeHost && mode != "minima
         var json = JsonSerializer.Serialize(settings);
         var validator = app.Services.GetRequiredService<IPluginConfigurationSchemaValidator>();
         if (!validator.TryValidate(json, schema.ConfigJsonSchema, out json, out var error))
+        {
             throw new InvalidOperationException(error);
+        }
+
         await mutations.UpsertAsync(new PluginBindingEntity
         {
             Id = $"route:{route.RouteUid}:{pluginId}", PluginId = pluginId,
@@ -121,9 +130,15 @@ if (!coreOnly && !storageOnly && !servicesOnly && !nativeHost && mode != "minima
         });
         var active = app.Services.GetRequiredService<IGatewaySnapshotPublisher>().Current;
         if (!active.RoutePlugins.TryGetValue("perf", out var plugins) || !plugins.Any(p => p.PluginId == pluginId))
+        {
             throw new InvalidOperationException($"Benchmark binding {pluginId} did not activate.");
+        }
     }
-    if (mode is "waf" or "waf-attack") await BindRouteAsync("waf", new { enabled = true });
+    if (mode is "waf" or "waf-attack")
+    {
+        await BindRouteAsync("waf", new { enabled = true });
+    }
+
     if (mode.StartsWith("rate-", StringComparison.Ordinal))
     {
         var algorithm = mode switch
@@ -136,10 +151,13 @@ if (!coreOnly && !storageOnly && !servicesOnly && !nativeHost && mode != "minima
             window = "1s", queueLimit = 0, partitionKey = "Global", tokenLimit = 100, tokensPerPeriod = 100 });
     }
     if (mode.StartsWith("log-", StringComparison.Ordinal))
+    {
         await BindRouteAsync("proxy-log", new {
             requestBodyCaptureEnabled = mode is "log-request" or "log-bodies" or "log-sqlite",
             responseBodyCaptureEnabled = mode is "log-response" or "log-bodies" or "log-sqlite",
             maxBodyLength = 262144, maxBodyBufferBytes = 262144 });
+    }
+
     if (retryEnabled)
     {
         var route = dynamicConfig?.Routes.First(item => item.Config.RouteId == "perf")
@@ -203,28 +221,39 @@ if (!coreOnly && !storageOnly && !servicesOnly && !nativeHost && mode != "minima
     {
         var schema = manifests.GetManifest(binding.PluginId)!.Schemas.Single(s => s.Version == binding.SchemaVersion);
         if (!validator.TryValidate(binding.ConfigJson, schema.ConfigJsonSchema, out _, out var error))
+        {
             throw new InvalidOperationException(error);
+        }
     }
     var plans = app.Services.GetRequiredService<GatewayPluginExecutionPlanProvider>().Current;
     effectivePolicies = snapshot.RoutePlugins.Values.SelectMany(x => x).Concat(snapshot.ClusterPlugins.Values.SelectMany(x => x))
         .Select(binding => binding.PluginId).Distinct().Order().ToArray();
     if (mode is "waf" or "waf-attack" && (!plans.WafByRoute.TryGetValue("perf", out var waf) || !waf.Enabled))
+    {
         throw new InvalidOperationException("WAF benchmark policy is inactive.");
+    }
+
     if (mode.StartsWith("rate-", StringComparison.Ordinal))
     {
         var expected = mode switch { "rate-fixed" => "FixedWindow", "rate-sliding" => "SlidingWindow", "rate-token" => "TokenBucket", _ => "Concurrency" };
         if (!plans.RateLimitByRoute.TryGetValue("perf", out var rate) || !rate.Enabled || rate.Algorithm.ToString() != expected)
+        {
             throw new InvalidOperationException("Rate-limit benchmark algorithm differs from its mode.");
+        }
     }
     if (mode.StartsWith("log-", StringComparison.Ordinal))
     {
         if (!plans.ProxyLogByRoute.TryGetValue("perf", out var log) ||
             log.RequestBodyCaptureEnabled != (mode is "log-request" or "log-bodies" or "log-sqlite") ||
             log.ResponseBodyCaptureEnabled != (mode is "log-response" or "log-bodies" or "log-sqlite"))
+        {
             throw new InvalidOperationException("Logging benchmark capture differs from its mode.");
+        }
     }
     if (retryEnabled && !plans.RetryByRoute.ContainsKey("perf") || circuitEnabled && !plans.CircuitBreakerByCluster.ContainsKey("backend"))
+    {
         throw new InvalidOperationException("Requested resilience policy is inactive.");
+    }
 }
 Volatile.Write(ref ready, true);
 await app.WaitForShutdownAsync();

@@ -38,17 +38,23 @@ public sealed class LogFilter : ILogFilter
 
         // Skip Dashboard requests
         if (path.StartsWithSegments(_dashPrefix, StringComparison.OrdinalIgnoreCase))
+        {
             return true;
+        }
 
         // Skip gRPC - response body capture breaks HTTP/2 trailer support
         if (context.Request.ContentType != null &&
             context.Request.ContentType.StartsWith("application/grpc", StringComparison.OrdinalIgnoreCase))
+        {
             return true;
+        }
 
         // Skip frontend static resources
         var extension = Path.GetExtension(path.Value);
         if (extension != null && SkippedExtensions.Contains(extension))
+        {
             return true;
+        }
 
         return false;
     }
@@ -65,15 +71,21 @@ public sealed class LogFilter : ILogFilter
             _ => 1
         };
         if (currentLevel < settings.MinLogLevelNumeric)
+        {
             return false;
+        }
 
         // Errors-only mode
         if (settings.ErrorsOnly && context.Response.StatusCode < 400)
+        {
             return false;
+        }
 
         // Sampling
         if (!_sampler.ShouldSample())
+        {
             return false;
+        }
 
         return true;
     }

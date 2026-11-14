@@ -74,9 +74,20 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
             Success = result.Success, Message = result.Message, Status = result.Status.ToString(),
             ClusterId = clusterName, RegisteredAt = result.Success ? DateTimeOffset.UtcNow.ToUnixTimeSeconds() : 0
         };
-        if (result.PersistedVersion is { } stored) response.PersistedVersion = stored;
-        if (result.ActiveVersion is { } active) response.ActiveVersion = active;
-        if (result.Success) response.RouteIds.AddRange(routes.Select(r => r.RouteId));
+        if (result.PersistedVersion is { } stored)
+        {
+            response.PersistedVersion = stored;
+        }
+
+        if (result.ActiveVersion is { } active)
+        {
+            response.ActiveVersion = active;
+        }
+
+        if (result.Success)
+        {
+            response.RouteIds.AddRange(routes.Select(r => r.RouteId));
+        }
 
         return response;
     }
@@ -92,8 +103,16 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
                 var removal = await _dynamicConfigService.UnregisterInstanceAsync(serviceId, request.InstanceId);
                 var instanceResponse = new UnregisterServiceResponse
                 { Success = removal.Success, Message = removal.Message, Status = removal.Status.ToString() };
-                if (removal.PersistedVersion is { } instanceStored) instanceResponse.PersistedVersion = instanceStored;
-                if (removal.ActiveVersion is { } instanceActive) instanceResponse.ActiveVersion = instanceActive;
+                if (removal.PersistedVersion is { } instanceStored)
+                {
+                    instanceResponse.PersistedVersion = instanceStored;
+                }
+
+                if (removal.ActiveVersion is { } instanceActive)
+                {
+                    instanceResponse.ActiveVersion = instanceActive;
+                }
+
                 return instanceResponse;
             }
 
@@ -113,8 +132,16 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
             var result = await _dynamicConfigService.BatchDeleteRoutesAsync(routeNames, removeOrphanedClusters: true, "grpc-client");
             var response = new UnregisterServiceResponse
             { Success = result.Success, Message = result.Message, Status = result.Status.ToString() };
-            if (result.PersistedVersion is { } stored) response.PersistedVersion = stored;
-            if (result.ActiveVersion is { } active) response.ActiveVersion = active;
+            if (result.PersistedVersion is { } stored)
+            {
+                response.PersistedVersion = stored;
+            }
+
+            if (result.ActiveVersion is { } active)
+            {
+                response.ActiveVersion = active;
+            }
+
             return response;
         }
         catch (Exception ex)
@@ -158,12 +185,18 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
     {
         var names = new List<string>();
         var config = _dynamicConfigService.GetDynamicConfig();
-        if (config == null) return names;
+        if (config == null)
+        {
+            return names;
+        }
 
         foreach (var route in config.Routes)
         {
             var routeId = route.Config.RouteId;
-            if (string.IsNullOrWhiteSpace(routeId)) continue;
+            if (string.IsNullOrWhiteSpace(routeId))
+            {
+                continue;
+            }
 
             if (routeId.Equals(serviceId, StringComparison.OrdinalIgnoreCase) ||
                 IsMultiPathRouteName(routeId, serviceId))
@@ -182,22 +215,37 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
     private string? ResolveHeartbeatRouteName(string serviceId)
     {
         var config = _dynamicConfigService.GetDynamicConfig();
-        if (config == null) return null;
-
-        foreach (var route in config.Routes)
+        if (config == null)
         {
-            var routeId = route.Config.RouteId;
-            if (string.IsNullOrWhiteSpace(routeId)) continue;
-            if (routeId.Equals(serviceId, StringComparison.OrdinalIgnoreCase))
-                return routeId;
+            return null;
         }
 
         foreach (var route in config.Routes)
         {
             var routeId = route.Config.RouteId;
-            if (string.IsNullOrWhiteSpace(routeId)) continue;
-            if (IsMultiPathRouteName(routeId, serviceId))
+            if (string.IsNullOrWhiteSpace(routeId))
+            {
+                continue;
+            }
+
+            if (routeId.Equals(serviceId, StringComparison.OrdinalIgnoreCase))
+            {
                 return routeId;
+            }
+        }
+
+        foreach (var route in config.Routes)
+        {
+            var routeId = route.Config.RouteId;
+            if (string.IsNullOrWhiteSpace(routeId))
+            {
+                continue;
+            }
+
+            if (IsMultiPathRouteName(routeId, serviceId))
+            {
+                return routeId;
+            }
         }
 
         return null;
@@ -224,7 +272,9 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
                 {
                     var cluster = dynamicConfig.Clusters.FirstOrDefault(c => string.Equals(c.Config.ClusterId, route.Config.ClusterId, StringComparison.OrdinalIgnoreCase));
                     if (request.ActiveOnly && cluster == null)
+                    {
                         continue;
+                    }
 
                     var serviceInfo = new ServiceInfo
                     {
@@ -240,7 +290,9 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
 
                     var matchPath = route.Config.Match?.Path;
                     if (!string.IsNullOrWhiteSpace(matchPath))
+                    {
                         serviceInfo.Paths.Add(matchPath);
+                    }
 
                     if (cluster?.Config.Destinations != null)
                     {
@@ -260,7 +312,9 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
                     if (cluster?.Config.Metadata != null)
                     {
                         foreach (var kv in cluster.Config.Metadata)
+                        {
                             serviceInfo.Metadata[kv.Key] = kv.Value;
+                        }
                     }
 
                     services.Add(serviceInfo);
@@ -292,16 +346,27 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
             }
 
             if (string.IsNullOrWhiteSpace(request.InstanceId) || !request.HasExpectedVersion)
+            {
                 return new UpdateDestinationsResponse { Success = false, Status = "ValidationRejected",
                     Message = "InstanceId and ExpectedVersion are required. Use administration for full-cluster replacement." };
+            }
+
             var destinations = request.Destinations.ToDictionary(d => d.DestinationId, d => d.Address);
             var result = await _dynamicConfigService.UpdateInstanceDestinationsAsync(
                 request.ServiceId, request.InstanceId, destinations, request.ExpectedVersion);
 
             var response = new UpdateDestinationsResponse
             { Success = result.Success, Message = result.Message, Status = result.Status.ToString() };
-            if (result.PersistedVersion is { } stored) response.PersistedVersion = stored;
-            if (result.ActiveVersion is { } active) response.ActiveVersion = active;
+            if (result.PersistedVersion is { } stored)
+            {
+                response.PersistedVersion = stored;
+            }
+
+            if (result.ActiveVersion is { } active)
+            {
+                response.ActiveVersion = active;
+            }
+
             return response;
         }
         catch (Exception ex)

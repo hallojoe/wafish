@@ -4,7 +4,9 @@ using WafIsh.AppHost;
 
 var builder = DistributedApplication.CreateBuilder(args);
 if (builder.Configuration.GetValue<bool>("EnableSonarQube"))
+{
     builder.AddSonarQube();
+}
 
 var password = builder.AddParameter("control-plane-password",
     new GenerateParameterDefault { MinLength = 32 }, secret: true, persist: true);
@@ -65,8 +67,10 @@ if (builder.Configuration.GetValue<bool>("EnableSecondGateway"))
         .WithEnvironment("ReverseProxy__Routes__sample-service-path0__Match__Path", "/api/local-service/{**catch-all}")
         .WithEnvironment("ReverseProxy__Clusters__sample-service__LoadBalancingPolicy", "RoundRobin");
     foreach (var backend in backends)
+    {
         secondGateway.WithEnvironment($"ReverseProxy__Clusters__sample-service__Destinations__{backend.Resource.Name}__Address", backend.GetEndpoint("http"))
             .WaitFor(backend);
+    }
 }
 
 // The default topology needs no container runtime. Opt in with EnableRedis=true.

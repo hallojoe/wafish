@@ -34,38 +34,59 @@ public class DeploymentConfigValidator : IHostedService
         foreach (var ep in endpoints)
         {
             if (!Uri.TryCreate(ep["Url"], UriKind.Absolute, out _))
+            {
                 errors.Add($"Invalid URL for endpoint '{ep.Key}': {ep["Url"]}");
+            }
         }
 
         // 2. Port conflicts
         var portMap = new Dictionary<int, string>();
         foreach (var ep in endpoints)
         {
-            if (!Uri.TryCreate(ep["Url"], UriKind.Absolute, out var uri)) continue;
-            if (uri.Port == 0) continue;
+            if (!Uri.TryCreate(ep["Url"], UriKind.Absolute, out var uri))
+            {
+                continue;
+            }
+
+            if (uri.Port == 0)
+            {
+                continue;
+            }
+
             if (portMap.TryGetValue(uri.Port, out var existing))
+            {
                 errors.Add($"Port {uri.Port} conflict: '{existing}' vs '{ep.Key}'");
+            }
             else
+            {
                 portMap[uri.Port] = ep.Key;
+            }
         }
 
         // 3. Roles reference missing endpoints
         foreach (var kvp in deployment.EndpointRoles)
         {
             if (!endpoints.Any(e => string.Equals(e.Key, kvp.Key, StringComparison.OrdinalIgnoreCase)))
+            {
                 errors.Add($"EndpointRoles references undefined endpoint: '{kvp.Key}'");
+            }
         }
 
         // 4. Dashboard/Admin roles bind to public addresses
         foreach (var kvp in deployment.EndpointRoles)
         {
             var ep = endpoints.FirstOrDefault(e => string.Equals(e.Key, kvp.Key, StringComparison.OrdinalIgnoreCase));
-            if (ep == null || !Uri.TryCreate(ep["Url"], UriKind.Absolute, out var uri)) continue;
+            if (ep == null || !Uri.TryCreate(ep["Url"], UriKind.Absolute, out var uri))
+            {
+                continue;
+            }
 
             var isPublic = IsPublicBind(uri.Host);
 
             if (string.Equals(kvp.Value, "Dashboard", StringComparison.OrdinalIgnoreCase) && isPublic && deployment.RequireLoopbackForDashboard)
+            {
                 errors.Add($"Dashboard endpoint '{kvp.Key}' is publicly bound ({uri.Host}) but RequireLoopbackForDashboard=true");
+            }
             else if (string.Equals(kvp.Value, "Dashboard", StringComparison.OrdinalIgnoreCase) && isPublic)
             {
                 warnings.Add($"SECURITY: Dashboard endpoint '{kvp.Key}' is publicly bound to {uri.Host}. Consider binding to 127.0.0.1.");
@@ -73,7 +94,9 @@ public class DeploymentConfigValidator : IHostedService
             }
 
             if (string.Equals(kvp.Value, "Admin", StringComparison.OrdinalIgnoreCase) && isPublic && deployment.RequireLoopbackForAdmin)
+            {
                 errors.Add($"Admin endpoint '{kvp.Key}' is publicly bound ({uri.Host}) but RequireLoopbackForAdmin=true");
+            }
         }
 
         // 5. Mode and endpoint configuration do not match
@@ -99,15 +122,20 @@ public class DeploymentConfigValidator : IHostedService
         {
             _logger.LogWarning("=== Deployment Configuration Warnings ({Count}) ===", warnings.Count);
             foreach (var w in warnings)
+            {
                 _logger.LogWarning("{Warning}", w);
+            }
         }
 
         if (errors.Count > 0)
         {
             _logger.LogError("=== Deployment Configuration Errors ({Count}) ===", errors.Count);
             foreach (var e in errors)
+            {
                 _logger.LogError("{Error}", e);
-                throw new InvalidOperationException($"Deployment configuration has {errors.Count} error(s). See logs for details.");
+            }
+
+            throw new InvalidOperationException($"Deployment configuration has {errors.Count} error(s). See logs for details.");
         }
 
         if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))

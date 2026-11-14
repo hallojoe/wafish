@@ -88,7 +88,10 @@ public sealed class GatewayIdentityService : IGatewayIdentityService
                 source: "dashboard",
                 createdBy: operatorName);
 
-            if (!result.Success) return result;
+            if (!result.Success)
+            {
+                return result;
+            }
 
             await AfterClusterRenamedAsync(oldClusterId, newClusterId, ct);
             return result;
@@ -127,7 +130,10 @@ public sealed class GatewayIdentityService : IGatewayIdentityService
                 source: "dashboard",
                 createdBy: operatorName);
 
-            if (!result.Success) return result;
+            if (!result.Success)
+            {
+                return result;
+            }
 
             await AfterRouteRenamedAsync(oldRouteId, newRouteId, ct);
             return result;

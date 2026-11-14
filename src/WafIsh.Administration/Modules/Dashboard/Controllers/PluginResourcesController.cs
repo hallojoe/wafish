@@ -50,7 +50,10 @@ public sealed class PluginResourcesController(IPluginResourceMonitor monitor) : 
     {
         var usage = monitor.GetUsage(pluginId);
         if (usage == null)
+        {
             return NotFound(new { message = $"Plugin '{pluginId}' not found" });
+        }
+
         return Ok(usage);
     }
 

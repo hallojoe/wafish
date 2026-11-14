@@ -61,11 +61,15 @@ internal static class JitOptimizedHotPaths
     public static bool FastEqualsOrdinal(ReadOnlySpan<char> a, ReadOnlySpan<char> b)
     {
         if (a.Length != b.Length)
+        {
             return false;
+        }
 
         // Empty check - JIT eliminates this as dead code if proven unnecessary
         if (a.Length == 0)
+        {
             return true;
+        }
 
         ref char pa = ref MemoryMarshal.GetReference(a);
         ref char pb = ref MemoryMarshal.GetReference(b);
@@ -96,14 +100,18 @@ internal static class JitOptimizedHotPaths
             ulong va = Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<char, byte>(ref Unsafe.Add(ref pa, i)));
             ulong vb = Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<char, byte>(ref Unsafe.Add(ref pb, i)));
             if (va != vb)
+            {
                 return false;
+            }
         }
 
         // Remaining chars
         for (; i < a.Length; i++)
         {
             if (Unsafe.Add(ref pa, i) != Unsafe.Add(ref pb, i))
+            {
                 return false;
+            }
         }
 
         return true;
@@ -118,7 +126,9 @@ internal static class JitOptimizedHotPaths
     public static bool FastEqualsAsciiIgnoreCase(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b)
     {
         if (a.Length != b.Length)
+        {
             return false;
+        }
 
         ref byte pa = ref MemoryMarshal.GetReference(a);
         ref byte pb = ref MemoryMarshal.GetReference(b);
@@ -130,17 +140,26 @@ internal static class JitOptimizedHotPaths
 
             // Fast path: exact match
             if (ca == cb)
+            {
                 continue;
+            }
 
             // Convert to lowercase using bit manipulation
             // 'A' = 0x41, 'a' = 0x61, diff = 0x20
             if (ca >= 'A' && ca <= 'Z')
+            {
                 ca |= 0x20;
+            }
+
             if (cb >= 'A' && cb <= 'Z')
+            {
                 cb |= 0x20;
+            }
 
             if (ca != cb)
+            {
                 return false;
+            }
         }
 
         return true;
@@ -182,10 +201,12 @@ internal static class JitOptimizedHotPaths
     public static int FastStringHash(string str)
     {
         if (str is null || str.Length == 0)
+        {
             return 0;
+        }
 
         // Use string hash code cache if available (.NET 6+)
-        #if NET6_0_OR_GREATER
+#if NET6_0_OR_GREATER
         return str.GetHashCode();
         #else
         return FastHash32(MemoryMarshal.AsBytes(str.AsSpan()));
@@ -230,7 +251,9 @@ internal static class JitOptimizedHotPaths
     public static void FastClear(Span<byte> buffer)
     {
         if (buffer.Length == 0)
+        {
             return;
+        }
 
         ref byte ptr = ref MemoryMarshal.GetReference(buffer);
 

@@ -12,7 +12,10 @@ public sealed class DeploymentRestartState
     {
         get
         {
-            lock (_lock) return _reasons.Count > 0;
+            lock (_lock)
+            {
+                return _reasons.Count > 0;
+            }
         }
     }
 

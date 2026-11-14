@@ -141,10 +141,15 @@ public sealed class WafMiddleware : GatewayMiddlewareBase
     private bool TryResolveBindingOptions(string? routeId, out WafBindingOptions options)
     {
         options = null!;
-        if (string.IsNullOrWhiteSpace(routeId)) return false;
+        if (string.IsNullOrWhiteSpace(routeId))
+        {
+            return false;
+        }
 
         if (!_executionPlans.Current.WafByRoute.TryGetValue(routeId, out var configured) || !configured.Enabled)
+        {
             return false;
+        }
 
         options = configured;
         return true;
@@ -153,14 +158,22 @@ public sealed class WafMiddleware : GatewayMiddlewareBase
     private static string GetRawRequestPath(HttpContext context)
     {
         var raw = context.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestFeature>()?.RawTarget;
-        if (string.IsNullOrEmpty(raw)) return context.Request.Path.Value ?? "";
+        if (string.IsNullOrEmpty(raw))
+        {
+            return context.Request.Path.Value ?? "";
+        }
+
         var qIdx = raw.IndexOf('?');
         return qIdx >= 0 ? raw[..qIdx] : raw;
     }
 
     private static string DecodeQuery(string? rawQuery)
     {
-        if (string.IsNullOrEmpty(rawQuery)) return "";
+        if (string.IsNullOrEmpty(rawQuery))
+        {
+            return "";
+        }
+
         var trimmed = rawQuery.TrimStart('?');
         return string.IsNullOrEmpty(trimmed) ? "" : WebUtility.UrlDecode(trimmed);
     }
@@ -171,8 +184,16 @@ public sealed class WafMiddleware : GatewayMiddlewareBase
         HttpContext context, WafBindingOptions options, bool inspect)
     {
         var limit = options.EnableRequestSizeValidation ? Math.Max(0, options.MaxRequestBodySize) : long.MaxValue;
-        if (inspect) limit = Math.Min(limit, MaxInspectionBodyBytes);
-        if (context.Request.ContentLength > limit) return (true, null);
+        if (inspect)
+        {
+            limit = Math.Min(limit, MaxInspectionBodyBytes);
+        }
+
+        if (context.Request.ContentLength > limit)
+        {
+            return (true, null);
+        }
+
         context.Request.EnableBuffering(bufferThreshold: 64 * 1024,
             bufferLimit: limit == long.MaxValue ? limit : limit + 1);
         var buffer = ArrayPool<byte>.Shared.Rent(8192);
@@ -183,23 +204,40 @@ public sealed class WafMiddleware : GatewayMiddlewareBase
             {
                 var size = limit - total >= 8192 ? 8192 : (int)(limit - total + 1);
                 var read = await context.Request.Body.ReadAsync(buffer.AsMemory(0, size), context.RequestAborted);
-                if (read == 0) break;
+                if (read == 0)
+                {
+                    break;
+                }
+
                 total += read;
-                if (total > limit) return (true, null);
+                if (total > limit)
+                {
+                    return (true, null);
+                }
             }
-            if (!inspect || total == 0) return (false, null);
+            if (!inspect || total == 0)
+            {
+                return (false, null);
+            }
+
             context.Request.Body.Position = 0;
             using var reader = new StreamReader(context.Request.Body, new UTF8Encoding(false, true),
                 detectEncodingFromByteOrderMarks: false, bufferSize: 4096, leaveOpen: true);
             var text = await reader.ReadToEndAsync(context.RequestAborted);
             if (context.Request.ContentType?.Contains("urlencoded", StringComparison.OrdinalIgnoreCase) == true)
+            {
                 text = WebUtility.UrlDecode(text);
+            }
+
             return (false, text);
         }
         finally
         {
             ArrayPool<byte>.Shared.Return(buffer);
-            if (context.Request.Body.CanSeek) context.Request.Body.Position = 0;
+            if (context.Request.Body.CanSeek)
+            {
+                context.Request.Body.Position = 0;
+            }
         }
     }
 

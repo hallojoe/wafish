@@ -85,7 +85,11 @@ public static class YarpJsonConfig
         public override Version? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             var raw = reader.GetString();
-            if (string.IsNullOrWhiteSpace(raw)) return null;
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                return null;
+            }
+
             var normalized = raw.Contains('.') ? raw : raw + ".0";
             return Version.TryParse(normalized, out var version) ? version : null;
         }
@@ -126,9 +130,21 @@ public static class YarpJsonConfig
                     return false;
                 case JsonTokenType.String:
                     var raw = reader.GetString();
-                    if (bool.TryParse(raw, out var parsed)) return parsed;
-                    if (string.Equals(raw, "1", StringComparison.Ordinal)) return true;
-                    if (string.Equals(raw, "0", StringComparison.Ordinal)) return false;
+                    if (bool.TryParse(raw, out var parsed))
+                    {
+                        return parsed;
+                    }
+
+                    if (string.Equals(raw, "1", StringComparison.Ordinal))
+                    {
+                        return true;
+                    }
+
+                    if (string.Equals(raw, "0", StringComparison.Ordinal))
+                    {
+                        return false;
+                    }
+
                     throw new JsonException($"Cannot convert string '{raw}' to boolean.");
                 case JsonTokenType.Number:
                     return reader.GetInt32() != 0;

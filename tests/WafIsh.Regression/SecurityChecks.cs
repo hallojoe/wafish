@@ -114,11 +114,31 @@ internal static class SecurityChecks
                 foreach (var credential in new[] { "missing", "wrong", "key", "basic", "bearer", "jwt" })
                 {
                     var headers = new Metadata();
-                    if (credential == "key") headers.Add("x-api-key", "test-key");
-                    if (credential == "wrong") headers.Add("x-api-key", "wrong");
-                    if (credential == "basic") headers.Add("authorization", "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes("admin:test-password")));
-                    if (credential == "bearer") headers.Add("authorization", "Bearer test-password");
-                    if (credential == "jwt") headers.Add("authorization", "Bearer " + DashboardJwtHelper.GenerateToken("admin", new string('s', 32)));
+                    if (credential == "key")
+                    {
+                        headers.Add("x-api-key", "test-key");
+                    }
+
+                    if (credential == "wrong")
+                    {
+                        headers.Add("x-api-key", "wrong");
+                    }
+
+                    if (credential == "basic")
+                    {
+                        headers.Add("authorization", "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes("admin:test-password")));
+                    }
+
+                    if (credential == "bearer")
+                    {
+                        headers.Add("authorization", "Bearer test-password");
+                    }
+
+                    if (credential == "jwt")
+                    {
+                        headers.Add("authorization", "Bearer " + DashboardJwtHelper.GenerateToken("admin", new string('s', 32)));
+                    }
+
                     var expected = mode switch { GatewayApiAuthMode.ApiKey => credential == "key", GatewayApiAuthMode.BasicAuth => credential == "basic", _ => credential == "jwt" };
                     var called = false;
                     try
@@ -133,6 +153,7 @@ internal static class SecurityChecks
             }
         });
         foreach (var directive in new[] { "private", "no-store", "private=\"Authorization\"" })
+        {
             await run($"Security: cache excludes {directive} responses", async () =>
             {
                 using var fixture = new CacheFixture(directive);
@@ -140,6 +161,8 @@ internal static class SecurityChecks
                 Check(await fixture.RequestAsync("Bob") == "Bob");
                 Check(fixture.UpstreamCalls == 2);
             });
+        }
+
         await run("Security: Set-Cookie responses are not cached", async () =>
         {
             using var fixture = new CacheFixture("public", setCookie: true);
@@ -147,6 +170,7 @@ internal static class SecurityChecks
             Check(await fixture.RequestAsync("Bob") == "Bob");
         });
         foreach (var identity in new[] { "authorization", "cookie", "principal" })
+        {
             await run($"Security: {identity} bypasses cache reads and writes", async () =>
             {
                 using var fixture = new CacheFixture("public");
@@ -156,6 +180,8 @@ internal static class SecurityChecks
                 Check(await fixture.RequestAsync("unused") == "public");
                 Check(fixture.UpstreamCalls == 3);
             });
+        }
+
         await run("Security: eligible public responses remain cached", async () =>
         {
             using var fixture = new CacheFixture("public");
@@ -187,7 +213,10 @@ internal static class SecurityChecks
 
     private static void Check(bool condition)
     {
-        if (!condition) throw new InvalidOperationException("Security assertion failed.");
+        if (!condition)
+        {
+            throw new InvalidOperationException("Security assertion failed.");
+        }
     }
 
     private sealed class CallContext : ServerCallContext
@@ -239,7 +268,11 @@ internal static class SecurityChecks
             {
                 UpstreamCalls++;
                 context.Response.Headers.CacheControl = directive;
-                if (setCookie) context.Response.Headers.SetCookie = "session=upstream";
+                if (setCookie)
+                {
+                    context.Response.Headers.SetCookie = "session=upstream";
+                }
+
                 await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes((string)context.Items["body"]!));
             }, _cache, plans);
         }
@@ -251,9 +284,21 @@ internal static class SecurityChecks
             context.Request.Path = "/test";
             context.Request.Host = new HostString("localhost");
             context.Items["body"] = body;
-            if (identity == "authorization") context.Request.Headers.Authorization = "Bearer " + body;
-            if (identity == "cookie") context.Request.Headers.Cookie = "session=" + body;
-            if (identity == "principal") context.User = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.Name, body)], "test"));
+            if (identity == "authorization")
+            {
+                context.Request.Headers.Authorization = "Bearer " + body;
+            }
+
+            if (identity == "cookie")
+            {
+                context.Request.Headers.Cookie = "session=" + body;
+            }
+
+            if (identity == "principal")
+            {
+                context.User = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.Name, body)], "test"));
+            }
+
             context.Features.Set<IReverseProxyFeature>(new ReverseProxyFeature { Route = new RouteModel(_route, null!, HttpTransformer.Default) });
             await using var output = new MemoryStream();
             context.Response.Body = output;

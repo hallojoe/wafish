@@ -21,7 +21,9 @@ public static class ProxyLogBodyReader
     private static Encoding? ResolveEncoding(string? contentType)
     {
         if (string.IsNullOrWhiteSpace(contentType))
+        {
             return null;
+        }
 
         // Extract charset=xxx parameter
         var span = contentType.AsSpan();
@@ -61,10 +63,14 @@ public static class ProxyLogBodyReader
     public static bool IsRequestBodyCaptureSafe(HttpRequest request)
     {
         if (request.ContentLength is null or 0)
+        {
             return false;
+        }
 
         if (request.ContentLength > 0 && IsStreamingRequest(request))
+        {
             return false;
+        }
 
         return request.HasJsonContentType() || IsTextLikeContentType(request.ContentType);
     }
@@ -95,13 +101,21 @@ public static class ProxyLogBodyReader
     public static async Task<string> ReadRequestBodyAsync(HttpRequest request, int maxBodyBytes)
     {
         if (request.ContentLength == null || request.ContentLength == 0 || maxBodyBytes <= 0)
+        {
             return string.Empty;
+        }
 
         if (request.ContentLength > maxBodyBytes)
+        {
             return $"[{request.ContentType}] ({request.ContentLength} bytes) - too large to log";
+        }
 
         maxBodyBytes = Math.Min(maxBodyBytes, 1024 * 1024);
-        if (request.ContentLength > maxBodyBytes) return "[Body too large to log]";
+        if (request.ContentLength > maxBodyBytes)
+        {
+            return "[Body too large to log]";
+        }
+
         var contentLength = (int)request.ContentLength.Value;
         request.EnableBuffering(bufferThreshold: contentLength, bufferLimit: maxBodyBytes);
         request.Body.Position = 0;
@@ -127,7 +141,11 @@ public static class ProxyLogBodyReader
     public static async Task<string> ReadStreamAsync(Stream stream, int maxBodyBytes, string? contentType,
         string? contentEncoding, CancellationToken cancellationToken)
     {
-        if (maxBodyBytes <= 0) return string.Empty;
+        if (maxBodyBytes <= 0)
+        {
+            return string.Empty;
+        }
+
         cancellationToken.ThrowIfCancellationRequested();
         stream.Seek(0, SeekOrigin.Begin);
         var decoder = string.IsNullOrEmpty(contentEncoding) ? stream : WrapDecompressionStream(stream, contentEncoding);
@@ -140,13 +158,21 @@ public static class ProxyLogBodyReader
             while (count < limit)
             {
                 var read = await decoder.ReadAsync(bytes.AsMemory(count, limit - count), cancellationToken);
-                if (read == 0) break;
+                if (read == 0)
+                {
+                    break;
+                }
+
                 count += read;
             }
             var truncated = count == limit && await decoder.ReadAsync(new byte[1], cancellationToken) > 0;
             var encoding = GetEncoding(contentType);
             var length = Math.Min(count, limit);
-            if (encoding.CodePage == Encoding.UTF8.CodePage) length = TrimIncompleteUtf8(bytes, length);
+            if (encoding.CodePage == Encoding.UTF8.CodePage)
+            {
+                length = TrimIncompleteUtf8(bytes, length);
+            }
+
             var text = encoding.GetString(bytes, 0, length);
             return truncated ? text + "\n... [TRUNCATED - decoded body too large]" : text;
         }
@@ -157,7 +183,10 @@ public static class ProxyLogBodyReader
         finally
         {
             ArrayPool<byte>.Shared.Return(bytes, clearArray: true);
-            if (!ReferenceEquals(decoder, stream)) await decoder.DisposeAsync();
+            if (!ReferenceEquals(decoder, stream))
+            {
+                await decoder.DisposeAsync();
+            }
         }
     }
 
@@ -183,7 +212,10 @@ public static class ProxyLogBodyReader
     /// </summary>
     private static int TrimIncompleteUtf8(byte[] buffer, int length)
     {
-        if (length == 0) return 0;
+        if (length == 0)
+        {
+            return 0;
+        }
         // Scan backwards up to 4 bytes (max UTF-8 sequence length)
         for (var i = 1; i <= Math.Min(4, length); i++)
         {
@@ -200,7 +232,10 @@ public static class ProxyLogBodyReader
                 };
                 // If we don't have enough bytes to complete the sequence, trim it
                 if (i < expected)
+                {
                     return length - i;
+                }
+
                 return length;
             }
         }
@@ -214,7 +249,10 @@ public static class ProxyLogBodyReader
     public static string? GetDownstreamBody(HttpContext context)
     {
         if (context.Items.TryGetValue("DownstreamBody", out var obj) && obj is byte[] bodyBytes && bodyBytes.Length > 0)
+        {
             return Encoding.UTF8.GetString(bodyBytes);
+        }
+
         return null;
     }
 
@@ -222,7 +260,10 @@ public static class ProxyLogBodyReader
     public static string? GetDownstreamMethod(HttpContext context)
     {
         if (context.Items.TryGetValue("DownstreamMethod", out var obj) && obj is string method)
+        {
             return method;
+        }
+
         return null;
     }
 
@@ -230,7 +271,10 @@ public static class ProxyLogBodyReader
     public static string? GetDownstreamUrl(HttpContext context)
     {
         if (context.Items.TryGetValue("DownstreamUrl", out var obj) && obj is string url)
+        {
             return url;
+        }
+
         return null;
     }
 
@@ -249,10 +293,14 @@ public static class ProxyLogBodyReader
         originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>();
 
         if (originalBodyFeature == null || maxBodyBufferBytes <= 0)
+        {
             return null;
+        }
 
         if (!IsResponseBodyCaptureCandidate(context.Request))
+        {
             return null;
+        }
 
         var teeStream = new TeeResponseCaptureStream(originalBody, maxBodyBufferBytes, memoryStreamManager);
         var captureFeature = new StreamResponseBodyFeature(teeStream, originalBodyFeature);

@@ -84,7 +84,11 @@ internal static class WafBodyChecks
         context.Request.ContentType = "text/plain; charset=utf-8";
         context.Request.Body = new ShortStream(body, failRead);
         context.Response.Body = new MemoryStream();
-        if (cancel) context.RequestAborted = new CancellationToken(canceled: true);
+        if (cancel)
+        {
+            context.RequestAborted = new CancellationToken(canceled: true);
+        }
+
         context.Features.Set<IReverseProxyFeature>(new ReverseProxyFeature { Route = new RouteModel(route, null!, HttpTransformer.Default) });
         try
         {
@@ -109,11 +113,19 @@ internal static class WafBodyChecks
         public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (fail) throw new IOException("Injected read error");
+            if (fail)
+            {
+                throw new IOException("Injected read error");
+            }
+
             return base.ReadAsync(buffer[..Math.Min(buffer.Length, 7)], cancellationToken);
         }
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
             => ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
     }
-    private static void Check(bool value, string message) { if (!value) throw new Exception(message); }
+    private static void Check(bool value, string message) { if (!value)
+        {
+            throw new Exception(message);
+        }
+    }
 }

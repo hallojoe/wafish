@@ -19,7 +19,9 @@ internal static class DashboardContractChecks
                 Path.Combine(AppContext.BaseDirectory, "contracts", "dashboard-routes.json")))!;
             var actual = await GetRoutesAsync();
             if (!expected.SequenceEqual(actual))
+            {
                 throw new InvalidOperationException("Changed HTTP routes: " + string.Join("; ", expected.Except(actual).Concat(actual.Except(expected))));
+            }
         });
         await run("Administration: registration is idempotent and does not enable Razor", async () =>
         {
@@ -30,13 +32,21 @@ internal static class DashboardContractChecks
             var registrations = builder.Services.Count;
             builder.Services.AddWafIshAdministration();
             if (builder.Services.Count != registrations)
+            {
                 throw new InvalidOperationException("Administration services were registered twice.");
+            }
+
             await using var app = builder.Build();
             if (app.Services.GetService<IRazorViewEngine>() != null)
+            {
                 throw new InvalidOperationException("Administration registered a Razor view engine.");
+            }
+
             var actions = app.Services.GetRequiredService<IActionDescriptorCollectionProvider>().ActionDescriptors.Items;
             if (actions.OfType<ControllerActionDescriptor>().Any(action => action.ControllerTypeInfo.Assembly.GetName().Name == "WafIsh.Dashboard"))
+            {
                 throw new InvalidOperationException("Administration discovered presentation controllers without explicit registration.");
+            }
         });
     }
 

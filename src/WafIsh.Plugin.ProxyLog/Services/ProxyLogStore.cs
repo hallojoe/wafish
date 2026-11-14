@@ -89,7 +89,11 @@ public sealed class ProxyLogStore : IProxyLogStore
     /// </summary>
     private static int NextPowerOf2(int value)
     {
-        if (value <= 1) return 2;
+        if (value <= 1)
+        {
+            return 2;
+        }
+
         value--;
         value |= value >> 1;
         value |= value >> 2;
@@ -122,14 +126,19 @@ public sealed class ProxyLogStore : IProxyLogStore
 
         // Track evictions (no _count — it was dead code, stuck at _bufferLength after fill)
         if (Volatile.Read(ref _head) > _bufferLength)
+        {
             Interlocked.Increment(ref _evictedCount);
+        }
 
         // Write to persistence Channel only when persistence is enabled.
         var persistenceEnabled = _runtimeSettings?.Current.PersistenceEnabled ?? _initialPersistenceEnabled;
         if (persistenceEnabled)
         {
             Interlocked.Increment(ref _submittedCount);
-            if (!_persistenceChannel.Writer.TryWrite(entry)) RecordDiscarded(1);
+            if (!_persistenceChannel.Writer.TryWrite(entry))
+            {
+                RecordDiscarded(1);
+            }
         }
 
         // Notify WebSocket subscribers

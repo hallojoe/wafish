@@ -123,7 +123,11 @@ internal static class ReviewDeploymentChecks
             try { await manager.InvokeMiddlewareAsync(new DefaultHttpContext(), _ => Task.CompletedTask); throw new Exception("Shutdown accepted a request."); }
             catch (ObjectDisposedException) { }
             Check(plugin.Resources.Take(4).All(r => r.Disposals == 0), "A leased domain was disposed.");
-            foreach (var lease in leases) lease.Dispose();
+            foreach (var lease in leases)
+            {
+                lease.Dispose();
+            }
+
             leases.Clear();
             await Task.WhenAll(shutdown, second).WaitAsync(TimeSpan.FromSeconds(5));
             Check(plugin.Resources.All(r => r.Disposals == 1), "A domain was leaked or disposed twice.");
@@ -131,7 +135,11 @@ internal static class ReviewDeploymentChecks
         }
         finally
         {
-            foreach (var lease in leases) lease.Dispose();
+            foreach (var lease in leases)
+            {
+                lease.Dispose();
+            }
+
             await manager.DisposeAsync();
         }
     }
@@ -176,7 +184,11 @@ internal static class ReviewDeploymentChecks
                 var context = Context();
                 context.Request.Host = new(host); context.Request.QueryString = new(query);
                 context.Request.Headers["X-Variant"] = variant;
-                if (credential) context.Request.Headers.Authorization = "Bearer private";
+                if (credential)
+                {
+                    context.Request.Headers.Authorization = "Bearer private";
+                }
+
                 await middleware.InvokeAsync(context);
                 return Encoding.UTF8.GetString(((MemoryStream)context.Response.Body).ToArray());
             }
@@ -194,9 +206,12 @@ internal static class ReviewDeploymentChecks
         using var schema = JsonDocument.Parse(new CompressionPlugin().Manifest.Schemas.Single().ConfigJsonSchema);
         Check(schema.RootElement.GetProperty("properties").GetProperty("minResponseSize").GetProperty("description").GetString()!.Contains("65536"), "Compression bound is undocumented.");
         foreach (var threshold in new[] { 1024, 65536, 65537 })
-        foreach (var known in new[] { false, true })
-        foreach (var chunked in new[] { false, true })
-        foreach (var shortBody in new[] { false, true })
+        {
+            foreach (var known in new[] { false, true })
+            {
+                foreach (var chunked in new[] { false, true })
+                {
+                    foreach (var shortBody in new[] { false, true })
         {
             var payload = Encoding.UTF8.GetBytes(new string('x', shortBody ? threshold - 1 : threshold + 7));
             var context = Context();
@@ -204,10 +219,16 @@ internal static class ReviewDeploymentChecks
             var middleware = new CompressionMiddleware(async c =>
             {
                 c.Response.ContentType = "text/plain";
-                if (known) c.Response.ContentLength = payload.Length;
+                if (known)
+                {
+                    c.Response.ContentLength = payload.Length;
+                }
+
                 var chunk = chunked ? 127 : payload.Length;
                 for (var i = 0; i < payload.Length; i += chunk)
+                {
                     await c.Response.Body.WriteAsync(payload.AsMemory(i, Math.Min(chunk, payload.Length - i)));
+                }
             }, Plans("compression", JsonSerializer.Serialize(new { enabled = true, minResponseSize = threshold })));
             await middleware.InvokeAsync(context);
             var compressed = context.Response.Headers.ContentEncoding == "gzip";
@@ -215,8 +236,15 @@ internal static class ReviewDeploymentChecks
             var output = (MemoryStream)context.Response.Body; output.Position = 0;
             using var restored = new MemoryStream();
             if (compressed) { await using var decoder = new GZipStream(output, CompressionMode.Decompress, true); await decoder.CopyToAsync(restored); }
-            else await output.CopyToAsync(restored);
-            Check(restored.ToArray().SequenceEqual(payload), "Compression changed response content.");
+            else
+                        {
+                            await output.CopyToAsync(restored);
+                        }
+
+                        Check(restored.ToArray().SequenceEqual(payload), "Compression changed response content.");
+        }
+                }
+            }
         }
     }
 
@@ -259,7 +287,10 @@ internal static class ReviewDeploymentChecks
         public void ConfigureMiddleware(IApplicationBuilder app)
         {
             _ = app.ApplicationServices.GetRequiredService<OwnedResource>();
-            if (FailPreparation) throw new InvalidOperationException("Injected preparation failure");
+            if (FailPreparation)
+            {
+                throw new InvalidOperationException("Injected preparation failure");
+            }
         }
         public void ConfigureProxyPipeline(IReverseProxyApplicationBuilder proxyPipeline) { }
     }
@@ -268,5 +299,9 @@ internal static class ReviewDeploymentChecks
         public int Disposals;
         public ValueTask DisposeAsync() { Interlocked.Increment(ref Disposals); return fail ? ValueTask.FromException(new IOException("Injected disposal failure")) : ValueTask.CompletedTask; }
     }
-    private static void Check(bool condition, string message) { if (!condition) throw new Exception(message); }
+    private static void Check(bool condition, string message) { if (!condition)
+        {
+            throw new Exception(message);
+        }
+    }
 }

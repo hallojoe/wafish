@@ -58,7 +58,10 @@ try
         TwoFactorStateStore.Write(statePath, new(true, secret));
         Require(TwoFactorStateStore.Read(statePath, new(false, null)) == new TwoFactorStateStore.State(true, secret), "State did not survive reload.");
         if (!OperatingSystem.IsWindows())
+        {
             Require((File.GetUnixFileMode(statePath) & (UnixFileMode.GroupRead | UnixFileMode.OtherRead | UnixFileMode.GroupWrite | UnixFileMode.OtherWrite)) == 0, "TOTP secret permissions are too broad.");
+        }
+
         foreach (var invalid in new[] { "{", "{}", "null", "{\"Enabled\":true,\"Secret\":null}" })
         {
             File.WriteAllText(statePath, invalid);
@@ -81,8 +84,11 @@ try
             Require((await client.GetAsync("/ops/api/info")).StatusCode == HttpStatusCode.Unauthorized, "Anonymous access succeeded.");
             Require((await client.GetAsync("/api/gateway/routes")).StatusCode == HttpStatusCode.Unauthorized, "Registration REST allowed anonymous access.");
             foreach (var hub in new[] { "traffic", "overview" })
+            {
                 Require((await client.PostAsync("/ops/hubs/" + hub + "/negotiate?negotiateVersion=1", null)).StatusCode == HttpStatusCode.Unauthorized,
                     "Anonymous hub negotiation succeeded.");
+            }
+
             client.DefaultRequestHeaders.Add("X-Api-Key", "incorrect-key");
             Require((await client.GetAsync("/ops/api/info")).StatusCode == HttpStatusCode.Unauthorized, "Invalid credential succeeded.");
             client.DefaultRequestHeaders.Remove("X-Api-Key");
@@ -99,7 +105,10 @@ try
         {
             Require(host.Services.GetService<IRazorViewEngine>() == null, "Razor services were registered.");
             foreach (var url in new[] { "/ops", "/_content/WafIsh.Dashboard/styles/dashboard-editor.css" })
+            {
                 Require((await client.GetAsync(url)).StatusCode == HttpStatusCode.NotFound, "Unexpected presentation endpoint: " + url);
+            }
+
             Require((await client.GetAsync("/ops/login")).StatusCode == HttpStatusCode.MethodNotAllowed,
                 "GET login must be unavailable while POST login remains mapped.");
             foreach (var url in new[] { "/ops/api/info", "/ops/api/routes", "/ops/api/clusters", "/ops/api/plugins",
@@ -371,8 +380,18 @@ finally
     Directory.Delete(path, true);
 }
 
-if (failures.Count == 0) Console.WriteLine("All administration checks passed.");
-else foreach (var failure in failures) Console.Error.WriteLine(failure);
+if (failures.Count == 0)
+{
+    Console.WriteLine("All administration checks passed.");
+}
+else
+{
+    foreach (var failure in failures)
+    {
+        Console.Error.WriteLine(failure);
+    }
+}
+
 return failures.Count == 0 ? 0 : 1;
 
 async Task Check(string name, Func<Task> action)
@@ -386,12 +405,19 @@ async Task<WebApplication> StartHost(string mode, bool enableAi = false, string 
 {
     var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = environment, ContentRootPath = path });
     builder.Logging.ClearProviders();
-    if (certificate == null) builder.WebHost.UseUrls("http://127.0.0.1:0");
-    else builder.WebHost.ConfigureKestrel(options =>
+    if (certificate == null)
+    {
+        builder.WebHost.UseUrls("http://127.0.0.1:0");
+    }
+    else
+    {
+        builder.WebHost.ConfigureKestrel(options =>
     {
         options.Listen(IPAddress.Loopback, 0);
         options.Listen(IPAddress.Loopback, 0, listen => listen.UseHttps(certificate));
     });
+    }
+
     builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
     {
         ["Gateway:Storage:Sqlite:ConnectionString"] = new SqliteConnectionStringBuilder
@@ -413,8 +439,16 @@ async Task<WebApplication> StartHost(string mode, bool enableAi = false, string 
     builder.Services.AddWafIshRuntime(enableRegistration: true);
     builder.Services.AddWafIshAdministration();
     builder.Services.AddWafIshAdministration();
-    if (enableAi) builder.Services.AddWafIshAI();
-    if (enableMcp) builder.Services.AddWafIshMcp();
+    if (enableAi)
+    {
+        builder.Services.AddWafIshAI();
+    }
+
+    if (enableMcp)
+    {
+        builder.Services.AddWafIshMcp();
+    }
+
     var app = builder.Build();
     app.MapWafIshAdministration();
     try { await app.StartAsync(); return app; }
@@ -445,7 +479,10 @@ async Task VerifyHub(Uri baseAddress, string name, string? invocation, string ex
     await socket.ConnectAsync(new UriBuilder(baseAddress) { Scheme = "ws", Path = "/ops/hubs/" + name }.Uri, timeout.Token);
     await socket.SendAsync(Encoding.UTF8.GetBytes("{\"protocol\":\"json\",\"version\":1}\u001e"), WebSocketMessageType.Text, true, timeout.Token);
     if (invocation != null)
+    {
         await socket.SendAsync(Encoding.UTF8.GetBytes(invocation), WebSocketMessageType.Text, true, timeout.Token);
+    }
+
     var received = new StringBuilder();
     var buffer = new byte[16384];
     while (!received.ToString().Contains(expected, StringComparison.Ordinal))
@@ -460,5 +497,8 @@ async Task VerifyHub(Uri baseAddress, string name, string? invocation, string ex
 
 static void Require(bool condition, string message)
 {
-    if (!condition) throw new InvalidOperationException(message);
+    if (!condition)
+    {
+        throw new InvalidOperationException(message);
+    }
 }

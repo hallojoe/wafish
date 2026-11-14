@@ -88,10 +88,12 @@ public class GatewayAutoRegistrationClient
         }
 
         if (transforms != null && transforms.Count > 0)
+        {
             if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Debug))
             {
                 _logger.LogDebug("Transforms: {Transforms}", JsonSerializer.Serialize(transforms));
             }
+        }
 
         if (useIpIsolation)
         {
@@ -229,7 +231,9 @@ public class GatewayAutoRegistrationClient
             var clientIp = RegistrationOptionsResolver.UseIpIsolation(_options) ? GetLocalIpv4() : null;
             var url = $"{gatewayUrl.TrimEnd('/')}/api/gateway/{routeName}";
             if (!string.IsNullOrWhiteSpace(clientIp))
+            {
                 url += $"?clientIp={Uri.EscapeDataString(clientIp)}";
+            }
 
             if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
             {
@@ -320,7 +324,10 @@ public class GatewayAutoRegistrationClient
 
             var callOptions = BuildGrpcCallOptions(ct);
             var response = await _grpcClient.RegisterServiceAsync(request, callOptions).ConfigureAwait(false);
-            if (response.Success && response.HasActiveVersion) Interlocked.Exchange(ref _registrationVersion, response.ActiveVersion);
+            if (response.Success && response.HasActiveVersion)
+            {
+                Interlocked.Exchange(ref _registrationVersion, response.ActiveVersion);
+            }
 
             if (response.Success)
             {
@@ -376,7 +383,9 @@ public class GatewayAutoRegistrationClient
         }
 
         if (!string.IsNullOrWhiteSpace(_options.ApiKey))
+        {
             http.DefaultRequestHeaders.TryAddWithoutValidation("X-Api-Key", _options.ApiKey);
+        }
     }
 
     /// <summary>
@@ -409,7 +418,10 @@ public class GatewayAutoRegistrationClient
     /// <returns>Tuple of (resolved address, warning message if any).</returns>
     private (string address, string? warning) ResolveLocalAddressWithCheck(string address)
     {
-        if (string.IsNullOrWhiteSpace(address)) return (address, null);
+        if (string.IsNullOrWhiteSpace(address))
+        {
+            return (address, null);
+        }
 
         // Wildcard host bindings (* and +) are valid Kestrel/ASP.NET Core ways to listen
         // on all interfaces (both IPv4 and IPv6), but Uri/UriBuilder reject them because
@@ -474,12 +486,22 @@ public class GatewayAutoRegistrationClient
         // segment right after the scheme authority prefix. Keep it tight so a literal "*" in a
         // path/query is never touched.
         var colonSlash = address.IndexOf("://", StringComparison.OrdinalIgnoreCase);
-        if (colonSlash < 0) return false;
+        if (colonSlash < 0)
+        {
+            return false;
+        }
+
         var hostStart = colonSlash + 3;
-        if (hostStart >= address.Length) return false;
+        if (hostStart >= address.Length)
+        {
+            return false;
+        }
 
         var wc = address[hostStart];
-        if (wc != '*' && wc != '+') return false;
+        if (wc != '*' && wc != '+')
+        {
+            return false;
+        }
 
         // Ensure the wildcard is the host (followed by ':' or '/' or end), not part of a name.
         var afterHost = hostStart + 1;
@@ -545,7 +567,9 @@ public class GatewayAutoRegistrationClient
         var useGrpcRegistration = _options.UseGrpcRegistration == true;
 
         if (string.IsNullOrWhiteSpace(gatewayUrl))
+        {
             return false;
+        }
 
         try
         {
@@ -576,7 +600,9 @@ public class GatewayAutoRegistrationClient
             var clientIp = RegistrationOptionsResolver.UseIpIsolation(_options) ? GetLocalIpv4() : null;
             var url = $"{gatewayUrl.TrimEnd('/')}/api/gateway/{routeName}/heartbeat";
             if (!string.IsNullOrWhiteSpace(clientIp))
+            {
                 url += $"?clientIp={Uri.EscapeDataString(clientIp)}";
+            }
 
             var response = await http.PostAsync(url, null, ct).ConfigureAwait(false);
 
@@ -642,7 +668,11 @@ public class GatewayAutoRegistrationClient
                 InstanceId = _options.InstanceId ?? "", ExpectedVersion = Interlocked.Read(ref _registrationVersion) };
             for (int i = 0; i < addresses.Count; i++)
             {
-                if (string.IsNullOrWhiteSpace(addresses[i])) continue;
+                if (string.IsNullOrWhiteSpace(addresses[i]))
+                {
+                    continue;
+                }
+
                 request.Destinations.Add(new Destination
                 {
                     DestinationId = $"d{i + 1}",
@@ -653,10 +683,16 @@ public class GatewayAutoRegistrationClient
 
             var callOptions = BuildGrpcCallOptions(ct);
             var response = await _grpcClient.UpdateDestinationsAsync(request, callOptions).ConfigureAwait(false);
-            if (response.Success && response.HasActiveVersion) Interlocked.Exchange(ref _registrationVersion, response.ActiveVersion);
+            if (response.Success && response.HasActiveVersion)
+            {
+                Interlocked.Exchange(ref _registrationVersion, response.ActiveVersion);
+            }
 
             if (!response.Success)
+            {
                 _logger.LogWarning("gRPC UpdateDestinations failed: {Message}", response.Message);
+            }
+
             return response.Success;
         }
         catch (RpcException ex)

@@ -34,7 +34,8 @@ internal static class RetryStreamingChecks
         await run("Retry: complete replay, unknown and oversized bodies, truncation, and cancellation", async () =>
         {
             foreach (var size in new[] { 0, 17, RequestRetryMiddleware.MaxRetryBodySizeBytes, RequestRetryMiddleware.MaxRetryBodySizeBytes + 1 })
-            foreach (var known in new[] { true, false })
+            {
+                foreach (var known in new[] { true, false })
             {
                 var f = new Fixture(); var bodies = new List<byte[]>();
                 f.Respond = async c =>
@@ -51,6 +52,8 @@ internal static class RetryStreamingChecks
                 Require(f.Calls == expected && bodies.All(b => b.SequenceEqual(body)), "Replay count or content changed.");
                 Require(ReferenceEquals(context.Request.Body, original), "Request stream was not restored.");
             }
+            }
+
             var truncated = new Fixture(); var shortContext = truncated.Context();
             shortContext.Request.Body = new ShortBody([1, 2]); shortContext.Request.ContentLength = 10;
             try { await truncated.Pipeline(shortContext); throw new Exception("Truncated body accepted."); }
@@ -102,12 +105,27 @@ internal static class RetryStreamingChecks
                         "body"u8.CopyTo(c.Response.BodyWriter.GetSpan(4));
                         c.Response.BodyWriter.Advance(4); return;
                     }
-                    if (mode == "start") await c.Response.StartAsync(c.RequestAborted);
+                    if (mode == "start")
+                    {
+                        await c.Response.StartAsync(c.RequestAborted);
+                    }
+
                     await c.Response.Body.WriteAsync("body"u8.ToArray(), c.RequestAborted);
-                    if (mode == "flush" || mode == "exception") await c.Response.Body.FlushAsync(c.RequestAborted);
-                    if (mode == "complete") await c.Response.CompleteAsync();
+                    if (mode == "flush" || mode == "exception")
+                    {
+                        await c.Response.Body.FlushAsync(c.RequestAborted);
+                    }
+
+                    if (mode == "complete")
+                    {
+                        await c.Response.CompleteAsync();
+                    }
+
                     if (mode == "disable") { c.Features.Get<IHttpResponseBodyFeature>()!.DisableBuffering(); await c.Response.Body.WriteAsync("tail"u8.ToArray()); }
-                    if (mode == "exception") throw new IOException("Injected after output");
+                    if (mode == "exception")
+                    {
+                        throw new IOException("Injected after output");
+                    }
                 };
                 await using var app = await Start(f);
                 using var client = Client(app);
@@ -123,7 +141,10 @@ internal static class RetryStreamingChecks
                     Require(f.Calls == (mode == "retry" ? 2 : 1), mode + " attempt count");
                     Require(response.Headers.GetValues("X-Attempt").Single() == f.Calls.ToString(), "Stale headers survived.");
                     Require(body.Length == (mode == "overflow" ? 128 * 1024 : mode == "disable" ? 8 : 4), mode + " body changed");
-                    if (mode == "retry") Require(response.Headers.GetValues("X-Retry-Count").Single() == "1", "Retry header was added too late.");
+                    if (mode == "retry")
+                    {
+                        Require(response.Headers.GetValues("X-Retry-Count").Single() == "1", "Retry header was added too late.");
+                    }
                 }
                 await app.StopAsync();
             }
@@ -150,7 +171,11 @@ internal static class RetryStreamingChecks
                     finally { stopped.TrySetResult(); }
                 };
                 await using var app = await Start(f); using var client = Client(app);
-                if (compress) client.DefaultRequestHeaders.AcceptEncoding.ParseAdd("gzip");
+                if (compress)
+                {
+                    client.DefaultRequestHeaders.AcceptEncoding.ParseAdd("gzip");
+                }
+
                 using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
                 using var response = await client.GetAsync("/stream", HttpCompletionOption.ResponseHeadersRead, timeout.Token);
                 await using var body = await response.Content.ReadAsStreamAsync(timeout.Token);
@@ -175,8 +200,14 @@ internal static class RetryStreamingChecks
             {
                 using var reader = new StreamReader(c.Request.Body);
                 bodies.Add(await reader.ReadToEndAsync(c.RequestAborted));
-                if (bodies.Count == 1) c.Response.StatusCode = 503;
-                else await c.Response.WriteAsync("forwarded", c.RequestAborted);
+                if (bodies.Count == 1)
+                {
+                    c.Response.StatusCode = 503;
+                }
+                else
+                {
+                    await c.Response.WriteAsync("forwarded", c.RequestAborted);
+                }
             });
             await upstream.StartAsync();
             var upstreamAddress = upstream.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses.Single();
@@ -260,8 +291,16 @@ internal static class RetryStreamingChecks
                 NullLogger<RequestRetryMiddleware>.Instance, Options.Create(new GatewayMiddlewareOptions()), null!,
                 new RecyclableMemoryStreamManager(), new InMemoryCircuitStateStore(), Coordinator, _plans);
             RequestDelegate pipeline = retry.InvokeAsync;
-            if (_compress) pipeline = new CompressionMiddleware(pipeline, _plans).InvokeAsync;
-            if (_cache) pipeline = new ResponseCacheMiddleware(pipeline, Store, _plans).InvokeAsync;
+            if (_compress)
+            {
+                pipeline = new CompressionMiddleware(pipeline, _plans).InvokeAsync;
+            }
+
+            if (_cache)
+            {
+                pipeline = new ResponseCacheMiddleware(pipeline, Store, _plans).InvokeAsync;
+            }
+
             return pipeline;
         }
         public void SetRoute(HttpContext c) => c.Features.Set<IReverseProxyFeature>(new ReverseProxyFeature { Route = new RouteModel(_route, null!, HttpTransformer.Default) });
@@ -291,5 +330,9 @@ internal static class RetryStreamingChecks
         public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
             => base.ReadAsync(buffer[..Math.Min(buffer.Length, 37)], cancellationToken);
     }
-    private static void Require(bool value, string message) { if (!value) throw new InvalidOperationException(message); }
+    private static void Require(bool value, string message) { if (!value)
+        {
+            throw new InvalidOperationException(message);
+        }
+    }
 }

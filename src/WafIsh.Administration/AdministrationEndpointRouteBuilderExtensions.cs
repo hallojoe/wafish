@@ -28,7 +28,11 @@ public static class AdministrationEndpointRouteBuilderExtensions
             {
                 if (!await context.RequestServices.GetRequiredService<IDashboardAuthorizationService>().IsAuthorizedAsync(context))
                 {
-                    if (context.Response.StatusCode != 429) context.Response.StatusCode = 401;
+                    if (context.Response.StatusCode != 429)
+                    {
+                        context.Response.StatusCode = 401;
+                    }
+
                     return;
                 }
                 await next(context);

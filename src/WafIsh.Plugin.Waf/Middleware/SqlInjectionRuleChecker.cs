@@ -33,20 +33,29 @@ public sealed class SqlInjectionRuleChecker : IWafRuleChecker
 
     public WafCheckResult Check(WafCheckContext context)
     {
-        if (!context.Options.EnableSqlInjectionDetection) return WafCheckResult.Passed;
+        if (!context.Options.EnableSqlInjectionDetection)
+        {
+            return WafCheckResult.Passed;
+        }
 
         // Scan decoded query string
         if (!string.IsNullOrEmpty(context.DecodedQueryString))
         {
             var r = MatchText(context.DecodedQueryString);
-            if (r.IsBlocked) return r;
+            if (r.IsBlocked)
+            {
+                return r;
+            }
         }
 
         // Scan decoded body text
         if (!string.IsNullOrEmpty(context.DecodedBodyText))
         {
             var r = MatchText(context.DecodedBodyText);
-            if (r.IsBlocked) return r;
+            if (r.IsBlocked)
+            {
+                return r;
+            }
         }
 
         return WafCheckResult.Passed;
@@ -55,9 +64,15 @@ public sealed class SqlInjectionRuleChecker : IWafRuleChecker
     private static WafCheckResult MatchText(string text)
     {
         if (KeywordPattern.IsMatch(text))
+        {
             return WafCheckResult.Blocked("SqlInjectionBlocked", Truncate(text));
+        }
+
         if (ValuePattern.IsMatch(text))
+        {
             return WafCheckResult.Blocked("SqlInjectionValueBlocked", Truncate(text));
+        }
+
         return WafCheckResult.Passed;
     }
 

@@ -34,7 +34,9 @@ internal class GrpcAuthInterceptor : Interceptor
         UnaryServerMethod<TRequest, TResponse> continuation)
     {
         if (!_policy.IsAllowed(context.GetHttpContext(), _options.Mode == GatewayApiAuthMode.None))
+        {
             throw new RpcException(new Status(StatusCode.PermissionDenied, "Administration requires HTTPS or an allowed direct loopback connection."));
+        }
 
         if (_options.Mode == GatewayApiAuthMode.None)
         {

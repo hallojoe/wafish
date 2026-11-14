@@ -83,7 +83,11 @@ public class ConfigHistoryController : ConfigControllerBase
 
             var importResult = await PersistenceService.ImportFullConfigAsync(config, GetClientIp());
 
-            if (importResult.Success) InvalidateQueryCaches();
+            if (importResult.Success)
+            {
+                InvalidateQueryCaches();
+            }
+
             return importResult.Success
                 ? Ok(new
                 {
@@ -221,7 +225,11 @@ public class ConfigHistoryController : ConfigControllerBase
         {
             var success = await PersistenceService.RollbackAsync(versionId, GetClientIp());
 
-            if (success) InvalidateQueryCaches();
+            if (success)
+            {
+                InvalidateQueryCaches();
+            }
+
             return success
                 ? Ok(new { code = 200, message = $"Rolled back to version: {versionId}" })
                 : BadRequest(new { code = 400, message = $"Version not found: {versionId}" });
@@ -298,7 +306,9 @@ public class ConfigHistoryController : ConfigControllerBase
                 .FirstOrDefault(s => string.Equals(s.VersionId, versionId, StringComparison.OrdinalIgnoreCase));
 
             if (historySnapshot == null)
+            {
                 return NotFound(new { code = 404, message = $"Version '{versionId}' not found" });
+            }
 
             var snapshotRoutes = _diffService.ParseSnapshotRoutes(historySnapshot.Config);
             var snapshotClusters = _diffService.ParseSnapshotClusters(historySnapshot.Config);

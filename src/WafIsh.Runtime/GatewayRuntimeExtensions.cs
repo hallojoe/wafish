@@ -47,7 +47,11 @@ public static class GatewayRuntimeExtensions
 {
     public static IServiceCollection AddWafIshRuntime(this IServiceCollection services, bool enableRegistration = false)
     {
-        if (services.Any(d => d.ServiceType == typeof(RuntimeMarker))) return services;
+        if (services.Any(d => d.ServiceType == typeof(RuntimeMarker)))
+        {
+            return services;
+        }
+
         Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAddSingleton(services, TimeProvider.System);
         services.AddSingleton<RuntimeMarker>();
         services.AddWafIsh(enableRegistration: enableRegistration);

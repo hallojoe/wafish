@@ -46,7 +46,10 @@ internal class DynamicConfigPublisher : IDynamicConfigPublisher
         foreach (var dynRoute in config.Routes)
         {
             // Skip disabled routes: keep data in working set but don't forward traffic
-            if (!dynRoute.Enabled) continue;
+            if (!dynRoute.Enabled)
+            {
+                continue;
+            }
 
             var publishedConfig = DynamicYarpConfigHelpers.NormalizeTransforms(dynRoute.Config);
             publishRoutes.Add(new DynamicRouteConfig
@@ -73,7 +76,9 @@ internal class DynamicConfigPublisher : IDynamicConfigPublisher
             {
                 var built = DynamicYarpConfigHelpers.BuildClusterHealthCheck(dynCluster.HealthCheck);
                 if (built != null)
+                {
                     nativeConfig = nativeConfig with { HealthCheck = built };
+                }
             }
 
             publishClusters.Add(new DynamicClusterConfig
@@ -106,7 +111,9 @@ internal class DynamicConfigPublisher : IDynamicConfigPublisher
         foreach (var route in publishRoutes)
         {
             if (compiledRoutes.TryGetValue(route.Config.RouteId ?? string.Empty, out var compiled))
+            {
                 route.Config = compiled;
+            }
         }
 
         var compiledClusters = gatewaySnapshot.Clusters
@@ -114,7 +121,9 @@ internal class DynamicConfigPublisher : IDynamicConfigPublisher
         foreach (var cluster in publishClusters)
         {
             if (compiledClusters.TryGetValue(cluster.Config.ClusterId ?? string.Empty, out var compiled))
+            {
                 cluster.Config = compiled;
+            }
         }
 
         // Reject invalid compiled configuration before storage or publication.
@@ -204,23 +213,34 @@ internal class DynamicConfigPublisher : IDynamicConfigPublisher
         _errorStore.ReplaceErrors("prevalidate", errors);
         var clusterIds = clusters.Select(c => c.Config.ClusterId).ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var route in routes)
+        {
             if (!string.IsNullOrEmpty(route.Config.ClusterId) && !clusterIds.Contains(route.Config.ClusterId))
+            {
                 throw new ArgumentException($"Route '{route.Config.RouteId}' references missing cluster '{route.Config.ClusterId}'.");
+            }
+        }
+
         if (errors.Count > 0)
+        {
             throw new ArgumentException(string.Join("; ", errors.Select(e => e.Message)));
+        }
     }
 
     /// <inheritdoc />
     public ClusterConfig SanitizeCluster(ClusterConfig cluster)
     {
         if (cluster.Destinations == null || cluster.Destinations.Count == 0)
+        {
             return cluster;
+        }
 
         var validDests = new Dictionary<string, DestinationConfig>(
             cluster.Destinations.Where(d => !string.IsNullOrWhiteSpace(d.Value?.Address)));
 
         if (validDests.Count == cluster.Destinations.Count)
+        {
             return cluster;
+        }
 
         _logger.LogWarning(
             "Dropped {InvalidCount} invalid destinations from cluster {ClusterId}",

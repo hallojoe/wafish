@@ -131,7 +131,11 @@ internal static class RegistrationClientChecks
         Check(handler.Calls.Count == 2, "Controlled retry failed.");
         clock.Advance(TimeSpan.FromSeconds(30));
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        while (handler.Calls.Count < 3) await Task.Delay(5, timeout.Token);
+        while (handler.Calls.Count < 3)
+        {
+            await Task.Delay(5, timeout.Token);
+        }
+
         Check(handler.Calls.Last().Path.EndsWith("/heartbeat", StringComparison.Ordinal), "Controlled heartbeat failed.");
         await hosted.StopAsync(default);
         var stoppedCount = handler.Calls.Count;
@@ -183,7 +187,11 @@ internal static class RegistrationClientChecks
         private static Grpc.Core.AsyncUnaryCall<T> Reply<T>(T response) => new(Task.FromResult(response), Task.FromResult(new Grpc.Core.Metadata()), () => Grpc.Core.Status.DefaultSuccess, () => new Grpc.Core.Metadata(), () => { });
     }
 
-    private static void Check(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); }
+    private static void Check(bool condition, string message) { if (!condition)
+        {
+            throw new InvalidOperationException(message);
+        }
+    }
     private sealed class ClientFactory(HttpMessageHandler handler) : IHttpClientFactory
     {
         public HttpClient CreateClient(string name) => new(handler, disposeHandler: false);

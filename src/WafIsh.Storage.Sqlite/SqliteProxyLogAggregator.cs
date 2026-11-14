@@ -25,7 +25,9 @@ internal sealed class SqliteProxyLogAggregator
     public async Task<ProxyLogStatsResult> GetStatsAsync(int recentMinutes, CancellationToken ct)
     {
         if (!HasColumn("StatusCode"))
+        {
             return new ProxyLogStatsResult();
+        }
 
         await using var conn = await _connections.CreateConnectionAsync(ct);
         await conn.OpenAsync(ct);
@@ -72,7 +74,10 @@ internal sealed class SqliteProxyLogAggregator
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "S2077", Justification = "eventFilter is one of two SQL literals. The time filter is a bound parameter.")]
     public async Task<List<ProxyLogTrafficBucket>> GetTrafficDataAsync(DateTime startTime, CancellationToken ct)
     {
-        if (!HasColumn("StatusCode")) return [];
+        if (!HasColumn("StatusCode"))
+        {
+            return [];
+        }
 
         await using var conn = await _connections.CreateConnectionAsync(ct);
         await conn.OpenAsync(ct);
@@ -107,7 +112,10 @@ internal sealed class SqliteProxyLogAggregator
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "S2077", Justification = "eventFilter is one of two SQL literals. Time and limit values are bound parameters.")]
     public async Task<List<ProxyLogRouteIssue>> GetTopIssuesAsync(DateTime startTime, int count, CancellationToken ct)
     {
-        if (!HasColumn("StatusCode") || !HasColumn("RouteId")) return [];
+        if (!HasColumn("StatusCode") || !HasColumn("RouteId"))
+        {
+            return [];
+        }
 
         await using var conn = await _connections.CreateConnectionAsync(ct);
         await conn.OpenAsync(ct);
@@ -144,7 +152,10 @@ internal sealed class SqliteProxyLogAggregator
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "S2077", Justification = "eventFilter is one of two SQL literals. The interval is a bound parameter.")]
     public async Task<int> GetRecent5xxCountAsync(int minutes, CancellationToken ct)
     {
-        if (!HasColumn("StatusCode")) return 0;
+        if (!HasColumn("StatusCode"))
+        {
+            return 0;
+        }
 
         await using var conn = await _connections.CreateConnectionAsync(ct);
         await conn.OpenAsync(ct);
@@ -171,7 +182,10 @@ internal sealed class SqliteProxyLogAggregator
             """;
         countCmd.Parameters.AddWithValue("@from", fromTime);
         var total = Convert.ToInt64(await countCmd.ExecuteScalarAsync(ct));
-        if (total == 0) return 0;
+        if (total == 0)
+        {
+            return 0;
+        }
 
         var offset = (int)(total * percentile);
         await using var cmd = conn.CreateCommand();

@@ -92,7 +92,9 @@ public sealed class SqliteSchemaMigrator : IHostedService
         foreach (var migration in AllMigrations.OrderBy(m => m.Version))
         {
             if (await IsMigrationAppliedAsync(conn, migration.Id, cancellationToken))
+            {
                 continue;
+            }
 
             // Migration006 (data backfill) is time-boxed to 30s
             using var backfillCts = migration is Migration006_DataBackfill
@@ -192,7 +194,9 @@ public sealed class SqliteSchemaMigrator : IHostedService
         await using (var reader = await checkCmd.ExecuteReaderAsync(ct))
         {
             while (await reader.ReadAsync(ct))
+            {
                 existingIds.Add(reader.GetString(0));
+            }
         }
 
         foreach (var (legacyId, newId) in LegacyIdMap)

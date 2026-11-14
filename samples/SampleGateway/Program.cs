@@ -37,7 +37,11 @@ try
     {
         var httpPort = builder.Configuration.GetValue<int>("GATEWAY_HTTP_PORT");
         var grpcPort = builder.Configuration.GetValue<int>("GATEWAY_GRPC_PORT");
-        if (httpPort <= 0 || grpcPort <= 0) throw new InvalidOperationException("Aspire must assign HTTP and gRPC ports.");
+        if (httpPort <= 0 || grpcPort <= 0)
+        {
+            throw new InvalidOperationException("Aspire must assign HTTP and gRPC ports.");
+        }
+
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["Kestrel:Endpoints:Gateway:Url"] = $"http://127.0.0.1:{httpPort}",
@@ -46,7 +50,10 @@ try
             ["Kestrel:Endpoints:Grpc:Protocols"] = "Http2"
         });
     }
-    else builder.UseYarpKestrelAutoConfig();
+    else
+    {
+        builder.UseYarpKestrelAutoConfig();
+    }
 
     // Gateway: one-liner — auto-loads ReverseProxy routes/clusters + dynamic config
     builder.Services.AddWafIsh(enableRegistration: builder.Configuration.GetValue<bool>("Gateway:Registration:Enabled"));
@@ -87,7 +94,10 @@ try
     Console.WriteLine("  Internal gateway is running");
     Console.WriteLine($"  Mode:               {depOptions.Mode}");
     foreach (var ep in depOptions.ResolvedEndpoints)
+    {
         Console.WriteLine($"  Endpoint:           {ep.EndpointName} → {ep.IpAddress}:{ep.Port} ({ep.Role})");
+    }
+
     Console.WriteLine("  Dashboard:          /console");
     Console.WriteLine("  Login:              /console");
     Console.WriteLine("  Credentials:        supplied through host configuration");

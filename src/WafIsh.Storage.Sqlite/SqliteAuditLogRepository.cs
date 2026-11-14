@@ -15,11 +15,19 @@ public sealed class SqliteAuditLogRepository : IAuditLogRepository
 
     private async ValueTask EnsureInitializedAsync(CancellationToken ct)
     {
-        if (_initialized) return;
+        if (_initialized)
+        {
+            return;
+        }
+
         await _initLock.WaitAsync(ct);
         try
         {
-            if (_initialized) return;
+            if (_initialized)
+            {
+                return;
+            }
+
             await InitializeAsync(ct);
         }
         finally { _initLock.Release(); }
@@ -41,7 +49,11 @@ public sealed class SqliteAuditLogRepository : IAuditLogRepository
         cmd.Parameters.AddWithValue("@limit", limit);
         var list = new List<AuditLogEntity>();
         await using var reader = await cmd.ExecuteReaderAsync(ct);
-        while (await reader.ReadAsync(ct)) list.Add(Map(reader));
+        while (await reader.ReadAsync(ct))
+        {
+            list.Add(Map(reader));
+        }
+
         return list.AsReadOnly();
     }
 
@@ -56,7 +68,11 @@ public sealed class SqliteAuditLogRepository : IAuditLogRepository
         cmd.Parameters.AddWithValue("@limit", limit);
         var list = new List<AuditLogEntity>();
         await using var reader = await cmd.ExecuteReaderAsync(ct);
-        while (await reader.ReadAsync(ct)) list.Add(Map(reader));
+        while (await reader.ReadAsync(ct))
+        {
+            list.Add(Map(reader));
+        }
+
         return list.AsReadOnly();
     }
 

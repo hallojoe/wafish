@@ -64,7 +64,9 @@ public sealed class DashboardLogQueryService : IDashboardLogQueryService
     public async Task<ProxyLogSearchResult> GetHistoryLogsAsync(ProxyLogSearchRequest request, CancellationToken ct = default)
     {
         if (!_options.LogPersistenceEnabled)
+        {
             return new ProxyLogSearchResult { Items = new(), TotalCount = 0, Page = request.Page, PageSize = request.PageSize, HasMore = false };
+        }
 
         var (items, totalCount) = await _logRepository.SearchAsync(
             request.Page, request.PageSize,
@@ -89,10 +91,16 @@ public sealed class DashboardLogQueryService : IDashboardLogQueryService
     /// <inheritdoc />
     public async Task<ProxyLogDetailResult?> GetLogDetailAsync(long metaId, CancellationToken ct = default)
     {
-        if (!_options.LogPersistenceEnabled) return null;
+        if (!_options.LogPersistenceEnabled)
+        {
+            return null;
+        }
 
         var meta = await _logRepository.GetMetaByIdAsync(metaId, ct);
-        if (meta == null) return null;
+        if (meta == null)
+        {
+            return null;
+        }
 
         var body = await _logRepository.GetBodyByMetaIdAsync(metaId, ct);
 
@@ -143,7 +151,11 @@ public sealed class DashboardLogQueryService : IDashboardLogQueryService
 
     private static HeaderList? DeserializeHeaders(string? json)
     {
-        if (string.IsNullOrEmpty(json)) return null;
+        if (string.IsNullOrEmpty(json))
+        {
+            return null;
+        }
+
         try { return JsonSerializer.Deserialize<HeaderList>(json); }
         catch { return null; }
     }

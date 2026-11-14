@@ -48,25 +48,41 @@ var failures = new List<string>();
 if (args is ["--review-release"])
 {
     await ReviewReleaseChecks.RunAsync(RunAsync);
-    foreach (var failure in failures) Console.Error.WriteLine(failure);
+    foreach (var failure in failures)
+    {
+        Console.Error.WriteLine(failure);
+    }
+
     return failures.Count == 0 ? 0 : 1;
 }
 if (args is ["--review-deployment"])
 {
     await ReviewDeploymentChecks.RunAsync(RunAsync);
-    foreach (var failure in failures) Console.Error.WriteLine(failure);
+    foreach (var failure in failures)
+    {
+        Console.Error.WriteLine(failure);
+    }
+
     return failures.Count == 0 ? 0 : 1;
 }
 if (args is ["--review-accounting"])
 {
     await ReviewAccountingChecks.RunAsync(RunAsync);
-    foreach (var failure in failures) Console.Error.WriteLine(failure);
+    foreach (var failure in failures)
+    {
+        Console.Error.WriteLine(failure);
+    }
+
     return failures.Count == 0 ? 0 : 1;
 }
 if (args is ["--review-lifecycle"])
 {
     await ReviewLifecycleChecks.RunAsync(RunAsync);
-    foreach (var failure in failures) Console.Error.WriteLine(failure);
+    foreach (var failure in failures)
+    {
+        Console.Error.WriteLine(failure);
+    }
+
     return failures.Count == 0 ? 0 : 1;
 }
 
@@ -74,7 +90,11 @@ if (args is ["--review-lifecycle"])
 if (args is ["--storage"])
 {
     await SqliteEncryptionChecks.RunAsync(RunAsync);
-    foreach (var failure in failures) Console.Error.WriteLine(failure);
+    foreach (var failure in failures)
+    {
+        Console.Error.WriteLine(failure);
+    }
+
     return failures.Count == 0 ? 0 : 1;
 }
 
@@ -121,7 +141,9 @@ Run("Removed compatibility contracts stay isolated from runtime source", () =>
     {
         var source = File.ReadAllText(path);
         foreach (var symbol in forbidden)
+        {
             False(source.Contains(symbol, StringComparison.Ordinal));
+        }
     }
 });
 
@@ -217,7 +239,9 @@ await RunAsync("Plugin runtime domain drains in-flight requests before disposal"
     release.TrySetResult();
     await request.WaitAsync(TimeSpan.FromSeconds(5));
     if (await Task.WhenAny(disposed.Task, Task.Delay(TimeSpan.FromSeconds(5))) != disposed.Task)
+    {
         throw new InvalidOperationException("The retired runtime provider was not disposed after the in-flight request drained.");
+    }
 });
 
 Run("Plugin manifest dependencies are exposed and built-in adapters are protected", () =>
@@ -382,7 +406,11 @@ Run("Legacy global policy chains stay isolated from dashboard activation", TestL
 if (failures.Count > 0)
 {
     Console.Error.WriteLine($"Regression checks failed: {failures.Count}");
-    foreach (var failure in failures) Console.Error.WriteLine($"- {failure}");
+    foreach (var failure in failures)
+    {
+        Console.Error.WriteLine($"- {failure}");
+    }
+
     return 1;
 }
 Console.WriteLine("All regression checks passed.");
@@ -411,7 +439,13 @@ async Task TestPluginBindingRepositoryAsync()
     finally
     {
         SqliteConnection.ClearAllPools();
-        foreach (var path in new[] { dbPath, dbPath + "-wal", dbPath + "-shm" }) if (File.Exists(path)) File.Delete(path);
+        foreach (var path in new[] { dbPath, dbPath + "-wal", dbPath + "-shm" })
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
     }
 }
 
@@ -460,7 +494,10 @@ async Task TestGatewayPluginStatePersistenceAsync()
     finally
     {
         SqliteConnection.ClearAllPools();
-        if (Directory.Exists(root)) Directory.Delete(root, true);
+        if (Directory.Exists(root))
+        {
+            Directory.Delete(root, true);
+        }
     }
 }
 
@@ -596,7 +633,11 @@ async Task TestServiceDiscoveryStaticRefreshAsync()
 
     await service.StartResourceAsync(CancellationToken.None);
     var deadline = DateTime.UtcNow.AddSeconds(3);
-    while (publisher.Current.Version == 1 && DateTime.UtcNow < deadline) await Task.Delay(20);
+    while (publisher.Current.Version == 1 && DateTime.UtcNow < deadline)
+    {
+        await Task.Delay(20);
+    }
+
     await service.StopResourceAsync(CancellationToken.None);
 
     Equal(2L, publisher.Current.Version);
@@ -664,7 +705,9 @@ void TestLegacyGlobalPolicyIsolation()
         .Select(type => type!.Name)
         .ToHashSet(StringComparer.Ordinal);
     foreach (var pluginType in new[] { "CircuitBreakerPlugin", "RequestRetryPlugin", "RateLimitPlugin", "WafPlugin" })
+    {
         True(pluginIds.Contains(pluginType));
+    }
 }
 
 void Run(string name, Action action)
@@ -679,15 +722,17 @@ async Task RunAsync(string name, Func<Task> action)
     try { await action(); report.Record(name, started); Console.WriteLine($"PASS: {name}"); }
     catch (Exception ex) { report.Record(name, started, ex); failures.Add($"{name}: {ex.Message}"); }
 }
-void Equal<T>(T expected, T actual) { if (!EqualityComparer<T>.Default.Equals(expected, actual)) throw new InvalidOperationException($"Expected '{expected}', got '{actual}'."); }
-void True(bool value) { if (!value) throw new InvalidOperationException("Expected true."); }
-void False(bool value) { if (value) throw new InvalidOperationException("Expected false."); }
+void Equal<T>(T expected, T actual) { if (!EqualityComparer<T>.Default.Equals(expected, actual)) { throw new InvalidOperationException($"Expected '{expected}', got '{actual}'."); } }
+void True(bool value) { if (!value) { throw new InvalidOperationException("Expected true."); } }
+void False(bool value) { if (value) { throw new InvalidOperationException("Expected false."); } }
 static string FindRepositoryRoot()
 {
     for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory != null; directory = directory.Parent)
     {
         if (File.Exists(Path.Combine(directory.FullName, "WafIsh.slnx")))
+        {
             return directory.FullName;
+        }
     }
 
     throw new DirectoryNotFoundException("Could not locate WafIsh.slnx from regression test output directory.");

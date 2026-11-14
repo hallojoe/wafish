@@ -61,7 +61,9 @@ public sealed class PluginRuntimeDomain : IAsyncDisposable
     {
         lease = default;
         if (Volatile.Read(ref _retired) != 0)
+        {
             return false;
+        }
 
         Interlocked.Increment(ref _activeRequests);
         if (Volatile.Read(ref _retired) == 0)
@@ -77,7 +79,9 @@ public sealed class PluginRuntimeDomain : IAsyncDisposable
     internal async ValueTask RetireAndDisposeAsync()
     {
         if (Interlocked.Exchange(ref _retired, 1) == 0 && Volatile.Read(ref _activeRequests) == 0)
+        {
             _drained.TrySetResult();
+        }
 
         await _drained.Task;
         await DisposeAsync();
@@ -86,12 +90,17 @@ public sealed class PluginRuntimeDomain : IAsyncDisposable
     internal void Release()
     {
         if (Interlocked.Decrement(ref _activeRequests) == 0 && Volatile.Read(ref _retired) != 0)
+        {
             _drained.TrySetResult();
+        }
     }
 
     public ValueTask DisposeAsync()
     {
-        lock (_disposeGate) return new ValueTask(_disposeTask ??= DisposeOwnedAsync());
+        lock (_disposeGate)
+        {
+            return new ValueTask(_disposeTask ??= DisposeOwnedAsync());
+        }
     }
 
     private async Task DisposeOwnedAsync()
@@ -100,8 +109,14 @@ public sealed class PluginRuntimeDomain : IAsyncDisposable
         var failures = new List<Exception>();
         try
         {
-            if (Services is IAsyncDisposable asyncDisposable) await asyncDisposable.DisposeAsync();
-            else if (Services is IDisposable disposable) disposable.Dispose();
+            if (Services is IAsyncDisposable asyncDisposable)
+            {
+                await asyncDisposable.DisposeAsync();
+            }
+            else if (Services is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
         }
         catch (Exception ex) { failures.Add(ex); }
         foreach (var load in _externalLoads.Reverse())
@@ -109,7 +124,10 @@ public sealed class PluginRuntimeDomain : IAsyncDisposable
             try { await load.DisposeAsync(); }
             catch (Exception ex) { failures.Add(ex); }
         }
-        if (failures.Count > 0) throw new AggregateException("Plugin domain disposal failed.", failures);
+        if (failures.Count > 0)
+        {
+            throw new AggregateException("Plugin domain disposal failed.", failures);
+        }
     }
 
     internal static PluginRuntimeDomain Empty => new(
@@ -148,11 +166,15 @@ public sealed class PluginRuntimeDomainPreparation : IAsyncDisposable
         foreach (var plugin in Candidate.Plugins.Values)
         {
             if (plugin is not IPluginHealthProbe probe)
+            {
                 continue;
+            }
 
             var result = await probe.CheckHealthAsync(cancellationToken);
             if (result.Status == PluginHealthStatus.Unhealthy)
+            {
                 return result;
+            }
         }
 
         return new PluginHealthProbeResult(PluginHealthStatus.Healthy, "Plugin runtime domain is ready.", DateTimeOffset.UtcNow);
@@ -163,7 +185,9 @@ public sealed class PluginRuntimeDomainPreparation : IAsyncDisposable
         cancellationToken.ThrowIfCancellationRequested();
         var candidate = _candidate ?? throw new ObjectDisposedException(nameof(PluginRuntimeDomainPreparation));
         if (Interlocked.Exchange(ref _committed, 1) != 0)
+        {
             throw new InvalidOperationException("The plugin runtime domain preparation was already committed.");
+        }
 
         _candidate = null;
         try { await _owner.CommitAsync(candidate); }
@@ -174,7 +198,9 @@ public sealed class PluginRuntimeDomainPreparation : IAsyncDisposable
     {
         var candidate = Interlocked.Exchange(ref _candidate, null);
         if (candidate != null && Volatile.Read(ref _committed) == 0)
+        {
             await candidate.DisposeAsync();
+        }
     }
 }
 
@@ -212,7 +238,9 @@ public sealed class PluginRuntimeDomainInitializer(
             .ToArray();
         var result = await runtimeDomains.TransitionAsync(enabled, cancellationToken);
         if (!result.Succeeded)
+        {
             logger.LogError("Initial plugin runtime domain could not be activated: {Error}", result.Error);
+        }
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
@@ -265,7 +293,11 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
         IReadOnlyCollection<string> enabledPluginIds,
         CancellationToken cancellationToken = default)
     {
-        lock (_lifecycleGate) ObjectDisposedException.ThrowIf(_stopping, this);
+        lock (_lifecycleGate)
+        {
+            ObjectDisposedException.ThrowIf(_stopping, this);
+        }
+
         var enabled = enabledPluginIds
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         var plugins = new Dictionary<string, IGatewayPlugin>(StringComparer.OrdinalIgnoreCase);
@@ -311,7 +343,10 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
             services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
             // YARP selection uses the host policies, including application-defined policies.
             foreach (var policy in _rootServices.GetServices<global::Yarp.ReverseProxy.LoadBalancing.ILoadBalancingPolicy>())
+            {
                 services.AddSingleton(policy);
+            }
+
             foreach (var plugin in plugins.Values)
             {
                 services.AddSingleton<IGatewayPlugin>(plugin);
@@ -329,7 +364,9 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
 
             var dashboardBuilder = new PluginDashboardBuilder();
             foreach (var plugin in plugins.Values)
+            {
                 plugin.ConfigureDashboard(dashboardBuilder);
+            }
 
             var candidate = new PluginRuntimeDomain(servicesWithFallback, plugins, middleware, proxyPipeline, externalLoads, dashboardBuilder);
             return new PluginRuntimeDomainPreparation(this, candidate);
@@ -337,10 +374,17 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
         catch
         {
             // Candidate construction owns these resources until a preparation can take them.
-            try { if (pluginServices != null) await pluginServices.DisposeAsync(); }
+            try { if (pluginServices != null)
+                {
+                    await pluginServices.DisposeAsync();
+                }
+            }
             finally
             {
-                foreach (var load in externalLoads.AsEnumerable().Reverse()) await load.DisposeAsync();
+                foreach (var load in externalLoads.AsEnumerable().Reverse())
+                {
+                    await load.DisposeAsync();
+                }
             }
             throw;
         }
@@ -355,7 +399,9 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
             await using var preparation = await PrepareAsync(enabledPluginIds, cancellationToken);
             var health = await preparation.CheckHealthAsync(cancellationToken);
             if (health.Status == PluginHealthStatus.Unhealthy)
+            {
                 return new PluginRuntimeTransitionResult(false, health.Message ?? "Plugin runtime health check failed.");
+            }
 
             await preparation.CommitAsync(cancellationToken);
             return new PluginRuntimeTransitionResult(true);
@@ -386,7 +432,10 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
         _retirements.Add(task);
         _ = task.ContinueWith(completed =>
         {
-            lock (_lifecycleGate) _retirements.Remove(completed);
+            lock (_lifecycleGate)
+            {
+                _retirements.Remove(completed);
+            }
         }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.ExecuteSynchronously,
             TaskScheduler.Default);
     }
@@ -395,7 +444,11 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
     {
         lock (_lifecycleGate)
         {
-            if (_shutdownTask != null) return new ValueTask(_shutdownTask);
+            if (_shutdownTask != null)
+            {
+                return new ValueTask(_shutdownTask);
+            }
+
             _stopping = true;
             TrackRetirement(Current);
             _shutdownTask = ShutdownAsync(_retirements.ToArray(), _watchTask);
@@ -432,10 +485,14 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
     {
         var monitor = _rootServices.GetService<IPluginResourceMonitor>();
         if (monitor == null)
+        {
             return;
+        }
 
         if (Interlocked.CompareExchange(ref _postTransitionWatchRunning, 1, 0) != 0)
+        {
             return;
+        }
 
         var before = TrySnapshot(monitor);
         if (before == null)
@@ -451,16 +508,22 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
                 await Task.Delay(PostTransitionWatchWindow, _watchCancellation.Token).ConfigureAwait(false);
                 var after = TrySnapshot(monitor);
                 if (after == null)
+                {
                     return;
+                }
 
                 var requestDelta = after.TotalRequests - before.TotalRequests;
                 var errorDelta = after.TotalErrors - before.TotalErrors;
                 if (requestDelta < PostTransitionWatchMinimumRequests || errorDelta <= 0)
+                {
                     return;
+                }
 
                 var errorRate = (double)errorDelta / requestDelta;
                 if (errorRate < PostTransitionWatchErrorRateThreshold)
+                {
                     return;
+                }
 
                 var offenders = after.PerPlugin
                     .Select(current =>
@@ -535,7 +598,9 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
             ObjectDisposedException.ThrowIf(_stopping, this);
             domain = Current;
             if (!domain.TryAcquire(out lease))
+            {
                 throw new ObjectDisposedException(nameof(PluginRuntimeDomain));
+            }
         }
 
         using (lease)
@@ -593,7 +658,9 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
                         foreach (var plugin in plugins.Values)
                         {
                             if (enabledIds?.Contains(plugin.PluginId) == true)
+                            {
                                 monitor.RecordRequest(plugin.PluginId, sw.ElapsedMilliseconds, succeeded);
+                            }
                         }
                     }
                 }
@@ -602,8 +669,13 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
         });
 
         foreach (var pluginId in ProxyPluginOrder)
+        {
             if (plugins.TryGetValue(pluginId, out var plugin))
+            {
                 plugin.ConfigureProxyPipeline(builder);
+            }
+        }
+
         builder.Run(ContinueHostPipelineAsync);
         return builder.Build();
     }
@@ -614,7 +686,10 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
     {
         var builder = new ApplicationBuilder(services);
         if (plugins.TryGetValue("waf", out var waf))
+        {
             waf.ConfigureMiddleware(builder);
+        }
+
         builder.Run(ContinueHostPipelineAsync);
         return builder.Build();
     }

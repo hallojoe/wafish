@@ -13,13 +13,21 @@ public sealed class InMemoryRateLimiterStore : IRateLimiterStore, IDisposable
     private readonly object _gate = new();
     private readonly Dictionary<string, Entry> _limiters = new(StringComparer.Ordinal);
     private bool _disposed;
-    public int Count { get { lock (_gate) return _limiters.Count; } }
+    public int Count { get { lock (_gate) { return _limiters.Count; } } }
 
     private Entry? GetEntry(string key, Func<RateLimiter> factory)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (_limiters.TryGetValue(key, out var entry)) return entry;
-        if (_limiters.Count >= MaximumPartitions) return null;
+        if (_limiters.TryGetValue(key, out var entry))
+        {
+            return entry;
+        }
+
+        if (_limiters.Count >= MaximumPartitions)
+        {
+            return null;
+        }
+
         entry = new Entry(new RateLimiterEntry(factory()));
         _limiters.Add(key, entry);
         return entry;
@@ -31,7 +39,11 @@ public sealed class InMemoryRateLimiterStore : IRateLimiterStore, IDisposable
         lock (_gate)
         {
             entry = GetEntry(key, factory);
-            if (entry == null) return null;
+            if (entry == null)
+            {
+                return null;
+            }
+
             entry.Users++;
             entry.Value.LastAccessedAt = _time.GetUtcNow().UtcDateTime;
             entry.LastAccess = _time.GetTimestamp();
@@ -51,7 +63,10 @@ public sealed class InMemoryRateLimiterStore : IRateLimiterStore, IDisposable
             entry.Users--;
             entry.Value.LastAccessedAt = _time.GetUtcNow().UtcDateTime;
             entry.LastAccess = _time.GetTimestamp();
-            if (_disposed && entry.Users == 0) entry.Value.Limiter.Dispose();
+            if (_disposed && entry.Users == 0)
+            {
+                entry.Value.Limiter.Dispose();
+            }
         }
     }
 
@@ -64,7 +79,11 @@ public sealed class InMemoryRateLimiterStore : IRateLimiterStore, IDisposable
                 var entry = pair.Value;
                 // Never reset an active quota to admit a new identity.
                 if (entry.Users != 0 || _time.GetElapsedTime(entry.LastAccess) <= staleThreshold ||
-                    entry.Value.Limiter.IdleDuration is not { } idle || idle <= staleThreshold) continue;
+                    entry.Value.Limiter.IdleDuration is not { } idle || idle <= staleThreshold)
+                {
+                    continue;
+                }
+
                 _limiters.Remove(pair.Key);
                 entry.Value.Limiter.Dispose();
             }
@@ -75,9 +94,17 @@ public sealed class InMemoryRateLimiterStore : IRateLimiterStore, IDisposable
     {
         lock (_gate)
         {
-            if (_disposed) return;
+            if (_disposed)
+            {
+                return;
+            }
+
             _disposed = true;
-            foreach (var entry in _limiters.Values.Where(e => e.Users == 0)) entry.Value.Limiter.Dispose();
+            foreach (var entry in _limiters.Values.Where(e => e.Users == 0))
+            {
+                entry.Value.Limiter.Dispose();
+            }
+
             _limiters.Clear();
         }
     }

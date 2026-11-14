@@ -86,7 +86,10 @@ public class ConfigChangeAuditLog : IConfigChangeAuditLog
                 Interlocked.Increment(ref _evictedCount);
                 count--;
             }
-            else break;
+            else
+            {
+                break;
+            }
         }
 
         if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Debug))
@@ -162,7 +165,9 @@ public class ConfigChangeAuditLog : IConfigChangeAuditLog
 
         var entries = _entries.ToArray();
         if (entries.Length <= 1)
+        {
             return entries.Take(count).ToList();
+        }
 
         Array.Sort(entries, (a, b) => b.Timestamp.CompareTo(a.Timestamp));
         return entries.Take(count).ToList();

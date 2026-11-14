@@ -109,7 +109,9 @@ public sealed class ProxyLogCapture : IProxyLogCapture
     private static string? BuildDownstreamUrl(IReverseProxyFeature? proxy, HttpRequest request)
     {
         if (proxy?.ProxiedDestination?.Model?.Config?.Address is not { } baseUrl)
+        {
             return null;
+        }
 
         baseUrl = baseUrl.TrimEnd('/');
         var originalPath = request.Path.Value ?? "/";
@@ -128,7 +130,10 @@ public sealed class ProxyLogCapture : IProxyLogCapture
                     if (downstreamPath.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
                     {
                         downstreamPath = downstreamPath[prefix.Length..];
-                        if (downstreamPath.Length == 0) downstreamPath = "/";
+                        if (downstreamPath.Length == 0)
+                        {
+                            downstreamPath = "/";
+                        }
                     }
                 }
                 else if (tf.TryGetValue("PathPrefix", out var pathPrefix) && !string.IsNullOrEmpty(pathPrefix))
@@ -138,18 +143,28 @@ public sealed class ProxyLogCapture : IProxyLogCapture
 
                 string? pathPattern;
                 if (tf.TryGetValue("PathSet", out var set) && !string.IsNullOrEmpty(set))
+                {
                     pathPattern = set;
+                }
                 else if (tf.TryGetValue("PathPattern", out var pp) && !string.IsNullOrEmpty(pp))
+                {
                     pathPattern = pp;
+                }
                 else
+                {
                     pathPattern = null;
+                }
 
                 if (pathPattern != null)
                 {
                     if (catchAllValue != null && pathPattern.Contains("{**catch-all}"))
+                    {
                         downstreamPath = pathPattern.Replace("{**catch-all}", catchAllValue);
+                    }
                     else
+                    {
                         downstreamPath = pathPattern;
+                    }
                 }
             }
         }
@@ -160,15 +175,21 @@ public sealed class ProxyLogCapture : IProxyLogCapture
     private static string? ExtractCatchAllValue(string requestPath, string? matchPath)
     {
         if (string.IsNullOrEmpty(matchPath))
+        {
             return null;
+        }
 
         var idx = matchPath.IndexOf("{**", StringComparison.Ordinal);
         if (idx < 0)
+        {
             return null;
+        }
 
         var prefix = matchPath[..idx];
         if (requestPath.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        {
             return requestPath[prefix.Length..].TrimStart('/');
+        }
 
         return null;
     }

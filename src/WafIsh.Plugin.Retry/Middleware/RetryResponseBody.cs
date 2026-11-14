@@ -38,7 +38,11 @@ internal sealed class RetryResponseBody : Stream, IHttpResponseBodyFeature
     public override async ValueTask WriteAsync(ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (bytes.IsEmpty) return;
+        if (bytes.IsEmpty)
+        {
+            return;
+        }
+
         if (!Committed && !_bufferingDisabled && !_context.Response.HasStarted && _canBuffer(_context.Response.StatusCode) && bytes.Length <= Limit - _count)
         {
             _buffer ??= new byte[Limit];
@@ -62,12 +66,19 @@ internal sealed class RetryResponseBody : Stream, IHttpResponseBodyFeature
     }
     public async Task FinishAsync(CancellationToken token)
     {
-        if (_writer != null) await _writer.FlushAsync(token);
+        if (_writer != null)
+        {
+            await _writer.FlushAsync(token);
+        }
     }
 
     public async Task CompleteAsync()
     {
-        if (_writer != null) await _writer.FlushAsync(_context.RequestAborted);
+        if (_writer != null)
+        {
+            await _writer.FlushAsync(_context.RequestAborted);
+        }
+
         await CommitAsync(_context.RequestAborted);
         await _original.CompleteAsync();
     }

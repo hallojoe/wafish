@@ -54,7 +54,9 @@ public class DashboardLogController : Controller
     public async Task<IActionResult> GetLogHistory([FromQuery] ProxyLogSearchRequest request, CancellationToken ct)
     {
         if (!_options.ProxyLog.LogPersistenceEnabled)
+        {
             return Json(new { code = 200, data = new ProxyLogSearchResult { Items = new List<ProxyLogMetaItem>(), TotalCount = 0 } });
+        }
 
         request.PageSize = Math.Clamp(request.PageSize, 1, 200);
         request.Page = Math.Max(1, request.Page);
@@ -67,11 +69,15 @@ public class DashboardLogController : Controller
     public async Task<IActionResult> GetLogDetail(long id, CancellationToken ct)
     {
         if (!_options.ProxyLog.LogPersistenceEnabled)
+        {
             return Json(new { code = 404, message = "Log persistence is not enabled" });
+        }
 
         var detail = await _logQuery.GetLogDetailAsync(id, ct);
         if (detail == null)
+        {
             return Json(new { code = 404, message = "Log entry not found" });
+        }
 
         return Json(new { code = 200, data = detail });
     }

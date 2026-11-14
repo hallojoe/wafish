@@ -22,8 +22,15 @@ public static unsafe class UnsafeOptimizations
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Utf8Equals(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b)
     {
-        if (a.Length != b.Length) return false;
-        if (a.Length == 0) return true;
+        if (a.Length != b.Length)
+        {
+            return false;
+        }
+
+        if (a.Length == 0)
+        {
+            return true;
+        }
 
         fixed (byte* pa = a)
         fixed (byte* pb = b)
@@ -42,7 +49,10 @@ public static unsafe class UnsafeOptimizations
         while (length >= sizeof(ulong))
         {
             if (*ulp++ != *ulq++)
+            {
                 return false;
+            }
+
             length -= sizeof(ulong);
         }
 
@@ -50,7 +60,10 @@ public static unsafe class UnsafeOptimizations
         if (length >= sizeof(uint))
         {
             if (*(uint*)ulp != *(uint*)ulq)
+            {
                 return false;
+            }
+
             length -= sizeof(uint);
             ulp = (ulong*)((uint*)ulp + 1);
             ulq = (ulong*)((uint*)ulq + 1);
@@ -60,7 +73,10 @@ public static unsafe class UnsafeOptimizations
         if (length >= sizeof(ushort))
         {
             if (*(ushort*)ulp != *(ushort*)ulq)
+            {
                 return false;
+            }
+
             length -= sizeof(ushort);
             ulp = (ulong*)((ushort*)ulp + 1);
             ulq = (ulong*)((ushort*)ulq + 1);
@@ -105,7 +121,11 @@ public static unsafe class UnsafeOptimizations
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static uint FastHash(ReadOnlySpan<byte> data)
     {
-        if (data.Length == 0) return 2166136261;
+        if (data.Length == 0)
+        {
+            return 2166136261;
+        }
+
         fixed (byte* ptr = data)
         {
             return FastHash(ptr, data.Length);
@@ -120,7 +140,11 @@ public static unsafe class UnsafeOptimizations
     public static bool TryParseInt32(byte* start, int length, out int value)
     {
         value = 0;
-        if (length <= 0 || start == null) return false;
+        if (length <= 0 || start == null)
+        {
+            return false;
+        }
+
         return int.TryParse(new ReadOnlySpan<byte>(start, length),
             System.Globalization.NumberStyles.AllowLeadingSign,
             System.Globalization.CultureInfo.InvariantCulture, out value);
@@ -157,7 +181,11 @@ public static unsafe class UnsafeOptimizations
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int NextPowerOf2(int value)
     {
-        if (value <= 1) return 2;
+        if (value <= 1)
+        {
+            return 2;
+        }
+
         value--;
         value |= value >> 1;
         value |= value >> 2;
@@ -187,7 +215,9 @@ public static unsafe class UnsafeOptimizations
     {
         // X86/X64 prefetcht0 instruction
         if (System.Runtime.Intrinsics.X86.Sse.IsSupported)
+        {
             System.Runtime.Intrinsics.X86.Sse.Prefetch0(address);
+        }
     }
 
     /// <summary>
@@ -252,7 +282,10 @@ public struct CacheOptimizedRingBuffer<T> : IDisposable where T : unmanaged
     public bool TryEnqueue(in T item)
     {
         var buffer = GetBuffer();
-        if (IsFull) return false;
+        if (IsFull)
+        {
+            return false;
+        }
 
         var index = (int)(_head & _mask);
         buffer[index] = item;
@@ -280,7 +313,11 @@ public struct CacheOptimizedRingBuffer<T> : IDisposable where T : unmanaged
     public T Peek()
     {
         var buffer = GetBuffer();
-        if (IsEmpty) throw new InvalidOperationException("Buffer empty");
+        if (IsEmpty)
+        {
+            throw new InvalidOperationException("Buffer empty");
+        }
+
         var index = (int)(_tail & _mask);
         return buffer[index];
     }
@@ -301,7 +338,10 @@ public struct CacheOptimizedRingBuffer<T> : IDisposable where T : unmanaged
         public void Dispose()
         {
             var items = Interlocked.Exchange(ref Items, null);
-            if (items is not null) Array.Clear(items);
+            if (items is not null)
+            {
+                Array.Clear(items);
+            }
         }
     }
 }
@@ -345,7 +385,11 @@ internal static class BitManipulation
         }
 
         // Software fallback
-        if (value == 0) return 32;
+        if (value == 0)
+        {
+            return 32;
+        }
+
         int count = 0;
         while ((value & 0x80000000) == 0)
         {

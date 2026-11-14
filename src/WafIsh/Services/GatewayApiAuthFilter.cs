@@ -21,7 +21,9 @@ internal sealed class GatewayApiAuthFilter : IAsyncAuthorizationFilter
     {
         if (context.ActionDescriptor is not ControllerActionDescriptor { ControllerTypeInfo: var typeInfo } ||
             typeInfo.AsType() != typeof(GatewayConfigController))
+        {
             return Task.CompletedTask;
+        }
 
         if (!_policy.IsAllowed(context.HttpContext, _options.Mode == GatewayApiAuthMode.None))
         {
@@ -32,7 +34,9 @@ internal sealed class GatewayApiAuthFilter : IAsyncAuthorizationFilter
         var ok = ControlPlaneCredentials.Validate(request.Headers, _options);
 
         if (!ok)
+        {
             context.Result = new JsonResult(new { code = 401, message = "Unauthorized" }) { StatusCode = StatusCodes.Status401Unauthorized };
+        }
 
         return Task.CompletedTask;
     }

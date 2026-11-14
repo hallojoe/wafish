@@ -13,7 +13,11 @@ internal sealed class GatewayControlPlaneSecurityValidator(GatewayControlPlaneOp
 {
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        if (registration.EnableRegistration) policy.ValidateStartup(auth.Value.Mode == GatewayApiAuthMode.None);
+        if (registration.EnableRegistration)
+        {
+            policy.ValidateStartup(auth.Value.Mode == GatewayApiAuthMode.None);
+        }
+
         return Task.CompletedTask;
     }
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;

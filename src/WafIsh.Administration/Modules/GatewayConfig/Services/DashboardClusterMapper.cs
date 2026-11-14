@@ -107,7 +107,9 @@ internal static class DashboardClusterMapper
     private static SessionAffinityInfo? MapSessionAffinity(SessionAffinityConfig? config)
     {
         if (config == null)
+        {
             return null;
+        }
 
         return new SessionAffinityInfo
         {
@@ -135,7 +137,9 @@ internal static class DashboardClusterMapper
     private static HealthCheckInfo? MapHealthCheck(HealthCheckConfig? config)
     {
         if (config == null)
+        {
             return null;
+        }
 
         return new HealthCheckInfo
         {
@@ -164,7 +168,9 @@ internal static class DashboardClusterMapper
     private static HttpClientInfo? MapHttpClient(HttpClientConfig? config)
     {
         if (config == null)
+        {
             return null;
+        }
 
         return new HttpClientInfo
         {
@@ -189,7 +195,9 @@ internal static class DashboardClusterMapper
     private static HttpRequestInfo? MapHttpRequest(global::Yarp.ReverseProxy.Forwarder.ForwarderRequestConfig? config)
     {
         if (config == null)
+        {
             return null;
+        }
 
         return new HttpRequestInfo
         {
@@ -224,7 +232,9 @@ internal static class DashboardClusterMapper
     private static CircuitBreakerInfo? MapCircuitBreaker(string clusterId, GatewayPluginExecutionPlan executionPlan)
     {
         if (!executionPlan.CircuitBreakerByCluster.TryGetValue(clusterId, out var cb))
+        {
             return null;
+        }
 
         return new CircuitBreakerInfo
         {
@@ -244,7 +254,9 @@ internal static class DashboardClusterMapper
     private static string ResolveHealthStatus(string? yarpHealth, bool healthCheckConfigured)
     {
         if (!healthCheckConfigured)
+        {
             return "Unknown";
+        }
 
         return !string.IsNullOrWhiteSpace(yarpHealth) ? yarpHealth : "Unknown";
     }

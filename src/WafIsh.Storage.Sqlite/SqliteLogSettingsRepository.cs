@@ -23,11 +23,19 @@ public sealed class SqliteLogSettingsRepository : ILogSettingsRepository
 
     private async ValueTask EnsureInitializedAsync(CancellationToken ct)
     {
-        if (_initialized) return;
+        if (_initialized)
+        {
+            return;
+        }
+
         await _initLock.WaitAsync(ct);
         try
         {
-            if (_initialized) return;
+            if (_initialized)
+            {
+                return;
+            }
+
             await SqliteRepositoryInitializer.EnsureTableExistsAsync(_connections, "proxy_log_settings", ct);
             _initialized = true;
         }

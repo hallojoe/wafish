@@ -24,7 +24,10 @@ internal static class ProxyLogStoreExtensions
             (_, existing) =>
             {
                 if (existing == null || existing.Length == 0)
+                {
                     return new Action<LogEntry>[] { callback };
+                }
+
                 var newArr = new Action<LogEntry>[existing.Length + 1];
                 existing.CopyTo(newArr, 0);
                 newArr[existing.Length] = callback;
@@ -41,7 +44,9 @@ internal static class ProxyLogStoreExtensions
     internal static void NotifySubscribers(IProxyLogStore store, LogEntry entry)
     {
         if (!_subscriberMap.TryGetValue(store, out var subscribers) || subscribers == null)
+        {
             return;
+        }
 
         foreach (var callback in subscribers)
         {
@@ -70,7 +75,11 @@ internal static class ProxyLogStoreExtensions
 
         public void Dispose()
         {
-            if (_disposed) return;
+            if (_disposed)
+            {
+                return;
+            }
+
             _disposed = true;
 
             _subscriberMap.AddOrUpdate(_store,
@@ -78,18 +87,28 @@ internal static class ProxyLogStoreExtensions
                 (_, existing) =>
                 {
                     if (existing == null || existing.Length == 0)
+                    {
                         return Array.Empty<Action<LogEntry>>();
+                    }
+
                     var newArr = new Action<LogEntry>[existing.Length - 1];
                     int j = 0;
                     for (int i = 0; i < existing.Length; i++)
+                    {
                         if (existing[i] != _callback)
+                        {
                             newArr[j++] = existing[i];
+                        }
+                    }
+
                     return newArr.Length == 0 ? Array.Empty<Action<LogEntry>>() : newArr;
                 });
 
             // Clean up empty subscriber lists to prevent memory leak
             if (_subscriberMap.GetValueOrDefault(_store)?.Length == 0)
+            {
                 _subscriberMap.TryRemove(_store, out _);
+            }
         }
     }
 }

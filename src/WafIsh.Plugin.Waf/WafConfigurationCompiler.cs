@@ -17,7 +17,10 @@ public sealed class WafConfigurationCompiler : IRoutePluginCompiler
             ?? throw new InvalidOperationException("WAF configuration is required.");
         if (config.IpWhitelist == null || config.IpBlacklist == null ||
             config.IpWhitelist.Concat(config.IpBlacklist).Any(pattern => pattern == null || !IpMatcher.IsValidPattern(pattern)))
+        {
             throw new InvalidOperationException("WAF address rules require valid IP addresses, wildcards, or CIDR prefixes.");
+        }
+
         return new(binding, PluginExecutionStage.PreProxy, config, route);
     }
 }

@@ -103,7 +103,9 @@ public static class WafIshClientServiceCollectionExtensions
                 c.GetSection(GatewayRegistrationOptions.SectionName).Bind(o));
 
         if (configureOptions != null)
+        {
             services.Configure(configureOptions);
+        }
 
         services.AddSingleton<IValidateOptions<GatewayRegistrationOptions>, SkipValidation>();
     }

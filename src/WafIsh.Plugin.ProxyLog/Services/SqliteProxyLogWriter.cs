@@ -44,7 +44,10 @@ public sealed class SqliteProxyLogWriter
             bodyList.Add(MapToBody(entry));
         }
 
-        if (metaList.Count == 0) return;
+        if (metaList.Count == 0)
+        {
+            return;
+        }
 
         try
         {
@@ -124,7 +127,11 @@ public sealed class SqliteProxyLogWriter
 
     private static string? SerializeHeaders(HeaderList? headers)
     {
-        if (headers == null || headers.Count == 0) return null;
+        if (headers == null || headers.Count == 0)
+        {
+            return null;
+        }
+
         return JsonSerializer.Serialize(headers);
     }
 }

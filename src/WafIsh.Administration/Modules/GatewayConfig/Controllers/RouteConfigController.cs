@@ -59,15 +59,21 @@ public class RouteConfigController : ConfigControllerBase
             }
 
             if (route == null)
+            {
                 return BadRequest(new { code = 400, message = "Route configuration is required" });
+            }
 
             route = route with { RouteId = routeId };
 
             if (string.IsNullOrWhiteSpace(route.ClusterId))
+            {
                 return BadRequest(new { code = 400, message = "ClusterId is required" });
+            }
 
             if (route.Match == null || (string.IsNullOrWhiteSpace(route.Match.Path) && (route.Match.Hosts == null || route.Match.Hosts.Count == 0)))
+            {
                 return BadRequest(new { code = 400, message = "Match.Path or Match.Hosts is required" });
+            }
 
             var implicitCluster = BuildImplicitCluster(route.ClusterId!, config);
 
@@ -77,7 +83,11 @@ public class RouteConfigController : ConfigControllerBase
                 ? await DynamicConfig.TryAddRouteConfig(route, "dashboard", "dashboard-user")
                 : await DynamicConfig.ImportBatchAsync([implicitCluster], [route], "dashboard", "dashboard-user");
 
-            if (result.Success) InvalidateQueryCaches();
+            if (result.Success)
+            {
+                InvalidateQueryCaches();
+            }
+
             return result.Success
                 ? Ok(new { code = 200, status = result.Status, activeVersion = result.ActiveVersion, persistedVersion = result.PersistedVersion, message = result.Message, routeId = routeId })
                 : result.ToHttpResult();
@@ -98,7 +108,9 @@ public class RouteConfigController : ConfigControllerBase
         try
         {
             if (!body.TryGetProperty("enabled", out var enabledProp))
+            {
                 return BadRequest(new { code = 400, message = "enabled is required" });
+            }
 
             var enabled = enabledProp.GetBoolean();
             if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
@@ -110,7 +122,11 @@ public class RouteConfigController : ConfigControllerBase
 
             var result = await DynamicConfig.TrySetRouteEnabled(routeId, enabled, "dashboard-user");
 
-            if (result.Success) InvalidateQueryCaches();
+            if (result.Success)
+            {
+                InvalidateQueryCaches();
+            }
+
             return result.Success
                 ? Ok(new { code = 200, status = result.Status, activeVersion = result.ActiveVersion, persistedVersion = result.PersistedVersion, message = result.Message, routeId = routeId, enabled = enabled })
                 : result.ToHttpResult();
@@ -139,7 +155,11 @@ public class RouteConfigController : ConfigControllerBase
 
             var result = await DynamicConfig.TryRemoveRoute(routeId, null, removeOrphanedCluster);
 
-            if (result.Success) InvalidateQueryCaches();
+            if (result.Success)
+            {
+                InvalidateQueryCaches();
+            }
+
             return result.Success
                 ? Ok(new { code = 200, status = result.Status, activeVersion = result.ActiveVersion, persistedVersion = result.PersistedVersion, message = result.Message, routeId = routeId })
                 : result.ToHttpResult();
@@ -166,15 +186,23 @@ public class RouteConfigController : ConfigControllerBase
 
             string? newRouteId = null;
             if (config.TryGetProperty("newRouteId", out var newIdProp))
+            {
                 newRouteId = newIdProp.GetString();
+            }
             else if (config.TryGetProperty("routeId", out var ridProp))
+            {
                 newRouteId = ridProp.GetString();
+            }
 
             if (string.IsNullOrWhiteSpace(newRouteId))
+            {
                 return BadRequest(new { code = 400, message = "newRouteId is required" });
+            }
 
             if (string.Equals(routeId, newRouteId, StringComparison.OrdinalIgnoreCase))
+            {
                 return BadRequest(new { code = 400, message = "New route ID is the same as the old one" });
+            }
 
             string? matchPath = null;
             string? clusterId = null;
@@ -182,13 +210,24 @@ public class RouteConfigController : ConfigControllerBase
             List<Dictionary<string, string>>? transforms = null;
 
             if (config.TryGetProperty("matchPath", out var mp) || config.TryGetProperty("MatchPath", out mp))
+            {
                 matchPath = mp.GetString();
+            }
+
             if (config.TryGetProperty("clusterId", out var ci) || config.TryGetProperty("ClusterId", out ci))
+            {
                 clusterId = ci.GetString();
+            }
+
             if (config.TryGetProperty("order", out var o) || config.TryGetProperty("Order", out o))
+            {
                 order = o.GetInt32();
+            }
+
             if (config.TryGetProperty("transforms", out var t) || config.TryGetProperty("Transforms", out t))
+            {
                 transforms = t.Deserialize<List<Dictionary<string, string>>>();
+            }
 
             var request = new RegisterRouteRequest
             {
@@ -204,7 +243,11 @@ public class RouteConfigController : ConfigControllerBase
                 clientIp: GetClientIp(), operatorName: "dashboard-user",
                 ct: HttpContext.RequestAborted);
 
-            if (result.Success) InvalidateQueryCaches();
+            if (result.Success)
+            {
+                InvalidateQueryCaches();
+            }
+
             return result.Success
                 ? Ok(new { code = 200, status = result.Status, activeVersion = result.ActiveVersion, persistedVersion = result.PersistedVersion, message = result.Message, routeId = newRouteId })
                 : result.ToHttpResult();
@@ -224,7 +267,9 @@ public class RouteConfigController : ConfigControllerBase
     public async Task<IActionResult> BatchDeleteRoutes([FromBody] BatchDeleteRoutesRequest request)
     {
         if (request is null || request.RouteIds is null || request.RouteIds.Count == 0)
+        {
             return BadRequest(new { code = 400, message = "routeIds is required and must be non-empty" });
+        }
 
         try
         {
@@ -235,7 +280,10 @@ public class RouteConfigController : ConfigControllerBase
             await PersistenceService.SaveSnapshotAsync($"Before batch delete {request.RouteIds.Count} route(s) via dashboard", GetClientIp());
 
             var result = await DynamicConfig.BatchDeleteRoutesAsync(request.RouteIds, request.RemoveOrphanedClusters, "dashboard-user");
-            if (result.Succeeded > 0) InvalidateQueryCaches();
+            if (result.Succeeded > 0)
+            {
+                InvalidateQueryCaches();
+            }
 
             return StatusCode(ConfigurationUpdateHttp.StatusCode(result.Status), new
             {
@@ -265,7 +313,9 @@ public class RouteConfigController : ConfigControllerBase
     public async Task<IActionResult> BatchSetRoutesEnabled([FromBody] BatchSetRoutesEnabledRequest request)
     {
         if (request is null || request.RouteIds is null || request.RouteIds.Count == 0)
+        {
             return BadRequest(new { code = 400, message = "routeIds is required and must be non-empty" });
+        }
 
         try
         {
@@ -276,7 +326,10 @@ public class RouteConfigController : ConfigControllerBase
             await SnapshotLowRiskMutationAsync($"Before batch {(request.Enabled ? "enable" : "disable")} {request.RouteIds.Count} route(s) via dashboard");
 
             var result = await DynamicConfig.BatchSetRoutesEnabledAsync(request.RouteIds, request.Enabled, "dashboard-user");
-            if (result.Succeeded > 0) InvalidateQueryCaches();
+            if (result.Succeeded > 0)
+            {
+                InvalidateQueryCaches();
+            }
 
             return StatusCode(ConfigurationUpdateHttp.StatusCode(result.Status), new
             {

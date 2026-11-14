@@ -126,7 +126,10 @@ public sealed class WebhookNotificationService
         string platform, IReadOnlyList<WebhookEndpointConfig> endpoints, CancellationToken ct = default)
     {
         var report = new WebhookDeliveryReport();
-        if (endpoints.Count == 0) return report;
+        if (endpoints.Count == 0)
+        {
+            return report;
+        }
 
         WebhookSettingsData settings;
         try
@@ -152,11 +155,19 @@ public sealed class WebhookNotificationService
 
         foreach (var endpoint in endpoints)
         {
-            if (string.IsNullOrWhiteSpace(endpoint.Url)) continue;
+            if (string.IsNullOrWhiteSpace(endpoint.Url))
+            {
+                continue;
+            }
+
             report.Total++;
 
             var detail = await SendWithRetryAsync(platform, endpoint, message, timeout, maxAttempts, ct);
-            if (detail.Success) report.Succeeded++;
+            if (detail.Success)
+            {
+                report.Succeeded++;
+            }
+
             report.Details.Add(detail);
             await RecordDeliveryAsync(platform, message, detail, ct);
         }
@@ -195,15 +206,25 @@ public sealed class WebhookNotificationService
         foreach (var platformKey in platformKeys)
         {
             if (!settings.Platforms.TryGetValue(platformKey, out var endpoints) || endpoints.Count == 0)
+            {
                 continue;
+            }
 
             foreach (var endpoint in endpoints)
             {
-                if (string.IsNullOrWhiteSpace(endpoint.Url)) continue;
+                if (string.IsNullOrWhiteSpace(endpoint.Url))
+                {
+                    continue;
+                }
+
                 report.Total++;
 
                 var detail = await SendWithRetryAsync(platformKey, endpoint, message, timeout, maxAttempts, ct);
-                if (detail.Success) report.Succeeded++;
+                if (detail.Success)
+                {
+                    report.Succeeded++;
+                }
+
                 report.Details.Add(detail);
 
                 if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Debug))
@@ -213,7 +234,9 @@ public sealed class WebhookNotificationService
                 }
 
                 if (recordHistory)
+                {
                     await RecordDeliveryAsync(platformKey, message, detail, ct);
+                }
             }
         }
 
@@ -266,7 +289,10 @@ public sealed class WebhookNotificationService
                 detail.Error = Truncate(ex.Message, 200);
             }
 
-            if (detail.Success || attempt >= maxAttempts) break;
+            if (detail.Success || attempt >= maxAttempts)
+            {
+                break;
+            }
 
             // Exponential backoff: 1s, 4s, 16s ...
             var delay = TimeSpan.FromSeconds(Math.Min(60, Math.Pow(4, attempt - 1)));
@@ -399,9 +425,14 @@ public sealed class WebhookNotificationService
                 new Dictionary<string, object?> { ["type"] = "mrkdwn", ["text"] = $"*Event:*\n{message.EventType}" }
             };
             if (!string.IsNullOrEmpty(message.Target))
+            {
                 fields.Add(new Dictionary<string, object?> { ["type"] = "mrkdwn", ["text"] = $"*Target:*\n{message.Target}" });
+            }
+
             if (!string.IsNullOrEmpty(message.Operator))
+            {
                 fields.Add(new Dictionary<string, object?> { ["type"] = "mrkdwn", ["text"] = $"*Operator:*\n{message.Operator}" });
+            }
 
             var blocks = new List<object>
             {
@@ -413,11 +444,14 @@ public sealed class WebhookNotificationService
                 new Dictionary<string, object?> { ["type"] = "section", ["fields"] = fields }
             };
             if (!string.IsNullOrEmpty(message.Detail))
+            {
                 blocks.Add(new Dictionary<string, object?>
                 {
                     ["type"] = "section",
                     ["text"] = new Dictionary<string, object?> { ["type"] = "mrkdwn", ["text"] = message.Detail }
                 });
+            }
+
             blocks.Add(new Dictionary<string, object?>
             {
                 ["type"] = "context",
@@ -445,9 +479,20 @@ public sealed class WebhookNotificationService
 
             var description = new StringBuilder()
                 .Append("**Event**: ").Append(message.EventType);
-            if (!string.IsNullOrEmpty(message.Target)) description.Append("\n**Target**: ").Append(message.Target);
-            if (!string.IsNullOrEmpty(message.Operator)) description.Append("\n**Operator**: ").Append(message.Operator);
-            if (!string.IsNullOrEmpty(message.Detail)) description.Append('\n').Append(message.Detail);
+            if (!string.IsNullOrEmpty(message.Target))
+            {
+                description.Append("\n**Target**: ").Append(message.Target);
+            }
+
+            if (!string.IsNullOrEmpty(message.Operator))
+            {
+                description.Append("\n**Operator**: ").Append(message.Operator);
+            }
+
+            if (!string.IsNullOrEmpty(message.Detail))
+            {
+                description.Append('\n').Append(message.Detail);
+            }
 
             return JsonSerializer.Serialize(new Dictionary<string, object?>
             {
@@ -467,9 +512,21 @@ public sealed class WebhookNotificationService
         if (p == WebhookPlatforms.Telegram)
         {
             var text = new StringBuilder().Append(title);
-            if (!string.IsNullOrEmpty(message.Target)) text.Append("\nTarget: ").Append(message.Target);
-            if (!string.IsNullOrEmpty(message.Operator)) text.Append("\nOperator: ").Append(message.Operator);
-            if (!string.IsNullOrEmpty(message.Detail)) text.Append("\n\n").Append(message.Detail);
+            if (!string.IsNullOrEmpty(message.Target))
+            {
+                text.Append("\nTarget: ").Append(message.Target);
+            }
+
+            if (!string.IsNullOrEmpty(message.Operator))
+            {
+                text.Append("\nOperator: ").Append(message.Operator);
+            }
+
+            if (!string.IsNullOrEmpty(message.Detail))
+            {
+                text.Append("\n\n").Append(message.Detail);
+            }
+
             text.Append("\n\n").Append(timestamp);
 
             return JsonSerializer.Serialize(new Dictionary<string, object?>
@@ -487,9 +544,15 @@ public sealed class WebhookNotificationService
                 new Dictionary<string, object?> { ["title"] = "Event", ["value"] = message.EventType }
             };
             if (!string.IsNullOrEmpty(message.Target))
+            {
                 facts.Add(new Dictionary<string, object?> { ["title"] = "Target", ["value"] = message.Target });
+            }
+
             if (!string.IsNullOrEmpty(message.Operator))
+            {
                 facts.Add(new Dictionary<string, object?> { ["title"] = "Operator", ["value"] = message.Operator });
+            }
+
             facts.Add(new Dictionary<string, object?> { ["title"] = "Severity", ["value"] = message.Severity });
 
             return JsonSerializer.Serialize(new Dictionary<string, object?>
@@ -535,21 +598,49 @@ public sealed class WebhookNotificationService
             ["severity"] = message.Severity,
             ["timestamp"] = timestamp
         };
-        if (!string.IsNullOrEmpty(message.Target)) generic["target"] = message.Target;
-        if (!string.IsNullOrEmpty(message.Operator)) generic["operator"] = message.Operator;
-        if (!string.IsNullOrEmpty(message.Detail)) generic["detail"] = message.Detail;
+        if (!string.IsNullOrEmpty(message.Target))
+        {
+            generic["target"] = message.Target;
+        }
+
+        if (!string.IsNullOrEmpty(message.Operator))
+        {
+            generic["operator"] = message.Operator;
+        }
+
+        if (!string.IsNullOrEmpty(message.Detail))
+        {
+            generic["detail"] = message.Detail;
+        }
+
         return JsonSerializer.Serialize(generic);
     }
 
     private static string MarkdownBody(string? title, WebhookNotificationMessage message, string timestamp)
     {
         var sb = new StringBuilder(256);
-        if (title != null) sb.Append("#### ").Append(title).Append("\n\n");
+        if (title != null)
+        {
+            sb.Append("#### ").Append(title).Append("\n\n");
+        }
+
         sb.Append("**Event**: ").Append(message.EventType).Append("\n\n");
-        if (!string.IsNullOrEmpty(message.Target)) sb.Append("**Target**: ").Append(message.Target).Append("\n\n");
-        if (!string.IsNullOrEmpty(message.Operator)) sb.Append("**Operator**: ").Append(message.Operator).Append("\n\n");
+        if (!string.IsNullOrEmpty(message.Target))
+        {
+            sb.Append("**Target**: ").Append(message.Target).Append("\n\n");
+        }
+
+        if (!string.IsNullOrEmpty(message.Operator))
+        {
+            sb.Append("**Operator**: ").Append(message.Operator).Append("\n\n");
+        }
+
         sb.Append("**Severity**: ").Append(message.Severity);
-        if (!string.IsNullOrEmpty(message.Detail)) sb.Append("\n\n").Append(message.Detail);
+        if (!string.IsNullOrEmpty(message.Detail))
+        {
+            sb.Append("\n\n").Append(message.Detail);
+        }
+
         sb.Append("\n\n> ").Append(timestamp);
         return sb.ToString();
     }
@@ -561,7 +652,9 @@ public sealed class WebhookNotificationService
     private static string BuildDingTalkSignedUrl(WebhookEndpointConfig endpoint)
     {
         if (string.IsNullOrEmpty(endpoint.Secret))
+        {
             return endpoint.Url;
+        }
 
         var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         var stringToSign = Encoding.UTF8.GetBytes($"{timestamp}\n{endpoint.Secret}");

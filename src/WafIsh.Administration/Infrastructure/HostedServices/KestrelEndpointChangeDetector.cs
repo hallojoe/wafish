@@ -90,7 +90,10 @@ public class KestrelEndpointChangeDetector : IHostedService, IDisposable
             var signature = string.Join(";", currentEndpoints.OrderBy(kvp => kvp.Key, StringComparer.OrdinalIgnoreCase)
                 .Select(kvp => $"{kvp.Key}={kvp.Value}")) + "|" +
                 string.Join(";", _restartState.GetReasons().Select(r => r.Key));
-            if (string.Equals(_lastAlertSignature, signature, StringComparison.Ordinal)) return;
+            if (string.Equals(_lastAlertSignature, signature, StringComparison.Ordinal))
+            {
+                return;
+            }
 
             _lastAlertSignature = signature;
             _logger.LogWarning("One or more restart-bound deployment settings changed. Restart required for changes to take effect.");
@@ -106,7 +109,10 @@ public class KestrelEndpointChangeDetector : IHostedService, IDisposable
         foreach (var original in _originalRestartBoundSettings)
         {
             current.TryGetValue(original.Key, out var value);
-            if (string.Equals(original.Value, value, StringComparison.Ordinal)) continue;
+            if (string.Equals(original.Value, value, StringComparison.Ordinal))
+            {
+                continue;
+            }
 
             changed = true;
             _restartState.MarkRestartRequired(
@@ -141,8 +147,15 @@ public class KestrelEndpointChangeDetector : IHostedService, IDisposable
 
     private static string? NormalizeEndpoint(string? url)
     {
-        if (string.IsNullOrWhiteSpace(url)) return null;
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) return url.Trim();
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return null;
+        }
+
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+        {
+            return url.Trim();
+        }
 
         return $"{uri.Scheme.ToLowerInvariant()}://{NormalizeHost(uri.Host)}:{uri.Port}";
     }

@@ -44,11 +44,19 @@ internal sealed class SqliteProxyLogBatchWriter
 
     public async ValueTask EnsureInitializedAsync(CancellationToken ct)
     {
-        if (_initialized) return;
+        if (_initialized)
+        {
+            return;
+        }
+
         await _initLock.WaitAsync(ct);
         try
         {
-            if (_initialized) return;
+            if (_initialized)
+            {
+                return;
+            }
+
             await SqliteRepositoryInitializer.EnsureTableExistsAsync(_connections, "proxy_logs_meta", ct);
             await DiscoverMetaColumnsAsync(ct);
             _initialized = true;
@@ -64,9 +72,14 @@ internal sealed class SqliteProxyLogBatchWriter
         CancellationToken ct)
     {
         if (metaEntries.Count != bodyEntries.Count)
+        {
             throw new ArgumentException("Meta and body entry counts must match.");
+        }
+
         if (metaEntries.Count == 0)
+        {
             return;
+        }
 
         await using var conn = await _connections.CreateConnectionAsync(ct);
         await conn.OpenAsync(ct);
@@ -84,7 +97,9 @@ internal sealed class SqliteProxyLogBatchWriter
 
                 var body = bodyEntries[i];
                 if (body == null)
+                {
                     continue;
+                }
 
                 body.MetaId = metaId;
                 SetBodyParams(bodyCmd, body);
@@ -110,7 +125,9 @@ internal sealed class SqliteProxyLogBatchWriter
         pragmaCmd.CommandText = "SELECT name FROM pragma_table_info('proxy_logs_meta')";
         await using var reader = await pragmaCmd.ExecuteReaderAsync(ct);
         while (await reader.ReadAsync(ct))
+        {
             columns.Add(reader.GetString(0));
+        }
 
         _metaColumns = columns;
 
@@ -130,7 +147,9 @@ internal sealed class SqliteProxyLogBatchWriter
 
         var missing = AllMetaColumns.Where(c => !columns.Contains(c.SqlName)).Select(c => c.SqlName).ToList();
         if (missing.Count > 0)
+        {
             _logger.LogWarning("proxy_logs_meta is missing columns: {Missing}", string.Join(", ", missing));
+        }
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "S2077",
@@ -144,7 +163,9 @@ internal sealed class SqliteProxyLogBatchWriter
         foreach (var (param, sqlName, _) in AllMetaColumns)
         {
             if (_metaColumns.Contains(sqlName))
+            {
                 cmd.Parameters.AddWithValue(param, DBNull.Value);
+            }
         }
         return cmd;
     }
@@ -159,7 +180,10 @@ internal sealed class SqliteProxyLogBatchWriter
             VALUES (@mid, @msg, @rb, @rsb, @rh, @rsh, @db, @exc)
             """;
         foreach (var name in new[] { "@mid", "@msg", "@rb", "@rsb", "@rh", "@rsh", "@db", "@exc" })
+        {
             cmd.Parameters.AddWithValue(name, DBNull.Value);
+        }
+
         return cmd;
     }
 
@@ -183,7 +207,9 @@ internal sealed class SqliteProxyLogBatchWriter
     private void SetParamIfColumn(SqliteCommand cmd, string paramName, string sqlName, object? value)
     {
         if (_metaColumns.Contains(sqlName))
+        {
             cmd.Parameters[paramName].Value = value ?? DBNull.Value;
+        }
     }
 
     private static void SetBodyParams(SqliteCommand cmd, ProxyLogBodyEntity body)

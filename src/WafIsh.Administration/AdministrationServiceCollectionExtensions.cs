@@ -36,7 +36,11 @@ public static class AdministrationServiceCollectionExtensions
     {
         if (services.Any(d => d.ServiceType == typeof(AdministrationMarker)))
         {
-            if (configureOptions != null) services.Configure(configureOptions);
+            if (configureOptions != null)
+            {
+                services.Configure(configureOptions);
+            }
+
             return services;
         }
         services.AddSingleton<AdministrationMarker>();
@@ -71,11 +75,17 @@ public static class AdministrationServiceCollectionExtensions
             .Configure<IConfiguration>((options, config) =>
             {
                 var controlPlane = config.GetSection(ControlPlaneSecurityOptions.SectionName).Get<ControlPlaneSecurityOptions>();
-                if (controlPlane == null || string.IsNullOrWhiteSpace(controlPlane.AuthMode)) return;
+                if (controlPlane == null || string.IsNullOrWhiteSpace(controlPlane.AuthMode))
+                {
+                    return;
+                }
 
                 // Unified configuration overrides legacy dashboard settings. The explicit callback runs last.
                 if (!Enum.TryParse<DashboardAuthMode>(controlPlane.AuthMode, true, out var mode) || !Enum.IsDefined(mode))
+                {
                     throw new OptionsValidationException(nameof(DashboardOptions), typeof(DashboardOptions), ["Unsupported control-plane authentication mode."]);
+                }
+
                 options.Auth.AuthMode = mode;
                 options.Auth.JwtSecret = controlPlane.JwtSecret;
 
@@ -147,7 +157,9 @@ public static class AdministrationServiceCollectionExtensions
             WafIsh.Dashboard.Infrastructure.Notifications.WebhookAlertService>();
 
         if (configureOptions != null)
+        {
             services.Configure(configureOptions);
+        }
 
         return services;
     }
@@ -174,7 +186,9 @@ public static class AdministrationServiceCollectionExtensions
         // MVC discovers referenced assemblies by default. Presentation requires explicit registration.
         foreach (var part in mvc.PartManager.ApplicationParts.Where(part =>
             part.Name is "WafIsh.Dashboard" or "WafIsh.Dashboard.Views").ToArray())
+        {
             mvc.PartManager.ApplicationParts.Remove(part);
+        }
 
         services.AddMemoryCache();
         services.AddSignalR();

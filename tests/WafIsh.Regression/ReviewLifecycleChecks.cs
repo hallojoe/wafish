@@ -161,7 +161,10 @@ internal static class ReviewLifecycleChecks
         {
             await using var host = await Fixture.Create();
             foreach (var id in new[] { "one", "two" })
+            {
                 Check((await host.Config.RegisterInstanceAsync("service", id, Cluster(), [Route()])).Success, "Registration failed.");
+            }
+
             var grpc = new GatewayRegistryGrpcService(host.Config, NullLogger<GatewayRegistryGrpcService>.Instance);
             var request = new UpdateDestinationsRequest { ServiceId = "service", InstanceId = "one", ExpectedVersion = host.Config.GetDynamicConfig()!.Version };
             request.Destinations.Add(new Destination { DestinationId = "new", Address = "http://localhost:9002/" });
@@ -207,7 +210,11 @@ internal static class ReviewLifecycleChecks
                 using var attempt = store.TryAcquireAttempt("shared", id, openConfig);
                 attempt!.Complete(true);
             }
-            foreach (var entry in store.GetAll()) entry.Value.OpenedAt = DateTime.Now.AddMinutes(-1);
+            foreach (var entry in store.GetAll())
+            {
+                entry.Value.OpenedAt = DateTime.Now.AddMinutes(-1);
+            }
+
             host.App.Urls.Add("http://127.0.0.1:0");
             host.App.UseRouting(); host.App.MapWafIshProxy();
             await host.App.StartAsync();
@@ -215,8 +222,12 @@ internal static class ReviewLifecycleChecks
             {
             var gateway = host.App.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses.Single();
             using var client = new HttpClient { BaseAddress = new Uri(gateway) };
-            using (var response = await client.GetAsync("/service")) Check(response.IsSuccessStatusCode, "Recovery probe failed: " + response.StatusCode + " " + await response.Content.ReadAsStringAsync());
-            Check(store.GetAll().Count(p => p.Value.Status == CircuitStatus.Closed && p.Value.DestinationKeySnapshot != "any") == 1 &&
+            using (var response = await client.GetAsync("/service"))
+                {
+                    Check(response.IsSuccessStatusCode, "Recovery probe failed: " + response.StatusCode + " " + await response.Content.ReadAsStringAsync());
+                }
+
+                Check(store.GetAll().Count(p => p.Value.Status == CircuitStatus.Closed && p.Value.DestinationKeySnapshot != "any") == 1 &&
                 store.GetAll().All(p => p.Value.HalfOpenRequests == 0), "Unselected destination consumed a probe.");
             store.ResetAll();
             var retry = Binding("retry"); retry.PluginId = "request-retry";
@@ -224,8 +235,12 @@ internal static class ReviewLifecycleChecks
             retry.ConfigJson = "{\"enabled\":true,\"maxRetries\":2,\"useDifferentDestination\":false,\"backoffBaseMs\":1,\"backoffJitterMs\":0,\"retryOnStatusCodes\":[503]}";
             await mutations.UpsertAsync(retry);
             failures = 2;
-            using (var response = await client.GetAsync("/service")) Check(response.IsSuccessStatusCode, "Retry did not recover.");
-            Check(store.GetAll().Sum(p => p.Value.Samples.Count) == 3 && store.GetAll().Sum(p => p.Value.SampleFailures) == 2,
+            using (var response = await client.GetAsync("/service"))
+                {
+                    Check(response.IsSuccessStatusCode, "Retry did not recover.");
+                }
+
+                Check(store.GetAll().Sum(p => p.Value.Samples.Count) == 3 && store.GetAll().Sum(p => p.Value.SampleFailures) == 2,
                 "Forwarding attempts recorded duplicate outcomes.");
             }
             finally { await host.App.StopAsync(); await backend.StopAsync(); }
@@ -235,11 +250,19 @@ internal static class ReviewLifecycleChecks
         {
             var store = new InMemoryCircuitStateStore();
             var config = new CircuitBreakerConfig { Enabled = true, MinimumThroughput = 1, FailureRatio = .5, RecoveryTimeoutSeconds = 1, HalfOpenMaxAttempts = 2 };
-            using (var attempt = store.TryAcquireAttempt("shared", "one", config)) attempt!.Complete(true);
+            using (var attempt = store.TryAcquireAttempt("shared", "one", config))
+            {
+                attempt!.Complete(true);
+            }
+
             var state = store.GetAll().Single().Value;
             Check(store.IsCircuitOpen("shared", "one") && store.TryAcquireAttempt("shared", "one", config) == null, "Open circuit admitted traffic.");
             state.OpenedAt = DateTime.Now.AddSeconds(-2);
-            using (var canceled = store.TryAcquireAttempt("shared", "one", config)) Check(canceled != null, "Recovery probe unavailable.");
+            using (var canceled = store.TryAcquireAttempt("shared", "one", config))
+            {
+                Check(canceled != null, "Recovery probe unavailable.");
+            }
+
             Check(state.HalfOpenRequests == 0, "Canceled probe leaked its reservation.");
             using var first = store.TryAcquireAttempt("shared", "one", config);
             using var second = store.TryAcquireAttempt("shared", "one", config);
@@ -260,5 +283,9 @@ internal static class ReviewLifecycleChecks
     private static Task PublishDiscovery(ServiceDiscoveryRefreshService service, string[] endpoints, PluginBindingSnapshot? expected)
         => (Task)typeof(ServiceDiscoveryRefreshService).GetMethod("PublishDestinationsAsync", BindingFlags.Instance | BindingFlags.NonPublic)!
             .Invoke(service, ["shared", endpoints, CancellationToken.None, expected])!;
-    private static void Check(bool condition, string message) { if (!condition) throw new Exception(message); }
+    private static void Check(bool condition, string message) { if (!condition)
+        {
+            throw new Exception(message);
+        }
+    }
 }

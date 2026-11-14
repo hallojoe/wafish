@@ -98,7 +98,9 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
 
             var retryAfter = GetRetryAfterSeconds(config);
             if (retryAfter > 0)
+            {
                 context.Response.Headers.RetryAfter = retryAfter.ToString();
+            }
 
             await context.Response.WriteAsJsonAsync(new
             {
@@ -121,7 +123,9 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
         config = null!;
 
         if (!_executionPlans.Current.RateLimitByRoute.TryGetValue(routeId, out var compiled) || !compiled.Enabled)
+        {
             return false;
+        }
 
         routeUid = compiled.RouteUid;
         config = new RouteRateLimitConfig
@@ -187,7 +191,9 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
     {
         var lastTicks = Interlocked.Read(ref _lastCleanupTicks);
         if (_time.GetElapsedTime(lastTicks) < DefaultCleanupInterval)
+        {
             return;
+        }
 
         Interlocked.Exchange(ref _lastCleanupTicks, _time.GetTimestamp());
         _limiterStore.Cleanup(StaleLimiterThreshold, MaxLimiterCount);
@@ -213,20 +219,28 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
     private static TimeSpan ParseTimeSpan(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
+        {
             return TimeSpan.FromMinutes(1);
+        }
 
         if (TimeSpan.TryParse(value, out var ts))
+        {
             return ts;
+        }
 
         var span = value.AsSpan().Trim();
         if (span.Length < 2)
+        {
             return TimeSpan.FromMinutes(1);
+        }
 
         var numPart = span[..^1];
         var unit = char.ToLowerInvariant(span[^1]);
 
         if (!double.TryParse(numPart, out var num))
+        {
             return TimeSpan.FromMinutes(1);
+        }
 
         return unit switch
         {

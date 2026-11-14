@@ -100,8 +100,16 @@ public class ConfigPersistenceService : IConfigPersistenceService
 
     internal static IReadOnlyDictionary<string, bool>? ReadRouteActivation(JsonElement config)
     {
-        if (!config.TryGetProperty("GatewayState", out var state) && !config.TryGetProperty("gatewayState", out state)) return null;
-        if (!state.TryGetProperty("RouteActivation", out var activation) && !state.TryGetProperty("routeActivation", out activation)) return null;
+        if (!config.TryGetProperty("GatewayState", out var state) && !config.TryGetProperty("gatewayState", out state))
+        {
+            return null;
+        }
+
+        if (!state.TryGetProperty("RouteActivation", out var activation) && !state.TryGetProperty("routeActivation", out activation))
+        {
+            return null;
+        }
+
         return activation.EnumerateObject().ToDictionary(property => property.Name, property => property.Value.GetBoolean(), StringComparer.OrdinalIgnoreCase);
     }
 
@@ -136,12 +144,16 @@ public class ConfigPersistenceService : IConfigPersistenceService
             if (hasClusters)
             {
                 foreach (var cluster in cCamel.EnumerateObject())
+                {
                     result.TotalClusters++;
+                }
             }
             if (hasRoutes)
             {
                 foreach (var route in rCamel.EnumerateObject())
+                {
                     result.TotalRoutes++;
+                }
             }
 
             // Parse all entries first, then apply in one batch: N items cost one
@@ -247,7 +259,10 @@ public class ConfigPersistenceService : IConfigPersistenceService
         if (snapshot == null)
         {
             var entity = await _historyRepo.GetConfigHistoryAsync(versionId);
-            if (entity != null) snapshot = entity.ToConfigSnapshot();
+            if (entity != null)
+            {
+                snapshot = entity.ToConfigSnapshot();
+            }
         }
 
         if (snapshot == null)
@@ -278,7 +293,11 @@ public class ConfigPersistenceService : IConfigPersistenceService
                 foreach (var route in rC.EnumerateObject())
                 {
                     var routeConfig = WafIsh.Serialization.YarpJsonConfig.DeserializeRoute(route.Value);
-                    if (routeConfig == null) continue;
+                    if (routeConfig == null)
+                    {
+                        continue;
+                    }
+
                     yarpRoutes.Add(routeConfig with { RouteId = route.Name });
                 }
             }
@@ -288,7 +307,11 @@ public class ConfigPersistenceService : IConfigPersistenceService
                 foreach (var cluster in clC.EnumerateObject())
                 {
                     var clusterConfig = WafIsh.Serialization.YarpJsonConfig.DeserializeCluster(cluster.Value);
-                    if (clusterConfig == null) continue;
+                    if (clusterConfig == null)
+                    {
+                        continue;
+                    }
+
                     yarpClusters.Add(clusterConfig with { ClusterId = cluster.Name });
                 }
             }
@@ -304,7 +327,9 @@ public class ConfigPersistenceService : IConfigPersistenceService
             }
 
             if (_dynamicConfig != null)
+            {
                 await _dynamicConfig.ReplaceAllConfig(yarpRoutes, yarpClusters, "rollback", "dashboard-user", ReadRouteActivation(config));
+            }
 
             if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
             {
@@ -328,9 +353,14 @@ public class ConfigPersistenceService : IConfigPersistenceService
             config.TryGetProperty("reverseProxy", out reverseProxy))
         {
             if (!(reverseProxy.TryGetProperty("Routes", out _) || reverseProxy.TryGetProperty("routes", out _)))
+            {
                 errors.Add("Missing 'ReverseProxy.Routes'");
+            }
+
             if (!(reverseProxy.TryGetProperty("Clusters", out _) || reverseProxy.TryGetProperty("clusters", out _)))
+            {
                 errors.Add("Missing 'ReverseProxy.Clusters'");
+            }
         }
         else
         {

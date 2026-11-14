@@ -17,7 +17,10 @@ internal sealed class Migration021_UtcTimestamps : ISchemaMigration
             query.Transaction = transaction;
             query.CommandText = "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'";
             await using var reader = await query.ExecuteReaderAsync(ct);
-            while (await reader.ReadAsync(ct)) tables.Add(reader.GetString(0));
+            while (await reader.ReadAsync(ct))
+            {
+                tables.Add(reader.GetString(0));
+            }
         }
         foreach (var table in tables)
         {
@@ -29,11 +32,22 @@ internal sealed class Migration021_UtcTimestamps : ISchemaMigration
                 while (await reader.ReadAsync(ct))
                 {
                     var name = reader.GetString(1);
-                    if (reader.GetInt32(5) > 0) keys.Add(name);
-                    if (TimeColumns.Contains(name)) times.Add(name);
+                    if (reader.GetInt32(5) > 0)
+                    {
+                        keys.Add(name);
+                    }
+
+                    if (TimeColumns.Contains(name))
+                    {
+                        times.Add(name);
+                    }
                 }
             }
-            if (keys.Count == 0) continue;
+            if (keys.Count == 0)
+            {
+                continue;
+            }
+
             foreach (var column in times)
             {
                 // Paging bounds memory, including WITHOUT ROWID tables.
@@ -51,16 +65,32 @@ internal sealed class Migration021_UtcTimestamps : ISchemaMigration
                     }
                     foreach (var row in rows)
                     {
-                        if (row[^1] is not string value) continue;
+                        if (row[^1] is not string value)
+                        {
+                            continue;
+                        }
+
                         var normalized = StorageTimestamp.Normalize(value);
-                        if (normalized == value) continue;
+                        if (normalized == value)
+                        {
+                            continue;
+                        }
+
                         await using var update = conn.CreateCommand(); update.Transaction = transaction;
                         update.CommandText = $"UPDATE {Quote(table)} SET {Quote(column)} = @value WHERE " + string.Join(" AND ", keys.Select((k, i) => $"{Quote(k)} IS @k{i}"));
                         update.Parameters.AddWithValue("@value", normalized);
-                        for (var i = 0; i < keys.Count; i++) update.Parameters.AddWithValue($"@k{i}", row[i]);
+                        for (var i = 0; i < keys.Count; i++)
+                        {
+                            update.Parameters.AddWithValue($"@k{i}", row[i]);
+                        }
+
                         await update.ExecuteNonQueryAsync(ct);
                     }
-                    if (rows.Count < 256) break;
+                    if (rows.Count < 256)
+                    {
+                        break;
+                    }
+
                     offset += rows.Count;
                 }
             }

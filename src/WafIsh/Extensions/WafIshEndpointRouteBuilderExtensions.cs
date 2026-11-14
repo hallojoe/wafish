@@ -18,7 +18,10 @@ public static class WafIshEndpointRouteBuilderExtensions
     public static IEndpointRouteBuilder MapWafIshGrpc(this IEndpointRouteBuilder endpoints)
     {
         if (endpoints.ServiceProvider.GetRequiredService<GatewayControlPlaneOptions>().EnableRegistration)
+        {
             endpoints.MapGrpcService<GatewayRegistryGrpcService>();
+        }
+
         return endpoints;
     }
 }

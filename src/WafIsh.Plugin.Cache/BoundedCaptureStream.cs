@@ -7,7 +7,11 @@ internal sealed class BoundedCaptureStream(Stream destination, ResponseCacheStor
     public bool Complete => capture.Buffer != null;
     private void Capture(ReadOnlySpan<byte> data)
     {
-        if (capture.Buffer is not { } buffer) return;
+        if (capture.Buffer is not { } buffer)
+        {
+            return;
+        }
+
         if (data.Length > buffer.Length - CapturedLength) { capture.Dispose(); return; }
         data.CopyTo(buffer.AsSpan(CapturedLength));
         CapturedLength += data.Length;

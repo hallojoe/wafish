@@ -67,7 +67,10 @@ public class AIEnhancedAlertService : IGatewayAlertService
 
     private void Enhance(string type, string context)
     {
-        if (!_config.Current.EnhanceNotif || !_config.Current.IsConfigured) return;
+        if (!_config.Current.EnhanceNotif || !_config.Current.IsConfigured)
+        {
+            return;
+        }
 
         _ = Task.Run(async () =>
         {

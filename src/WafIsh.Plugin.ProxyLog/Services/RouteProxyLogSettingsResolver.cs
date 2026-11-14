@@ -24,7 +24,9 @@ internal static class RouteProxyLogSettingsResolver
     {
         settings = default!;
         if (string.IsNullOrWhiteSpace(routeId) || !plan.ProxyLogByRoute.TryGetValue(routeId, out var binding))
+        {
             return false;
+        }
 
         settings = new RouteProxyLogSettings(
             binding.CaptureRequestHeaders ?? true,

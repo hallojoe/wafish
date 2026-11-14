@@ -50,7 +50,11 @@ internal static class SonarRegressionChecks
                     "gzip" => new System.IO.Compression.GZipStream(compressed, System.IO.Compression.CompressionMode.Compress, true),
                     "deflate" => new System.IO.Compression.DeflateStream(compressed, System.IO.Compression.CompressionMode.Compress, true),
                     _ => new System.IO.Compression.BrotliStream(compressed, System.IO.Compression.CompressionMode.Compress, true)
-                }) await compressor.WriteAsync(Encoding.UTF8.GetBytes(message));
+                })
+                {
+                    await compressor.WriteAsync(Encoding.UTF8.GetBytes(message));
+                }
+
                 var context = new Microsoft.AspNetCore.Http.DefaultHttpContext();
                 context.Request.Body = compressed;
                 context.Request.ContentLength = compressed.Length;
@@ -138,7 +142,10 @@ internal static class SonarRegressionChecks
         {
             const string secret = "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ";
             foreach (var (time, code) in new (long, string)[] { (59, "287082"), (1111111109, "081804"), (1111111111, "050471"), (1234567890, "005924"), (2000000000, "279037"), (20000000000, "353130") })
+            {
                 Check(TotpHelper.GenerateCode(secret, DateTimeOffset.FromUnixTimeSeconds(time)) == code, "TOTP does not match RFC 6238.");
+            }
+
             var generated = TotpHelper.GenerateSecret();
             Check(generated.Length == 32 && generated != TotpHelper.GenerateSecret(), "Generated secrets are not independent.");
             Check(TotpHelper.ValidateCode(generated, TotpHelper.GenerateCode(generated)), "Current code was rejected.");
@@ -182,18 +189,28 @@ internal static class SonarRegressionChecks
     private static unsafe void CheckPerformanceHelpers()
     {
         foreach (var a in new[] { int.MinValue, -1, 0, 1, int.MaxValue })
-        foreach (var b in new[] { int.MinValue, -1, 0, 1, int.MaxValue })
-            Check(UnsafeOptimizations.FastMin(a, b) == Math.Min(a, b) && UnsafeOptimizations.FastMax(a, b) == Math.Max(a, b), "Min/max failed at an integer boundary.");
+        {
+            foreach (var b in new[] { int.MinValue, -1, 0, 1, int.MaxValue })
+            {
+                Check(UnsafeOptimizations.FastMin(a, b) == Math.Min(a, b) && UnsafeOptimizations.FastMax(a, b) == Math.Max(a, b), "Min/max failed at an integer boundary.");
+            }
+        }
+
         foreach (var value in new[] { int.MinValue, -1, 0, 1, int.MaxValue })
         {
             var bytes = Encoding.ASCII.GetBytes(value.ToString(System.Globalization.CultureInfo.InvariantCulture));
             fixed (byte* pointer = bytes)
+            {
                 Check(UnsafeOptimizations.TryParseInt32(pointer, bytes.Length, out var parsed) && parsed == value, "ASCII integer parsing failed.");
+            }
         }
         foreach (var text in new[] { "", "+", "-", "2147483648", "-2147483649", "1x" })
         {
             var bytes = Encoding.ASCII.GetBytes(text);
-            fixed (byte* pointer = bytes) Check(!UnsafeOptimizations.TryParseInt32(pointer, bytes.Length, out _), "Invalid integer was accepted.");
+            fixed (byte* pointer = bytes)
+            {
+                Check(!UnsafeOptimizations.TryParseInt32(pointer, bytes.Length, out _), "Invalid integer was accepted.");
+            }
         }
         Span<byte> destination = stackalloc byte[2];
         Check(UnsafeOptimizations.CopyUtf8String("ø", destination).SequenceEqual("ø"u8), "Exact-size UTF-8 destination was rejected.");
@@ -214,9 +231,17 @@ internal static class SonarRegressionChecks
         Check(prefetch[0] == 42, "Prefetch changed buffer contents.");
         var ring = new CacheOptimizedRingBuffer<int>(3);
         Check(ring.Capacity == 4 && !ring.TryDequeue(out _), "Empty ring state is wrong.");
-        for (var i = 0; i < 4; i++) Check(ring.TryEnqueue(i), "Ring rejected available capacity.");
+        for (var i = 0; i < 4; i++)
+        {
+            Check(ring.TryEnqueue(i), "Ring rejected available capacity.");
+        }
+
         Check(!ring.TryEnqueue(9) && ring.Peek() == 0, "Full ring overflowed or reordered data.");
-        for (var i = 0; i < 4; i++) Check(ring.TryDequeue(out var item) && item == i, "Ring FIFO order failed.");
+        for (var i = 0; i < 4; i++)
+        {
+            Check(ring.TryDequeue(out var item) && item == i, "Ring FIFO order failed.");
+        }
+
         Check(ring.TryEnqueue(10) && ring.Peek() == 10, "Ring wraparound failed.");
         ring.Clear(); Check(ring.Count == 0, "Ring clear failed.");
         var copy = ring;
@@ -251,6 +276,9 @@ internal static class SonarRegressionChecks
 
     private static void Check(bool condition, string message)
     {
-        if (!condition) throw new InvalidOperationException(message);
+        if (!condition)
+        {
+            throw new InvalidOperationException(message);
+        }
     }
 }

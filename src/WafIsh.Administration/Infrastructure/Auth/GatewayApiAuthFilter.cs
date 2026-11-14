@@ -19,7 +19,9 @@ internal sealed class GatewayApiAuthFilter : IAsyncAuthorizationFilter
         var ok = WafIsh.Services.ControlPlaneCredentials.Validate(req.Headers, _opts);
 
         if (!ok)
+        {
             ctx.Result = new JsonResult(new { code = 401, message = "Unauthorized" }) { StatusCode = 401 };
+        }
 
         return Task.CompletedTask;
     }

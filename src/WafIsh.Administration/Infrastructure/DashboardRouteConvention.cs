@@ -24,7 +24,9 @@ internal sealed class DashboardRouteConvention : IApplicationModelConvention
             var isPluginController = controllerAssembly.GetName().Name?.StartsWith(
                 "WafIsh.Plugin.", StringComparison.Ordinal) == true;
             if (!isDashboardController && !isPluginController)
+            {
                 continue;
+            }
 
             var controllerSelector = ctrl.Selectors
                 .FirstOrDefault(s => s.AttributeRouteModel?.Template != null);
@@ -48,7 +50,11 @@ internal sealed class DashboardRouteConvention : IApplicationModelConvention
                 {
                     foreach (var selector in action.Selectors)
                     {
-                        if (selector.AttributeRouteModel == null) continue;
+                        if (selector.AttributeRouteModel == null)
+                        {
+                            continue;
+                        }
+
                         var template = selector.AttributeRouteModel.Template ?? "";
                         selector.AttributeRouteModel.Template = template.StartsWith('/')
                             ? _prefix + template

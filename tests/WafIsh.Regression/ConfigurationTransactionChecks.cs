@@ -39,7 +39,11 @@ internal static class ConfigurationTransactionChecks
             var config = host.Config;
             var results = await Task.WhenAll(config.RegisterInstanceAsync("service", "one", Cluster("shared"), [Route("service", "shared")]),
                 config.RegisterInstanceAsync("service", "two", Cluster("shared"), [Route("service", "shared")]));
-            foreach (var result in results) Applied(result);
+            foreach (var result in results)
+            {
+                Applied(result);
+            }
+
             Assert(config.GetRoutes().Count == 1 && config.GetClusters().Single().Destinations!.Count == 2, "Instance registration lost a peer.");
             Applied(await config.RegisterInstanceAsync("service", "one", Cluster("shared") with { Destinations = new Dictionary<string, DestinationConfig> { ["destination"] = new() { Address = "http://127.0.0.1:12346/" } } }, [Route("service", "shared")]));
             Assert(config.GetClusters().Single().Destinations!.Count == 2, "Restart duplicated a destination.");
@@ -185,7 +189,11 @@ internal static class ConfigurationTransactionChecks
         { ["destination"] = new() { Address = "http://127.0.0.1:12345/", Health = "http://127.0.0.1:12345/health" } }
     };
     private static RouteConfig Route(string id, string cluster) => new() { RouteId = id, ClusterId = cluster, Match = new() { Path = "/" + id } };
-    private static void Assert(bool condition, string message) { if (!condition) throw new Exception(message); }
+    private static void Assert(bool condition, string message) { if (!condition)
+        {
+            throw new Exception(message);
+        }
+    }
     private static void Applied(RouteOperationResult result) => Assert(result.Success && result.Status == ConfigurationUpdateStatus.Applied, result.Message);
     private static void Failed(RouteOperationResult result, ConfigurationUpdateStatus status, long active, long stored)
         => Assert(!result.Success && result.Status == status && result.ActiveVersion == active && result.PersistedVersion == stored, $"Unexpected result: {result}");
@@ -217,7 +225,11 @@ internal static class ConfigurationTransactionChecks
             System.IO.Directory.CreateDirectory(path);
             var builder = WebApplication.CreateBuilder(new WebApplicationOptions { ContentRootPath = path, EnvironmentName = "Development" });
             builder.Logging.ClearProviders();
-            if (logs is not null) builder.Logging.AddProvider(logs).AddFilter((_, _) => true);
+            if (logs is not null)
+            {
+                builder.Logging.AddProvider(logs).AddFilter((_, _) => true);
+            }
+
             builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
             { ["Gateway:Storage:Sqlite:ConnectionString"] = "Data Source=" + Path.Combine(path, "gateway.db") });
             builder.Services.AddWafIshStorage().AddWafIshRuntime();
@@ -244,7 +256,10 @@ internal static class ConfigurationTransactionChecks
             await App.StopAsync();
             await App.DisposeAsync();
             SqliteConnection.ClearAllPools();
-            if (OwnsDirectory) System.IO.Directory.Delete(Directory, true);
+            if (OwnsDirectory)
+            {
+                System.IO.Directory.Delete(Directory, true);
+            }
         }
     }
     internal sealed class BlockingStore(SqliteConfigurationSnapshotRepository inner) : IConfigurationSnapshotRepository

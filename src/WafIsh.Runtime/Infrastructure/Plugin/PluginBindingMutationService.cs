@@ -66,9 +66,14 @@ public sealed class PluginBindingMutationService : IPluginBindingMutationService
             catch
             {
                 if (previous == null)
+                {
                     await _repository.CommitBindingsAsync(committedRevision, [], [candidate.Id], CancellationToken.None);
+                }
                 else
+                {
                     await _repository.CommitBindingsAsync(committedRevision, [previous], [], CancellationToken.None);
+                }
+
                 throw;
             }
 
@@ -87,7 +92,9 @@ public sealed class PluginBindingMutationService : IPluginBindingMutationService
             var stored = await _repository.GetBindingsSnapshotAsync(cancellationToken);
             var existing = stored.Bindings.FirstOrDefault(binding => binding.Id == bindingId);
             if (existing == null)
+            {
                 return false;
+            }
 
             var bindings = stored.Bindings
                 .Where(binding => binding.Id != bindingId)

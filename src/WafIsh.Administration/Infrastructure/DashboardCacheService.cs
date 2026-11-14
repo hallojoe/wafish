@@ -39,7 +39,9 @@ public class DashboardCacheService
     {
         var key = StatsKey + "data";
         if (_memoryCache.TryGetValue(key, out T? cached))
+        {
             return cached;
+        }
 
         var result = await factory();
         _memoryCache.Set(key, result, StatsCacheDuration);
@@ -53,7 +55,9 @@ public class DashboardCacheService
     {
         var key = RoutesKey + "data";
         if (_memoryCache.TryGetValue(key, out T? cached))
+        {
             return cached;
+        }
 
         var result = await factory();
         _memoryCache.Set(key, result, RoutesCacheDuration);
@@ -67,7 +71,9 @@ public class DashboardCacheService
     {
         var key = ClustersKey + "data";
         if (_memoryCache.TryGetValue(key, out T? cached))
+        {
             return cached;
+        }
 
         var result = await factory();
         _memoryCache.Set(key, result, ClustersCacheDuration);
@@ -81,7 +87,9 @@ public class DashboardCacheService
     {
         var key = InfoKey + "data";
         if (_memoryCache.TryGetValue(key, out T? cached))
+        {
             return cached;
+        }
 
         var result = await factory();
         _memoryCache.Set(key, result, InfoCacheDuration);

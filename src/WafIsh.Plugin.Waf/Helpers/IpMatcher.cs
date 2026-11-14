@@ -36,7 +36,9 @@ public static class IpMatcher
     public static bool Matches(string pattern, string clientIp)
     {
         if (pattern.Contains('/'))
+        {
             return IsInCidrRange(pattern, clientIp);
+        }
 
         if (pattern.Contains('*'))
         {
@@ -59,7 +61,11 @@ public static class IpMatcher
     {
         pattern = pattern.Trim();
         var slash = pattern.IndexOf('/');
-        if (slash < 0) return pattern.Contains('*') || IPAddress.TryParse(pattern, out _);
+        if (slash < 0)
+        {
+            return pattern.Contains('*') || IPAddress.TryParse(pattern, out _);
+        }
+
         return IPAddress.TryParse(pattern.AsSpan(0, slash), out var address) &&
             int.TryParse(pattern.AsSpan(slash + 1), System.Globalization.NumberStyles.None,
                 System.Globalization.CultureInfo.InvariantCulture, out var prefix) &&
@@ -69,22 +75,37 @@ public static class IpMatcher
     public static bool IsInCidrRange(string cidr, string clientIp)
     {
         var slashIdx = cidr.IndexOf('/');
-        if (slashIdx < 0) return false;
+        if (slashIdx < 0)
+        {
+            return false;
+        }
 
         if (!IPAddress.TryParse(cidr.AsSpan(0, slashIdx), out var baseIp))
+        {
             return false;
+        }
+
         if (!IPAddress.TryParse(clientIp, out var clientIpAddr))
+        {
             return false;
+        }
 
         var baseBytes = baseIp.GetAddressBytes();
         var clientBytes = clientIpAddr.GetAddressBytes();
         if (baseBytes.Length != clientBytes.Length)
+        {
             return false;
+        }
 
         if (!int.TryParse(cidr.AsSpan(slashIdx + 1), out var maskBits))
+        {
             return false;
+        }
 
-        if (maskBits < 0 || maskBits > baseBytes.Length * 8) return false;
+        if (maskBits < 0 || maskBits > baseBytes.Length * 8)
+        {
+            return false;
+        }
 
         if (baseBytes.Length == 4)
         {
@@ -102,11 +123,16 @@ public static class IpMatcher
             for (int i = 0; i < fullBytes; i++)
             {
                 if (baseBytes[i] != clientBytes[i])
+                {
                     return false;
+                }
             }
             if (remainingBits > 0 && (baseBytes[fullBytes] & (0xFF << (8 - remainingBits))) !=
                 (clientBytes[fullBytes] & (0xFF << (8 - remainingBits))))
+            {
                 return false;
+            }
+
             return true;
         }
 

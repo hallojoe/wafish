@@ -80,7 +80,9 @@ public sealed class LogSanitizer : ILogSanitizer
     public HeaderList? SanitizeHeaders(IHeaderDictionary? headers)
     {
         if (headers == null)
+        {
             return null;
+        }
 
         var sanitized = new HeaderList(headers.Count);
 
@@ -103,14 +105,20 @@ public sealed class LogSanitizer : ILogSanitizer
     public string? SanitizeQueryString(string? queryString)
     {
         if (string.IsNullOrEmpty(queryString))
+        {
             return queryString;
+        }
 
         if (!_hasQueryBlacklist)
+        {
             return queryString;
+        }
 
         var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(queryString);
         if (query.Count == 0)
+        {
             return queryString;
+        }
 
         // Pre-allocate with expected capacity
         var sanitized = new Dictionary<string, string>(query.Count);
@@ -129,7 +137,11 @@ public sealed class LogSanitizer : ILogSanitizer
             var first = true;
             foreach (var kvp in sanitized)
             {
-                if (!first) sb.Append('&');
+                if (!first)
+                {
+                    sb.Append('&');
+                }
+
                 sb.Append(kvp.Key).Append('=').Append(kvp.Value);
                 first = false;
             }
@@ -149,7 +161,9 @@ public sealed class LogSanitizer : ILogSanitizer
     public string? SanitizeJsonBody(string? body)
     {
         if (string.IsNullOrEmpty(body))
+        {
             return body;
+        }
 
         try
         {
@@ -170,7 +184,9 @@ public sealed class LogSanitizer : ILogSanitizer
     public string? SanitizeBody(string? body, string? contentType)
     {
         if (string.IsNullOrEmpty(body) || !IsJsonContentType(contentType))
+        {
             return body;
+        }
 
         return SanitizeJsonBody(body);
     }
@@ -178,7 +194,9 @@ public sealed class LogSanitizer : ILogSanitizer
     private static bool IsJsonContentType(string? contentType)
     {
         if (string.IsNullOrWhiteSpace(contentType))
+        {
             return false;
+        }
 
         var separator = contentType.IndexOf(';');
         var mediaType = separator >= 0 ? contentType.AsSpan(0, separator) : contentType.AsSpan();
@@ -198,10 +216,14 @@ public sealed class LogSanitizer : ILogSanitizer
         truncated = false;
 
         if (string.IsNullOrEmpty(text))
+        {
             return text;
+        }
 
         if (text.Length <= _maxBodyLength)
+        {
             return text;
+        }
 
         truncated = true;
         return string.Concat(text.AsSpan(0, _maxBodyLength), "\n... [TRUNCATED]");

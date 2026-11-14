@@ -80,7 +80,7 @@ internal static class ResponseStreamingChecks
             Check(concurrent.All(c => ((MemoryStream)c.Response.Body).Length == 1024), "concurrent bodies");
             Check(f.Store.AllocatedBytes <= f.Store.SizeLimitBytes, "capture budget");
             release.SetResult(); await first;
-            f.Respond = async c => { for (var i = 0; i < 256; i++) await c.Response.Body.WriteAsync(new byte[4096]); };
+            f.Respond = async c => { for (var i = 0; i < 256; i++) { await c.Response.Body.WriteAsync(new byte[4096]); } };
             var large = await f.Send(c => c.Request.Path = "/large");
             Check(((MemoryStream)large.Response.Body).Length == 1024 * 1024, "overflow body intact");
             Check(f.Store.AllocatedBytes == 0, "overflow releases budget and evicted entry");
@@ -111,12 +111,24 @@ internal static class ResponseStreamingChecks
             {
                 var excluded = new Fixture(compress: true) { Respond = async c =>
                 {
-                    if (mode == "encoded") c.Response.Headers.ContentEncoding = "custom";
-                    if (mode == "no-transform") c.Response.Headers.CacheControl = "public, no-transform";
-                    if (int.TryParse(mode, out var status)) c.Response.StatusCode = status;
+                    if (mode == "encoded")
+                    {
+                        c.Response.Headers.ContentEncoding = "custom";
+                    }
+
+                    if (mode == "no-transform")
+                    {
+                        c.Response.Headers.CacheControl = "public, no-transform";
+                    }
+
+                    if (int.TryParse(mode, out var status))
+                    {
+                        c.Response.StatusCode = status;
+                    }
+
                     await c.Response.Body.WriteAsync(body);
                 } };
-                var result = await excluded.Send(c => { c.Request.Headers.AcceptEncoding = "gzip"; if (mode == "range") c.Request.Headers.Range = "bytes=0-100"; if (mode == "HEAD") c.Request.Method = "HEAD"; });
+                var result = await excluded.Send(c => { c.Request.Headers.AcceptEncoding = "gzip"; if (mode == "range") { c.Request.Headers.Range = "bytes=0-100"; } if (mode == "HEAD") { c.Request.Method = "HEAD"; } });
                 Check(result.Response.Headers.ContentEncoding.ToString() == (mode == "encoded" ? "custom" : ""), mode);
             }
             MemoryStream? output = null;
@@ -133,7 +145,11 @@ internal static class ResponseStreamingChecks
             Check((await flush.Send(c => c.Request.Headers.AcceptEncoding = "gzip")).Response.Headers.ContentEncoding.Count == 0, "early flush passthrough");
         });
     }
-    private static void Check(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); }
+    private static void Check(bool condition, string message) { if (!condition)
+        {
+            throw new InvalidOperationException(message);
+        }
+    }
     private static string Text(HttpContext context) => Encoding.UTF8.GetString(((MemoryStream)context.Response.Body).ToArray());
     private static byte[] Decode(HttpContext context)
     {
@@ -158,7 +174,15 @@ internal static class ResponseStreamingChecks
             Store = new(Options.Create(new ResponseCacheBudgetOptions { SizeLimitBytes = budget }));
             Publish(1);
             var plans = new GatewayPluginExecutionPlanProvider(_publisher, NullLogger<GatewayPluginExecutionPlanProvider>.Instance);
-            RequestDelegate upstream = async c => { var calls = Interlocked.Increment(ref Calls); c.Response.ContentType = "text/plain"; c.Response.Headers.CacheControl = "public, max-age=60"; c.Response.Headers.Append("Vary", "Accept-Language"); if (Respond != null) await Respond(c); else if (c.Request.Method != "HEAD") await c.Response.Body.WriteAsync(Encoding.UTF8.GetBytes("body-" + calls)); };
+            RequestDelegate upstream = async c => { var calls = Interlocked.Increment(ref Calls); c.Response.ContentType = "text/plain"; c.Response.Headers.CacheControl = "public, max-age=60"; c.Response.Headers.Append("Vary", "Accept-Language"); if (Respond != null)
+                {
+                    await Respond(c);
+                }
+                else if (c.Request.Method != "HEAD")
+                {
+                    await c.Response.Body.WriteAsync(Encoding.UTF8.GetBytes("body-" + calls));
+                }
+            };
             var compression = new CompressionMiddleware(upstream, plans);
             _middleware = new(compress ? compression.InvokeAsync : upstream, Store, plans);
         }

@@ -38,7 +38,11 @@ internal sealed class ConfigSnapshotManager
 
     private async Task EnsureHistoryLoadedAsync()
     {
-        if (_historyLoaded) return;
+        if (_historyLoaded)
+        {
+            return;
+        }
+
         _historyLoaded = true;
 
         try
@@ -47,7 +51,10 @@ internal sealed class ConfigSnapshotManager
             lock (_historyLock)
             {
                 foreach (var entity in entities)
+                {
                     _history.Add(entity.ToConfigSnapshot());
+                }
+
                 if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Debug))
                 {
                     _logger.LogDebug("Loaded {Count} snapshots from repository", entities.Count);
@@ -78,7 +85,9 @@ internal sealed class ConfigSnapshotManager
         {
             _history.Add(snapshot);
             while (_history.Count > maxSnapshots)
+            {
                 _history.RemoveAt(0);
+            }
         }
 
         var entity = snapshot.ToEntity("dashboard-user");
@@ -102,7 +111,10 @@ internal sealed class ConfigSnapshotManager
     public IReadOnlyList<ConfigSnapshot> GetHistory()
     {
         if (_historyLoaded && _history.Count > 0)
+        {
             lock (_historyLock) { return _history.ToList().AsReadOnly(); }
+        }
+
         return Array.Empty<ConfigSnapshot>();
     }
 

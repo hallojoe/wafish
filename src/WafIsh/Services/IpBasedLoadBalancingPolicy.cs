@@ -21,11 +21,21 @@ public sealed class IpBasedLoadBalancingPolicy : ILoadBalancingPolicy
         ClusterState cluster,
         IReadOnlyList<DestinationState> availableDestinations)
     {
-        if (availableDestinations.Count == 0) return null;
-        if (availableDestinations.Count == 1) return availableDestinations[0];
+        if (availableDestinations.Count == 0)
+        {
+            return null;
+        }
+
+        if (availableDestinations.Count == 1)
+        {
+            return availableDestinations[0];
+        }
 
         var clientIp = GetClientIpAddress(context);
-        if (clientIp == null) return availableDestinations[0];
+        if (clientIp == null)
+        {
+            return availableDestinations[0];
+        }
 
         foreach (var dest in availableDestinations)
         {
@@ -66,12 +76,16 @@ public sealed class IpBasedLoadBalancingPolicy : ILoadBalancingPolicy
     private static string RestoreIpAddress(ReadOnlySpan<char> keySpan)
     {
         if (keySpan.IsEmpty)
+        {
             return string.Empty;
+        }
 
         return string.Create(keySpan.Length, keySpan.ToString(), static (span, src) =>
         {
             for (int i = 0; i < src.Length; i++)
+            {
                 span[i] = src[i] == '-' ? '.' : src[i];
+            }
         });
     }
 }

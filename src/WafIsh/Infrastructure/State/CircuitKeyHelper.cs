@@ -29,7 +29,11 @@ public static class CircuitKeyHelper
     public static (string ClusterId, string? DestinationId) ParseCircuitKey(string key)
     {
         var lastColon = key.LastIndexOf(':');
-        if (lastColon < 0) return (key, null);
+        if (lastColon < 0)
+        {
+            return (key, null);
+        }
+
         var cluster = key[..lastColon];
         var dest = key[(lastColon + 1)..];
         return dest == "any" ? (cluster, null) : (cluster, dest);

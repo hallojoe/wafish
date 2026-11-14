@@ -29,7 +29,11 @@ public static class ControlPlaneCredentials
 
     public static bool ValidateBasic(string? authorization, string? username, string? password)
     {
-        if (authorization?.StartsWith("Basic ", StringComparison.OrdinalIgnoreCase) != true) return false;
+        if (authorization?.StartsWith("Basic ", StringComparison.OrdinalIgnoreCase) != true)
+        {
+            return false;
+        }
+
         try
         {
             var decoded = Encoding.UTF8.GetString(Convert.FromBase64String(authorization[6..]));

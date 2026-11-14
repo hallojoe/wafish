@@ -71,7 +71,11 @@ public sealed class AsyncLogPersistenceService : IProxyLogPersistenceService, IP
 
     public ValueTask StartResourceAsync(CancellationToken cancellationToken)
     {
-        if (_consumeTask is { IsCompleted: false }) return ValueTask.CompletedTask;
+        if (_consumeTask is { IsCompleted: false })
+        {
+            return ValueTask.CompletedTask;
+        }
+
         var settings = _runtimeSettings.Current;
         if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
         {
@@ -88,11 +92,19 @@ public sealed class AsyncLogPersistenceService : IProxyLogPersistenceService, IP
 
     public async ValueTask StopResourceAsync(CancellationToken cancellationToken)
     {
-        if (_consumeTask is null) return;
+        if (_consumeTask is null)
+        {
+            return;
+        }
+
         var drain = _drainCancellation!;
         using var drainTimer = _time.CreateTimer(_ => drain.Cancel(), null, TimeSpan.FromSeconds(5), Timeout.InfiniteTimeSpan);
         using var stopRegistration = cancellationToken.Register(() => drain.Cancel());
-        if (_cts is not null) await _cts.CancelAsync();
+        if (_cts is not null)
+        {
+            await _cts.CancelAsync();
+        }
+
         try { await _consumeTask.WaitAsync(cancellationToken); }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
         catch (Exception ex)
@@ -144,7 +156,9 @@ public sealed class AsyncLogPersistenceService : IProxyLogPersistenceService, IP
             {
                 batch.Clear();
                 if (!reader.TryRead(out var first))
+                {
                     continue;
+                }
 
                 batch.Add(first);
                 using var flushDeadline = new CancellationTokenSource(TimeSpan.FromMilliseconds(500), _time);
@@ -152,15 +166,21 @@ public sealed class AsyncLogPersistenceService : IProxyLogPersistenceService, IP
                 while (batch.Count < batchSize)
                 {
                     while (batch.Count < batchSize && reader.TryRead(out var entry))
+                    {
                         batch.Add(entry);
+                    }
 
                     if (batch.Count >= batchSize || flushDelay.IsCancellationRequested)
+                    {
                         break;
+                    }
 
                     try
                     {
                         if (!await reader.WaitToReadAsync(flushDelay.Token))
+                        {
                             break;
+                        }
                     }
                     catch (OperationCanceledException) when (flushDelay.IsCancellationRequested)
                     {
@@ -203,7 +223,10 @@ public sealed class AsyncLogPersistenceService : IProxyLogPersistenceService, IP
             catch (OperationCanceledException) when (_drainCancellation!.IsCancellationRequested)
             {
                 _logStore.RecordDiscarded(batch.Count);
-                while (remaining-- > 0 && reader.TryRead(out _)) _logStore.RecordDiscarded(1);
+                while (remaining-- > 0 && reader.TryRead(out _))
+                {
+                    _logStore.RecordDiscarded(1);
+                }
             }
         }
     }

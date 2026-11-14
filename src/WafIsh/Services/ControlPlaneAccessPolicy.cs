@@ -10,7 +10,9 @@ public sealed class ControlPlaneAccessPolicy(IOptions<ControlPlaneSecurityOption
     public void ValidateStartup(bool anonymous)
     {
         if (anonymous && !options.Value.AllowAnonymousLoopback)
+        {
             throw new InvalidOperationException("Administration requires authentication. For direct local development only, set Gateway:Security:ControlPlane:AllowAnonymousLoopback=true.");
+        }
     }
 
     public bool IsAllowed(HttpContext context, bool anonymous)
@@ -20,14 +22,24 @@ public sealed class ControlPlaneAccessPolicy(IOptions<ControlPlaneSecurityOption
             IsLoopback(context.Connection.LocalIpAddress) && IsLoopbackHost(request.Host.Host) &&
             !request.Headers.Keys.Any(h => h.StartsWith("X-Forwarded-", StringComparison.OrdinalIgnoreCase) ||
                 h.StartsWith("X-Original-", StringComparison.OrdinalIgnoreCase) || h.Equals("Forwarded", StringComparison.OrdinalIgnoreCase));
-        if (anonymous && (!options.Value.AllowAnonymousLoopback || !directLoopback)) return false;
-        if (!directLoopback && !request.IsHttps) return false;
+        if (anonymous && (!options.Value.AllowAnonymousLoopback || !directLoopback))
+        {
+            return false;
+        }
+
+        if (!directLoopback && !request.IsHttps)
+        {
+            return false;
+        }
+
         if (request.Headers.TryGetValue("Origin", out var origins))
         {
             if (origins.Count != 1 || !Uri.TryCreate(origins[0], UriKind.Absolute, out var origin) ||
                 origin.AbsolutePath != "/" || origin.Query.Length != 0 || origin.Fragment.Length != 0 || origin.UserInfo.Length != 0 ||
                 !string.Equals(origin.GetLeftPart(UriPartial.Authority), $"{request.Scheme}://{request.Host}", StringComparison.OrdinalIgnoreCase))
+            {
                 return false;
+            }
         }
         return true;
     }

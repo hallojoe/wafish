@@ -36,7 +36,10 @@ internal class ClusterConfigManager : ConfigManagerBase, IClusterConfigManager
         ClusterConfig cluster, string source, string? createdBy)
     {
         if (string.IsNullOrWhiteSpace(cluster.ClusterId))
+        {
             return new RouteOperationResult(false, "Cluster ID cannot be empty");
+        }
+
         if (cluster.Destinations == null || cluster.Destinations.Count == 0)
         {
             AuditLog.RecordFailure("AddCluster", cluster.ClusterId, "At least one destination is required");
@@ -85,7 +88,10 @@ internal class ClusterConfigManager : ConfigManagerBase, IClusterConfigManager
         Dictionary<string, string>? metadata = null)
     {
         if (string.IsNullOrWhiteSpace(clusterId))
+        {
             return new RouteOperationResult(false, "Cluster ID cannot be empty");
+        }
+
         if (destinations == null || destinations.Count == 0)
         { AuditLog.RecordFailure("AddCluster", clusterId, "At least one destination is required"); return new RouteOperationResult(false, "At least one destination is required"); }
 
@@ -225,7 +231,10 @@ internal class ClusterConfigManager : ConfigManagerBase, IClusterConfigManager
                     ? DynamicYarpConfigHelpers.BuildClusterHealthCheck(dmHc)
                     : existing.HealthCheck
             };
-            if (dmHc != null) dc.HealthCheck = dmHc;
+            if (dmHc != null)
+            {
+                dc.HealthCheck = dmHc;
+            }
 
             if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Debug))
             {
@@ -244,7 +253,9 @@ internal class ClusterConfigManager : ConfigManagerBase, IClusterConfigManager
     public async Task<RouteOperationResult> TryRemoveCluster(string clusterId)
     {
         if (string.IsNullOrWhiteSpace(clusterId))
+        {
             return new RouteOperationResult(false, "Cluster ID cannot be empty");
+        }
 
         return await ExecuteWithLockAsync(
             "RemoveCluster", clusterId, async config =>

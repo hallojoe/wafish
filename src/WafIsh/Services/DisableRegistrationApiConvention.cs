@@ -16,6 +16,8 @@ internal sealed class DisableRegistrationApiConvention : IApplicationModelConven
             .ToList();
 
         foreach (var controller in toRemove)
+        {
             application.Controllers.Remove(controller);
+        }
     }
 }

@@ -25,10 +25,14 @@ internal sealed class DashboardAuthFilter : IAsyncAuthorizationFilter
     public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
         if (context.ActionDescriptor is not ControllerActionDescriptor { ControllerTypeInfo: var ci })
+        {
             return;
+        }
 
         if (!ci.Namespace?.StartsWith("WafIsh.Dashboard.", StringComparison.Ordinal) == true)
+        {
             return;
+        }
 
         var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<DashboardOptions>>().Value;
         var policy = context.HttpContext.RequestServices.GetRequiredService<ControlPlaneAccessPolicy>();
@@ -42,10 +46,15 @@ internal sealed class DashboardAuthFilter : IAsyncAuthorizationFilter
         var actionName = ((ControllerActionDescriptor)context.ActionDescriptor).ActionName;
         if (string.Equals(actionName, "Login", StringComparison.OrdinalIgnoreCase)
             || string.Equals(actionName, "Logout", StringComparison.OrdinalIgnoreCase))
+        {
             return;
+        }
 
         // Use authorization service for unified check
-        if (await _authService.IsAuthorizedAsync(context.HttpContext)) return;
+        if (await _authService.IsAuthorizedAsync(context.HttpContext))
+        {
+            return;
+        }
 
         if (context.HttpContext.Response.StatusCode == 429)
         {
@@ -58,6 +67,8 @@ internal sealed class DashboardAuthFilter : IAsyncAuthorizationFilter
             context.Result = new UnauthorizedResult();
         }
         else
+        {
             context.Result = new JsonResult(new { code = 401, message = "Unauthorized" }) { StatusCode = 401 };
+        }
     }
 }

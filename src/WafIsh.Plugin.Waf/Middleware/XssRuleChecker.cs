@@ -18,13 +18,20 @@ public sealed class XssRuleChecker : IWafRuleChecker
 
     public WafCheckResult Check(WafCheckContext context)
     {
-        if (!context.Options.EnableXssDetection) return WafCheckResult.Passed;
+        if (!context.Options.EnableXssDetection)
+        {
+            return WafCheckResult.Passed;
+        }
 
         if (!string.IsNullOrEmpty(context.DecodedQueryString) && Pattern.IsMatch(context.DecodedQueryString))
+        {
             return WafCheckResult.Blocked("XssBlocked", Truncate(context.DecodedQueryString));
+        }
 
         if (!string.IsNullOrEmpty(context.DecodedBodyText) && Pattern.IsMatch(context.DecodedBodyText))
+        {
             return WafCheckResult.Blocked("XssBlocked", Truncate(context.DecodedBodyText));
+        }
 
         return WafCheckResult.Passed;
     }

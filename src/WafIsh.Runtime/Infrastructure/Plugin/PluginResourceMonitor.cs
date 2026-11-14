@@ -38,7 +38,9 @@ public sealed class PluginResourceMonitor : IPluginResourceMonitor
         {
             var usage = BuildUsage(state);
             if (usage != null)
+            {
                 result.Add(usage);
+            }
         }
 
         return result;
@@ -48,7 +50,11 @@ public sealed class PluginResourceMonitor : IPluginResourceMonitor
     {
         var states = _pluginManager.GetPluginStates();
         var state = states.FirstOrDefault(s => s.Manifest.Id == pluginId);
-        if (state == null) return null;
+        if (state == null)
+        {
+            return null;
+        }
+
         return BuildUsage(state);
     }
 
@@ -57,7 +63,10 @@ public sealed class PluginResourceMonitor : IPluginResourceMonitor
         var stats = _requestStats.GetOrAdd(pluginId, _ => new RequestStats());
         Interlocked.Increment(ref stats.RequestCount);
         if (!succeeded)
+        {
             Interlocked.Increment(ref stats.ErrorCount);
+        }
+
         Interlocked.Add(ref stats.TotalLatencyMs, elapsedMs);
 
         _pluginStartTimes.TryAdd(pluginId, DateTimeOffset.UtcNow);
@@ -97,13 +106,21 @@ public sealed class PluginResourceMonitor : IPluginResourceMonitor
         if (state.Enabled)
         {
             if (resources.Any(r => r.Health == PluginResourceHealthStatus.Faulted))
+            {
                 overallHealth = PluginResourceHealthStatus.Faulted;
+            }
             else if (resources.Any(r => r.Health == PluginResourceHealthStatus.Degraded))
+            {
                 overallHealth = PluginResourceHealthStatus.Degraded;
+            }
             else if (resources.Any(r => r.Health == PluginResourceHealthStatus.Healthy))
+            {
                 overallHealth = PluginResourceHealthStatus.Healthy;
+            }
             else
+            {
                 overallHealth = PluginResourceHealthStatus.Healthy; // No resources but enabled
+            }
         }
 
         // Get request stats
@@ -122,14 +139,18 @@ public sealed class PluginResourceMonitor : IPluginResourceMonitor
         foreach (var res in resources)
         {
             if (res.Statistics.TryGetValue("memoryBytes", out var mem))
+            {
                 memoryBytes += mem;
+            }
         }
 
         // Calculate uptime from plugin enable time; fall back to first observed request time.
         var uptime = TimeSpan.Zero;
         var startTime = state.EnabledAt ?? (_pluginStartTimes.TryGetValue(pluginId, out var requestStart) ? requestStart : (DateTimeOffset?)null);
         if (startTime.HasValue)
+        {
             uptime = DateTimeOffset.UtcNow - startTime.Value;
+        }
 
         // Merge custom statistics from all resources
         var customStats = new Dictionary<string, long>();

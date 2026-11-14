@@ -95,10 +95,14 @@ public sealed class PluginBindingsController : ControllerBase
         CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(scope) && string.IsNullOrWhiteSpace(scopeId))
+        {
             return Ok(new { code = 200, data = await _repository.GetBindingsAsync(ct) });
+        }
 
         if (!TryParseScope(scope, out var parsedScope) || string.IsNullOrWhiteSpace(scopeId))
+        {
             return BadRequest(new { code = 400, message = "Both a valid scope (Route or Cluster) and scopeId are required." });
+        }
 
         return Ok(new { code = 200, data = await _repository.GetBindingsAsync(parsedScope, scopeId.Trim(), ct) });
     }
@@ -119,11 +123,15 @@ public sealed class PluginBindingsController : ControllerBase
     {
         var validationError = ValidateRequest(request, out var scope, out var normalizedJson);
         if (validationError != null)
+        {
             return validationError;
+        }
 
         var target = await ResolveTargetAsync(scope, request.ScopeId.Trim(), ct);
         if (target == null)
+        {
             return BadRequest(new { code = 400, message = $"{scope} '{request.ScopeId}' does not exist." });
+        }
 
         var now = DateTime.UtcNow;
         var manifest = _pluginManager.GetManifest(request.PluginId.Trim())!;
@@ -158,29 +166,42 @@ public sealed class PluginBindingsController : ControllerBase
     {
         var existing = await _repository.GetBindingAsync(id, ct);
         if (existing == null)
+        {
             return NotFound(new { code = 404, message = $"Plugin binding '{id}' was not found." });
+        }
 
         var validationError = ValidateRequest(request, out var scope, out var normalizedJson);
         if (validationError != null)
+        {
             return validationError;
+        }
 
         if (!string.Equals(existing.PluginId, request.PluginId.Trim(), StringComparison.OrdinalIgnoreCase) &&
             existing.SchemaVersion != request.SchemaVersion)
+        {
             return BadRequest(new { code = 400, message = "PluginId and SchemaVersion cannot be changed in the same update." });
+        }
 
         var candidateJson = normalizedJson;
         if (existing.SchemaVersion != request.SchemaVersion)
         {
             if (!_migrationService.TryMigrate(existing.PluginId, existing.SchemaVersion, request.SchemaVersion,
                     existing.ConfigJson, out candidateJson, out var migrationError))
+            {
                 return BadRequest(new { code = 400, message = migrationError });
+            }
+
             if (!_schemaValidator.TryValidate(candidateJson, "{\"type\":\"object\"}", out candidateJson, out var migratedJsonError))
+            {
                 return BadRequest(new { code = 400, message = migratedJsonError });
+            }
         }
 
         var target = await ResolveTargetAsync(scope, request.ScopeId.Trim(), ct);
         if (target == null)
+        {
             return BadRequest(new { code = 400, message = $"{scope} '{request.ScopeId}' does not exist." });
+        }
 
         var candidate = CloneBinding(existing);
         candidate.PluginId = request.PluginId.Trim();
@@ -221,32 +242,49 @@ public sealed class PluginBindingsController : ControllerBase
     public async Task<IActionResult> BatchCreateBindings([FromBody] BatchCreateBindingsRequest request, CancellationToken ct)
     {
         if (request is null || request.ScopeIds is null || request.ScopeIds.Count == 0)
+        {
             return BadRequest(new { code = 400, message = "scopeIds is required and must be non-empty" });
+        }
 
         if (!TryParseScope(request.Scope, out var scope))
+        {
             return BadRequest(new { code = 400, message = "Scope must be Route or Cluster." });
+        }
 
         var pluginId = (request.PluginId ?? string.Empty).Trim();
         var manifest = _pluginManager.GetManifest(pluginId);
         if (string.IsNullOrWhiteSpace(pluginId) || manifest == null)
+        {
             return BadRequest(new { code = 400, message = $"Plugin '{request.PluginId}' is not installed." });
+        }
 
         if (request.Enabled && !_pluginManager.IsPluginEnabled(pluginId))
+        {
             return BadRequest(new { code = 400, message = $"Plugin '{pluginId}' is disabled and cannot have an enabled binding." });
+        }
 
         if (!GetSupportedScopes(pluginId).Contains(scope))
+        {
             return BadRequest(new { code = 400, message = $"Plugin '{pluginId}' does not support {scope} bindings." });
+        }
 
         if (request.SchemaVersion < 1)
+        {
             return BadRequest(new { code = 400, message = "SchemaVersion must be greater than zero." });
+        }
 
         // Validate schema once for the shared config payload.
         var schema = manifest.Schemas.SingleOrDefault(s => s.Version == request.SchemaVersion);
         if (schema == null)
+        {
             return BadRequest(new { code = 400, message = $"Plugin '{pluginId}' does not declare configuration schema v{request.SchemaVersion}." });
+        }
+
         string normalizedJson;
         if (!_schemaValidator.TryValidate(request.ConfigJson ?? string.Empty, schema.ConfigJsonSchema, out normalizedJson, out var schemaError))
+        {
             return BadRequest(new { code = 400, message = $"ConfigJson is invalid for '{pluginId}' schema v{request.SchemaVersion}: {schemaError}" });
+        }
 
         await PublishGate.WaitAsync(ct);
         try
@@ -327,7 +365,9 @@ public sealed class PluginBindingsController : ControllerBase
             }
 
             if (toUpsert.Count == 0)
+            {
                 return Ok(BuildBatchResponse(items, "No bindings to create (all skipped)."));
+            }
 
             var mergedBindings = existing
                 .Where(b => !toUpsert.Any(c => c.Id == b.Id))
@@ -336,7 +376,9 @@ public sealed class PluginBindingsController : ControllerBase
 
             var (ok, error) = await CompilePrepareAndApplyAsync(stored, mergedBindings, ct);
             if (!ok)
+            {
                 return StatusCode(500, new { code = 500, message = error });
+            }
 
             return Ok(BuildBatchResponse(items, "Batch create plugin bindings."));
         }
@@ -353,7 +395,9 @@ public sealed class PluginBindingsController : ControllerBase
     public async Task<IActionResult> BatchSetBindingsEnabled([FromBody] BatchSetBindingsEnabledRequest request, CancellationToken ct)
     {
         if (request is null || request.BindingIds is null || request.BindingIds.Count == 0)
+        {
             return BadRequest(new { code = 400, message = "bindingIds is required and must be non-empty" });
+        }
 
         await PublishGate.WaitAsync(ct);
         try
@@ -388,7 +432,9 @@ public sealed class PluginBindingsController : ControllerBase
             }
 
             if (toUpsert.Count == 0)
+            {
                 return Ok(BuildBatchResponse(items, "No bindings to update."));
+            }
 
             var mergedBindings = existing
                 .Where(b => !toUpsert.Any(c => c.Id == b.Id))
@@ -397,7 +443,9 @@ public sealed class PluginBindingsController : ControllerBase
 
             var (ok, error) = await CompilePrepareAndApplyAsync(stored, mergedBindings, ct);
             if (!ok)
+            {
                 return StatusCode(500, new { code = 500, message = error });
+            }
 
             return Ok(BuildBatchResponse(items, "Batch set plugin bindings enabled."));
         }
@@ -414,7 +462,9 @@ public sealed class PluginBindingsController : ControllerBase
     public async Task<IActionResult> BatchDeleteBindings([FromBody] BatchDeleteBindingsRequest request, CancellationToken ct)
     {
         if (request is null || request.BindingIds is null || request.BindingIds.Count == 0)
+        {
             return BadRequest(new { code = 400, message = "bindingIds is required and must be non-empty" });
+        }
 
         await PublishGate.WaitAsync(ct);
         try
@@ -440,13 +490,17 @@ public sealed class PluginBindingsController : ControllerBase
             }
 
             if (deletedBindings.Count == 0)
+            {
                 return Ok(BuildBatchResponse(items, "No bindings to delete."));
+            }
 
             var mergedBindings = existing.Where(b => !targetIds.Contains(b.Id)).ToArray();
 
             var (ok, error) = await CompilePrepareAndApplyAsync(stored, mergedBindings, ct);
             if (!ok)
+            {
                 return StatusCode(500, new { code = 500, message = error });
+            }
 
             return Ok(BuildBatchResponse(items, "Batch delete plugin bindings."));
         }
@@ -469,7 +523,10 @@ public sealed class PluginBindingsController : ControllerBase
         await using var runtimePreparation = await _runtimeDomains.PrepareAsync(GetEnabledPluginIds(candidateBindings.ToArray()), ct);
         var health = await runtimePreparation.CheckHealthAsync(ct);
         if (health.Status == PluginHealthStatus.Unhealthy)
+        {
             return (false, health.Message ?? "Candidate plugin runtime domain is unhealthy.");
+        }
+
         var deleted = stored.Bindings.Select(b => b.Id).Except(candidateBindings.Select(b => b.Id)).ToArray();
         var inserted = candidateBindings.Select(b => b.Id).Except(stored.Bindings.Select(b => b.Id)).ToArray();
         var revision = await _repository.CommitBindingsAsync(stored.Revision, candidateBindings, deleted, ct);
@@ -517,28 +574,45 @@ public sealed class PluginBindingsController : ControllerBase
         var pluginId = request.PluginId?.Trim() ?? string.Empty;
         var manifest = _pluginManager.GetManifest(pluginId);
         if (string.IsNullOrWhiteSpace(pluginId) || manifest == null)
+        {
             return BadRequest(new { code = 400, message = $"Plugin '{request.PluginId}' is not installed." });
+        }
 
         if (request.Enabled && !_pluginManager.IsPluginEnabled(pluginId))
+        {
             return BadRequest(new { code = 400, message = $"Plugin '{request.PluginId}' is disabled and cannot have an enabled binding." });
+        }
 
         if (!TryParseScope(request.Scope, out scope))
+        {
             return BadRequest(new { code = 400, message = "Scope must be Route or Cluster." });
+        }
 
         if (!GetSupportedScopes(pluginId).Contains(scope))
+        {
             return BadRequest(new { code = 400, message = $"Plugin '{pluginId}' does not support {scope} bindings." });
+        }
 
         if (string.IsNullOrWhiteSpace(request.ScopeId))
+        {
             return BadRequest(new { code = 400, message = $"{scope} target UID is required." });
+        }
 
         if (request.SchemaVersion < 1)
+        {
             return BadRequest(new { code = 400, message = "SchemaVersion must be greater than zero." });
+        }
 
         var schema = manifest.Schemas.SingleOrDefault(candidate => candidate.Version == request.SchemaVersion);
         if (schema == null)
+        {
             return BadRequest(new { code = 400, message = $"Plugin '{pluginId}' does not declare configuration schema v{request.SchemaVersion}." });
+        }
+
         if (!_schemaValidator.TryValidate(request.ConfigJson ?? string.Empty, schema.ConfigJsonSchema, out normalizedJson, out var schemaError))
+        {
             return BadRequest(new { code = 400, message = $"ConfigJson is invalid for '{pluginId}' schema v{request.SchemaVersion}: {schemaError}" });
+        }
 
         return null;
     }
@@ -550,14 +624,22 @@ public sealed class PluginBindingsController : ControllerBase
         {
             var routes = await _routeRepository.GetAllRoutesAsync(ct);
             var route = routes.FirstOrDefault(x => string.Equals(x.RouteUid, targetUid, StringComparison.Ordinal));
-            if (route != null) return (route.RouteUid, route.RouteId);
+            if (route != null)
+            {
+                return (route.RouteUid, route.RouteId);
+            }
+
             route = routes.FirstOrDefault(x => string.Equals(x.RouteId, targetUid, StringComparison.OrdinalIgnoreCase));
             return route == null ? null : (route.RouteUid, route.RouteId);
         }
 
         var clusters = await _clusterRepository.GetAllClustersAsync(ct);
         var cluster = clusters.FirstOrDefault(x => string.Equals(x.ClusterUid, targetUid, StringComparison.Ordinal));
-        if (cluster != null) return (cluster.ClusterUid, cluster.ClusterId);
+        if (cluster != null)
+        {
+            return (cluster.ClusterUid, cluster.ClusterId);
+        }
+
         cluster = clusters.FirstOrDefault(x => string.Equals(x.ClusterId, targetUid, StringComparison.OrdinalIgnoreCase));
         return cluster == null ? null : (cluster.ClusterUid, cluster.ClusterId);
     }

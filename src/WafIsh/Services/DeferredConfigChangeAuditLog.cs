@@ -10,13 +10,26 @@ internal sealed class DeferredConfigChangeAuditLog(IConfigChangeAuditLog inner) 
     {
         var pending = _pending.Value;
         Discard();
-        if (pending != null) foreach (var record in pending) record();
+        if (pending != null)
+        {
+            foreach (var record in pending)
+            {
+                record();
+            }
+        }
     }
     public void RecordSuccess(string action, string target, string? operatorName = null, string? clientIp = null,
         object? before = null, object? after = null)
     {
         void Record() => inner.RecordSuccess(action, target, operatorName, clientIp, before, after);
-        if (_pending.Value is { } pending) pending.Add(Record); else Record();
+        if (_pending.Value is { } pending)
+        {
+            pending.Add(Record);
+        }
+        else
+        {
+            Record();
+        }
     }
     public event Action<string, string, string?, object?>? OnConfigChanged
     { add => inner.OnConfigChanged += value; remove => inner.OnConfigChanged -= value; }

@@ -22,8 +22,15 @@ public class EndpointRoleResolver
         foreach (var endpoint in kestrelSection.GetChildren())
         {
             var url = endpoint["Url"];
-            if (string.IsNullOrEmpty(url)) continue;
-            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) continue;
+            if (string.IsNullOrEmpty(url))
+            {
+                continue;
+            }
+
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            {
+                continue;
+            }
 
             var role = ResolveRole(endpoint.Key, options.EndpointRoles, resolvedMode);
             var map = new EndpointRoleMap
@@ -56,13 +63,30 @@ public class EndpointRoleResolver
     private static string ResolveRole(string endpointName, Dictionary<string, string> roles, DeploymentMode mode)
     {
         if (roles.TryGetValue(endpointName, out var r) && !string.IsNullOrEmpty(r))
+        {
             return r;
+        }
 
         var lower = endpointName.ToLowerInvariant();
-        if (lower.Contains("proxy")) return "Proxy";
-        if (lower.Contains("dashboard")) return "Dashboard";
-        if (lower.Contains("admin")) return "Admin";
-        if (lower.Contains("health")) return "Health";
+        if (lower.Contains("proxy"))
+        {
+            return "Proxy";
+        }
+
+        if (lower.Contains("dashboard"))
+        {
+            return "Dashboard";
+        }
+
+        if (lower.Contains("admin"))
+        {
+            return "Admin";
+        }
+
+        if (lower.Contains("health"))
+        {
+            return "Health";
+        }
 
         return mode == DeploymentMode.AllInOne ? "All" : "Proxy";
     }
