@@ -126,6 +126,8 @@ message DestinationInfo {
 message UpdateDestinationsRequest {
   string service_id = 1;
   repeated Destination destinations = 2;
+  string instance_id = 3;
+  optional int64 expected_version = 4;
 }
 
 // Update destinations response

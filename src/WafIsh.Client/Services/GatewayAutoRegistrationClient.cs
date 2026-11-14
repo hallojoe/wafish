@@ -19,6 +19,8 @@ namespace WafIsh.Services;
 /// </summary>
 public class GatewayAutoRegistrationClient
 {
+    private long _registrationVersion = -1;
+
     private static readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
@@ -318,6 +320,7 @@ public class GatewayAutoRegistrationClient
 
             var callOptions = BuildGrpcCallOptions(ct);
             var response = await _grpcClient.RegisterServiceAsync(request, callOptions).ConfigureAwait(false);
+            if (response.Success && response.HasActiveVersion) Interlocked.Exchange(ref _registrationVersion, response.ActiveVersion);
 
             if (response.Success)
             {
@@ -635,7 +638,8 @@ public class GatewayAutoRegistrationClient
         try
         {
             var clusterName = RegistrationOptionsResolver.GetClusterName(_options);
-            var request = new UpdateDestinationsRequest { ServiceId = clusterName };
+            var request = new UpdateDestinationsRequest { ServiceId = RegistrationOptionsResolver.GetRouteName(_options),
+                InstanceId = _options.InstanceId ?? "", ExpectedVersion = Interlocked.Read(ref _registrationVersion) };
             for (int i = 0; i < addresses.Count; i++)
             {
                 if (string.IsNullOrWhiteSpace(addresses[i])) continue;
@@ -649,6 +653,7 @@ public class GatewayAutoRegistrationClient
 
             var callOptions = BuildGrpcCallOptions(ct);
             var response = await _grpcClient.UpdateDestinationsAsync(request, callOptions).ConfigureAwait(false);
+            if (response.Success && response.HasActiveVersion) Interlocked.Exchange(ref _registrationVersion, response.ActiveVersion);
 
             if (!response.Success)
                 _logger.LogWarning("gRPC UpdateDestinations failed: {Message}", response.Message);

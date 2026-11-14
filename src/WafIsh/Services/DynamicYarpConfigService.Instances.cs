@@ -91,6 +91,37 @@ public partial class DynamicYarpConfigService
         finally { _semaphore.Release(); }
     }
 
+    public async Task<RouteOperationResult> UpdateInstanceDestinationsAsync(string serviceId, string instanceId,
+        IReadOnlyDictionary<string, string> addresses, long expectedVersion)
+    {
+        if (string.IsNullOrWhiteSpace(instanceId) || addresses.Count == 0 ||
+            addresses.Any(p => string.IsNullOrWhiteSpace(p.Key) || !Uri.TryCreate(p.Value, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https")))
+            return new(false, "InstanceId and valid HTTP destinations are required.");
+        await _semaphore.WaitAsync();
+        try
+        {
+            if (_state.Version != expectedVersion)
+                return new(false, "Configuration revision changed. Register again before updating destinations.")
+                { Status = ConfigurationUpdateStatus.VersionConflict, ActiveVersion = _state.Version, PersistedVersion = _state.PersistedVersion };
+            using var mutation = BeginMutation();
+            var cluster = mutation.Config.Clusters.FirstOrDefault(c => c.Source == "grpc" && OwnedBy(c.Config.Metadata, serviceId));
+            if (cluster?.Config.Destinations?.Values.Any(d => OwnedBy(d.Metadata, serviceId, instanceId)) != true)
+                return new(false, "The instance is not registered for this service.");
+            var destinations = cluster.Config.Destinations.Where(d => !OwnedBy(d.Value.Metadata, serviceId, instanceId))
+                .ToDictionary(d => d.Key, d => d.Value, StringComparer.OrdinalIgnoreCase);
+            foreach (var (key, address) in addresses)
+            {
+                var destinationId = instanceId.ToLowerInvariant() + ":" + key;
+                if (destinations.ContainsKey(destinationId)) return new(false, "Destination belongs to another instance.");
+                destinations[destinationId] = new DestinationConfig { Address = address,
+                    Metadata = new Dictionary<string, string> { [RegistrationServiceKey] = serviceId, [RegistrationInstanceKey] = instanceId } };
+            }
+            cluster.Config = cluster.Config with { Destinations = destinations };
+            return await mutation.CommitAsync("UpdateInstanceDestinations", serviceId);
+        }
+        finally { _semaphore.Release(); }
+    }
+
     public bool IsInstanceRegistered(string serviceId, string instanceId) => _state.Config.Clusters
         .Any(c => c.Config.Destinations?.Values.Any(d => OwnedBy(d.Metadata, serviceId, instanceId)) == true);
 

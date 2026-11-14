@@ -291,26 +291,12 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
                 };
             }
 
-            var clusterId = request.ServiceId;
-            var destinations = request.Destinations
-                .Where(d => !string.IsNullOrWhiteSpace(d.Address))
-                .ToDictionary(
-                    d => string.IsNullOrWhiteSpace(d.DestinationId) ? $"dest-{Guid.NewGuid():N}" : d.DestinationId,
-                    d => d.Address);
-
-            // Preserve the cluster's existing load balancing policy — TryAddCluster
-            // overwrites the whole cluster config, so passing null would silently reset it.
-            var existingCluster = _dynamicConfigService.GetDynamicConfig()
-                ?.Clusters.FirstOrDefault(c => string.Equals(c.Config.ClusterId, clusterId, StringComparison.OrdinalIgnoreCase));
-            var loadBalancingPolicy = existingCluster?.Config.LoadBalancingPolicy;
-
-            var result = await _dynamicConfigService.TryAddCluster(
-                clusterId,
-                destinations,
-                loadBalancingPolicy,
-                healthCheck: null,
-                source: "grpc",
-                createdBy: "grpc-client");
+            if (string.IsNullOrWhiteSpace(request.InstanceId) || !request.HasExpectedVersion)
+                return new UpdateDestinationsResponse { Success = false, Status = "ValidationRejected",
+                    Message = "InstanceId and ExpectedVersion are required. Use administration for full-cluster replacement." };
+            var destinations = request.Destinations.ToDictionary(d => d.DestinationId, d => d.Address);
+            var result = await _dynamicConfigService.UpdateInstanceDestinationsAsync(
+                request.ServiceId, request.InstanceId, destinations, request.ExpectedVersion);
 
             var response = new UpdateDestinationsResponse
             { Success = result.Success, Message = result.Message, Status = result.Status.ToString() };

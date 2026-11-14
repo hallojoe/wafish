@@ -18,8 +18,8 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
     private readonly IGatewaySnapshotPublisher _snapshotPublisher;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<ServiceDiscoveryRefreshService> _logger;
-    private readonly SemaphoreSlim _publishLock = new(1, 1);
-    private readonly Dictionary<string, DateTimeOffset> _nextRefresh = new(StringComparer.OrdinalIgnoreCase);
+    private SemaphoreSlim PublishLock => GatewayPublicationCoordinator.For(_snapshotPublisher).Gate;
+    private readonly Dictionary<string, (long Started, TimeSpan Interval)> _nextRefresh = new(StringComparer.OrdinalIgnoreCase);
     private CancellationTokenSource? _runCancellation;
     private Task? _runTask;
     private DateTimeOffset? _startedAt;
@@ -33,14 +33,19 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
     public string ResourceId => "service-discovery:endpoint-refresh";
     public string ResourceType => "endpoint-refresh";
 
+    private readonly TimeProvider _time;
+    public ServiceDiscoveryRefreshService(GatewayPluginExecutionPlanProvider executionPlans, WafIshProxyConfigProvider configProvider, IGatewaySnapshotCompiler snapshotCompiler, IGatewaySnapshotPublisher snapshotPublisher, IHttpClientFactory httpClientFactory, ILogger<ServiceDiscoveryRefreshService> logger)
+        : this(executionPlans, configProvider, snapshotCompiler, snapshotPublisher, httpClientFactory, logger, TimeProvider.System) { }
+
     public ServiceDiscoveryRefreshService(
         GatewayPluginExecutionPlanProvider executionPlans,
         WafIshProxyConfigProvider configProvider,
         IGatewaySnapshotCompiler snapshotCompiler,
         IGatewaySnapshotPublisher snapshotPublisher,
         IHttpClientFactory httpClientFactory,
-        ILogger<ServiceDiscoveryRefreshService> logger)
+        ILogger<ServiceDiscoveryRefreshService> logger, TimeProvider timeProvider)
     {
+        _time = timeProvider;
         _executionPlans = executionPlans;
         _configProvider = configProvider;
         _snapshotCompiler = snapshotCompiler;
@@ -53,7 +58,7 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
     {
         if (_runTask is { IsCompleted: false }) return ValueTask.CompletedTask;
         _runCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        _startedAt = DateTimeOffset.UtcNow;
+        _startedAt = _time.GetUtcNow();
         _stoppedAt = null;
         _lastError = null;
         _runTask = RunAsync(_runCancellation.Token);
@@ -73,7 +78,7 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
         }
         cancellation.Dispose();
         _nextRefresh.Clear();
-        _stoppedAt = DateTimeOffset.UtcNow;
+        _stoppedAt = _time.GetUtcNow();
     }
 
     public ValueTask<PluginRuntimeResourceSnapshot> CheckHealthAsync(CancellationToken cancellationToken = default)
@@ -111,14 +116,17 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
                 _logger.LogError(exception, "Service discovery refresh cycle failed");
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
+            await Task.Delay(TimeSpan.FromSeconds(1), _time, cancellationToken).ConfigureAwait(false);
         }
     }
 
     private async Task RefreshDueBindingsAsync(CancellationToken cancellationToken)
     {
-        var now = DateTimeOffset.UtcNow;
-        var bindings = _executionPlans.Current.ServiceDiscoveryByCluster
+        var now = _time.GetTimestamp();
+        var capturedSnapshot = _snapshotPublisher.Current;
+        var plan = _executionPlans.Current;
+        if (plan.SnapshotVersion != capturedSnapshot.Version) return;
+        var bindings = plan.ServiceDiscoveryByCluster
             .Where(pair => pair.Value.Enabled)
             .ToArray();
         var activeClusters = bindings.Select(pair => pair.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -127,13 +135,14 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
 
         foreach (var (clusterId, config) in bindings)
         {
-            if (_nextRefresh.TryGetValue(clusterId, out var dueAt) && dueAt > now) continue;
-            _nextRefresh[clusterId] = now.AddSeconds(Math.Clamp(config.RefreshSeconds, 5, 3600));
+            if (_nextRefresh.TryGetValue(clusterId, out var dueAt) && _time.GetElapsedTime(dueAt.Started, now) < dueAt.Interval) continue;
+            _nextRefresh[clusterId] = (now, TimeSpan.FromSeconds(Math.Clamp(config.RefreshSeconds, 5, 3600)));
 
             try
             {
+                var binding = GatewayPublicationCoordinator.DiscoveryBinding(capturedSnapshot, clusterId);
                 var endpoints = await ResolveEndpointsAsync(config, cancellationToken).ConfigureAwait(false);
-                await PublishDestinationsAsync(clusterId, endpoints, cancellationToken).ConfigureAwait(false);
+                await PublishDestinationsAsync(clusterId, endpoints, cancellationToken, binding).ConfigureAwait(false);
                 Interlocked.Increment(ref _refreshes);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -245,11 +254,13 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
     private static bool TryPath(JsonElement element, out JsonElement value, params string[] path)
     { value = element; foreach (var part in path) { if (part == "$" && value.ValueKind == JsonValueKind.Object && value.TryGetProperty("$", out var wrapped)) { value = wrapped; continue; } if (value.ValueKind != JsonValueKind.Object || !value.TryGetProperty(part, out value)) return false; } return true; }
 
-    private async Task PublishDestinationsAsync(string clusterId, IReadOnlyList<string> endpoints, CancellationToken cancellationToken)
+    private async Task PublishDestinationsAsync(string clusterId, IReadOnlyList<string> endpoints, CancellationToken cancellationToken, PluginBindingSnapshot? expectedBinding = null)
     {
-        await _publishLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await PublishLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
+            var binding = GatewayPublicationCoordinator.DiscoveryBinding(_snapshotPublisher.Current, clusterId);
+            if (expectedBinding != null && binding != expectedBinding) return;
             var routes = _configProvider.GetRoutes();
             var clusters = _configProvider.GetClusters();
             var index = clusters.Select((cluster, position) => (cluster, position))
@@ -257,7 +268,7 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
             if (index.cluster == null) return;
 
             var destinations = endpoints.Select((address, position) => new KeyValuePair<string, DestinationConfig>(
-                    $"discovery-{position:D4}", new DestinationConfig { Address = address }))
+                    "discovery-" + Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(address))), new DestinationConfig { Address = address }))
                 .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
             if (DestinationsEqual(index.cluster.Destinations, destinations)) return;
 
@@ -266,12 +277,13 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
             var version = _snapshotPublisher.Current.Version + 1;
             var snapshot = await _snapshotCompiler.CompileAsync(routes, updatedClusters, version, cancellationToken).ConfigureAwait(false);
             _snapshotPublisher.Publish(snapshot);
+            if (binding != null) GatewayPublicationCoordinator.For(_snapshotPublisher).RememberDiscovery(clusterId, binding, destinations);
             _configProvider.Update(snapshot.Routes, snapshot.Clusters);
             Interlocked.Increment(ref _publishedSnapshots);
         }
         finally
         {
-            _publishLock.Release();
+            PublishLock.Release();
         }
     }
 
@@ -299,9 +311,9 @@ public sealed class ServiceDiscoveryRefreshService : IPluginRuntimeResource
     private static string[] NormalizeEndpoints(IEnumerable<string> endpoints) => endpoints
         .Select(value => value?.Trim())
         .Where(value => Uri.TryCreate(value, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https")
-        .Select(value => value!)
-        .Distinct(StringComparer.OrdinalIgnoreCase)
-        .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
+        .Select(value => new Uri(value!).AbsoluteUri)
+        .Distinct(StringComparer.Ordinal)
+        .OrderBy(value => value, StringComparer.Ordinal)
         .ToArray();
 
     private static bool DestinationsEqual(

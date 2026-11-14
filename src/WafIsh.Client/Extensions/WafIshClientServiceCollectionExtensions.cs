@@ -97,6 +97,7 @@ public static class WafIshClientServiceCollectionExtensions
         IServiceCollection services,
         Action<GatewayRegistrationOptions>? configureOptions)
     {
+        Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAddSingleton(services, TimeProvider.System);
         services.AddOptions<GatewayRegistrationOptions>()
             .Configure<IConfiguration>((o, c) =>
                 c.GetSection(GatewayRegistrationOptions.SectionName).Bind(o));

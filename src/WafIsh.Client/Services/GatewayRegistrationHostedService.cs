@@ -9,13 +9,15 @@ namespace WafIsh.Services;
 /// Auto-registration hosted service: registers on start (with exponential backoff retry),
 /// sends periodic heartbeat, unregisters on stop.
 /// </summary>
-internal sealed class GatewayRegistrationHostedService : IHostedService
+internal sealed class GatewayRegistrationHostedService : IHostedService, IAsyncDisposable
 {
+    private readonly TimeProvider _timeProvider;
     private readonly GatewayAutoRegistrationClient _client;
     private readonly Grpc.Net.Client.GrpcChannel _grpcChannel;
     private readonly ILogger<GatewayRegistrationHostedService> _logger;
     private readonly GatewayRegistrationOptions _options;
-    private Timer? _heartbeatTimer;
+    private readonly CancellationTokenSource _heartbeatLifetime = new();
+    private Task? _heartbeatTask;
 
     private const int MaxRetries = 5;
     private const int MinHeartbeatIntervalSeconds = 5;
@@ -28,7 +30,6 @@ internal sealed class GatewayRegistrationHostedService : IHostedService
     /// </summary>
     private const int MaxConsecutiveHeartbeatFailures = 3;
     private int _consecutiveHeartbeatFailures;
-    private readonly object _heartbeatGate = new();
 
     private static readonly TimeSpan[] RetryDelays =
     {
@@ -43,8 +44,9 @@ internal sealed class GatewayRegistrationHostedService : IHostedService
         GatewayAutoRegistrationClient client,
         Grpc.Net.Client.GrpcChannel grpcChannel,
         ILogger<GatewayRegistrationHostedService> logger,
-        IOptions<GatewayRegistrationOptions> options)
+        IOptions<GatewayRegistrationOptions> options, TimeProvider? timeProvider = null)
     {
+        _timeProvider = timeProvider ?? TimeProvider.System;
         _client = client;
         _grpcChannel = grpcChannel;
         _logger = logger;
@@ -91,7 +93,7 @@ internal sealed class GatewayRegistrationHostedService : IHostedService
                             "Registration attempt {Attempt}/{MaxRetries} failed, retrying in {Delay}s...",
                             attempt + 1, MaxRetries, delay.TotalSeconds);
                     }
-                    await Task.Delay(delay, ct).ConfigureAwait(false);
+                    await Task.Delay(delay, _timeProvider, ct).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -109,7 +111,7 @@ internal sealed class GatewayRegistrationHostedService : IHostedService
                         attempt + 1, MaxRetries, delay.TotalSeconds);
                     try
                     {
-                        await Task.Delay(delay, ct).ConfigureAwait(false);
+                        await Task.Delay(delay, _timeProvider, ct).ConfigureAwait(false);
                     }
                     catch (OperationCanceledException)
                     {
@@ -129,8 +131,8 @@ internal sealed class GatewayRegistrationHostedService : IHostedService
     public async Task StopAsync(CancellationToken ct)
     {
         // Stop heartbeat
-        if (_heartbeatTimer is not null) await _heartbeatTimer.DisposeAsync();
-        _heartbeatTimer = null;
+        await _heartbeatLifetime.CancelAsync();
+        if (_heartbeatTask != null) await _heartbeatTask.ConfigureAwait(false);
 
         _logger.LogInformation("Auto-unregistration starting...");
         try
@@ -179,53 +181,43 @@ internal sealed class GatewayRegistrationHostedService : IHostedService
 
         var interval = TimeSpan.FromSeconds(intervalSeconds);
 
-        _heartbeatTimer = new Timer(async _ =>
-        {
-            try
-            {
-                var healthy = await _client.HeartbeatAsync(ct).ConfigureAwait(false);
-                if (healthy)
-                {
-                    Interlocked.Exchange(ref _consecutiveHeartbeatFailures, 0);
-                    return;
-                }
-
-                // Heartbeat failed (gateway unreachable or registration lost).
-                // After too many consecutive failures, re-register to recover
-                // (e.g. the gateway restarted and lost dynamic state).
-                int failures;
-                lock (_heartbeatGate)
-                {
-                    failures = ++_consecutiveHeartbeatFailures;
-                }
-
-                if (failures >= MaxConsecutiveHeartbeatFailures)
-                {
-                    _logger.LogWarning(
-                        "Heartbeat failed {Failures} consecutive times, attempting re-registration...",
-                        failures);
-                    var reRegistered = await _client.RegisterAsync(ct).ConfigureAwait(false);
-                    if (reRegistered)
-                    {
-                        Interlocked.Exchange(ref _consecutiveHeartbeatFailures, 0);
-                        _logger.LogInformation("Re-registration succeeded, heartbeat continues");
-                    }
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                // Shutdown, stop heartbeat
-                _heartbeatTimer?.Dispose();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Heartbeat failed");
-            }
-        }, null, interval, interval);
+        _heartbeatTask = RunHeartbeatsAsync(interval, _heartbeatLifetime.Token);
 
         if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
         {
             _logger.LogInformation("Heartbeat started (interval: {Interval}s)", interval.TotalSeconds);
         }
     }
+    public async ValueTask DisposeAsync()
+    {
+        await _heartbeatLifetime.CancelAsync();
+        if (_heartbeatTask != null) await _heartbeatTask.ConfigureAwait(false);
+        _heartbeatLifetime.Dispose();
+    }
+
+    private async Task RunHeartbeatsAsync(TimeSpan interval, CancellationToken ct)
+    {
+        using var timer = new PeriodicTimer(interval, _timeProvider);
+        try
+        {
+            while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false))
+            {
+                try
+                {
+                    var healthy = await _client.HeartbeatAsync(ct).ConfigureAwait(false);
+                    ct.ThrowIfCancellationRequested();
+                    if (healthy) _consecutiveHeartbeatFailures = 0;
+                    else if (++_consecutiveHeartbeatFailures >= MaxConsecutiveHeartbeatFailures)
+                    {
+                        if (await _client.RegisterAsync(ct).ConfigureAwait(false))
+                            _consecutiveHeartbeatFailures = 0;
+                    }
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested) { break; }
+                catch (Exception ex) { _logger.LogWarning(ex, "Heartbeat failed"); }
+            }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
+    }
+
 }
