@@ -80,7 +80,9 @@ Peak accounting includes resizing, active readers, and pending captures.
 
 ### FEAT-02: Share concurrent cache fills
 
-Status: TODO. Priority: P2. Type: feature.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: Release regression build and `--group need-six`; three bounded-fill scenarios pass.
 
 Evidence: [ResponseCacheMiddleware.cs](ResponseCacheMiddleware.cs) forwards every simultaneous cache miss.
 

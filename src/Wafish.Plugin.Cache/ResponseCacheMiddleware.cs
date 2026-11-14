@@ -50,30 +50,21 @@ public sealed class ResponseCacheMiddleware(RequestDelegate next, ResponseCacheS
                 .OrderBy(h => h.Key, StringComparer.OrdinalIgnoreCase)
                 .Select(h => new { Name = h.Key.ToLowerInvariant(), Values = h.Value.ToArray() }).ToArray()
         })));
-        using (var hit = cache.Find(key, requestControl?.MaxAge, requestControl?.MinFresh))
-        {
-            if (hit != null)
-            {
-                var entry = hit.Value;
-                context.Response.StatusCode = entry.Status;
-                foreach (var header in entry.Headers)
-                {
-                    context.Response.Headers[header.Key] = header.Value;
-                }
-
-                context.Response.ContentLength = entry.Length;
-                context.Response.Headers.Age = Math.Max(0, (long)(entry.InitialAge + cache.Age(entry)).TotalSeconds).ToString(CultureInfo.InvariantCulture);
-                if (request.Method != "HEAD")
-                {
-                    await context.Response.Body.WriteAsync(entry.Body.AsMemory(0, entry.Length), context.RequestAborted);
-                }
-
-                return;
-            }
-        }
+        if (await ServeHitAsync()) return;
         if (requestControl?.OnlyIfCached == true) { context.Response.StatusCode = StatusCodes.Status504GatewayTimeout; return; }
         // A HEAD miss cannot populate a GET entry with an empty body.
         if (request.Method == "HEAD") { await next(context); return; }
+        using var fill = config.FillWaitMilliseconds > 0 ? cache.JoinFill(key) : null;
+        if (fill is { IsOwner: false })
+        {
+            try { await fill.Completion.WaitAsync(TimeSpan.FromMilliseconds(Math.Clamp(config.FillWaitMilliseconds, 1, 5000)), cache.Clock, context.RequestAborted); }
+            catch (TimeoutException) { }
+            fill.Dispose();
+            if (!await ServeHitAsync()) await next(context);
+            return;
+        }
+        // A previous owner may have completed between the first lookup and admission.
+        if (fill is not null && await ServeHitAsync()) return;
         using var capture = cache.Reserve(config.MaxBodyBytes);
         if (capture == null) { await next(context); return; }
         var original = context.Response.Body;
@@ -166,6 +157,25 @@ public sealed class ResponseCacheMiddleware(RequestDelegate next, ResponseCacheS
             cache.Store(capture, key, plan.SnapshotVersion, context.Response.StatusCode, savedHeaders, stream.CapturedLength, lifetime, age, routeId, config.Tags);
         }
         finally { context.Response.Body = original; }
+
+        async Task<bool> ServeHitAsync()
+        {
+            using var hit = cache.Find(key, requestControl?.MaxAge, requestControl?.MinFresh);
+            if (hit is null) return false;
+            var entry = hit.Value;
+            context.Response.StatusCode = entry.Status;
+            foreach (var header in entry.Headers)
+            {
+                context.Response.Headers[header.Key] = header.Value;
+            }
+            context.Response.ContentLength = entry.Length;
+            context.Response.Headers.Age = Math.Max(0, (long)(entry.InitialAge + cache.Age(entry)).TotalSeconds).ToString(CultureInfo.InvariantCulture);
+            if (request.Method != "HEAD")
+            {
+                await context.Response.Body.WriteAsync(entry.Body.AsMemory(0, entry.Length), context.RequestAborted);
+            }
+            return true;
+        }
     }
     private static long HeaderSize(KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues> header)
     {

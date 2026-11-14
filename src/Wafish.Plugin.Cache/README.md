@@ -86,3 +86,12 @@ Bindings accept up to eight bounded tags. Authorized operators can purge by rout
 Unrelated cached entries remain available. Purge fences pending fills and preserves active-reader memory accounting.
 
 See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.
+
+## Concurrent fills
+
+Identical eligible GET misses share one cache fill per process.
+`fillWaitMilliseconds` defaults to 1000. Set zero to disable sharing; the maximum is 5000.
+Coordination admits at most 256 owners and 1024 waiters across routes.
+Waiters cancel independently. Timeout or admission overflow forwards the request normally.
+Only a fresh, public cache entry can satisfy a waiter.
+Failed, private, purged, and retired-generation fills cannot supply shared responses.

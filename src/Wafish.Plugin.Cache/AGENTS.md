@@ -55,3 +55,5 @@ Charge both buffers during compaction. Keep evicted entries charged until all re
 
 Preserve the [R19–R28 contracts](../../docs/need-seven-features.md) when changing registration or operational controls.
 Run the `--group need-seven` regression checks for these contracts.
+
+Run `--group need-six` after fill coordination changes. Preserve independent waiter cancellation and fixed admission bounds.

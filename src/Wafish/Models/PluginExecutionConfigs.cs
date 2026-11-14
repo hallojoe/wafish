@@ -100,6 +100,7 @@ public sealed record ProxyLogBindingExecutionConfig
 
 public sealed record ResponseCacheExecutionConfig
 {
+    public int FillWaitMilliseconds { get; init; } = 1000;
     public string[] Tags { get; init; } = [];
     public bool Enabled { get; init; } = true;
     public int TtlSeconds { get; init; } = 60;

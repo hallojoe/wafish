@@ -7,7 +7,7 @@ public sealed class ResponseCacheBudgetOptions
 }
 
 /// <summary>One budget covers stored entries, pending captures, and entries still being served after eviction.</summary>
-public sealed class ResponseCacheStore(IOptions<ResponseCacheBudgetOptions> options, TimeProvider timeProvider)
+public sealed partial class ResponseCacheStore(IOptions<ResponseCacheBudgetOptions> options, TimeProvider timeProvider)
 {
     public ResponseCacheStore(IOptions<ResponseCacheBudgetOptions> options) : this(options, TimeProvider.System) { }
     internal DateTimeOffset UtcNow => timeProvider.GetUtcNow();
