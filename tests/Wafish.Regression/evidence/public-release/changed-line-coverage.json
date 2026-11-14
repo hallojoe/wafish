@@ -1,0 +1,163 @@
+{
+  "base": "8064b39",
+  "covered": 305,
+  "executable": 315,
+  "percent": 96.83,
+  "files": [
+    {
+      "file": "samples/MinimalGateway/Program.cs",
+      "covered": 8,
+      "executable": 8
+    },
+    {
+      "file": "samples/SampleServiceDefaults/Extensions.cs",
+      "covered": 1,
+      "executable": 1
+    },
+    {
+      "file": "src/Wafish.Client/Services/GatewayAutoRegistrationClient.cs",
+      "covered": 6,
+      "executable": 7
+    },
+    {
+      "file": "src/Wafish.Client/Services/GatewayRegistrationHostedService.cs",
+      "covered": 5,
+      "executable": 6
+    },
+    {
+      "file": "src/Wafish.Plugin.Abstractions/IPluginRuntimeResource.cs",
+      "covered": 4,
+      "executable": 4
+    },
+    {
+      "file": "src/Wafish.Plugin.Abstractions/PluginHostCapabilities.cs",
+      "covered": 7,
+      "executable": 7
+    },
+    {
+      "file": "src/Wafish.Plugin.Abstractions/PluginManifest.cs",
+      "covered": 3,
+      "executable": 3
+    },
+    {
+      "file": "src/Wafish.Plugin.Abstractions/PluginStatisticDescriptor.cs",
+      "covered": 13,
+      "executable": 13
+    },
+    {
+      "file": "src/Wafish.Plugin.Metrics/PluginMetricsMiddleware.cs",
+      "covered": 18,
+      "executable": 18
+    },
+    {
+      "file": "src/Wafish.Plugin.ProxyLog/ProxyLogPlugin.cs",
+      "covered": 1,
+      "executable": 1
+    },
+    {
+      "file": "src/Wafish.Plugin.ProxyLog/Services/AsyncLogPersistenceService.cs",
+      "covered": 4,
+      "executable": 4
+    },
+    {
+      "file": "src/Wafish.Plugin.ProxyLog/Services/RouteLogRedactor.cs",
+      "covered": 45,
+      "executable": 45
+    },
+    {
+      "file": "src/Wafish.Plugin.ProxyLog/Services/RouteProxyLogSettingsResolver.cs",
+      "covered": 4,
+      "executable": 4
+    },
+    {
+      "file": "src/Wafish.Plugin.ProxyLog/Services/SqliteProxyLogWriter.cs",
+      "covered": 16,
+      "executable": 17
+    },
+    {
+      "file": "src/Wafish.Plugin.ProxyLog/YarpRequestCaptureMiddleware.cs",
+      "covered": 4,
+      "executable": 4
+    },
+    {
+      "file": "src/Wafish.Plugin.Retry/ClusterRetryBudget.cs",
+      "covered": 34,
+      "executable": 39
+    },
+    {
+      "file": "src/Wafish.Plugin.Retry/Middleware/RequestRetryMiddleware.cs",
+      "covered": 6,
+      "executable": 6
+    },
+    {
+      "file": "src/Wafish.Plugin.Retry/RequestRetryPlugin.cs",
+      "covered": 3,
+      "executable": 3
+    },
+    {
+      "file": "src/Wafish.ReactUi/ReactUiBuildInfo.cs",
+      "covered": 14,
+      "executable": 14
+    },
+    {
+      "file": "src/Wafish.ReactUi/ReactUiExtensions.cs",
+      "covered": 8,
+      "executable": 8
+    },
+    {
+      "file": "src/Wafish.Runtime/GatewayRuntimeExtensions.cs",
+      "covered": 2,
+      "executable": 2
+    },
+    {
+      "file": "src/Wafish.Runtime/Infrastructure/Plugin/PluginManifestPolicy.cs",
+      "covered": 27,
+      "executable": 27
+    },
+    {
+      "file": "src/Wafish.Runtime/Infrastructure/Plugin/PluginRuntimeDomain.cs",
+      "covered": 8,
+      "executable": 8
+    },
+    {
+      "file": "src/Wafish.Runtime/Modules/Dashboard/Services/LogSanitizer.cs",
+      "covered": 3,
+      "executable": 3
+    },
+    {
+      "file": "src/Wafish.Storage.Abstractions/Storage/IQuotaProxyLogRepository.cs",
+      "covered": 2,
+      "executable": 2
+    },
+    {
+      "file": "src/Wafish.Storage.Sqlite/SqliteProxyLogBatchWriter.cs",
+      "covered": 5,
+      "executable": 6
+    },
+    {
+      "file": "src/Wafish.Storage.Sqlite/SqliteProxyLogQuota.cs",
+      "covered": 17,
+      "executable": 18
+    },
+    {
+      "file": "src/Wafish.Storage.Sqlite/SqliteProxyLogRepository.cs",
+      "covered": 3,
+      "executable": 3
+    },
+    {
+      "file": "src/Wafish/Models/PluginExecutionConfigs.cs",
+      "covered": 2,
+      "executable": 2
+    },
+    {
+      "file": "src/Wafish/Services/GatewayRegistryGrpcService.cs",
+      "covered": 6,
+      "executable": 6
+    },
+    {
+      "file": "tests/Wafish.Performance/Backend/Program.cs",
+      "covered": 26,
+      "executable": 26
+    }
+  ]
+}

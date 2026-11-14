@@ -103,7 +103,12 @@ Use the [SonarQube guide](docs/sonarqube.md) for local analysis, .NET coverage, 
 
 ## Quick Start
 
-### Minimal
+### Runtime only
+
+Run `dotnet run --project samples/MinimalGateway` for a gateway with Runtime and SQLite only.
+See the [minimal sample](samples/MinimalGateway/README.md) for backend configuration and independent package references.
+
+### With administration
 
 ```bash
 dotnet add package Wafish

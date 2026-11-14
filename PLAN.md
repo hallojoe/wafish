@@ -45,7 +45,9 @@ The naming correction is complete; see [consumer migration](docs/naming-migratio
 
 ## Remaining work: ranked release scope
 
-Public-release implementation R01–R14 is active. Stop after its acceptance checks and release verification.
+R01–R14 implementation and Linux public-package verification are complete. Implementation is paused at this release boundary.
+R15–R55 remain deferred: 41 tasks outside the agreed release scope.
+See [verification evidence](tests/Wafish.Regression/evidence/public-release/README.md) and [consumer changes](docs/public-release.md).
 R14 is complete: opt-in loopback transport faults with distinct abort and cancellation accounting.
 R11–R13 are complete: metric units, statistic descriptors, and bounded OpenTelemetry instruments.
 R10 is complete: host-local shared cluster retry budgets with bounded identity retention.
@@ -60,7 +62,7 @@ R01 is complete: resource-limit, async-policy, lifetime, and allocation evidence
 The previous grouped priorities 14–24 are superseded by R01–R55 below.
 Historical completion numbers and project task identifiers remain unchanged.
 
-### Recommended finish line
+### Release finish line
 
 Confirmed target: a public package for external adopters.
 Support independent package consumers, existing authentication, SQLite, and the documented plugin extension model.
@@ -68,7 +70,7 @@ Public availability does not require multi-tenancy, multiple registration gatewa
 The default administration model remains trusted administrators until operation permissions are implemented.
 Document that boundary explicitly; do not claim multi-role isolation.
 
-**Recommended release scope: R01–R14. Stop after these acceptance checks and the public-package release verification pass.**
+**Release scope: R01–R14. Implementation stops here after public-package verification.**
 This means thirteen implementation tasks and one review-status reconciliation, not fifty-five required features.
 R15–R35 are follow-up work. R36–R55 are optional extensions and demonstrations.
 Their TODO statuses remain unchanged; postponement does not mean completion.
@@ -85,7 +87,7 @@ No delivery dates are estimated from task counts; task sizes differ substantiall
 
 ### Inventory and scope
 
-- All 52 TODO tasks from the 30 project plans appear exactly once below.
+- All 52 project proposals from the original 30-plan audit appear exactly once below.
 - R01 reconciles the unresolved NET-IMP-03 status in DOTNET_REVIEW.md against completed implementation evidence.
 - R28 and R32 include two distinct solution proposals outside the project PLAN.md files.
 - R19 includes the solution-wide NET-FEAT-02 lease proposal; it is not counted twice.
@@ -94,24 +96,25 @@ No delivery dates are estimated from task counts; task sizes differ substantiall
 
 The source plans retain their acceptance criteria. This queue supersedes their older relative P2/P3 ordering.
 
-### Recommended public release: R01–R14
+### Completed public release scope: R01–R14
 
-| Rank | Need / 10 | Task | Source | Reason and dependencies |
-|---|---|---|---|---|
-| R01 | 9 | Reconcile resource-limit and cancellation evidence | [Solution review NET-IMP-03](DOTNET_REVIEW.md#net-imp-03-define-shared-resource-and-cancellation-limits) | Close the unresolved review status against existing evidence; identify any concrete acceptance failure. |
-| R02 | 9 | Redact sensitive log fields | [Wafish.Plugin.ProxyLog FEAT-01](src/Wafish.Plugin.ProxyLog/PLAN.md#feat-01-add-per-route-structured-redaction-rules) | Prevent configured sensitive fields from reaching storage or realtime subscribers. |
-| R03 | 9 | Bound log storage with quotas | [Wafish.Plugin.ProxyLog FEAT-02](src/Wafish.Plugin.ProxyLog/PLAN.md#feat-02-add-log-storage-quotas) | Keep sustained traffic within a documented disk budget. |
-| R04 | 8 | Provide a minimal gateway profile | [SampleGateway FEAT-02](samples/SampleGateway/PLAN.md#feat-02-provide-a-minimal-runtime-composition-profile) | Provide an independently runnable starting point with only runtime and storage; make optional components explicit. |
-| R05 | 8 | Validate plugin ordering constraints | [Wafish.Plugin.Abstractions FEAT-02](src/Wafish.Plugin.Abstractions/PLAN.md#feat-02-declare-pipeline-ordering-constraints) | Make extension ordering rules explicit before external plugins depend on the public contract. |
-| R06 | 8 | Declare plugin capability requirements | [Wafish.Plugin.Abstractions FEAT-01](src/Wafish.Plugin.Abstractions/PLAN.md#feat-01-declare-host-capability-requirements) | Reject unsupported external plugins before creating their resources; document capability versions. |
-| R07 | 8 | Negotiate registration capabilities | [Wafish.Grpc FEAT-01](src/Wafish.Grpc/PLAN.md#feat-01-add-a-capability-handshake) | Let separately upgraded clients discover registration support while retaining older-client behavior. |
-| R08 | 8 | Expose UI asset version metadata | [Wafish.ReactUi FEAT-02](src/Wafish.ReactUi/PLAN.md#feat-02-expose-embedded-asset-version-metadata) | Expose reproducible asset identity and administration compatibility to diagnose upgrades outside this repository. |
-| R09 | 8 | Spread client startup retries | [Wafish.Client IMP-01](src/Wafish.Client/PLAN.md#imp-01-add-startup-retry-jitter) | Avoid synchronized registration retries during service restarts. |
-| R10 | 8 | Limit retries across each cluster | [Wafish.Plugin.Retry FEAT-01](src/Wafish.Plugin.Retry/PLAN.md#feat-01-add-a-cluster-wide-retry-budget) | Prevent extra attempts from amplifying an upstream outage. |
-| R11 | 8 | Define metric units and reset behavior | [Wafish.Plugin.Metrics IMP-02](src/Wafish.Plugin.Metrics/PLAN.md#imp-02-define-metric-units-and-reset-semantics) | Establish meaningful measurements before extending their export. |
-| R12 | 8 | Describe plugin statistic units | [Wafish.Plugin.Abstractions IMP-03](src/Wafish.Plugin.Abstractions/PLAN.md#imp-03-define-statistic-names-and-units) | Define names, units, and reset descriptors before external consumers depend on resource statistics. |
-| R13 | 8 | Export plugin metrics through OpenTelemetry | [Wafish.Plugin.Metrics FEAT-01](src/Wafish.Plugin.Metrics/PLAN.md#feat-01-export-plugin-measurements-through-opentelemetry) | Make existing request and cluster measurements usable by standard collectors. After R11. |
-| R14 | 8 | Reproduce stalled and truncated responses | [Backend FEAT-02](tests/Wafish.Performance/Backend/PLAN.md#feat-02-add-deterministic-transport-faults) | Verify transport failure handling with deterministic faults. |
+| Rank | Need / 10 | Task | Source | Reason and dependencies | Status |
+|---|---|---|---|---|---|
+| R01 | 9 | Reconcile resource-limit and cancellation evidence | [Solution review NET-IMP-03](DOTNET_REVIEW.md#net-imp-03-define-shared-resource-and-cancellation-limits) | Close the unresolved review status against existing evidence; identify any concrete acceptance failure. | DONE |
+| R02 | 9 | Redact sensitive log fields | [Wafish.Plugin.ProxyLog FEAT-01](src/Wafish.Plugin.ProxyLog/PLAN.md#feat-01-add-per-route-structured-redaction-rules) | Prevent configured sensitive fields from reaching storage or realtime subscribers. | DONE |
+| R03 | 9 | Bound log storage with quotas | [Wafish.Plugin.ProxyLog FEAT-02](src/Wafish.Plugin.ProxyLog/PLAN.md#feat-02-add-log-storage-quotas) | Keep sustained traffic within a documented disk budget. | DONE |
+| R04 | 8 | Provide a minimal gateway profile | [SampleGateway FEAT-02](samples/SampleGateway/PLAN.md#feat-02-provide-a-minimal-runtime-composition-profile) | Provide an independently runnable starting point with only runtime and storage; make optional components explicit. | DONE |
+| R05 | 8 | Validate plugin ordering constraints | [Wafish.Plugin.Abstractions FEAT-02](src/Wafish.Plugin.Abstractions/PLAN.md#feat-02-declare-pipeline-ordering-constraints) | Make extension ordering rules explicit before external plugins depend on the public contract. | DONE |
+| R06 | 8 | Declare plugin capability requirements | [Wafish.Plugin.Abstractions FEAT-01](src/Wafish.Plugin.Abstractions/PLAN.md#feat-01-declare-host-capability-requirements) | Reject unsupported external plugins before creating their resources; document capability versions. | DONE |
+| R07 | 8 | Negotiate registration capabilities | [Wafish.Grpc FEAT-01](src/Wafish.Grpc/PLAN.md#feat-01-add-a-capability-handshake) | Let separately upgraded clients discover registration support while retaining older-client behavior. | DONE |
+| R08 | 8 | Expose UI asset version metadata | [Wafish.ReactUi FEAT-02](src/Wafish.ReactUi/PLAN.md#feat-02-expose-embedded-asset-version-metadata) | Expose reproducible asset identity and administration compatibility to diagnose upgrades outside this repository. | DONE |
+| R09 | 8 | Spread client startup retries | [Wafish.Client IMP-01](src/Wafish.Client/PLAN.md#imp-01-add-startup-retry-jitter) | Avoid synchronized registration retries during service restarts. | DONE |
+| R10 | 8 | Limit retries across each cluster | [Wafish.Plugin.Retry FEAT-01](src/Wafish.Plugin.Retry/PLAN.md#feat-01-add-a-cluster-wide-retry-budget) | Prevent extra attempts from amplifying an upstream outage. | DONE |
+| R11 | 8 | Define metric units and reset behavior | [Wafish.Plugin.Metrics IMP-02](src/Wafish.Plugin.Metrics/PLAN.md#imp-02-define-metric-units-and-reset-semantics) | Establish meaningful measurements before extending their export. | DONE |
+| R12 | 8 | Describe plugin statistic units | [Wafish.Plugin.Abstractions IMP-03](src/Wafish.Plugin.Abstractions/PLAN.md#imp-03-define-statistic-names-and-units) | Define names, units, and reset descriptors before external consumers depend on resource statistics. | DONE |
+| R13 | 8 | Export plugin metrics through OpenTelemetry | [Wafish.Plugin.Metrics FEAT-01](src/Wafish.Plugin.Metrics/PLAN.md#feat-01-export-plugin-measurements-through-opentelemetry) | Make existing request and cluster measurements usable by standard collectors. After R11. | DONE |
+| R14 | 8 | Reproduce stalled and truncated responses | [Backend FEAT-02](tests/Wafish.Performance/Backend/PLAN.md#feat-02-add-deterministic-transport-faults) | Verify transport failure handling with deterministic faults. | DONE |
+
 
 ### Follow-up work: R15–R35
 
