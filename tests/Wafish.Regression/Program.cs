@@ -46,6 +46,7 @@ var registry = new RegressionCaseRegistry(report);
 await registry.DefineGroupAsync("need-six", NeedSixCacheChecks.RunAsync);
 await registry.DefineGroupAsync("need-six", NeedSixCircuitChecks.RunAsync);
 await registry.DefineGroupAsync("need-six", NeedSixChangeSetChecks.RunAsync);
+await registry.DefineGroupAsync("need-six", NeedSixFailoverChecks.RunAsync);
 await registry.DefineGroupAsync("need-seven", NeedSevenChecks.RunAsync);
 await registry.DefineGroupAsync("configuration-changes", ConfigurationChangeChecks.RunAsync);
 await registry.DefineGroupAsync("plugin-preview", PluginPreviewChecks.RunAsync);

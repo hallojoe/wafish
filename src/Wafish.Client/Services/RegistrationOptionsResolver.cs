@@ -14,7 +14,7 @@ internal static class RegistrationOptionsResolver
 {
     /// <summary>Determines whether registration is enabled.</summary>
     public static bool IsEnabled(GatewayRegistrationOptions options)
-        => options.Enabled ?? !string.IsNullOrWhiteSpace(options.GatewayUrl);
+        => options.Enabled ?? (options.RegistrationEndpoints.Count > 0 || !string.IsNullOrWhiteSpace(options.GatewayUrl));
 
     /// <summary>Gets the resolved route name.</summary>
     public static string GetRouteName(GatewayRegistrationOptions options)

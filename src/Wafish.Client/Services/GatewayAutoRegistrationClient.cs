@@ -62,7 +62,7 @@ public partial class GatewayAutoRegistrationClient
         ct.ThrowIfCancellationRequested();
         try
         {
-            return await _grpcClient.GetCapabilitiesAsync(new CapabilitiesRequest(), BuildGrpcCallOptions(ct)).ConfigureAwait(false);
+            return await GrpcClient.GetCapabilitiesAsync(new CapabilitiesRequest(), BuildGrpcCallOptions(ct)).ConfigureAwait(false);
         }
         catch (RpcException ex) when (ex.StatusCode == StatusCode.Unimplemented)
         {
@@ -90,7 +90,7 @@ public partial class GatewayAutoRegistrationClient
         if (_options.LeaseDurationSeconds != 0 && (_options.LeaseDurationSeconds is < 15 or > 3600 || _options.UseGrpcRegistration != true
             || string.IsNullOrWhiteSpace(_options.InstanceId) || _options.HeartbeatEnabled == false) || _options.DrainSeconds is < 0 or > 300)
             return new(false, RegistrationStatus.ValidationRejected, "Leases require gRPC, InstanceId, heartbeats, and 15–3600 seconds. DrainSeconds must be 0–300.");
-        var gatewayUrl = _options.GatewayUrl;
+        var gatewayUrl = GatewayUrl;
         var routeName = RegistrationOptionsResolver.GetRouteName(_options);
         var clusterName = RegistrationOptionsResolver.GetClusterName(_options);
         var matchPath = RegistrationOptionsResolver.GetMatchPath(_options);
@@ -196,21 +196,21 @@ public partial class GatewayAutoRegistrationClient
     private async Task<RegistrationResult> UnregisterCoreAsync(CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        if (string.IsNullOrWhiteSpace(_options.GatewayUrl)) return new(false, RegistrationStatus.Disabled, "Gateway URL is not configured.");
+        if (string.IsNullOrWhiteSpace(GatewayUrl)) return new(false, RegistrationStatus.Disabled, "Gateway URL is not configured.");
         var routeName = RegistrationOptionsResolver.GetRouteName(_options);
         try
         {
             if (_options.UseGrpcRegistration == true)
             {
-                var response = await _grpcClient.UnregisterServiceAsync(new UnregisterServiceRequest
-                    { ServiceId = routeName, InstanceId = _options.InstanceId ?? "", LeaseToken = _lease is null ? "" : _leaseToken }, BuildGrpcCallOptions(ct)).ConfigureAwait(false);
+                var response = await GrpcClient.UnregisterServiceAsync(new UnregisterServiceRequest
+                    { ServiceId = routeName, InstanceId = _options.InstanceId ?? "", LeaseToken = _options.LeaseDurationSeconds > 0 ? _leaseToken : "" }, BuildGrpcCallOptions(ct)).ConfigureAwait(false);
                 return RegistrationResult.Remote(response.Success, response.Message, response.Status,
                     response.HasPersistedVersion ? response.PersistedVersion : null, response.HasActiveVersion ? response.ActiveVersion : null);
             }
             using var http = _httpClientFactory.CreateClient();
             http.Timeout = TimeSpan.FromSeconds(RegistrationOptionsResolver.GetTimeoutSeconds(_options));
             ApplyAuthHeaders(http);
-            var url = $"{_options.GatewayUrl.TrimEnd('/')}/api/gateway/{Uri.EscapeDataString(routeName)}";
+            var url = $"{GatewayUrl.TrimEnd('/')}/api/gateway/{Uri.EscapeDataString(routeName)}";
             var clientIp = RegistrationOptionsResolver.UseIpIsolation(_options) ? GetLocalIpv4() : null;
             if (!string.IsNullOrWhiteSpace(clientIp)) url += $"?clientIp={Uri.EscapeDataString(clientIp)}";
             using var responseHttp = await http.DeleteAsync(url, ct).ConfigureAwait(false);
@@ -268,9 +268,9 @@ public partial class GatewayAutoRegistrationClient
             }
 
             var callOptions = BuildGrpcCallOptions(ct);
-            var response = await _grpcClient.RegisterServiceAsync(request, callOptions).ConfigureAwait(false);
+            var response = await GrpcClient.RegisterServiceAsync(request, callOptions).ConfigureAwait(false);
             if (response.Success && _options.LeaseDurationSeconds > 0 && response.Lease is null)
-                return new(false, RegistrationStatus.ValidationRejected, "The gateway omitted the negotiated lease.");
+                return new(false, RegistrationStatus.Unknown, "The gateway omitted the negotiated lease; registration ownership is uncertain.");
             if (response.Success) Volatile.Write(ref _lease, response.Lease?.Clone());
             if (response.Success && response.HasActiveVersion)
             {
@@ -497,7 +497,7 @@ public partial class GatewayAutoRegistrationClient
     /// </summary>
     private async Task<bool> HeartbeatCoreAsync(CancellationToken ct = default)
     {
-        var gatewayUrl = _options.GatewayUrl;
+        var gatewayUrl = GatewayUrl;
         var routeName = RegistrationOptionsResolver.GetRouteName(_options);
         var useGrpcRegistration = _options.UseGrpcRegistration == true;
 
@@ -513,11 +513,11 @@ public partial class GatewayAutoRegistrationClient
                 try
                 {
                     var callOptions = BuildGrpcCallOptions(ct);
-                    var grpcResponse = await _grpcClient.HeartbeatAsync(new HeartbeatRequest
+                    var grpcResponse = await GrpcClient.HeartbeatAsync(new HeartbeatRequest
                     {
                         ServiceId = routeName,
                         InstanceId = _options.InstanceId ?? "",
-                        LeaseToken = _lease is null ? "" : _leaseToken
+                        LeaseToken = _options.LeaseDurationSeconds > 0 ? _leaseToken : ""
                     }, callOptions).ConfigureAwait(false);
 
                     if (grpcResponse.Success && _options.LeaseDurationSeconds > 0 && grpcResponse.Lease is null) return false;
@@ -573,7 +573,7 @@ public partial class GatewayAutoRegistrationClient
         try
         {
             var callOptions = BuildGrpcCallOptions(ct);
-            var response = await _grpcClient.GetServicesAsync(new GetServicesRequest
+            var response = await GrpcClient.GetServicesAsync(new GetServicesRequest
             {
                 ActiveOnly = activeOnly
             }, callOptions).ConfigureAwait(false);
@@ -598,7 +598,16 @@ public partial class GatewayAutoRegistrationClient
     /// <summary>Replace owned destinations with explicit revisions and retry guidance.</summary>
     public async Task<RegistrationResult> UpdateDestinationsResultAsync(IReadOnlyList<string> addresses, CancellationToken ct = default)
     {
+        await _registrationOperations.WaitAsync(ct).ConfigureAwait(false);
+        try { return await UpdateDestinationsCoreAsync(addresses, ct).ConfigureAwait(false); }
+        finally { _registrationOperations.Release(); }
+    }
+
+    private async Task<RegistrationResult> UpdateDestinationsCoreAsync(IReadOnlyList<string> addresses, CancellationToken ct)
+    {
         ct.ThrowIfCancellationRequested();
+        if (_options.RegistrationEndpoints.Count > 0 && !_endpointMayOwnRegistration)
+            return new(false, RegistrationStatus.NotFound, "No endpoint owns this registration.");
         if (_options.UseGrpcRegistration != true)
         {
             _logger.LogWarning("UpdateDestinationsAsync is only available in gRPC registration mode");
@@ -614,7 +623,7 @@ public partial class GatewayAutoRegistrationClient
         try
         {
             var request = new UpdateDestinationsRequest { ServiceId = RegistrationOptionsResolver.GetRouteName(_options),
-                InstanceId = _options.InstanceId ?? "", LeaseToken = _lease is null ? "" : _leaseToken, ExpectedVersion = Interlocked.Read(ref _registrationVersion) };
+                InstanceId = _options.InstanceId ?? "", LeaseToken = _options.LeaseDurationSeconds > 0 ? _leaseToken : "", ExpectedVersion = Interlocked.Read(ref _registrationVersion) };
             for (int i = 0; i < addresses.Count; i++)
             {
                 if (string.IsNullOrWhiteSpace(addresses[i]))
@@ -631,7 +640,7 @@ public partial class GatewayAutoRegistrationClient
             }
 
             var callOptions = BuildGrpcCallOptions(ct);
-            var response = await _grpcClient.UpdateDestinationsAsync(request, callOptions).ConfigureAwait(false);
+            var response = await GrpcClient.UpdateDestinationsAsync(request, callOptions).ConfigureAwait(false);
             if (response.Success && response.HasActiveVersion)
             {
                 Interlocked.Exchange(ref _registrationVersion, response.ActiveVersion);

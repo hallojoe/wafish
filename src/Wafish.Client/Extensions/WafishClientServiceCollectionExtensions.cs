@@ -62,6 +62,7 @@ public static class WafishClientServiceCollectionExtensions
         Action<GatewayRegistrationOptions>? configureOptions)
     {
         services.AddHttpClient();
+        Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAddSingleton<IRegistrationEndpointFactory, RegistrationEndpointFactory>(services);
         ConfigureRegistrationOptions(services, configureOptions);
         services.AddSingleton(sp =>
         {
@@ -116,7 +117,8 @@ public static class WafishClientServiceCollectionExtensions
     internal sealed class SkipValidation : IValidateOptions<GatewayRegistrationOptions>
     {
         public ValidateOptionsResult Validate(string? name, GatewayRegistrationOptions options)
-            => !string.IsNullOrWhiteSpace(options.InstanceId) && options.UseGrpcRegistration != true
+            => GatewayAutoRegistrationClient.ValidateEndpoints(options) is { } error ? ValidateOptionsResult.Fail(error)
+                : !string.IsNullOrWhiteSpace(options.InstanceId) && options.UseGrpcRegistration != true
                 ? ValidateOptionsResult.Fail("InstanceId requires gRPC registration.")
                 : ValidateOptionsResult.Success;
     }

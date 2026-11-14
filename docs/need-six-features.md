@@ -41,3 +41,21 @@ HTTP 409 reports a stale expected revision. Re-read configuration and bindings b
 A storage failure rolls back all records. A postcommit activation failure retains stored changes and reports HTTP 500.
 Restart reconciles stored configuration after activation failure. Reusing the receipt never commits a second revision.
 Audit records contain the actor, correlation key, outcome, and revisions. They exclude configuration bodies and secrets.
+
+## Ordered registration endpoints
+
+Configure `Gateway:Registration:RegistrationEndpoints` with up to eight trusted gRPC origins, in priority order.
+Example: `["https://gateway-one.example", "https://gateway-two.example"]`.
+The list replaces single-endpoint selection. It requires gRPC, `InstanceId`, heartbeats, and a 15–3600 second lease.
+An empty list preserves `GatewayUrl` and `GrpcUrl` behavior. Each endpoint receives the configured registration credentials.
+
+The client checks capabilities before registration. Unavailable endpoints are tried in order.
+A successful endpoint remains selected for registration, renewal, destination updates, drain, and unregister.
+The client preserves its instance ID and lease credential. Mutations are serialized.
+TLS uses platform certificate validation.
+
+A lost mutation reply can leave ownership uncertain. The client must confirm unregister before selecting another gateway.
+Cancellation also retains uncertain ownership. Lease expiry alone does not prove that an outstanding renewal cannot commit later.
+If the previous gateway cannot confirm release, failover waits for connectivity to return.
+This favors exclusive ownership over availability during network partitions. There is no automatic failback while ownership remains healthy.
+`RegistrationEndpoint` exposes the selected endpoint. Readiness remains available through `IRegistrationStatusSource`.

@@ -77,3 +77,9 @@ Set `LeaseDurationSeconds` to 15–3,600 for negotiated gRPC leases. Set `DrainS
 `IRegistrationStatusSource` exposes local registration readiness without network calls.
 
 See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.
+
+## Ordered gateway failover
+
+`RegistrationEndpoints` configures up to eight trusted gRPC origins. Instance leases and heartbeats are required.
+The selected gateway owns every mutation until release is confirmed. Network partitions can delay failover.
+See [failover contracts](../../docs/need-six-features.md#ordered-registration-endpoints).

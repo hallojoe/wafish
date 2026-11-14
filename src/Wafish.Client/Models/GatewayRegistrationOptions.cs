@@ -17,6 +17,9 @@ public class GatewayRegistrationOptions
     /// <summary>Gateway URL, e.g. http://192.168.1.100:5000. Required field.</summary>
     public string? GatewayUrl { get; set; }
 
+    /// <summary>Ordered trusted gRPC origins. Requires instance leases. An empty list preserves single-gateway behavior.</summary>
+    public List<string> RegistrationEndpoints { get; set; } = [];
+
     /// <summary>Explicit gRPC endpoint. Takes precedence over GrpcPort and the legacy port+1 fallback.</summary>
     public string? GrpcUrl { get; set; }
 

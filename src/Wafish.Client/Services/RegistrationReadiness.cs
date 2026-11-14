@@ -32,33 +32,58 @@ public partial class GatewayAutoRegistrationClient : IRegistrationStatusSource
 
     public async Task<RegistrationResult> RegisterResultAsync(CancellationToken ct = default)
     {
-        var result = await RegisterCoreAsync(ct).ConfigureAwait(false);
-        ObserveRegistration(result.Success, result.Success ? "Registered" : "RegistrationFailed");
-        return result;
+        await _registrationOperations.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var result = await RegisterOrderedAsync(ct).ConfigureAwait(false);
+            ObserveRegistration(result.Success, result.Success ? "Registered" : "RegistrationFailed");
+            return result;
+        }
+        finally { _registrationOperations.Release(); }
     }
 
     public async Task<RegistrationResult> UnregisterResultAsync(CancellationToken ct = default)
     {
-        Volatile.Write(ref _readiness, _readiness with { Registered = false, Ready = false, Draining = true, Status = "Unregistering" });
-        var result = await UnregisterCoreAsync(ct).ConfigureAwait(false);
-        if (result.Success) { Volatile.Write(ref _lease, null); ObserveRegistration(false, "Unregistered"); }
-        return result;
+        await _registrationOperations.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (_options.RegistrationEndpoints.Count > 0 && !_endpointMayOwnRegistration)
+                return new(false, RegistrationStatus.NotFound, "No endpoint owns this registration.");
+            Volatile.Write(ref _readiness, _readiness with { Registered = false, Ready = false, Draining = true, Status = "Unregistering" });
+            var result = await UnregisterCoreAsync(ct).ConfigureAwait(false);
+            if (result.Success || result.Status == RegistrationStatus.NotFound) ClearEndpointOwnership();
+            return result;
+        }
+        finally { _registrationOperations.Release(); }
     }
 
     public async Task<bool> HeartbeatAsync(CancellationToken ct = default)
     {
-        var success = await HeartbeatCoreAsync(ct).ConfigureAwait(false);
-        ObserveRegistration(success, success ? "Registered" : "HeartbeatFailed");
-        return success;
+        await _registrationOperations.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (_options.RegistrationEndpoints.Count > 0 && !_endpointMayOwnRegistration) return false;
+            var success = await HeartbeatCoreAsync(ct).ConfigureAwait(false);
+            ObserveRegistration(success, success ? "Registered" : "HeartbeatFailed");
+            return success;
+        }
+        finally { _registrationOperations.Release(); }
     }
 
     /// <summary>Stops new routing to this leased instance. Existing forwarded requests may finish.</summary>
     public async Task<bool> DrainAsync(CancellationToken ct = default)
     {
+        await _registrationOperations.WaitAsync(ct).ConfigureAwait(false);
+        try { return await DrainCoreAsync(ct).ConfigureAwait(false); }
+        finally { _registrationOperations.Release(); }
+    }
+
+    private async Task<bool> DrainCoreAsync(CancellationToken ct)
+    {
         if (Volatile.Read(ref _lease) is null) return false;
         try
         {
-            var response = await _grpcClient.HeartbeatAsync(new HeartbeatRequest { ServiceId = RegistrationOptionsResolver.GetRouteName(_options),
+            var response = await GrpcClient.HeartbeatAsync(new HeartbeatRequest { ServiceId = RegistrationOptionsResolver.GetRouteName(_options),
                 InstanceId = _options.InstanceId ?? "", LeaseToken = _leaseToken, Drain = true }, BuildGrpcCallOptions(ct)).ConfigureAwait(false);
             if (response.Success)
             {

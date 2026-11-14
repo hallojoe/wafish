@@ -49,3 +49,5 @@ Record implementation evidence when completing a plan item.
 
 Preserve the [R19–R28 contracts](../../docs/need-seven-features.md) when changing registration or operational controls.
 Run the `--group need-seven` regression checks for these contracts.
+
+Run `--group need-six` for ordered failover. Preserve ownership after lost replies and cancellation until release is confirmed.

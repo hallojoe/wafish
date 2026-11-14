@@ -27,7 +27,10 @@ Acceptance: Shutdown cannot register the instance again after successful unregis
 
 ### FEAT-01: Support ordered gateway failover
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-15.
+
+Verification: Release build and `--group need-six`; ordered selection, ownership uncertainty, cancellation, and identity checks pass.
+See [failover contracts](../../docs/need-six-features.md#ordered-registration-endpoints).
 
 Allow a configured list of registration endpoints with clear ownership rules.
 
