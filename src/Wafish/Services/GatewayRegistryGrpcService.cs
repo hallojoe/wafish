@@ -24,14 +24,11 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
         {
             return await RegisterServiceInternalAsync(request, context);
         }
+        catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested) { throw; }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "gRPC RegisterService unhandled exception for ServiceId={ServiceId}", request.ServiceId);
-            return new RegisterServiceResponse
-            {
-                Success = false,
-                Message = $"Internal server error: {ex.Message}"
-            };
+            _logger.LogError(ex, "gRPC RegisterService unhandled exception for ServiceId={ServiceId}", request?.ServiceId);
+            throw new RpcException(new Status(StatusCode.Internal, "Registration failed. Inspect the gateway before retrying."));
         }
     }
 
@@ -41,7 +38,7 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
         {
             return new RegisterServiceResponse
             {
-                Success = false,
+                Success = false, Status = "ValidationRejected",
                 Message = "At least one valid destination address is required"
             };
         }
@@ -67,8 +64,8 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
             Match = new() { Path = r.MatchPath }
         }).ToList();
         var result = string.IsNullOrWhiteSpace(request.InstanceId)
-            ? await _dynamicConfigService.ImportBatchAsync([cluster], routes, "grpc", "grpc-client")
-            : await _dynamicConfigService.RegisterInstanceAsync(GrpcGatewayRegistryMapper.BuildRouteName(request), request.InstanceId, cluster, routes);
+            ? await _dynamicConfigService.ImportBatchAsync([cluster], routes, "grpc", "grpc-client", null, context.CancellationToken)
+            : await _dynamicConfigService.RegisterInstanceAsync(GrpcGatewayRegistryMapper.BuildRouteName(request), request.InstanceId, cluster, routes, context.CancellationToken);
         var response = new RegisterServiceResponse
         {
             Success = result.Success, Message = result.Message, Status = result.Status.ToString(),
@@ -100,7 +97,7 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
 
             if (!string.IsNullOrWhiteSpace(request.InstanceId))
             {
-                var removal = await _dynamicConfigService.UnregisterInstanceAsync(serviceId, request.InstanceId);
+                var removal = await _dynamicConfigService.UnregisterInstanceAsync(serviceId, request.InstanceId, context.CancellationToken);
                 var instanceResponse = new UnregisterServiceResponse
                 { Success = removal.Success, Message = removal.Message, Status = removal.Status.ToString() };
                 if (removal.PersistedVersion is { } instanceStored)
@@ -124,12 +121,12 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
             {
                 return new UnregisterServiceResponse
                 {
-                    Success = false,
+                    Success = false, Status = "NotFound",
                     Message = $"Route '{serviceId}' not found"
                 };
             }
 
-            var result = await _dynamicConfigService.BatchDeleteRoutesAsync(routeNames, removeOrphanedClusters: true, "grpc-client");
+            var result = await _dynamicConfigService.BatchDeleteRoutesAsync(routeNames, removeOrphanedClusters: true, "grpc-client", context.CancellationToken);
             var response = new UnregisterServiceResponse
             { Success = result.Success, Message = result.Message, Status = result.Status.ToString() };
             if (result.PersistedVersion is { } stored)
@@ -144,10 +141,11 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
 
             return response;
         }
+        catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested) { throw; }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "gRPC UnregisterService exception for ServiceId={ServiceId}", request.ServiceId);
-            return new UnregisterServiceResponse { Success = false, Message = $"Error: {ex.Message}" };
+            _logger.LogError(ex, "gRPC UnregisterService exception for ServiceId={ServiceId}", request?.ServiceId);
+            throw new RpcException(new Status(StatusCode.Internal, "Unregistration failed. Inspect the gateway before retrying."));
         }
     }
 
@@ -170,10 +168,11 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
                 NextHeartbeat = DateTimeOffset.UtcNow.AddSeconds(30).ToUnixTimeSeconds()
             });
         }
+        catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested) { throw; }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "gRPC Heartbeat exception for ServiceId={ServiceId}", request.ServiceId);
-            return Task.FromResult(new HeartbeatResponse { Success = false, Message = $"Error: {ex.Message}" });
+            _logger.LogError(ex, "gRPC Heartbeat exception for ServiceId={ServiceId}", request?.ServiceId);
+            throw new RpcException(new Status(StatusCode.Internal, "Heartbeat failed."));
         }
     }
 
@@ -325,10 +324,11 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
             response.Services.AddRange(services);
             return Task.FromResult(response);
         }
+        catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested) { throw; }
         catch (Exception ex)
         {
             _logger.LogError(ex, "gRPC GetServices exception");
-            return Task.FromResult(new GetServicesResponse());
+            throw new RpcException(new Status(StatusCode.Internal, "Service lookup failed."));
         }
     }
 
@@ -340,7 +340,7 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
             {
                 return new UpdateDestinationsResponse
                 {
-                    Success = false,
+                    Success = false, Status = "ValidationRejected",
                     Message = "At least one destination is required"
                 };
             }
@@ -351,9 +351,12 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
                     Message = "InstanceId and ExpectedVersion are required. Use administration for full-cluster replacement." };
             }
 
+            if (request.Destinations.Any(d => string.IsNullOrWhiteSpace(d.DestinationId) || string.IsNullOrWhiteSpace(d.Address)) ||
+                request.Destinations.Select(d => d.DestinationId).Distinct(StringComparer.Ordinal).Count() != request.Destinations.Count)
+                return new UpdateDestinationsResponse { Success = false, Status = "ValidationRejected", Message = "Destination IDs must be unique and addresses must be present." };
             var destinations = request.Destinations.ToDictionary(d => d.DestinationId, d => d.Address);
             var result = await _dynamicConfigService.UpdateInstanceDestinationsAsync(
-                request.ServiceId, request.InstanceId, destinations, request.ExpectedVersion);
+                request.ServiceId, request.InstanceId, destinations, request.ExpectedVersion, context.CancellationToken);
 
             var response = new UpdateDestinationsResponse
             { Success = result.Success, Message = result.Message, Status = result.Status.ToString() };
@@ -369,10 +372,11 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
 
             return response;
         }
+        catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested) { throw; }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "gRPC UpdateDestinations exception for ServiceId={ServiceId}", request.ServiceId);
-            return new UpdateDestinationsResponse { Success = false, Message = $"Error: {ex.Message}" };
+            _logger.LogError(ex, "gRPC UpdateDestinations exception for ServiceId={ServiceId}", request?.ServiceId);
+            throw new RpcException(new Status(StatusCode.Internal, "Destination update failed. Inspect the gateway before retrying."));
         }
     }
 }

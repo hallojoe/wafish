@@ -11,6 +11,7 @@ namespace Wafish.Dashboard.Modules.Dashboard.Controllers;
 /// </summary>
 [Route("api/plugins")]
 [ApiController]
+[Wafish.Filters.ConfigurationMutation]
 public class PluginsController : ControllerBase
 {
     private static readonly SemaphoreSlim TransitionGate = new(1, 1);
@@ -191,7 +192,7 @@ public class PluginsController : ControllerBase
             var validation = _manager.ValidatePluginStateChange(pluginId, request.Enabled);
             if (!validation.Succeeded)
             {
-                return Conflict(new { code = 409, message = validation.Error });
+                return MutationFailure(validation);
             }
 
             var targetEnabled = _manager.GetAllManifests()
@@ -204,20 +205,20 @@ public class PluginsController : ControllerBase
             var health = await preparation.CheckHealthAsync(cancellationToken);
             if (health.Status == PluginHealthStatus.Unhealthy)
             {
-                return Conflict(new { code = 409, message = health.Message });
+                return Conflict(new { code = 409, outcome = "ValidationRejected", message = health.Message });
             }
 
             var persisted = _manager.SetPluginEnabled(pluginId, request.Enabled);
             if (!persisted.Succeeded)
             {
-                return Conflict(new { code = 409, message = persisted.Error });
+                return MutationFailure(persisted);
             }
 
             try
             {
                 await preparation.CommitAsync(cancellationToken);
                 await _resourceLifecycle.ReconcileAsync(cancellationToken);
-                _dynamicConfig.RefreshConfig();
+                await _dynamicConfig.RefreshConfigAsync(CancellationToken.None);
             }
             catch
             {
@@ -249,7 +250,7 @@ public class PluginsController : ControllerBase
             var health = await preparation.CheckHealthAsync(cancellationToken);
             if (health.Status == PluginHealthStatus.Unhealthy)
             {
-                return Conflict(new { code = 409, message = health.Message });
+                return Conflict(new { code = 409, outcome = "ValidationRejected", message = health.Message });
             }
 
             foreach (var manifest in manifests.Where(item => !previous[item.Id]))
@@ -261,14 +262,14 @@ public class PluginsController : ControllerBase
                 }
 
                 RestorePluginStates(previous);
-                return Conflict(new { code = 409, message = result.Error });
+                return MutationFailure(result);
             }
 
             try
             {
                 await preparation.CommitAsync(cancellationToken);
                 await _resourceLifecycle.ReconcileAsync(cancellationToken);
-                _dynamicConfig.RefreshConfig();
+                await _dynamicConfig.RefreshConfigAsync(CancellationToken.None);
             }
             catch
             {
@@ -288,7 +289,7 @@ public class PluginsController : ControllerBase
 
     /// <summary>Install an external plugin from a source directory.</summary>
     [HttpPost("install")]
-    public IActionResult InstallPlugin([FromBody] InstallPluginRequest request)
+    public async Task<IActionResult> InstallPlugin([FromBody] InstallPluginRequest request)
     {
         if (string.IsNullOrWhiteSpace(request?.SourceDirectory))
         {
@@ -298,30 +299,30 @@ public class PluginsController : ControllerBase
         var result = _manager.InstallPlugin(request.SourceDirectory);
         if (!result.Succeeded)
         {
-            return Conflict(new { code = 409, message = result.Error });
+            return MutationFailure(result);
         }
 
-        _dynamicConfig.RefreshConfig();
+        await _dynamicConfig.RefreshConfigAsync(CancellationToken.None);
         return Ok(new { code = 200, message = "Plugin installed successfully" });
     }
 
     /// <summary>Uninstall an external plugin (must be disabled and unbound).</summary>
     [HttpDelete("{pluginId}")]
-    public IActionResult UninstallPlugin(string pluginId)
+    public async Task<IActionResult> UninstallPlugin(string pluginId)
     {
         var result = _manager.UninstallPlugin(pluginId);
         if (!result.Succeeded)
         {
-            return Conflict(new { code = 409, message = result.Error });
+            return MutationFailure(result);
         }
 
-        _dynamicConfig.RefreshConfig();
+        await _dynamicConfig.RefreshConfigAsync(CancellationToken.None);
         return Ok(new { code = 200, message = "Plugin uninstalled successfully" });
     }
 
     /// <summary>Upgrade an external plugin from a source directory.</summary>
     [HttpPost("{pluginId}/upgrade")]
-    public IActionResult UpgradePlugin(string pluginId, [FromBody] InstallPluginRequest request)
+    public async Task<IActionResult> UpgradePlugin(string pluginId, [FromBody] InstallPluginRequest request)
     {
         if (string.IsNullOrWhiteSpace(request?.SourceDirectory))
         {
@@ -331,11 +332,17 @@ public class PluginsController : ControllerBase
         var result = _manager.UpgradePlugin(pluginId, request.SourceDirectory);
         if (!result.Succeeded)
         {
-            return Conflict(new { code = 409, message = result.Error });
+            return MutationFailure(result);
         }
 
-        _dynamicConfig.RefreshConfig();
+        await _dynamicConfig.RefreshConfigAsync(CancellationToken.None);
         return Ok(new { code = 200, message = "Plugin upgraded successfully" });
+    }
+
+    private ObjectResult MutationFailure(PluginStateChangeResult result)
+    {
+        var code = result.Status == PluginStateChangeStatus.StorageFailed ? 503 : 409;
+        return StatusCode(code, new { code, outcome = result.Status.ToString(), message = result.Error });
     }
 
     private string[] GetEnabledPluginIds() => _manager.GetAllManifests()

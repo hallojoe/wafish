@@ -38,13 +38,13 @@ internal abstract class ConfigManagerBase
     protected async Task<RouteOperationResult> ExecuteWithLockAsync(
         string operationName,
         string? targetName,
-        Func<GatewayDynamicConfig, Task<RouteOperationResult>> action)
+        Func<GatewayDynamicConfig, Task<RouteOperationResult>> action, CancellationToken cancellationToken = default)
     {
-        await Semaphore.WaitAsync();
+        await Semaphore.WaitAsync(cancellationToken);
         try
         {
             State.EnsureInitialized();
-            using var mutation = new ConfigurationMutation(State, Persister, Publisher, (DeferredConfigChangeAuditLog)AuditLog);
+            using var mutation = new ConfigurationMutation(State, Persister, Publisher, (DeferredConfigChangeAuditLog)AuditLog, cancellationToken);
             var result = await action(mutation.Config);
             return result.Success
                 ? await mutation.CommitAsync(operationName, targetName, result.Message)

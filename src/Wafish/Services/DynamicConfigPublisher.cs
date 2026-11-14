@@ -37,14 +37,16 @@ internal class DynamicConfigPublisher : IDynamicConfigPublisher
     }
 
     /// <inheritdoc />
-    public void Publish(GatewayDynamicConfig config, long version) => Prepare(config, version)();
+    public async Task PublishAsync(GatewayDynamicConfig config, long version, CancellationToken cancellationToken = default)
+        => (await PrepareAsync(config, version, cancellationToken).ConfigureAwait(false))();
 
-    public Action Prepare(GatewayDynamicConfig config, long version)
+    public async Task<Action> PrepareAsync(GatewayDynamicConfig config, long version, CancellationToken cancellationToken = default)
     {
-        PreValidate(config.Routes, config.Clusters);
+        await PreValidateAsync(config.Routes, config.Clusters, cancellationToken).ConfigureAwait(false);
         var publishRoutes = new List<DynamicRouteConfig>(config.Routes.Count);
         foreach (var dynRoute in config.Routes)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             // Skip disabled routes: keep data in working set but don't forward traffic
             if (!dynRoute.Enabled)
             {
@@ -68,6 +70,7 @@ internal class DynamicConfigPublisher : IDynamicConfigPublisher
         var publishClusters = new List<DynamicClusterConfig>(config.Clusters.Count);
         foreach (var dynCluster in config.Clusters)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var nativeConfig = SanitizeCluster(dynCluster.Config);
 
             // Merge the domain-model health check into the native config when the native side
@@ -95,14 +98,12 @@ internal class DynamicConfigPublisher : IDynamicConfigPublisher
         }
 
         var snapshotVersion = Math.Max(_snapshotPublisher.Current.Version + 1, Math.Max(1, version));
-        var gatewaySnapshot = _snapshotCompiler.CompileAsync(
+        var gatewaySnapshot = await _snapshotCompiler.CompileAsync(
                 publishRoutes.Select(x => x.Config).ToList(),
                 publishClusters.Select(x => x.Config).ToList(),
-                snapshotVersion,
+                snapshotVersion, cancellationToken,
                 candidateRouteIds: config.Routes.ToDictionary(r => r.RouteUid, r => r.Config.RouteId),
-                candidateClusterIds: config.Clusters.ToDictionary(c => c.ClusterUid, c => c.Config.ClusterId))
-            .GetAwaiter()
-            .GetResult();
+                candidateClusterIds: config.Clusters.ToDictionary(c => c.ClusterUid, c => c.Config.ClusterId)).ConfigureAwait(false);
 
 
         gatewaySnapshot = GatewayPublicationCoordinator.For(_snapshotPublisher).PreserveDiscovery(gatewaySnapshot);
@@ -127,7 +128,8 @@ internal class DynamicConfigPublisher : IDynamicConfigPublisher
         }
 
         // Reject invalid compiled configuration before storage or publication.
-        PreValidate(publishRoutes, publishClusters);
+        await PreValidateAsync(publishRoutes, publishClusters, cancellationToken).ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
 
         return () =>
         {
@@ -143,19 +145,21 @@ internal class DynamicConfigPublisher : IDynamicConfigPublisher
     /// <c>Source="prevalidate"</c>. This replaces (not appends to) the previous prevalidate
     /// set so the store reflects the latest cycle only.
     /// </summary>
-    private void PreValidate(
+    private async Task PreValidateAsync(
         IReadOnlyList<DynamicRouteConfig> routes,
-        IReadOnlyList<DynamicClusterConfig> clusters)
+        IReadOnlyList<DynamicClusterConfig> clusters, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var errors = new List<ProxyConfigError>();
         var now = DateTime.UtcNow;
 
         foreach (var route in routes)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             IList<Exception> routeErrors;
             try
             {
-                routeErrors = _configValidator.ValidateRouteAsync(route.Config).AsTask().GetAwaiter().GetResult();
+                routeErrors = await _configValidator.ValidateRouteAsync(route.Config).AsTask().WaitAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -182,10 +186,11 @@ internal class DynamicConfigPublisher : IDynamicConfigPublisher
 
         foreach (var cluster in clusters)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             IList<Exception> clusterErrors;
             try
             {
-                clusterErrors = _configValidator.ValidateClusterAsync(cluster.Config).AsTask().GetAwaiter().GetResult();
+                clusterErrors = await _configValidator.ValidateClusterAsync(cluster.Config).AsTask().WaitAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -214,6 +219,7 @@ internal class DynamicConfigPublisher : IDynamicConfigPublisher
         var clusterIds = clusters.Select(c => c.Config.ClusterId).ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var route in routes)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (!string.IsNullOrEmpty(route.Config.ClusterId) && !clusterIds.Contains(route.Config.ClusterId))
             {
                 throw new ArgumentException($"Route '{route.Config.RouteId}' references missing cluster '{route.Config.ClusterId}'.");

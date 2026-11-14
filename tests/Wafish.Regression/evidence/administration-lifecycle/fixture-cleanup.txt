@@ -1,0 +1,15 @@
+npm notice run @wafish/react-ui@0.0.0 test:fixtures
+npm notice run node --test scripts/run-browser-tests.test.mjs
+✔ fixture parent cleans state after exit 0 (67.430465ms)
+✔ fixture parent cleans state after exit 1 (29.67835ms)
+✔ fixture parent cleans state after exit 23 (19.364407ms)
+✔ fixture parent cleans state after child launch failure (5.398078ms)
+✔ fixture parent cleans state after an interrupted host (21.557086ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 225.390193

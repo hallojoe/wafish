@@ -30,6 +30,36 @@ Directory.CreateDirectory(path);
 var key = Guid.NewGuid().ToString("N");
 try
 {
+    await AuthorizationMatrixChecks.RunAsync(Check, configure => StartHost("ApiKey", enableAi: true, configure: configure, registration: false), key);
+    if (args is ["--authorization-matrix"])
+    {
+        foreach (var failure in failures) Console.Error.WriteLine(failure);
+        return failures.Count == 0 ? 0 : 1;
+    }
+    await MutationContractChecks.RunAsync(Check, () => StartHost("ApiKey", enableAi: true), key);
+    await ShutdownChecks.RunAsync(Check, configure => StartHost("ApiKey", configure: configure), key);
+    await ResourceCleanupChecks.RunAsync(Check, configure => StartHost("ApiKey", configure: configure), key);
+    await Check("Storage API: oversized filters return 400 and extreme pages do not wrap", async () =>
+    {
+        await using var host = await StartHost("ApiKey");
+        using var client = Client(host);
+        client.DefaultRequestHeaders.Add("X-Api-Key", key);
+        using var rejected = await client.GetAsync("/ops/api/logs/history?keyword=" + new string('x', 1025));
+        Require(rejected.StatusCode == HttpStatusCode.BadRequest, "Oversized filter did not return 400.");
+        using var history = await ReadJson(await client.GetAsync("/ops/api/logs/history?page=2147483647&pageSize=2147483647"));
+        var data = history.RootElement.GetProperty("data");
+        Require(data.GetProperty("pageSize").GetInt32() == 200 && data.GetProperty("items").GetArrayLength() == 0, "Historical page bounds changed.");
+        host.Services.GetRequiredService<ProxyLogStore>().Add(new() { Timestamp = DateTime.UtcNow, EventType = LogEventType.ProxyResponse });
+        using var recent = await ReadJson(await client.GetAsync("/ops/api/logs?page=2147483647&pageSize=2147483647"));
+        Require(recent.RootElement.GetProperty("data").GetProperty("entries").GetArrayLength() == 0, "Recent page offset overflowed.");
+        await host.StopAsync();
+    });
+    await SessionLifecycleChecks.RunAsync(Check, (mode, configure) => StartHost(mode, configure: configure), key);
+    if (args is ["--sessions"])
+    {
+        foreach (var failure in failures) Console.Error.WriteLine(failure);
+        return failures.Count == 0 ? 0 : 1;
+    }
     await AuthenticationSecurityChecks.RunAsync(Check, (mode, certificate) => StartHost(mode, certificate: certificate), key);
     await Check("Administration deploys without the dashboard assembly or Razor assets", () =>
     {
@@ -164,7 +194,7 @@ try
                 });
                 Require(response.StatusCode == HttpStatusCode.ServiceUnavailable, "Failed write returned success.");
                 using var error = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-                Require(error.RootElement.GetProperty("status").GetString() == "StorageFailed", "Storage outcome is missing.");
+                Require(error.RootElement.GetProperty("outcome").GetString() == "StorageFailed", "Storage outcome is missing.");
                 Require(error.RootElement.GetProperty("activeVersion").GetInt64() == error.RootElement.GetProperty("persistedVersion").GetInt64(), "Failed write changed a revision.");
                 var active = host.Services.GetRequiredService<Wafish.Services.IDynamicYarpConfigService>().GetDynamicConfig()!;
                 Require(active.Clusters.All(c => c.Config.ClusterId != "implicit-cluster") && active.Routes.All(r => r.Config.RouteId != "failed-route"), "Implicit cluster escaped the transaction.");
@@ -401,7 +431,7 @@ async Task Check(string name, Func<Task> action)
     catch (Exception ex) { report.Record(name, started, ex); failures.Add(name + ": " + ex.Message); }
 }
 
-async Task<WebApplication> StartHost(string mode, bool enableAi = false, string environment = "Development", bool allowAnonymousLoopback = false, bool enableMcp = false, int mcpPort = 8090, System.Security.Cryptography.X509Certificates.X509Certificate2? certificate = null)
+async Task<WebApplication> StartHost(string mode, bool enableAi = false, string environment = "Development", bool allowAnonymousLoopback = false, bool enableMcp = false, int mcpPort = 8090, System.Security.Cryptography.X509Certificates.X509Certificate2? certificate = null, Action<IServiceCollection>? configure = null, bool registration = true)
 {
     var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = environment, ContentRootPath = path });
     builder.Logging.ClearProviders();
@@ -436,7 +466,7 @@ async Task<WebApplication> StartHost(string mode, bool enableAi = false, string 
         ["AI:McpServer:Port"] = mcpPort.ToString()
     });
     builder.Services.AddWafishStorage();
-    builder.Services.AddWafishRuntime(enableRegistration: true);
+    builder.Services.AddWafishRuntime(enableRegistration: registration);
     builder.Services.AddWafishAdministration();
     builder.Services.AddWafishAdministration();
     if (enableAi)
@@ -449,6 +479,7 @@ async Task<WebApplication> StartHost(string mode, bool enableAi = false, string 
         builder.Services.AddWafishMcp();
     }
 
+    configure?.Invoke(builder.Services);
     var app = builder.Build();
     app.MapWafishAdministration();
     try { await app.StartAsync(); return app; }

@@ -10,7 +10,7 @@ namespace Wafish.Controllers;
 /// <summary>Gateway config API: dynamic route registration, deletion, and query.</summary>
 [Route("api/gateway")]
 [ApiController]
-[Produces("application/json")]
+[Wafish.Filters.ConfigurationMutation]
 public class GatewayConfigController : ControllerBase
 {
     private readonly DynamicYarpConfigService _dynamicConfig;
@@ -35,7 +35,7 @@ public class GatewayConfigController : ControllerBase
             return BadRequest(new { code = 400, message = string.Join("; ", errors) });
         }
 
-        var result = await _dynamicConfig.TryAddRoute(request);
+        var result = await _dynamicConfig.TryAddRoute(request, "dynamic", null, HttpContext?.RequestAborted ?? default);
         return result.ToHttpResult();
     }
 
@@ -47,7 +47,7 @@ public class GatewayConfigController : ControllerBase
     [ProducesResponseType(typeof(object), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteRoute(string routeName, [FromQuery] string? clientIp = null)
     {
-        var result = await _dynamicConfig.TryRemoveRoute(routeName, clientIp);
+        var result = await _dynamicConfig.TryRemoveRoute(routeName, clientIp, true, HttpContext?.RequestAborted ?? default);
         return result.ToHttpResult();
     }
 
@@ -102,9 +102,10 @@ public class GatewayConfigController : ControllerBase
                     : null
             };
 
-            var result = await _dynamicConfig.TryAddRoute(request);
+            var result = await _dynamicConfig.TryAddRoute(request, "dynamic", null, HttpContext?.RequestAborted ?? default);
             return result.ToHttpResult();
         }
+        catch (OperationCanceledException) when (HttpContext?.RequestAborted.IsCancellationRequested == true) { throw; }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to update route {RouteId}: invalid JSON", routeId);
@@ -118,7 +119,7 @@ public class GatewayConfigController : ControllerBase
     [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> DeleteCluster(string clusterId)
     {
-        var result = await _dynamicConfig.TryRemoveCluster(clusterId);
+        var result = await _dynamicConfig.TryRemoveCluster(clusterId, HttpContext?.RequestAborted ?? default);
         return result.ToHttpResult();
     }
 
@@ -134,7 +135,7 @@ public class GatewayConfigController : ControllerBase
             return BadRequest(new { code = 400, message = string.Join("; ", errors) });
         }
 
-        var result = await _dynamicConfig.TryAddCluster(request);
+        var result = await _dynamicConfig.TryAddCluster(request, "dynamic", null, HttpContext?.RequestAborted ?? default);
         return result.ToHttpResult();
     }
 
@@ -202,7 +203,8 @@ public class GatewayConfigController : ControllerBase
                     allSucceeded = false;
                 }
             }
-            catch (Exception ex)
+            catch (OperationCanceledException) when (HttpContext?.RequestAborted.IsCancellationRequested == true) { throw; }
+        catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Batch register failed for route {RouteName}", routeReq.RouteName);
                 results.Add(new { route = routeReq.RouteName, success = false, message = SafeErrorMessages.Create(HttpContext, "Batch route registration failed", ex) });
@@ -238,7 +240,8 @@ public class GatewayConfigController : ControllerBase
                     allSucceeded = false;
                 }
             }
-            catch (Exception ex)
+            catch (OperationCanceledException) when (HttpContext?.RequestAborted.IsCancellationRequested == true) { throw; }
+        catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Batch delete failed for route {RouteName}", routeName);
                 results.Add(new { route = routeName, success = false, message = ex.Message });

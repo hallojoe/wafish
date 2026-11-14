@@ -16,12 +16,17 @@ public static class DashboardJwtHelper
     /// <param name="username">Subject claim.</param>
     /// <param name="secret">HMAC-SHA256 signing key.</param>
     public static string GenerateToken(string username, string secret)
+        => GenerateToken(username, secret, TimeProvider.System);
+
+    /// <summary>Generate an eight-hour token using the supplied clock.</summary>
+    public static string GenerateToken(string username, string secret, TimeProvider clock)
     {
         var header = JsonSerializer.Serialize(new { alg = "HS256", typ = "JWT" }, _jsonOptions);
-        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var now = clock.GetUtcNow().ToUnixTimeSeconds();
         var payload = JsonSerializer.Serialize(new
         {
             sub = username,
+            jti = Guid.NewGuid().ToString("N"),
             iss = "Wafish.Dashboard",
             iat = now,
             exp = now + 28800  // 8 hours
@@ -43,6 +48,10 @@ public static class DashboardJwtHelper
     /// <param name="secret">HMAC-SHA256 signing key.</param>
     /// <returns>(valid, username) tuple.</returns>
     public static (bool Valid, string? Username) ValidateToken(string token, string secret)
+        => ValidateToken(token, secret, TimeProvider.System);
+
+    /// <summary>Validate a token using the supplied clock.</summary>
+    public static (bool Valid, string? Username) ValidateToken(string token, string secret, TimeProvider clock)
     {
         if (string.IsNullOrWhiteSpace(secret) || string.IsNullOrWhiteSpace(token) || token.Length > 16384)
         {
@@ -89,7 +98,7 @@ public static class DashboardJwtHelper
             var root = doc.RootElement;
 
             if (!root.TryGetProperty("exp", out var expiry) || !expiry.TryGetInt64(out var exp) ||
-                exp <= DateTimeOffset.UtcNow.ToUnixTimeSeconds())
+                exp <= clock.GetUtcNow().ToUnixTimeSeconds())
             {
                 return (false, null);
             }

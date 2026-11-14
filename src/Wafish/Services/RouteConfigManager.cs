@@ -48,11 +48,12 @@ internal class RouteConfigManager : ConfigManagerBase, IRouteConfigManager
     /// <param name="request">The request.</param>
     /// <param name="source">The source.</param>
     /// <param name="createdBy">The created by.</param>
+    /// <param name="cancellationToken">Cancels work before persistence starts.</param>
     /// <returns>A Task.</returns>
     public async Task<RouteOperationResult> TryAddRoute(
     RegisterRouteRequest request,
     string source = "dynamic",
-    string? createdBy = null)
+    string? createdBy = null, CancellationToken cancellationToken = default)
     {
         return await ExecuteWithLockAsync("AddOrUpdateRoute", request.RouteName, config =>
         {
@@ -142,7 +143,7 @@ internal class RouteConfigManager : ConfigManagerBase, IRouteConfigManager
                 new { clusterId = request.ClusterName, matchPath = request.MatchPath },
                 new { clusterId = request.ClusterName, matchPath = request.MatchPath, destination = request.DestinationAddress });
             return Task.FromResult(new RouteOperationResult(true, $"Route '{request.RouteName}' {action}"));
-        });
+        }, cancellationToken);
     }
 
     #endregion
@@ -155,11 +156,12 @@ internal class RouteConfigManager : ConfigManagerBase, IRouteConfigManager
     /// <param name="route">The route.</param>
     /// <param name="source">The source.</param>
     /// <param name="createdBy">The created by.</param>
+    /// <param name="cancellationToken">Cancels work before persistence starts.</param>
     /// <returns>A Task.</returns>
     public async Task<RouteOperationResult> TryAddRouteConfig(
     RouteConfig route,
     string source = "dashboard",
-    string? createdBy = "dashboard-user")
+    string? createdBy = "dashboard-user", CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(route.RouteId))
         {
@@ -220,7 +222,7 @@ internal class RouteConfigManager : ConfigManagerBase, IRouteConfigManager
                 new { clusterId = route.ClusterId },
                 new { clusterId = route.ClusterId, matchPath = route.Match?.Path, order = route.Order });
             return Task.FromResult(new RouteOperationResult(true, $"Route '{route.RouteId}' {action}"));
-        });
+        }, cancellationToken);
     }
 
 
@@ -234,8 +236,9 @@ internal class RouteConfigManager : ConfigManagerBase, IRouteConfigManager
     /// <param name="routeName">The route name.</param>
     /// <param name="clientIp">The client ip.</param>
     /// <param name="removeOrphanedCluster">If true, remove orphaned cluster.</param>
+    /// <param name="cancellationToken">Cancels work before persistence starts.</param>
     /// <returns>A Task.</returns>
-    public async Task<RouteOperationResult> TryRemoveRoute(string routeName, string? clientIp = null, bool removeOrphanedCluster = true)
+    public async Task<RouteOperationResult> TryRemoveRoute(string routeName, string? clientIp = null, bool removeOrphanedCluster = true, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(routeName))
         {
@@ -319,7 +322,7 @@ internal class RouteConfigManager : ConfigManagerBase, IRouteConfigManager
             AuditLog.RecordSuccess("RemoveRoute", routeName, null, null,
                 new { clusterId, matchPath = dynRoute.Config.Match?.Path });
             return Task.FromResult(new RouteOperationResult(true, $"Route '{routeName}' deleted"));
-        });
+        }, cancellationToken);
     }
 
 
@@ -332,7 +335,7 @@ internal class RouteConfigManager : ConfigManagerBase, IRouteConfigManager
     /// but excluded from the YARP snapshot so no traffic is forwarded.
     /// </summary>
     public async Task<RouteOperationResult> TrySetRouteEnabled(
-        string routeId, bool enabled, string? createdBy = "dashboard-user")
+        string routeId, bool enabled, string? createdBy = "dashboard-user", CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(routeId))
         {
@@ -361,7 +364,7 @@ internal class RouteConfigManager : ConfigManagerBase, IRouteConfigManager
                 new { enabled, matchPath = dynRoute.Config.Match?.Path });
             return Task.FromResult(new RouteOperationResult(true,
                 $"Route '{routeId}' {(enabled ? "enabled" : "disabled")}"));
-        });
+        }, cancellationToken);
     }
 
     #endregion
@@ -376,13 +379,14 @@ internal class RouteConfigManager : ConfigManagerBase, IRouteConfigManager
     /// <param name="request">The request.</param>
     /// <param name="source">The source.</param>
     /// <param name="createdBy">The created by.</param>
+    /// <param name="cancellationToken">Cancels work before persistence starts.</param>
     /// <returns>A Task.</returns>
     public async Task<RouteOperationResult> TryRenameRoute(
         string oldRouteId,
         string newRouteId,
         RegisterRouteRequest request,
         string source = "dashboard",
-        string? createdBy = "dashboard-user")
+        string? createdBy = "dashboard-user", CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(oldRouteId) || string.IsNullOrWhiteSpace(newRouteId))
         {
@@ -452,7 +456,7 @@ internal class RouteConfigManager : ConfigManagerBase, IRouteConfigManager
                 new { newRouteId, clusterId = request.ClusterName, matchPath = request.MatchPath, action = "rename" });
             return Task.FromResult(new RouteOperationResult(true,
                 $"Route '{oldRouteId}' renamed to '{newRouteId}'"));
-        });
+        }, cancellationToken);
     }
 
     #endregion

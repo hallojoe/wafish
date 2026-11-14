@@ -1,0 +1,4 @@
+9/10 src/Wafish.Plugin.RateLimit/Middleware/RateLimitMiddleware.cs missing [263]
+62/69 src/Wafish.Runtime/Infrastructure/Plugin/ExternalGatewayPluginHost.cs missing [269, 271, 272, 433, 434, 522, 538]
+16/18 src/Wafish.Runtime/Infrastructure/Plugin/PluginRuntimeDomain.cs missing [117, 119]
+TOTAL 87/97 = 89.69%

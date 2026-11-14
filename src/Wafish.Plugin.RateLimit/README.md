@@ -53,3 +53,10 @@ The injected `TimeProvider` controls middleware cleanup scheduling and store idl
 Built-in .NET limiter replenishment retains its own system timers. Redis quota timing remains server-owned.
 
 Verification: [review evidence](../../tests/Wafish.Regression/evidence/review141516/README.md).
+
+## Algorithm boundaries
+
+Retry-After uses limiter metadata when available. Token-bucket fallback uses its replenishment period.
+Concurrency limits return a one-second retry hint. A hint does not reserve a permit.
+Cancellation releases queued ownership. Active partitions survive cleanup and remain owned until their requests finish.
+See [algorithm and partition stress checks](../../tests/Wafish.Regression/evidence/lifetime-stress/README.md).

@@ -13,6 +13,12 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Configuration mutation errors use numeric HTTP status and named outcome fields. Preserve endpoint data and nullable revisions.
+
+- Use the same controller scope for route prefixes and authorization. Revoke sessions only after successful security-state writes.
+
+- Keep namespace-based authorization checks aligned with controller namespaces. Await configuration refresh after plugin mutations.
+
 - Keep notification event accounting complete across overflow, cancellation, delivery, suppression, and shutdown.
 
 - Preserve authentication on protected administration routes and hubs. Keep login endpoints available for authentication.

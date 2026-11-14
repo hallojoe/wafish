@@ -8,7 +8,10 @@ The [root execution plan](../../PLAN.md) remains the historical and cross-projec
 
 ### IMP-01: Expand algorithm boundary tests
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [lifetime stress evidence](../../tests/Wafish.Regression/evidence/lifetime-stress/README.md).
+Release build, 187 main cases, and 34 administration cases pass. Changed source coverage is 89.69%.
 
 Cover replenishment, queue cancellation, and concurrent acquisition for each algorithm.
 
@@ -16,7 +19,10 @@ Acceptance: Permit counts and rejection headers remain correct at boundaries.
 
 ### IMP-02: Test partition cleanup under churn
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [lifetime stress evidence](../../tests/Wafish.Regression/evidence/lifetime-stress/README.md).
+Release build, 187 main cases, and 34 administration cases pass. Changed source coverage is 89.69%.
 
 Generate many client partitions and exercise stale limiter cleanup.
 

@@ -15,7 +15,11 @@ public static class ConfigurationUpdateHttp
     public static ObjectResult ToHttpResult(this RouteOperationResult result, object? data = null)
     {
         var code = StatusCode(result.Status);
-        return new ObjectResult(new { code, result.Success, result.Message, result.Status,
-            result.PersistedVersion, result.ActiveVersion, data }) { StatusCode = code };
+        return new ObjectResult(new ConfigurationMutationResponse
+        {
+            Status = code, Outcome = result.Status.ToString(), Success = result.Success, Message = result.Message,
+            PersistedVersion = result.PersistedVersion, ActiveVersion = result.ActiveVersion,
+            Data = new() { ["data"] = System.Text.Json.JsonSerializer.SerializeToElement(data) }
+        }) { StatusCode = code, ContentTypes = { result.Success ? "application/json" : "application/problem+json" } };
     }
 }

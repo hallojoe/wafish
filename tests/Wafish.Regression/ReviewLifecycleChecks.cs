@@ -168,17 +168,17 @@ internal static class ReviewLifecycleChecks
             var grpc = new GatewayRegistryGrpcService(host.Config, NullLogger<GatewayRegistryGrpcService>.Instance);
             var request = new UpdateDestinationsRequest { ServiceId = "service", InstanceId = "one", ExpectedVersion = host.Config.GetDynamicConfig()!.Version };
             request.Destinations.Add(new Destination { DestinationId = "new", Address = "http://localhost:9002/" });
-            var response = await grpc.UpdateDestinations(request, null!);
+            var response = await grpc.UpdateDestinations(request, new SecurityChecks.CallContext(new()));
             Check(response.Success, response.Message);
             var destinations = host.Config.GetClusters().Single().Destinations!;
             Check(destinations.ContainsKey("two:destination") && destinations.ContainsKey("one:new") && destinations.Count == 2, "Peer destination changed.");
-            Check((await grpc.UpdateDestinations(request, null!)).Status == "VersionConflict", "Stale request accepted.");
+            Check((await grpc.UpdateDestinations(request, new SecurityChecks.CallContext(new()))).Status == "VersionConflict", "Stale request accepted.");
             request.ExpectedVersion = response.ActiveVersion; request.InstanceId = "absent";
-            Check(!(await grpc.UpdateDestinations(request, null!)).Success, "Unknown instance accepted.");
+            Check(!(await grpc.UpdateDestinations(request, new SecurityChecks.CallContext(new()))).Success, "Unknown instance accepted.");
             request.InstanceId = "";
-            Check(!(await grpc.UpdateDestinations(request, null!)).Success, "Legacy request replaced the cluster.");
+            Check(!(await grpc.UpdateDestinations(request, new SecurityChecks.CallContext(new()))).Success, "Legacy request replaced the cluster.");
             request.InstanceId = "one"; request.Destinations.Clear();
-            Check(!(await grpc.UpdateDestinations(request, null!)).Success, "Empty update accepted.");
+            Check(!(await grpc.UpdateDestinations(request, new SecurityChecks.CallContext(new()))).Success, "Empty update accepted.");
             Check(!(await host.Config.UpdateInstanceDestinationsAsync("service", "one", new Dictionary<string, string> { ["bad"] = "file:///tmp" }, response.ActiveVersion)).Success, "Invalid destination accepted.");
         });
 

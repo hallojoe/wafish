@@ -75,3 +75,26 @@ The default is `TimeProvider.System`. Circuit recovery and idle cleanup use mono
 Plugin fallback providers expose service availability from both scopes for constructor selection.
 
 Verification: [review evidence](../../tests/Wafish.Regression/evidence/review141516/README.md).
+
+## Lifetime stress verification
+
+Direct domain disposal drains active requests. Copied leases share one release operation.
+External resources stop before their provider dependencies are disposed.
+External hosts support asynchronous disposal and deactivation. Repeated cleanup shares its completion task.
+Stop and disposal failures remain observable after cleanup; retained reports do not retain plugin-defined exception instances.
+See [bounds, verification, and compatibility](../../tests/Wafish.Regression/evidence/lifetime-stress/README.md).
+
+## Resource contract enforcement
+
+The resource coordinator stops reconciliation before shutdown cleanup.
+Partial startup failure or cancellation triggers an uncancelled cleanup attempt.
+Faulted health queries expose a safe summary. Detailed exceptions remain in host logs.
+Audit disposal joins its initial read and every accepted background write before storage resources are released.
+Audit persistence remains best effort: write failures are logged; disposal joins attempts without guaranteeing successful storage.
+See [lifecycle requirements](../../docs/plugin-lifecycle-contract.md).
+
+Audit history loads without blocking synchronous callers.
+The initial load merges stored history with accepted writes under the same lock.
+The merge preserves chronological eviction order and the 200-entry capacity.
+Readers cannot observe a partially rebuilt queue.
+Named fault schedules verify writes accepted during the blocked load.

@@ -219,7 +219,7 @@ internal static class SecurityChecks
         }
     }
 
-    private sealed class CallContext : ServerCallContext
+    internal sealed class CallContext : ServerCallContext
     {
         private readonly Metadata headers;
         public CallContext(Metadata headers)

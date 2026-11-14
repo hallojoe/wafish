@@ -295,24 +295,10 @@ public class AIFunctionService
         });
     }
 
-    private async Task<string> GetPluginsAsync()
+    private Task<string> GetPluginsAsync()
     {
-        try
-        {
-            var pluginManagerType = Type.GetType("Wafish.Plugin.GatewayPluginManager, Wafish.Plugin");
-            var pluginManager = pluginManagerType is not null ? _services.GetService(pluginManagerType) : null;
-            if (pluginManager != null)
-            {
-                var prop = pluginManager.GetType().GetProperty("Manifests") ?? pluginManager.GetType().GetProperty("Plugins");
-                if (prop != null)
-                {
-                    var plugins = prop.GetValue(pluginManager);
-                    return JsonSerializer.Serialize(plugins);
-                }
-            }
-        }
-        catch { }
-        return "{\"note\":\"Plugin list available on the Plugin Resources page.\"}";
+        var manager = _services.GetRequiredService<Wafish.Plugins.IGatewayPluginManager>();
+        return Task.FromResult(JsonSerializer.Serialize(manager.GetAllManifests()));
     }
 
     /// <summary>Build the system prompt with current gateway context.</summary>

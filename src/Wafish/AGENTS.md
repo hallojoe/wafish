@@ -13,6 +13,10 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Keep precommit work cancellable. Retain commit ownership from persistence through activation and audit.
+
+- Keep discovery stale-policy execution fields aligned with the plugin schema and documented defaults.
+
 - Determine orphan clusters from the final route set after every requested batch deletion.
 
 - Keep this project independent of Runtime, Administration, and ReactUi.

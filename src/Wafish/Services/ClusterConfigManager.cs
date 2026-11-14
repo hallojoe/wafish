@@ -33,7 +33,7 @@ internal class ClusterConfigManager : ConfigManagerBase, IClusterConfigManager
     #region TryAddClusterConfig (full native config)
 
     public async Task<RouteOperationResult> TryAddClusterConfig(
-        ClusterConfig cluster, string source, string? createdBy)
+        ClusterConfig cluster, string source, string? createdBy, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(cluster.ClusterId))
         {
@@ -76,7 +76,7 @@ internal class ClusterConfigManager : ConfigManagerBase, IClusterConfigManager
             AuditLog.RecordSuccess(isNew ? "AddCluster" : "UpdateCluster", cluster.ClusterId, createdBy, null, null,
                 new { destinations = cluster.Destinations.ToDictionary(d => d.Key, d => d.Value.Address), loadBalancingPolicy = cluster.LoadBalancingPolicy });
             return new RouteOperationResult(true, $"Cluster '{cluster.ClusterId}' {action}");
-        });
+        }, cancellationToken);
     }
 
     #endregion
@@ -85,7 +85,7 @@ internal class ClusterConfigManager : ConfigManagerBase, IClusterConfigManager
 
     public async Task<RouteOperationResult> TryAddCluster(string clusterId, Dictionary<string, string> destinations,
         string? loadBalancingPolicy, Models.HealthCheckConfig? healthCheck, string source, string? createdBy,
-        Dictionary<string, string>? metadata = null)
+        Dictionary<string, string>? metadata = null, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(clusterId))
         {
@@ -138,7 +138,7 @@ internal class ClusterConfigManager : ConfigManagerBase, IClusterConfigManager
             AuditLog.RecordSuccess(isNew ? "AddCluster" : "UpdateCluster", clusterId, createdBy, null, null,
                 new { destinations, loadBalancingPolicy });
             return new RouteOperationResult(true, $"Cluster '{clusterId}' {action}");
-        });
+        }, cancellationToken);
     }
 
     #endregion
@@ -146,7 +146,7 @@ internal class ClusterConfigManager : ConfigManagerBase, IClusterConfigManager
     #region TryAddCluster (CreateClusterRequest)
 
     public async Task<RouteOperationResult> TryAddCluster(CreateClusterRequest request,
-        string source, string? createdBy)
+        string source, string? createdBy, CancellationToken cancellationToken = default)
     {
         return await ExecuteWithLockAsync(
             "CreateCluster", request.ClusterId, async config =>
@@ -187,14 +187,14 @@ internal class ClusterConfigManager : ConfigManagerBase, IClusterConfigManager
             AuditLog.RecordSuccess("AddCluster", request.ClusterId, createdBy, null, null,
                 new { destinations = request.Destinations, loadBalancingPolicy = request.LoadBalancingPolicy });
             return new RouteOperationResult(true, $"Cluster '{request.ClusterId}' created successfully");
-        });
+        }, cancellationToken);
     }
 
     #endregion
 
     #region TryUpdateCluster
 
-    public async Task<RouteOperationResult> TryUpdateCluster(string clusterId, UpdateClusterRequest request)
+    public async Task<RouteOperationResult> TryUpdateCluster(string clusterId, UpdateClusterRequest request, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(clusterId))
         { AuditLog.RecordFailure("UpdateCluster", clusterId ?? "", "Cluster ID cannot be empty"); return new RouteOperationResult(false, "Cluster ID cannot be empty"); }
@@ -243,14 +243,14 @@ internal class ClusterConfigManager : ConfigManagerBase, IClusterConfigManager
             AuditLog.RecordSuccess("UpdateCluster", clusterId, null, null, null,
                 new { destinations = request.Destinations, loadBalancingPolicy = request.LoadBalancingPolicy });
             return new RouteOperationResult(true, $"Cluster '{clusterId}' updated successfully");
-        });
+        }, cancellationToken);
     }
 
     #endregion
 
     #region TryRemoveCluster
 
-    public async Task<RouteOperationResult> TryRemoveCluster(string clusterId)
+    public async Task<RouteOperationResult> TryRemoveCluster(string clusterId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(clusterId))
         {
@@ -278,7 +278,7 @@ internal class ClusterConfigManager : ConfigManagerBase, IClusterConfigManager
             }
             AuditLog.RecordSuccess("RemoveCluster", clusterId, null, null, new { destinations = cluster.Config.Destinations?.Count });
             return new RouteOperationResult(true, $"Cluster '{clusterId}' deleted");
-        });
+        }, cancellationToken);
     }
 
     #endregion
@@ -287,7 +287,7 @@ internal class ClusterConfigManager : ConfigManagerBase, IClusterConfigManager
 
     public async Task<RouteOperationResult> TryRenameCluster(string oldClusterId, string newClusterId,
         Dictionary<string, string> destinations, string? loadBalancingPolicy,
-        Models.HealthCheckConfig? healthCheck, string source, string? createdBy)
+        Models.HealthCheckConfig? healthCheck, string source, string? createdBy, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(oldClusterId) || string.IsNullOrWhiteSpace(newClusterId))
         { AuditLog.RecordFailure("UpdateCluster", oldClusterId ?? "", "Cluster ID cannot be empty"); return new RouteOperationResult(false, "Cluster ID cannot be empty"); }
@@ -346,7 +346,7 @@ internal class ClusterConfigManager : ConfigManagerBase, IClusterConfigManager
                 new { oldClusterId, routesUpdated = updatedRouteCount, action = "rename" },
                 new { newClusterId, destinations, loadBalancingPolicy, action = "rename" });
             return new RouteOperationResult(true, $"Cluster '{oldClusterId}' renamed to '{newClusterId}', {updatedRouteCount} route(s) updated");
-        });
+        }, cancellationToken);
     }
 
     #endregion

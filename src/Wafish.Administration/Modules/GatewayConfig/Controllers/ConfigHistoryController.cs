@@ -66,6 +66,7 @@ public class ConfigHistoryController : ConfigControllerBase
     /// Import full configuration from standard YARP format.
     /// </summary>
     [HttpPost("import")]
+    [Wafish.Filters.ConfigurationMutation]
     public async Task<IActionResult> ImportConfig([FromBody] JsonElement config)
     {
         try
@@ -219,6 +220,7 @@ public class ConfigHistoryController : ConfigControllerBase
     /// Rollback configuration to a specific version.
     /// </summary>
     [HttpPost("rollback/{versionId}")]
+    [Wafish.Filters.ConfigurationMutation]
     public async Task<IActionResult> RollbackConfig(string versionId)
     {
         try

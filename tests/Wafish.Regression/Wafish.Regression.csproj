@@ -8,10 +8,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../Shared/RegressionReport.cs" Link="RegressionReport.cs" />
+    <Compile Include="../Shared/RegressionCaseRegistry.cs" Link="RegressionCaseRegistry.cs" />
     <None Update="contracts/*.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="fixtures/storage/*.db" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="../Fixtures/Wafish.CollectiblePlugin/Wafish.CollectiblePlugin.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../../tools/Wafish.Storage.Tool/Wafish.Storage.Tool.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../../src/Wafish.ReactUi/Wafish.ReactUi.csproj" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />

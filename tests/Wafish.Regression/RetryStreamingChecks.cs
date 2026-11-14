@@ -260,7 +260,7 @@ internal static class RetryStreamingChecks
         BaseAddress = new Uri(app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses.Single()),
         Timeout = TimeSpan.FromSeconds(10)
     };
-    private sealed class Fixture
+    internal sealed class Fixture
     {
         private readonly RouteConfig _route = new() { RouteId = "review", ClusterId = "cluster", Match = new() { Path = "/{**path}" } };
         private readonly GatewayPluginExecutionPlanProvider _plans;
@@ -270,7 +270,7 @@ internal static class RetryStreamingChecks
         public IDestinationCandidateCoordinator Coordinator = new Candidates(true);
         public ResponseCacheStore Store { get; } = new(Options.Create(new ResponseCacheBudgetOptions { SizeLimitBytes = 512 * 1024 }));
         public RequestDelegate Pipeline { get; }
-        public Fixture(bool cache = false, bool compress = false)
+        public Fixture(bool cache = false, bool compress = false, RequestRetryBindingOptions? policy = null)
         {
             _cache = cache; _compress = compress;
             var publisher = new GatewaySnapshotPublisher();
@@ -278,7 +278,7 @@ internal static class RetryStreamingChecks
             {
                 Version = 1, Routes = [_route],
                 RoutePlugins = ImmutableDictionary<string, ImmutableArray<PluginBindingSnapshot>>.Empty.Add("review",
-                    [new("retry", "request-retry", PluginBindingScope.Route, "review", "{\"enabled\":true,\"maxRetries\":1,\"timeoutSeconds\":1,\"backoffBaseMs\":0,\"backoffJitterMs\":0,\"retryNonIdempotent\":true}", 1, 1, 400),
+                    [new("retry", "request-retry", PluginBindingScope.Route, "review", JsonSerializer.Serialize(policy ?? new RequestRetryBindingOptions { MaxRetries = 1, TimeoutSeconds = 1, BackoffBaseMs = 0, BackoffJitterMs = 0, RetryNonIdempotent = true }, new JsonSerializerOptions(JsonSerializerDefaults.Web)), 1, 1, 400),
                      new("cache", "response-cache", PluginBindingScope.Route, "review", "{\"enabled\":true,\"maxBodyBytes\":65536}", 1, 1, 300),
                      new("compression", "compression", PluginBindingScope.Route, "review", "{\"enabled\":true,\"minResponseSize\":1024}", 1, 1, 350)])
             });

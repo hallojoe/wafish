@@ -123,8 +123,7 @@ internal static class GrpcGatewayRegistryMapper
             trimmed = "/" + trimmed;
         }
 
-        if (!trimmed.Contains("{**catch-all}", StringComparison.OrdinalIgnoreCase) &&
-            !trimmed.Contains("{**catchAll}", StringComparison.OrdinalIgnoreCase))
+        if (!trimmed.Contains("{*", StringComparison.Ordinal))
         {
             trimmed = trimmed.TrimEnd('/') + "/{**catch-all}";
         }

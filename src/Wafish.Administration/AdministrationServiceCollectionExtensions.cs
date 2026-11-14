@@ -226,6 +226,7 @@ public static class AdministrationServiceCollectionExtensions
 
         services.TryAddSingleton<AuthenticationAttemptLimiter>();
         services.AddSingleton<IDashboardAuthorizationService, DashboardAuthorizationService>();
+        services.AddSingleton<DashboardSessionStore>();
         services.TryAddSingleton<JwtSecretProvider>();
         services.AddSingleton<IConfigureOptions<MvcOptions>, DashboardMvcOptionsSetup>();
 

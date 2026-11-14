@@ -1,14 +1,16 @@
 # Wafish: proposed work
 
 Reviewed against source on 2026-11-14.
-All items below are TODO proposals, not implemented capabilities or scheduled commitments.
+Statuses distinguish completed work from remaining proposals.
 The [root execution plan](../../PLAN.md) remains the historical and cross-project record.
 
 ## Improvements not yet implemented
 
 ### IMP-01: Expand concurrent mutation tests
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [async configuration and retry evidence](../../tests/Wafish.Regression/evidence/async-retry/README.md).
 
 Use generated operation sequences to test rename, deletion, registration, and stale versions.
 
@@ -16,7 +18,9 @@ Acceptance: Repeated sequences preserve identities and reject stale updates with
 
 ### IMP-02: Add cancellation checkpoints to configuration loading
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [async configuration and retry evidence](../../tests/Wafish.Regression/evidence/async-retry/README.md).
 
 Review startup and mutation paths that currently use default cancellation tokens.
 
@@ -57,7 +61,9 @@ A cluster with a remaining route stays unchanged.
 
 ### IMP-04: Make configuration preparation asynchronous
 
-Status: TODO. Priority: P2. Type: improvement.
+Status: DONE. Owner: Codex. Completed: 2026-11-14. Priority: P2. Type: improvement.
+
+Verification: [async configuration and retry evidence](../../tests/Wafish.Regression/evidence/async-retry/README.md).
 
 Evidence: [DynamicConfigPublisher.cs](Services/DynamicConfigPublisher.cs), `Prepare` and `PreValidate`.
 

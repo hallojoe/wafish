@@ -8,7 +8,10 @@ The [root execution plan](../../PLAN.md) remains the historical and cross-projec
 
 ### IMP-01: Stress domain replacement
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [lifetime stress evidence](../../tests/Wafish.Regression/evidence/lifetime-stress/README.md).
+Release build, 187 main cases, and 34 administration cases pass. Changed source coverage is 89.69%.
 
 Exercise repeated plugin replacement while requests and resource shutdown overlap.
 
@@ -16,7 +19,10 @@ Acceptance: No request uses a disposed provider or loses its active domain.
 
 ### IMP-02: Verify collectible plugin cleanup
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [lifetime stress evidence](../../tests/Wafish.Regression/evidence/lifetime-stress/README.md).
+Release build, 187 main cases, and 34 administration cases pass. Changed source coverage is 89.69%.
 
 Add repeatable checks for assembly contexts and resources retained after unloading.
 
@@ -43,10 +49,10 @@ Status: DONE. Priority: P1. Type: lifecycle risk.
 
 Partial implementation: bounded admission and owned AcquireAsync leases are complete under review items 1–3.
 Factories run once under the admission lock. Cleanup preserves queued and active leases.
-Legacy GetOrAdd callers still receive raw entries; broader lifecycle acceptance remains pending.
+The unowned GetOrAdd API was removed. Priority 6 verifies 5,998 partition allocations across three cleanup cycles.
 See [verification evidence](../../tests/Wafish.Regression/evidence/review123/README.md).
 
-Evidence: [InMemoryRateLimiterStore.cs](Infrastructure/State/InMemoryRateLimiterStore.cs), `GetOrAdd` and `Cleanup`.
+Evidence: [InMemoryRateLimiterStore.cs](Infrastructure/State/InMemoryRateLimiterStore.cs), `AcquireAsync` and `Cleanup`.
 
 The dictionary factory creates disposable limiters.
 Competing factories can create unused instances.

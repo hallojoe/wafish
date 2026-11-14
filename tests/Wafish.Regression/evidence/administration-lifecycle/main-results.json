@@ -1,0 +1,1014 @@
+{
+  "schemaVersion": 1,
+  "suite": "main",
+  "cases": [
+    {
+      "name": "Configuration async: delayed validation yields and cancellation preserves both revisions",
+      "durationMs": 8279.324,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Configuration async: lock wait and startup loading observe caller cancellation",
+      "durationMs": 630.049,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Configuration async: cancellation after storage starts still completes activation and audit",
+      "durationMs": 582.9994,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Configuration async: generated concurrent rename, delete, registration, and stale updates preserve identities",
+      "durationMs": 809.2154,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Retry timing: upstream delta, date, invalid, and capped delays use controlled time",
+      "durationMs": 201.3897,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Retry timing: total deadline interrupts upstream Retry-After without another attempt",
+      "durationMs": 16.4223,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Retry timing: attempt limits and exponential jitter are deterministic",
+      "durationMs": 13.5212,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Retry timing: caller cancellation stays distinct from deadline expiry",
+      "durationMs": 14.1141,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Retry timing: body preparation and non-idempotent forwarding obey the total deadline",
+      "durationMs": 22.6613,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Redis recovery: failed construction backs off and concurrent callers share replacement",
+      "durationMs": 1950.0027,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Redis recovery: asynchronous failures use capped backoff and shutdown owns pending construction",
+      "durationMs": 16.6859,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Redis recovery: interrupted commands do not replace or replay a healthy connection",
+      "durationMs": 11.2075,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Redis recovery: connection admission remains bounded and missing settings fail closed",
+      "durationMs": 12.1886,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Discovery provider: HttpJson handles healthy, empty, unhealthy, malformed, timeout, and cancellation responses",
+      "durationMs": 112.9006,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Discovery provider: Consul handles healthy, empty, unhealthy, malformed, timeout, and cancellation responses",
+      "durationMs": 29.5121,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Discovery provider: Nacos handles healthy, empty, unhealthy, malformed, timeout, and cancellation responses",
+      "durationMs": 2.5336,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Discovery provider: Eureka handles healthy, empty, unhealthy, malformed, timeout, and cancellation responses",
+      "durationMs": 11.6793,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Discovery provider: Kubernetes handles healthy, empty, unhealthy, malformed, timeout, and cancellation responses",
+      "durationMs": 8.764,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Discovery provider: static endpoints normalize, reject invalid addresses, and observe cancellation",
+      "durationMs": 14.629,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Discovery health: one failing binding stays degraded through successful peers and skipped cycles",
+      "durationMs": 141.1683,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Discovery freshness: RetainLastKnown enforces elapsed expiry and recovers without changing binding revisions",
+      "durationMs": 37.0572,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Discovery freshness: RejectNewTraffic enforces elapsed expiry and recovers without changing binding revisions",
+      "durationMs": 4.817,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Discovery freshness: startup failure expires configured destinations and default policy retains them",
+      "durationMs": 15.6034,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Discovery scheduling: backoff is bounded, jitter varies retries, and successful empty responses reset failures",
+      "durationMs": 17.1106,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Discovery publication: changed and disabled bindings reject pending results and clear old health",
+      "durationMs": 15.772,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Discovery health: recovery clears only its binding and removal clears only retired health",
+      "durationMs": 12.9413,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Discovery traffic: stale expiry returns 503 and a recovered provider restores forwarding",
+      "durationMs": 1087.1786,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Discovery configuration: stale policy schema matches execution defaults and rejects unsupported settings",
+      "durationMs": 41.6202,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Clock: circuit recovery and cleanup follow monotonic controlled time",
+      "durationMs": 34.325,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Clock: cache freshness ignores wall-clock jumps and expires without waiting",
+      "durationMs": 121.3701,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Clock: registration retry, heartbeat, and shutdown use controlled time",
+      "durationMs": 257.9328,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Clock: log batch flush and cleanup use the injected timer",
+      "durationMs": 347.9733,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Metrics: configuration churn retires identities without losing active updates",
+      "durationMs": 1090.7924,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Storage: UTC migration preserves offset precision, invalid values, and ordering",
+      "durationMs": 186.7695,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Deployment: shell and embedded assets include PathBase and custom prefixes",
+      "durationMs": 1388.526,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Lifecycle: shutdown joins every retired domain and rejects late work",
+      "durationMs": 96.8931,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Lifecycle: disposal failures remain observable through repeated shutdown",
+      "durationMs": 35.4261,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Lifecycle: failed preparation releases its constructed provider",
+      "durationMs": 22.1561,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Policy: deprecated cache switches preserve host, query, header, and credential isolation",
+      "durationMs": 69.2436,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Policy: compression thresholds are independent of write chunk size",
+      "durationMs": 149.6239,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Accounting: log batches preserve ownership during cancel-write",
+      "durationMs": 231.8288,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Accounting: log batches preserve ownership during cancel-fill",
+      "durationMs": 180.6788,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Accounting: log batches preserve ownership during exhaust-retries",
+      "durationMs": 433.261,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Accounting: log batches preserve ownership during transient",
+      "durationMs": 272.6542,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Accounting: log batches preserve ownership during cancel-drain",
+      "durationMs": 195.9696,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Accounting: concurrent notification overflow and shutdown count every event",
+      "durationMs": 17.795,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Accounting: notifications classify delivery, suppression, failure, and cancellation",
+      "durationMs": 3479.629,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Correctness: recent errors and indexed ranges compare UTC instants",
+      "durationMs": 147.306,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Correctness: batch route deletion removes only final orphans and rolls back on failure",
+      "durationMs": 165.3698,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Metrics: successful, throwing, and cancelled attempts finalize once",
+      "durationMs": 955.4576,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Review: atomic binding batches reject stale revisions and roll back partial writes",
+      "durationMs": 172.0465,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Review: administration batches are atomic and publish through the shared gate",
+      "durationMs": 753.3543,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Review: route storage, binding changes, and discovery share publication ownership",
+      "durationMs": 252.395,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Review: binding storage failure preserves active state; activation failure uses revision-safe compensation",
+      "durationMs": 368.2471,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Review: instance updates preserve peers, reject stale revisions, and reject legacy requests",
+      "durationMs": 155.159,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Review: live forwarding reserves only the selected probe and records each retry once",
+      "durationMs": 630.7003,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Review: circuit probe cancellation releases ownership and stale completions cannot close a newer circuit",
+      "durationMs": 19.672,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Review: invalid CIDR rules fail validation and matching",
+      "durationMs": 29.9051,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Review: compressed log capture stops at the decoded byte limit",
+      "durationMs": 229.7255,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Review: local limiter admission is bounded under concurrent key churn",
+      "durationMs": 122.6745,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Review: WAF compiler rejects malformed stored address rules before activation",
+      "durationMs": 8.875,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Review: limiter leases survive cleanup, queue cancellation, and shutdown",
+      "durationMs": 45.4849,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Review: route partitions stay stable and overflow returns 429",
+      "durationMs": 180.9914,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Review: log decoding handles boundaries, cancellation, corruption, and stream ownership",
+      "durationMs": 11.2423,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Retry: complete replay, unknown and oversized bodies, truncation, and cancellation",
+      "durationMs": 135.6742,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Retry: request preparation observes its deadline and restores ownership",
+      "durationMs": 1009.6062,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Retry: uncommitted exceptions retry; exhausted destinations return 503",
+      "durationMs": 11.9842,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Kestrel: retry headers, overflow, flush, start, completion, and body writer",
+      "durationMs": 2130.9835,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Kestrel: cache, compression, and retry stream before completion and release cancelled captures",
+      "durationMs": 503.5522,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Kestrel and YARP: failed upstream response retries with an intact request body",
+      "durationMs": 584.5303,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Kestrel: combined retry, compression, and cache preserve successful bytes",
+      "durationMs": 124.7129,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Configuration: cluster APIs preserve updates, reject duplicates, and record enabled logs",
+      "durationMs": 184.5892,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Registration: concurrent instances share routes and preserve peer destinations",
+      "durationMs": 359.4463,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Configuration: atomic rollback covers single, batch, import, and replacement writes",
+      "durationMs": 301.9573,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Configuration: cluster rename commits route references and binding identities together",
+      "durationMs": 156.6692,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Configuration: route rename preserves disabled state and native match fields",
+      "durationMs": 210.8113,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Configuration: validation and stale revisions cannot change stored or active state",
+      "durationMs": 130.6948,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Configuration: readers see active state while a candidate waits for persistence",
+      "durationMs": 133.1869,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Configuration: activation failure reports both revisions and recovers after restart",
+      "durationMs": 158.6638,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Logging: persistence starts once, writes batches, and stops without losing entries",
+      "durationMs": 93.7623,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Notifications: settings round-trip and test responses redact URL secrets",
+      "durationMs": 188.0084,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Storage: route and cluster repositories preserve values, isolate deletes, and roll back batches",
+      "durationMs": 253.4915,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Storage: binding scope filters accept stable identities and reject SQL injection",
+      "durationMs": 256.5069,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Storage: runtime state opens connections, isolates nodes, updates, and deletes",
+      "durationMs": 391.982,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Storage: cancelled initialization does not create a database",
+      "durationMs": 224.7871,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Storage: log settings upsert atomically and clear",
+      "durationMs": 199.9332,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Storage: AI results preserve content, filter severity, and enforce retention",
+      "durationMs": 221.9538,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Storage: conversations retain chronological order and isolate sessions",
+      "durationMs": 165.9523,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Storage: webhook settings and bounded delivery history round-trip",
+      "durationMs": 100.9704,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Storage: configuration history and audit filters preserve quoted values",
+      "durationMs": 169.3569,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Storage: plugin schemas and presets update and delete without crossing plugin boundaries",
+      "durationMs": 160.9883,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Storage: proxy logs preserve bodies, parameterize filters, aggregate, and expire",
+      "durationMs": 205.0802,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Audit: initial history loading cannot duplicate concurrent writes",
+      "durationMs": 127.1079,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Logging: batch disposal clears data and returns pooled storage only once",
+      "durationMs": 102.7448,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Logging: compressed bodies decode safely and request bodies remain readable",
+      "durationMs": 31.909,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Migration: circuit-breaker defaults preserve explicit settings and reject malformed JSON",
+      "durationMs": 35.1652,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Security: plugin schema regex rejects excessive backtracking within a time bound",
+      "durationMs": 106.0999,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Validation: plugin schemas enforce types, composition, bounds, and nested fields",
+      "durationMs": 64.2229,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Security: TOTP matches RFC 6238 vectors and preserves authenticator enrollment",
+      "durationMs": 10.369,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Validation: mutation requests require an explicit enabled value",
+      "durationMs": 3.4383,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Configuration: YARP failures retain route attribution and clear after successful apply",
+      "durationMs": 27.133,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Performance helpers: numeric limits, UTF-8, and ring-buffer ownership remain correct",
+      "durationMs": 25.6079,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Security: disabled registration removes REST and gRPC endpoints",
+      "durationMs": 317.3072,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Security: enabled registration retains REST and gRPC endpoints",
+      "durationMs": 184.3994,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Security: empty dashboard API key denies requests",
+      "durationMs": 7.9275,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Security: nested dashboard credentials configure gateway authentication",
+      "durationMs": 2.2364,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Security: explicit control-plane authentication wins over legacy settings",
+      "durationMs": 2.9288,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Security: invalid gateway credentials and modes are rejected",
+      "durationMs": 6.3376,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Security: gRPC accepts only credentials for its configured mode",
+      "durationMs": 46.1165,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Security: cache excludes private responses",
+      "durationMs": 16.348,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Security: cache excludes no-store responses",
+      "durationMs": 1.7335,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Security: cache excludes private=\u0022Authorization\u0022 responses",
+      "durationMs": 4.3128,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Security: Set-Cookie responses are not cached",
+      "durationMs": 11.2308,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Security: authorization bypasses cache reads and writes",
+      "durationMs": 5.3467,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Security: cookie bypasses cache reads and writes",
+      "durationMs": 0.5005,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Security: principal bypasses cache reads and writes",
+      "durationMs": 1.1004,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Security: eligible public responses remain cached",
+      "durationMs": 4.0284,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Security: network policy rejects remote HTTP and anonymous forwarding",
+      "durationMs": 7.442,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Security: JWT requires algorithm, issuer, subject, signature, and expiry",
+      "durationMs": 16.8051,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Security: query JWT matches only the two exact hub paths",
+      "durationMs": 21.4183,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Security: registration client rejects an untrusted TLS certificate",
+      "durationMs": 1394.3543,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Registration: gRPC preserves paths, instance identity, destinations, and credentials",
+      "durationMs": 56.107,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Registration: shutdown joins a blocked heartbeat before unregistering",
+      "durationMs": 36.762,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Registration: HTTP payloads, credentials, failures, heartbeats, and shutdown",
+      "durationMs": 27.418,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "WAF: rejection logs contain rule, route, and trace without request secrets",
+      "durationMs": 316.8907,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "WAF: unknown-length short reads are fully inspected and preserved",
+      "durationMs": 22.7037,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "WAF: body and inspection limits count bytes without Content-Length",
+      "durationMs": 144.986,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "WAF: decoding, read failures, and cancellation fail closed",
+      "durationMs": 10.564,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Cache: host, query, response Vary, GET/HEAD, and configuration generations",
+      "durationMs": 73.3598,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Cache: directives, freshness, malformed metadata, and conditional requests",
+      "durationMs": 63.8205,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Cache: overflow streams intact and concurrent captures stay within budget",
+      "durationMs": 68.1124,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Compression: exact negotiation, streaming, cache variants, and exclusions",
+      "durationMs": 87.6909,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Rate limiting: exhausted permits return JSON and Retry-After without forwarding",
+      "durationMs": 54.7713,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Redis: route failure policy distinguishes outages from exhausted limits",
+      "durationMs": 121.791,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Runtime: starts and proxies without dashboard registration",
+      "durationMs": 1171.6062,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Runtime: split and isolated deployment modes preserve endpoint roles",
+      "durationMs": 20.6484,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Storage: maintained native engine meets the patched version floor",
+      "durationMs": 15.4435,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Storage: legacy plain SQLite data survives migration, write, and reopen",
+      "durationMs": 131.6397,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Storage: legacy SQLCipher 4 data survives migration, write, and reopen",
+      "durationMs": 4456.8652,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Storage: explicit SQLCipher URI options and pooling settings are preserved",
+      "durationMs": 1506.2835,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Storage: encrypted database survives reopen and rejects missing or incorrect keys",
+      "durationMs": 2807.7164,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Administration: API contracts remain unchanged after removing Razor pages",
+      "durationMs": 138.5655,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Administration: registration is idempotent and does not enable Razor",
+      "durationMs": 100.9156,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Removed compatibility contracts stay isolated from runtime source",
+      "durationMs": 49.3159,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Infrastructure plugin schemas expose discovery adapters",
+      "durationMs": 3.2279,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Semantic version constraints support AND ranges and SemVer prerelease precedence",
+      "durationMs": 11.562,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "External plugin registration exposes verifiable unload state",
+      "durationMs": 4.2742,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Plugin runtime domain resolves plugin DI and preserves the old domain on failed health",
+      "durationMs": 11.9269,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Plugin runtime domain drains in-flight requests before disposal",
+      "durationMs": 16.5493,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Plugin manifest dependencies are exposed and built-in adapters are protected",
+      "durationMs": 1.9774,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "ClientIpResolver ignores spoofed forwarding headers",
+      "durationMs": 0.4643,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Dashboard API key is header-only",
+      "durationMs": 9.7083,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "JWT query token is restricted to dashboard hubs",
+      "durationMs": 2.906,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Response capture does not depend on request content type",
+      "durationMs": 1.9562,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Proxy log runtime settings use dashboard defaults",
+      "durationMs": 2.2771,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Destination persistence mapping is lossless",
+      "durationMs": 0.9588,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Cluster rename preserves native extensions",
+      "durationMs": 7.9588,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "PluginBinding SQLite CRUD and uniqueness",
+      "durationMs": 43.0941,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "GatewayPluginManager persists state in gateway_plugins and imports legacy JSON",
+      "durationMs": 54.496,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "GatewaySnapshotCompiler filters disabled and missing targets",
+      "durationMs": 31.793,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "GatewaySnapshotCompiler keeps UID bindings stable across target renames",
+      "durationMs": 4.6072,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "GatewaySnapshotPublisher rejects stale versions",
+      "durationMs": 1.5987,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Plugin execution plan is reused and invalidated by snapshot publication",
+      "durationMs": 1.6891,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Service discovery manifest and execution plan share the canonical plugin id",
+      "durationMs": 0.1773,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Service discovery refreshes static destinations only while its resource runs",
+      "durationMs": 8.2733,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Plugin health and runtime resource contracts expose accurate state",
+      "durationMs": 7.9927,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Plugin schema validates nested composition",
+      "durationMs": 0.6214,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Legacy global policy chains stay isolated from dashboard activation",
+      "durationMs": 4.7457,
+      "status": "passed",
+      "error": null
+    }
+  ]
+}

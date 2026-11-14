@@ -4,12 +4,13 @@ namespace Wafish.Services;
 
 internal sealed class DynamicConfigPersister(IConfigurationSnapshotRepository snapshots) : IDynamicConfigPersister
 {
-    public async Task<GatewayDynamicConfig> LoadAsync()
+    public async Task<GatewayDynamicConfig> LoadAsync(CancellationToken cancellationToken = default)
     {
-        var snapshot = await snapshots.LoadAsync();
+        var snapshot = await snapshots.LoadAsync(cancellationToken);
         var config = new GatewayDynamicConfig { Version = snapshot.Version, Routes = snapshot.Routes.ToRouteConfigs() };
         foreach (var entity in snapshot.Clusters)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var cluster = entity.ToClusterConfig();
             cluster.Config = cluster.Config with
             {

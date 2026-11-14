@@ -13,6 +13,12 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Merge lazy audit history with accepted writes before enforcing its capacity. Keep reader snapshots atomic.
+
+- Join accepted audit writes before disposal. Stop resource reconciliation before shutdown cleanup.
+
+- Preserve copied-lease ownership and asynchronous external cleanup. Run the lifetime stress selection after lifecycle changes.
+
 - Preserve custom TimeProvider registrations and both-scope IServiceProviderIsService resolution.
 
 - Retain retirement tasks and join them during shutdown. Reject activation after shutdown starts.

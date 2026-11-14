@@ -1,5 +1,6 @@
 
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using System.Reflection;
 
 namespace Wafish.Dashboard.Infrastructure;
 
@@ -14,16 +15,15 @@ internal sealed class DashboardRouteConvention : IApplicationModelConvention
     private readonly string _prefix;
     public DashboardRouteConvention(string prefix) => _prefix = prefix;
 
+    internal static bool IsAdministrationController(TypeInfo controller)
+        => controller.Assembly == typeof(DashboardRouteConvention).Assembly
+            || controller.Assembly.GetName().Name?.StartsWith("Wafish.Plugin.", StringComparison.Ordinal) == true;
+
     public void Apply(ApplicationModel application)
     {
         foreach (var ctrl in application.Controllers)
         {
-            var controllerAssembly = ctrl.ControllerType.Assembly;
-            var isDashboardController = controllerAssembly == typeof(DashboardRouteConvention).Assembly
-                || controllerAssembly.GetName().Name == "Wafish.Dashboard";
-            var isPluginController = controllerAssembly.GetName().Name?.StartsWith(
-                "Wafish.Plugin.", StringComparison.Ordinal) == true;
-            if (!isDashboardController && !isPluginController)
+            if (!IsAdministrationController(ctrl.ControllerType))
             {
                 continue;
             }

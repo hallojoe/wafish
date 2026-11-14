@@ -13,9 +13,9 @@ internal interface IDynamicConfigPublisher
     /// Publish the given config as a snapshot to the proxy provider. Merge policy metadata into
     /// route metadata and normalize transforms (YARP-facing copy only).
     /// </summary>
-    Action Prepare(GatewayDynamicConfig config, long version);
+    Task<Action> PrepareAsync(GatewayDynamicConfig config, long version, CancellationToken cancellationToken = default);
 
-    void Publish(GatewayDynamicConfig config, long version);
+    Task PublishAsync(GatewayDynamicConfig config, long version, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Remove destinations with empty/null addresses from a single cluster, preserving every other

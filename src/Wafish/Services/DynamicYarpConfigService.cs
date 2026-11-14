@@ -72,7 +72,7 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
     /// <summary>
     /// Initializes a new instance of the <see cref="DynamicYarpConfigService"/> class.
     /// </summary>
-    async Task IHostedService.StartAsync(CancellationToken cancellationToken) => await LoadDynamicConfigAsync();
+    async Task IHostedService.StartAsync(CancellationToken cancellationToken) => await LoadDynamicConfigAsync(cancellationToken);
 
     /// <summary>
     /// Stops the hosted service.
@@ -82,14 +82,14 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
     /// <summary>
     /// Loads the dynamic configuration from persistence on startup.
     /// </summary>
-    private async Task LoadDynamicConfigAsync()
+    private async Task LoadDynamicConfigAsync(CancellationToken cancellationToken)
     {
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(cancellationToken);
         try
         {
-            _state.Config = await _persister.LoadAsync();
+            _state.Config = await _persister.LoadAsync(cancellationToken);
             _state.PersistedVersion = _state.Version;
-            await MarkStaticConfigAsync();
+            await MarkStaticConfigAsync(cancellationToken);
             if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
             {
                 _logger.LogInformation("Loaded {RouteCount} routes and {ClusterCount} clusters (dynamic + static) on startup",
@@ -107,11 +107,11 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
     /// <summary>
     /// Marks static routes and clusters from the appsettings config.
     /// </summary>
-    private async Task MarkStaticConfigAsync()
+    private async Task MarkStaticConfigAsync(CancellationToken cancellationToken)
     {
         try
         {
-            using var mutation = BeginMutation();
+            using var mutation = BeginMutation(cancellationToken);
             var config = mutation.Config;
             var thisStartupStaticRoutes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var thisStartupStaticClusters = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -191,41 +191,78 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
     public GatewayDynamicConfig? GetDynamicConfig() => DynamicConfigState.Clone(_state.Config);
 
     public Task<RouteOperationResult> TryAddRoute(RegisterRouteRequest request, string source = "dynamic", string? createdBy = null)
-        => _routeManager.TryAddRoute(request, source, createdBy);
+        => TryAddRoute(request, source, createdBy, CancellationToken.None);
+
+    public Task<RouteOperationResult> TryAddRoute(RegisterRouteRequest request, string source, string? createdBy, CancellationToken cancellationToken)
+        => _routeManager.TryAddRoute(request, source, createdBy, cancellationToken);
 
     public Task<RouteOperationResult> TryAddRouteConfig(RouteConfig route, string source = "dashboard", string? createdBy = "dashboard-user")
-        => _routeManager.TryAddRouteConfig(route, source, createdBy);
+        => TryAddRouteConfig(route, source, createdBy, CancellationToken.None);
+
+    public Task<RouteOperationResult> TryAddRouteConfig(RouteConfig route, string source, string? createdBy, CancellationToken cancellationToken)
+        => _routeManager.TryAddRouteConfig(route, source, createdBy, cancellationToken);
 
     public Task<RouteOperationResult> TryRemoveRoute(string routeName, string? clientIp = null, bool removeOrphanedCluster = true)
-        => _routeManager.TryRemoveRoute(routeName, clientIp, removeOrphanedCluster);
+        => TryRemoveRoute(routeName, clientIp, removeOrphanedCluster, CancellationToken.None);
+
+    public Task<RouteOperationResult> TryRemoveRoute(string routeName, string? clientIp, bool removeOrphanedCluster, CancellationToken cancellationToken)
+        => _routeManager.TryRemoveRoute(routeName, clientIp, removeOrphanedCluster, cancellationToken);
 
     public Task<RouteOperationResult> TryRenameRoute(string oldRouteId, string newRouteId, RegisterRouteRequest request, string source = "dashboard", string? createdBy = "dashboard-user")
-        => _routeManager.TryRenameRoute(oldRouteId, newRouteId, request, source, createdBy);
+        => TryRenameRoute(oldRouteId, newRouteId, request, source, createdBy, CancellationToken.None);
+
+    public Task<RouteOperationResult> TryRenameRoute(string oldRouteId, string newRouteId, RegisterRouteRequest request, string source, string? createdBy, CancellationToken cancellationToken)
+        => _routeManager.TryRenameRoute(oldRouteId, newRouteId, request, source, createdBy, cancellationToken);
 
     public Task<RouteOperationResult> TrySetRouteEnabled(string routeId, bool enabled, string? createdBy = "dashboard-user")
-        => _routeManager.TrySetRouteEnabled(routeId, enabled, createdBy);
+        => TrySetRouteEnabled(routeId, enabled, createdBy, CancellationToken.None);
+
+    public Task<RouteOperationResult> TrySetRouteEnabled(string routeId, bool enabled, string? createdBy, CancellationToken cancellationToken)
+        => _routeManager.TrySetRouteEnabled(routeId, enabled, createdBy, cancellationToken);
 
     public Task<RouteOperationResult> TryAddClusterConfig(ClusterConfig cluster, string source = "dashboard", string? createdBy = "dashboard-user")
-        => _clusterManager.TryAddClusterConfig(cluster, source, createdBy);
+        => TryAddClusterConfig(cluster, source, createdBy, CancellationToken.None);
+
+    public Task<RouteOperationResult> TryAddClusterConfig(ClusterConfig cluster, string source, string? createdBy, CancellationToken cancellationToken)
+        => _clusterManager.TryAddClusterConfig(cluster, source, createdBy, cancellationToken);
 
     public Task<RouteOperationResult> TryAddCluster(string clusterId, Dictionary<string, string> destinations,
         string? loadBalancingPolicy = null, Models.HealthCheckConfig? healthCheck = null, string source = "dynamic", string? createdBy = null,
         Dictionary<string, string>? metadata = null)
-        => _clusterManager.TryAddCluster(clusterId, destinations, loadBalancingPolicy, healthCheck, source, createdBy, metadata);
+        => TryAddCluster(clusterId, destinations, loadBalancingPolicy, healthCheck, source, createdBy, metadata, CancellationToken.None);
+
+    public Task<RouteOperationResult> TryAddCluster(string clusterId, Dictionary<string, string> destinations,
+        string? loadBalancingPolicy, Models.HealthCheckConfig? healthCheck, string source, string? createdBy,
+        Dictionary<string, string>? metadata, CancellationToken cancellationToken)
+        => _clusterManager.TryAddCluster(clusterId, destinations, loadBalancingPolicy, healthCheck, source, createdBy, metadata, cancellationToken);
 
     public Task<RouteOperationResult> TryAddCluster(CreateClusterRequest request, string source = "dynamic", string? createdBy = null)
-        => _clusterManager.TryAddCluster(request, source, createdBy);
+        => TryAddCluster(request, source, createdBy, CancellationToken.None);
+
+    public Task<RouteOperationResult> TryAddCluster(CreateClusterRequest request, string source, string? createdBy, CancellationToken cancellationToken)
+        => _clusterManager.TryAddCluster(request, source, createdBy, cancellationToken);
 
     public Task<RouteOperationResult> TryUpdateCluster(string clusterId, UpdateClusterRequest request)
-        => _clusterManager.TryUpdateCluster(clusterId, request);
+        => TryUpdateCluster(clusterId, request, CancellationToken.None);
+
+    public Task<RouteOperationResult> TryUpdateCluster(string clusterId, UpdateClusterRequest request, CancellationToken cancellationToken)
+        => _clusterManager.TryUpdateCluster(clusterId, request, cancellationToken);
 
     public Task<RouteOperationResult> TryRemoveCluster(string clusterId)
-        => _clusterManager.TryRemoveCluster(clusterId);
+        => TryRemoveCluster(clusterId, CancellationToken.None);
+
+    public Task<RouteOperationResult> TryRemoveCluster(string clusterId, CancellationToken cancellationToken)
+        => _clusterManager.TryRemoveCluster(clusterId, cancellationToken);
 
     public Task<RouteOperationResult> TryRenameCluster(string oldClusterId, string newClusterId,
         Dictionary<string, string> destinations, string? loadBalancingPolicy = null,
         Models.HealthCheckConfig? healthCheck = null, string source = "dashboard", string? createdBy = "dashboard-user")
-        => _clusterManager.TryRenameCluster(oldClusterId, newClusterId, destinations, loadBalancingPolicy, healthCheck, source, createdBy);
+        => TryRenameCluster(oldClusterId, newClusterId, destinations, loadBalancingPolicy, healthCheck, source, createdBy, CancellationToken.None);
+
+    public Task<RouteOperationResult> TryRenameCluster(string oldClusterId, string newClusterId,
+        Dictionary<string, string> destinations, string? loadBalancingPolicy,
+        Models.HealthCheckConfig? healthCheck, string source, string? createdBy, CancellationToken cancellationToken)
+        => _clusterManager.TryRenameCluster(oldClusterId, newClusterId, destinations, loadBalancingPolicy, healthCheck, source, createdBy, cancellationToken);
 
     #endregion
 
@@ -234,21 +271,26 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
     /// <summary>
     /// Refreshes the configuration by republishing the current state.
     /// </summary>
-    public void RefreshConfig()
+    public void RefreshConfig() => RefreshConfigAsync().GetAwaiter().GetResult();
+
+    public async Task RefreshConfigAsync(CancellationToken cancellationToken = default)
     {
-        _semaphore.Wait();
-        try { _publisher.Publish(_state.Config, _state.Version); }
+        await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try { await _publisher.PublishAsync(_state.Config, _state.Version, cancellationToken).ConfigureAwait(false); }
         finally { _semaphore.Release(); }
     }
 
     /// <summary>Reload committed storage after an activation failure, then publish under exclusive ownership.</summary>
-    public async Task ReconcileAsync()
+    public Task ReconcileAsync()
+        => ReconcileAsync(CancellationToken.None);
+
+    public async Task ReconcileAsync(CancellationToken cancellationToken)
     {
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(cancellationToken);
         try
         {
-            var stored = await _persister.LoadAsync();
-            _publisher.Prepare(stored, stored.Version)();
+            var stored = await _persister.LoadAsync(cancellationToken);
+            (await _publisher.PrepareAsync(stored, stored.Version, cancellationToken).ConfigureAwait(false))();
             _state.Config = stored;
             _state.PersistedVersion = stored.Version;
         }
@@ -258,12 +300,15 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
     /// <summary>
     /// Saves the dynamic configuration to persistence.
     /// </summary>
-    public async Task SaveDynamicConfig()
+    public Task SaveDynamicConfig()
+        => SaveDynamicConfig(CancellationToken.None);
+
+    public async Task SaveDynamicConfig(CancellationToken cancellationToken)
     {
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(cancellationToken);
         try
         {
-            using var mutation = BeginMutation();
+            using var mutation = BeginMutation(cancellationToken);
             var result = await mutation.CommitAsync("SaveDynamicConfig");
             if (!result.Success)
             {
@@ -281,19 +326,24 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
     /// Batch add-or-update clusters and routes under a single lock with one
     /// version bump, one publish, and one persistence pass.
     /// </summary>
-    public async Task<RouteOperationResult> ImportBatchAsync(
+    public Task<RouteOperationResult> ImportBatchAsync(
         IReadOnlyList<ClusterConfig> clusters, IReadOnlyList<RouteConfig> routes,
         string source = "import", string? createdBy = "dashboard-user", IReadOnlyDictionary<string, bool>? routeActivation = null)
+        => ImportBatchAsync(clusters, routes, source, createdBy, routeActivation, CancellationToken.None);
+
+    public async Task<RouteOperationResult> ImportBatchAsync(
+        IReadOnlyList<ClusterConfig> clusters, IReadOnlyList<RouteConfig> routes,
+        string source, string? createdBy, IReadOnlyDictionary<string, bool>? routeActivation, CancellationToken cancellationToken)
     {
         if (clusters.Count == 0 && routes.Count == 0)
         {
             return new RouteOperationResult(true, "Nothing to import");
         }
 
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(cancellationToken);
         try
         {
-            using var mutation = BeginMutation();
+            using var mutation = BeginMutation(cancellationToken);
             var config = mutation.Config;
 
             var clusterMap = config.Clusters.ToDictionary(
@@ -377,18 +427,22 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
     #region Batch delete / enable (atomic, single lock+persist+publish)
 
     /// <inheritdoc />
-    public async Task<BatchOperationResult> BatchDeleteClustersAsync(
+    public Task<BatchOperationResult> BatchDeleteClustersAsync(
         IReadOnlyList<string> clusterIds, string? createdBy = "dashboard-user")
+        => BatchDeleteClustersAsync(clusterIds, createdBy, CancellationToken.None);
+
+    public async Task<BatchOperationResult> BatchDeleteClustersAsync(
+        IReadOnlyList<string> clusterIds, string? createdBy, CancellationToken cancellationToken)
     {
         if (clusterIds == null || clusterIds.Count == 0)
         {
             return BatchOperationResult.From(Array.Empty<BatchItemResult>(), "No clusters to delete");
         }
 
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(cancellationToken);
         try
         {
-            using var mutation = BeginMutation();
+            using var mutation = BeginMutation(cancellationToken);
             var config = mutation.Config;
 
             var items = new List<BatchItemResult>(clusterIds.Count);
@@ -448,19 +502,24 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
     }
 
     /// <inheritdoc />
-    public async Task<BatchOperationResult> BatchDeleteRoutesAsync(
+    public Task<BatchOperationResult> BatchDeleteRoutesAsync(
         IReadOnlyList<string> routeIds, bool removeOrphanedClusters = false,
         string? createdBy = "dashboard-user")
+        => BatchDeleteRoutesAsync(routeIds, removeOrphanedClusters, createdBy, CancellationToken.None);
+
+    public async Task<BatchOperationResult> BatchDeleteRoutesAsync(
+        IReadOnlyList<string> routeIds, bool removeOrphanedClusters,
+        string? createdBy, CancellationToken cancellationToken)
     {
         if (routeIds == null || routeIds.Count == 0)
         {
             return BatchOperationResult.From(Array.Empty<BatchItemResult>(), "No routes to delete");
         }
 
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(cancellationToken);
         try
         {
-            using var mutation = BeginMutation();
+            using var mutation = BeginMutation(cancellationToken);
             var config = mutation.Config;
 
             var items = new List<BatchItemResult>(routeIds.Count);
@@ -533,18 +592,22 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
     }
 
     /// <inheritdoc />
-    public async Task<BatchOperationResult> BatchSetRoutesEnabledAsync(
+    public Task<BatchOperationResult> BatchSetRoutesEnabledAsync(
         IReadOnlyList<string> routeIds, bool enabled, string? createdBy = "dashboard-user")
+        => BatchSetRoutesEnabledAsync(routeIds, enabled, createdBy, CancellationToken.None);
+
+    public async Task<BatchOperationResult> BatchSetRoutesEnabledAsync(
+        IReadOnlyList<string> routeIds, bool enabled, string? createdBy, CancellationToken cancellationToken)
     {
         if (routeIds == null || routeIds.Count == 0)
         {
             return BatchOperationResult.From(Array.Empty<BatchItemResult>(), "No routes to update");
         }
 
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(cancellationToken);
         try
         {
-            using var mutation = BeginMutation();
+            using var mutation = BeginMutation(cancellationToken);
             var config = mutation.Config;
 
             var items = new List<BatchItemResult>(routeIds.Count);
@@ -608,13 +671,17 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
     /// <param name="createdBy">The created by.</param>
     /// <param name="routeActivation">Optional activation state restored with the configuration transaction.</param>
     /// <returns>A Task.</returns>
-    public async Task ReplaceAllConfig(IReadOnlyList<RouteConfig> newRoutes, IReadOnlyList<ClusterConfig> newClusters,
+    public Task ReplaceAllConfig(IReadOnlyList<RouteConfig> newRoutes, IReadOnlyList<ClusterConfig> newClusters,
         string source = "rollback", string? createdBy = "dashboard-user", IReadOnlyDictionary<string, bool>? routeActivation = null)
+        => ReplaceAllConfig(newRoutes, newClusters, source, createdBy, routeActivation, CancellationToken.None);
+
+    public async Task ReplaceAllConfig(IReadOnlyList<RouteConfig> newRoutes, IReadOnlyList<ClusterConfig> newClusters,
+        string source, string? createdBy, IReadOnlyDictionary<string, bool>? routeActivation, CancellationToken cancellationToken)
     {
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(cancellationToken);
         try
         {
-            using var mutation = BeginMutation();
+            using var mutation = BeginMutation(cancellationToken);
             var config = mutation.Config;
             var existingClusters = config.Clusters.ToDictionary(c => c.Config.ClusterId ?? string.Empty, c => c, StringComparer.OrdinalIgnoreCase);
             var existingRoutes = config.Routes.ToDictionary(r => r.Config.RouteId ?? string.Empty, r => r, StringComparer.OrdinalIgnoreCase);
@@ -666,7 +733,7 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
 
     #endregion
 
-    private ConfigurationMutation BeginMutation() => new(_state, _persister, _publisher, _auditLog);
+    private ConfigurationMutation BeginMutation(CancellationToken cancellationToken = default) => new(_state, _persister, _publisher, _auditLog, cancellationToken);
 
     #region Heartbeat
 

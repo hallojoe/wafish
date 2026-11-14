@@ -76,16 +76,7 @@ public sealed class PluginRuntimeDomain : IAsyncDisposable
         return false;
     }
 
-    internal async ValueTask RetireAndDisposeAsync()
-    {
-        if (Interlocked.Exchange(ref _retired, 1) == 0 && Volatile.Read(ref _activeRequests) == 0)
-        {
-            _drained.TrySetResult();
-        }
-
-        await _drained.Task;
-        await DisposeAsync();
-    }
+    internal ValueTask RetireAndDisposeAsync() => DisposeAsync();
 
     internal void Release()
     {
@@ -105,8 +96,18 @@ public sealed class PluginRuntimeDomain : IAsyncDisposable
 
     private async Task DisposeOwnedAsync()
     {
+        if (Interlocked.Exchange(ref _retired, 1) == 0 && Volatile.Read(ref _activeRequests) == 0)
+        {
+            _drained.TrySetResult();
+        }
+        await _drained.Task;
         await Task.Yield();
         var failures = new List<Exception>();
+        foreach (var load in _externalLoads.Reverse())
+        {
+            try { await load.DisposeAsync(); }
+            catch (Exception ex) { failures.Add(ex); }
+        }
         try
         {
             if (Services is IAsyncDisposable asyncDisposable)
@@ -119,11 +120,6 @@ public sealed class PluginRuntimeDomain : IAsyncDisposable
             }
         }
         catch (Exception ex) { failures.Add(ex); }
-        foreach (var load in _externalLoads.Reverse())
-        {
-            try { await load.DisposeAsync(); }
-            catch (Exception ex) { failures.Add(ex); }
-        }
         if (failures.Count > 0)
         {
             throw new AggregateException("Plugin domain disposal failed.", failures);
@@ -140,11 +136,17 @@ public sealed class PluginRuntimeDomain : IAsyncDisposable
 
 public readonly struct PluginRuntimeDomainLease : IDisposable
 {
-    private readonly PluginRuntimeDomain? _domain;
+    private readonly Ownership? _ownership;
 
-    internal PluginRuntimeDomainLease(PluginRuntimeDomain domain) => _domain = domain;
+    internal PluginRuntimeDomainLease(PluginRuntimeDomain domain) => _ownership = new(domain);
 
-    public void Dispose() => _domain?.Release();
+    public void Dispose() => _ownership?.Release();
+
+    private sealed class Ownership(PluginRuntimeDomain domain)
+    {
+        private PluginRuntimeDomain? _domain = domain;
+        public void Release() => Interlocked.Exchange(ref _domain, null)?.Release();
+    }
 }
 
 public sealed class PluginRuntimeDomainPreparation : IAsyncDisposable

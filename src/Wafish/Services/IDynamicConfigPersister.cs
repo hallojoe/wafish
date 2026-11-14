@@ -9,7 +9,7 @@ namespace Wafish.Services;
 internal interface IDynamicConfigPersister
 {
     /// <summary>Load the full dynamic config from repository.</summary>
-    Task<GatewayDynamicConfig> LoadAsync();
+    Task<GatewayDynamicConfig> LoadAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Persist the entire config to repository. Deletes stale DB rows not present in the

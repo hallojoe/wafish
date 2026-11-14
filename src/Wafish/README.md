@@ -61,3 +61,22 @@ Shared clusters remain while any surviving route references them.
 Deletion and orphan cleanup retain the existing atomic persistence and publication behavior.
 
 [Verification for review items 8–10](../../tests/Wafish.Regression/evidence/review8910/README.md).
+
+Service discovery execution settings include `maxStaleSeconds` and `stalePolicy`.
+See [discovery behavior and defaults](../Wafish.Plugin.ServiceDiscovery/README.md#failure-health-and-stale-destinations).
+
+## Asynchronous configuration changes
+
+Mutation APIs accept cancellation through new overloads. Existing overloads remain available.
+Preparation awaits YARP validation and snapshot compilation. Lock waits and startup loading observe cancellation.
+Cancellation before storage preserves both revisions. Once storage starts, activation and audit retain ownership.
+Use `RefreshConfigAsync` in asynchronous callers. The synchronous compatibility method still blocks its caller.
+Custom `IDynamicYarpConfigService` implementations must implement the new overloads.
+See [verification](../../tests/Wafish.Regression/evidence/async-retry/README.md).
+
+## Configuration response contract
+
+Registration HTTP responses use numeric `status` and named `outcome` fields.
+Stored and active revisions remain explicit when confirmed. Caller cancellation reaches precommit configuration work.
+Unexpected gRPC failures expose sanitized transport errors.
+See [HTTP and gRPC contracts](../../docs/mutation-contracts.md).

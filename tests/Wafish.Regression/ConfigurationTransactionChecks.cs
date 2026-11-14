@@ -85,7 +85,7 @@ internal static class ConfigurationTransactionChecks
             var registration = new Wafish.GatewayRegistry.RegisterServiceRequest { ServiceId = "grpc-write", ServiceName = "grpc-cluster" };
             registration.Paths.AddRange(["/first", "/second"]);
             registration.Destinations.Add(new Wafish.GatewayRegistry.Destination { DestinationId = "one", Address = "http://127.0.0.1:9/" });
-            var grpcResult = await grpc.RegisterService(registration, null!);
+            var grpcResult = await grpc.RegisterService(registration, new SecurityChecks.CallContext(new()));
             Assert(!grpcResult.Success && grpcResult.Status == "StorageFailed" && grpcResult.RouteIds.Count == 0,
                 "gRPC registration reported success after a failed transaction.");
             var after = await host.Store.LoadAsync();
@@ -219,7 +219,7 @@ internal static class ConfigurationTransactionChecks
         public required BlockingStore Store { get; init; }
         public required FailingPublisher Publisher { get; init; }
         public DynamicYarpConfigService Config => App.Services.GetRequiredService<DynamicYarpConfigService>();
-        public static async Task<Fixture> Create(string? directory = null, ILoggerProvider? logs = null)
+        public static async Task<Fixture> Create(string? directory = null, ILoggerProvider? logs = null, Action<IServiceCollection>? configure = null, bool start = true)
         {
             var path = directory ?? Path.Combine(Path.GetTempPath(), "aneiang-transaction-" + Guid.NewGuid().ToString("N"));
             System.IO.Directory.CreateDirectory(path);
@@ -239,10 +239,11 @@ internal static class ConfigurationTransactionChecks
             builder.Services.AddSingleton<IConfigurationSnapshotRepository>(sp => sp.GetRequiredService<BlockingStore>());
             var publisher = new FailingPublisher();
             builder.Services.AddSingleton<IGatewaySnapshotPublisher>(publisher);
+            configure?.Invoke(builder.Services);
             var app = builder.Build();
             var fixture = new Fixture { App = app, Directory = path, OwnsDirectory = directory is null,
                 Store = app.Services.GetRequiredService<BlockingStore>(), Publisher = publisher };
-            await ((IHostedService)fixture.Config).StartAsync(default);
+            if (start) { await ((IHostedService)fixture.Config).StartAsync(default); }
             return fixture;
         }
         public async Task Sql(string text)
@@ -265,7 +266,12 @@ internal static class ConfigurationTransactionChecks
     internal sealed class BlockingStore(SqliteConfigurationSnapshotRepository inner) : IConfigurationSnapshotRepository
     {
         public Func<Task>? BeforeSave { get; set; }
-        public Task<ConfigurationSnapshot> LoadAsync(CancellationToken ct = default) => inner.LoadAsync(ct);
+        public Func<CancellationToken, Task>? BeforeLoad { get; set; }
+        public async Task<ConfigurationSnapshot> LoadAsync(CancellationToken ct = default)
+        {
+            if (BeforeLoad is { } before) { BeforeLoad = null; await before(ct); }
+            return await inner.LoadAsync(ct);
+        }
         public async Task SaveAsync(ConfigurationSnapshot snapshot, long expectedVersion, CancellationToken ct = default)
         {
             if (BeforeSave is { } before) { BeforeSave = null; await before(); }

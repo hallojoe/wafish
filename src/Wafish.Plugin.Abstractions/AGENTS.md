@@ -13,6 +13,8 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Validate lifecycle changes against `docs/plugin-lifecycle-contract.md` and reject added abstract requirements on existing interfaces.
+
 - This contract project references ASP.NET Core and YARP pipeline abstractions.
 - Keep concrete runtime and administration implementations out of these contracts.
 - Treat interface and manifest changes as plugin compatibility changes.

@@ -8,7 +8,10 @@ The [root execution plan](../../PLAN.md) remains the historical and cross-projec
 
 ### IMP-01: Introduce controllable time for recovery tests
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [lifetime stress evidence](../../tests/Wafish.Regression/evidence/lifetime-stress/README.md).
+Release build, 187 main cases, and 34 administration cases pass. Changed source coverage is 89.69%.
 
 Replace wall-clock assumptions with an injectable time source where needed.
 
@@ -16,7 +19,10 @@ Acceptance: Open and half-open transitions can be tested without real delays.
 
 ### IMP-02: Stress concurrent half-open requests
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [lifetime stress evidence](../../tests/Wafish.Regression/evidence/lifetime-stress/README.md).
+Release build, 187 main cases, and 34 administration cases pass. Changed source coverage is 89.69%.
 
 Run competing probes against one destination and simulate cancellation.
 

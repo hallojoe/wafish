@@ -15,16 +15,20 @@ public sealed class DashboardAuthorizationService : IDashboardAuthorizationServi
     private readonly AuthenticationAttemptLimiter _attempts;
     private readonly ControlPlaneAccessPolicy _policy;
     private readonly ILogger<DashboardAuthorizationService> _logger;
+    private readonly DashboardSessionStore? _sessions;
+    private readonly TimeProvider _clock;
 
     /// <summary>
     /// Creates the authorization service.
     /// </summary>
-    public DashboardAuthorizationService(IOptions<DashboardOptions> options, ILogger<DashboardAuthorizationService> logger, ControlPlaneAccessPolicy? policy = null, AuthenticationAttemptLimiter? attempts = null)
+    public DashboardAuthorizationService(IOptions<DashboardOptions> options, ILogger<DashboardAuthorizationService> logger, ControlPlaneAccessPolicy? policy = null, AuthenticationAttemptLimiter? attempts = null, DashboardSessionStore? sessions = null, TimeProvider? clock = null)
     {
         _options = options.Value;
         _attempts = attempts ?? new AuthenticationAttemptLimiter();
         _policy = policy ?? new ControlPlaneAccessPolicy(Options.Create(new Wafish.Models.ControlPlaneSecurityOptions()));
         _logger = logger;
+        _sessions = sessions;
+        _clock = clock ?? TimeProvider.System;
     }
 
     /// <inheritdoc />
@@ -125,7 +129,8 @@ public sealed class DashboardAuthorizationService : IDashboardAuthorizationServi
             return false;
         }
 
-        var (valid, _) = DashboardJwtHelper.ValidateToken(token, secret);
+        var (valid, _) = DashboardJwtHelper.ValidateToken(token, secret, _clock);
+        valid = valid && (_sessions?.IsActive(token) ?? true);
         if (!valid)
         {
             _logger.LogWarning(
@@ -137,7 +142,7 @@ public sealed class DashboardAuthorizationService : IDashboardAuthorizationServi
         return valid;
     }
 
-    private string? ExtractJwtToken(HttpContext context)
+    internal string? ExtractJwtToken(HttpContext context)
     {
         // Authorization header (for XHR/API calls)
         var authHeader = context.Request.Headers.Authorization.FirstOrDefault();

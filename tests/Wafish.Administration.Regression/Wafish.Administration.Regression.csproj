@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="../Wafish.Regression/contracts/dashboard-routes.json" Link="contracts/dashboard-routes.json" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../Shared/RegressionReport.cs" Link="RegressionReport.cs" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="../../src/Wafish.Administration/Wafish.Administration.csproj" />

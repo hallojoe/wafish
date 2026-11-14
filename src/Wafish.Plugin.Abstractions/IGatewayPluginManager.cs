@@ -23,9 +23,14 @@ public enum ExternalPluginRegistrationStatus
     Unloaded
 }
 
+/// <summary>Confirmed result of plugin state validation or persistence.</summary>
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<PluginStateChangeStatus>))]
+public enum PluginStateChangeStatus { Applied, ValidationRejected, StorageFailed }
+
 /// <summary>Result of a plugin state change operation.</summary>
 public sealed record PluginStateChangeResult(bool Succeeded, string? Error = null)
 {
+    public PluginStateChangeStatus Status { get; init; } = Succeeded ? PluginStateChangeStatus.Applied : PluginStateChangeStatus.ValidationRejected;
     public static PluginStateChangeResult Success { get; } = new(true);
 }
 

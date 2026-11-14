@@ -26,7 +26,8 @@ public static class AdministrationEndpointRouteBuilderExtensions
             var next = endpoint.RequestDelegate!;
             endpoint.RequestDelegate = async context =>
             {
-                if (!await context.RequestServices.GetRequiredService<IDashboardAuthorizationService>().IsAuthorizedAsync(context))
+                var authorization = context.RequestServices.GetRequiredService<IDashboardAuthorizationService>();
+                if (!await authorization.IsAuthorizedAsync(context))
                 {
                     if (context.Response.StatusCode != 429)
                     {
@@ -35,7 +36,36 @@ public static class AdministrationEndpointRouteBuilderExtensions
 
                     return;
                 }
-                await next(context);
+                var options = context.RequestServices.GetRequiredService<IOptions<DashboardOptions>>().Value.Auth;
+                var sessions = context.RequestServices.GetRequiredService<DashboardSessionStore>();
+                var lifetime = options.AuthorizeRequest == null && options.AuthMode is DashboardAuthMode.DefaultJwt or DashboardAuthMode.CustomJwt
+                    && authorization is DashboardAuthorizationService standard
+                    ? sessions.Lifetime(standard.ExtractJwtToken(context)) : CancellationToken.None;
+                using var revocation = lifetime.Register(context.Abort);
+                using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted);
+                var clock = context.RequestServices.GetService<TimeProvider>() ?? TimeProvider.System;
+                var monitor = RevalidateAsync(context, authorization, clock, cancellation.Token);
+                try { await next(context); }
+                finally
+                {
+                    await cancellation.CancelAsync();
+                    await monitor;
+                }
             };
         });
+
+    private static async Task RevalidateAsync(Microsoft.AspNetCore.Http.HttpContext context,
+        IDashboardAuthorizationService authorization, TimeProvider clock, CancellationToken cancellationToken)
+    {
+        try
+        {
+            while (true)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1), clock, cancellationToken);
+                if (!await authorization.IsAuthorizedAsync(context)) { context.Abort(); return; }
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
+        catch { context.Abort(); }
+    }
 }

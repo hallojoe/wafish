@@ -55,3 +55,11 @@ Register a custom `TimeProvider` before `AddWafishClient` to control registratio
 Shutdown cancels and joins heartbeat work before unregistering.
 
 Verification: [review evidence](../../tests/Wafish.Regression/evidence/review141516/README.md).
+
+## Structured registration results
+
+Use `RegisterResultAsync`, `UnregisterResultAsync`, and `UpdateDestinationsResultAsync` for operation outcomes and confirmed revisions.
+Results include `RetryAdvice` and `MayHaveApplied`. Transport failures retain uncertainty about remote commits.
+Boolean wrappers remain available. Caller cancellation now propagates through mutation APIs and their Boolean wrappers.
+Configured timeouts also set gRPC deadlines.
+See [response contracts and migration](../../docs/mutation-contracts.md).

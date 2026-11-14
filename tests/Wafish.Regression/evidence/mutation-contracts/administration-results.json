@@ -1,0 +1,216 @@
+{
+  "schemaVersion": 1,
+  "suite": "administration",
+  "cases": [
+    {
+      "name": "Authorization matrix: every mapped action rejects missing and invalid credentials across four modes",
+      "durationMs": 7225.0859,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Mutation contracts: validation and model binding share Problem Details without losing endpoint fields",
+      "durationMs": 1649.9972,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Shutdown: connected hubs close while queued notifications retain exact accounting",
+      "durationMs": 3238.8308,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Cleanup: failed assertions release clients, sockets, hosts, and temporary database files",
+      "durationMs": 1362.1593,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Cleanup: failed host startup disposes services before the next case",
+      "durationMs": 648.7421,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Storage API: oversized filters return 400 and extreme pages do not wrap",
+      "durationMs": 295.6606,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Sessions: bounded capacity, distinct tokens, generation races, revocation, expiry, and disposal",
+      "durationMs": 1935.7243,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Sessions: DefaultJwt sign-out, security changes, expiry, and concurrent API/hub requests",
+      "durationMs": 152.1086,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Sessions: CustomJwt sign-out, security changes, expiry, and concurrent API/hub requests",
+      "durationMs": 79.6114,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Sessions: BasicAuth credential rotation terminates realtime access and rejects old credentials",
+      "durationMs": 79.8512,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Sessions: ApiKey credential rotation terminates realtime access and rejects old credentials",
+      "durationMs": 70.1677,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Authentication: bounded atomic attempts, refunds, source isolation, and expiry",
+      "durationMs": 220.1745,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Authentication: Basic and API-key failures throttle without limiting valid traffic",
+      "durationMs": 4.0219,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Authentication: HTTPS cookie login, logout, expiry, transport, host, and origin",
+      "durationMs": 132.7549,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Authentication: HTTP login and direct credential limits return 429",
+      "durationMs": 289.2245,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Administration deploys without the dashboard assembly or Razor assets",
+      "durationMs": 5.0716,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Two-factor state persists privately and fails on corruption or write failure",
+      "durationMs": 2.144,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Administration rejects missing and invalid API credentials",
+      "durationMs": 18.2551,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "AI and MCP configuration cannot activate unregistered services",
+      "durationMs": 2.3858,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Administration APIs work without page or static-asset endpoints",
+      "durationMs": 141.7055,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Administration creates clusters and routes through the preserved JSON API",
+      "durationMs": 306.2288,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Snapshots, rollback, and import preserve route activation",
+      "durationMs": 285.0419,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Administration exposes storage failures and preserves the active revision",
+      "durationMs": 224.8083,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Administration serves system settings and database downloads without Razor",
+      "durationMs": 31.811,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Encrypted database backup retains committed WAL data and rejects missing keys",
+      "durationMs": 221.5153,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Administration realtime hubs accept subscriptions and send overview updates",
+      "durationMs": 4772.953,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Corrupted two-factor persistence rejects JWT login",
+      "durationMs": 6.9158,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Administration login issues a usable JWT without a Razor login page",
+      "durationMs": 20.3865,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Administration retains configuration after host restart and supports deletion",
+      "durationMs": 37.7917,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Explicit AI registration resolves services and preserves administration authentication",
+      "durationMs": 46.4152,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "MCP binds loopback, enforces parent credentials, rejects origins, and limits request bodies",
+      "durationMs": 1104.1766,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Anonymous administration requires explicit loopback permission in Development",
+      "durationMs": 91.9377,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Anonymous administration requires explicit loopback permission in Staging",
+      "durationMs": 83.2372,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Anonymous administration requires explicit loopback permission in Production",
+      "durationMs": 87.2674,
+      "status": "passed",
+      "error": null
+    },
+    {
+      "name": "Explicit MCP registration is independent and idempotent",
+      "durationMs": 1.515,
+      "status": "passed",
+      "error": null
+    }
+  ]
+}

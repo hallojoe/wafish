@@ -40,3 +40,9 @@ Source project: [Wafish.Plugin.Abstractions.csproj](Wafish.Plugin.Abstractions.c
 This project has no direct solution project references. Package and framework references remain in its project file.
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+
+## Lifecycle and compatibility contracts
+
+[Lifecycle requirements](../../docs/plugin-lifecycle-contract.md) cover repeat calls, cancellation, partial startup, and shutdown failures.
+Public API checks reject removals, record constructor changes, and new abstract requirements on existing contracts.
+Default interface additions remain supported. Plugin state results distinguish validation rejection from storage failure.

@@ -65,3 +65,39 @@ Partial endpoint delivery counts as one failed event. Counters measure events, n
 Snapshots can change during active dispatch. At rest, every submitted event has one accounting category.
 
 [Verification for review items 8–10](../../tests/Wafish.Regression/evidence/review8910/README.md).
+
+Plugin mutations await asynchronous snapshot refresh after commit.
+Install, uninstall, and upgrade controller methods now return `Task<IActionResult>`. Their HTTP contracts remain unchanged.
+The authorization filter uses the corrected `Wafish.Dashboard` namespace.
+See [verification](../../tests/Wafish.Regression/evidence/async-retry/README.md).
+
+## Session lifecycle
+
+Dashboard JWT sessions belong to the current host. Sign in through the login endpoint to obtain a usable token.
+A signed token alone no longer authorizes administration access. Custom authorization delegates retain their own policy.
+Sessions expire after eight hours. The registry permits at most 10,000 active sessions.
+A full registry returns 503 for new logins without evicting active sessions.
+Sign-out revokes presented bearer and cookie sessions. It closes their existing realtime connections.
+Successful two-factor changes revoke every JWT session. Sign in again after changing two-factor settings.
+Restarting the host invalidates its sessions, including deployments with a configured signing secret.
+JWT sessions remain local to one host. Deployments with multiple hosts require session affinity.
+Basic authentication and API keys remain request credentials. Their existing hub connections are rechecked each second.
+Credential changes take effect during the next check; in-progress requests can finish.
+
+Authorization covers built-in plugin controllers, including circuit-breaker actions.
+Only the authentication controller's login and logout actions bypass credential checks.
+See [verification](../../tests/Wafish.Regression/evidence/administration-lifecycle/README.md).
+
+## Shutdown verification
+
+Real overview and traffic connections close during host shutdown.
+Queued and in-flight notification counts remain balanced, including cancelled deliveries.
+Tests verify credential exclusion and reject success audit records before persistence commits.
+See [shutdown evidence](../../tests/Wafish.Regression/evidence/lifetime-stress/README.md).
+
+## Shared mutation responses
+
+Configuration and plugin writes return shared status, outcome, and nullable revision fields.
+Failures use Problem Details. Endpoint-specific fields retain their locations.
+HTTP `status` is now numeric; read `outcome` for the application result.
+See [consumer migration and error mappings](../../docs/mutation-contracts.md).

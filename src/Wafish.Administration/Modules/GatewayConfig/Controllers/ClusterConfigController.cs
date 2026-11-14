@@ -16,6 +16,7 @@ namespace Wafish.Dashboard.Modules.GatewayConfig.Controllers;
 /// </summary>
 [Route("api/config")]
 [ApiController]
+[Wafish.Filters.ConfigurationMutation]
 public class ClusterConfigController : ConfigControllerBase
 {
     private readonly ILogger<ClusterConfigController> _logger;

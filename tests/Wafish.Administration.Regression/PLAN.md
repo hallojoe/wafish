@@ -16,7 +16,9 @@ Acceptance: Scenario names and coverage remain intact after the split.
 
 ### IMP-02: Add explicit resource cleanup checks
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [administration lifecycle evidence](../Wafish.Regression/evidence/administration-lifecycle/README.md).
 
 Verify HTTP clients, websocket connections, temporary files, and hosts close after failed assertions.
 
@@ -26,7 +28,9 @@ Acceptance: A failed case does not prevent later cases from running.
 
 ### FEAT-01: Add session lifecycle state-machine tests
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [administration lifecycle evidence](../Wafish.Regression/evidence/administration-lifecycle/README.md).
 
 Exercise expiry, sign-out, two-factor changes, and concurrent requests across authentication modes.
 
@@ -57,7 +61,9 @@ Cookies are not sent to an unintended host or transport.
 
 ### FEAT-02: Run the administration authorization matrix
 
-Status: TODO. Priority: P2. Type: test infrastructure feature.
+Status: DONE. Owner: Codex. Completed: 2026-11-14. Priority: P2. Type: test infrastructure feature.
+
+Verification: [administration lifecycle evidence](../Wafish.Regression/evidence/administration-lifecycle/README.md).
 
 Evidence: [Program.cs](Program.cs) checks selected routes and hub negotiations.
 A [route inventory](../Wafish.Regression/contracts/dashboard-routes.json) already exists.

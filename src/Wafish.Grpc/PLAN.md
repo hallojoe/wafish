@@ -8,7 +8,11 @@ The [root execution plan](../../PLAN.md) remains the historical and cross-projec
 
 ### IMP-01: Add wire compatibility fixtures
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [mutation and lifecycle contracts](../../tests/Wafish.Regression/evidence/mutation-contracts/README.md).
+Release build, 200 main cases, 35 administration cases, and 23 browser cases pass.
+Changed C# coverage is 87.36%. Three isolated package consumers and six compatibility guards pass.
 
 Store representative encoded messages and verify decoding across protocol revisions.
 
@@ -16,7 +20,11 @@ Acceptance: Additive fields preserve old message behavior.
 
 ### IMP-02: Define protocol error mappings
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [mutation and lifecycle contracts](../../tests/Wafish.Regression/evidence/mutation-contracts/README.md).
+Release build, 200 main cases, 35 administration cases, and 23 browser cases pass.
+Changed C# coverage is 87.36%. Three isolated package consumers and six compatibility guards pass.
 
 Document how configuration outcomes map to response fields and gRPC status codes.
 

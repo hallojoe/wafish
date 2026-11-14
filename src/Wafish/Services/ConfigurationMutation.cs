@@ -6,15 +6,17 @@ namespace Wafish.Services;
 internal sealed class ConfigurationMutation : IDisposable
 {
     private readonly DynamicConfigState _state;
+    private readonly CancellationToken _cancellationToken;
     private readonly IDynamicConfigPersister _persister;
     private readonly IDynamicConfigPublisher _publisher;
     private readonly DeferredConfigChangeAuditLog _audit;
     public GatewayDynamicConfig Config { get; private set; }
 
     public ConfigurationMutation(DynamicConfigState state, IDynamicConfigPersister persister,
-        IDynamicConfigPublisher publisher, DeferredConfigChangeAuditLog audit)
+        IDynamicConfigPublisher publisher, DeferredConfigChangeAuditLog audit, CancellationToken cancellationToken = default)
     {
         _state = state;
+        _cancellationToken = cancellationToken;
         _persister = persister;
         _publisher = publisher;
         _audit = audit;
@@ -24,6 +26,7 @@ internal sealed class ConfigurationMutation : IDisposable
 
     public async Task<RouteOperationResult> CommitAsync(string operation, string? target = null, string? message = null)
     {
+        _cancellationToken.ThrowIfCancellationRequested();
         if (_state.Version != _state.PersistedVersion)
         {
             return Failure(ConfigurationUpdateStatus.ActivationFailed,
@@ -40,8 +43,11 @@ internal sealed class ConfigurationMutation : IDisposable
         }
 
         Action activate;
-        try { activate = _publisher.Prepare(Config, Config.Version); }
+        try { activate = await _publisher.PrepareAsync(Config, Config.Version, _cancellationToken).ConfigureAwait(false); }
+        catch (OperationCanceledException) when (_cancellationToken.IsCancellationRequested) { throw; }
         catch (Exception ex) { return Failure(ConfigurationUpdateStatus.ValidationRejected, ex.Message); }
+        _cancellationToken.ThrowIfCancellationRequested();
+        // Once storage starts, retain ownership through activation. Caller cancellation cannot undo a commit.
         try { await _persister.SaveAsync(Config, operation, target); }
         catch (ConfigurationVersionConflictException ex)
         {

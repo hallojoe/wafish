@@ -16,6 +16,7 @@ public class DashboardAuthController : Controller
 {
     private readonly IDashboardAuthorizationService _authService;
     private readonly AuthenticationAttemptLimiter _attempts;
+    private readonly DashboardSessionStore _sessions;
 
     private readonly string _defaultLocale;
     private readonly DashboardAuthMode _authMode;
@@ -35,10 +36,11 @@ public class DashboardAuthController : Controller
     public DashboardAuthController(
         IDashboardAuthorizationService authService,
         IOptions<DashboardOptions> dashboardOptions,
-        AuthenticationAttemptLimiter attempts)
+        AuthenticationAttemptLimiter attempts, DashboardSessionStore sessions)
     {
         _authService = authService;
         _attempts = attempts;
+        _sessions = sessions;
 
         var opt = dashboardOptions.Value;
         _defaultLocale = opt.Locale;
@@ -60,6 +62,7 @@ public class DashboardAuthController : Controller
     [HttpPost("login")]
     public IActionResult Login([FromBody] LoginRequest request)
     {
+        var generation = _sessions.Generation;
         if (!_attempts.TryAcquire(HttpContext, "login", out _))
         {
             return StatusCode(429, new { code = 429, message = "Too many authentication attempts. Retry later." });
@@ -117,7 +120,10 @@ public class DashboardAuthController : Controller
             }
         }
 
-        var token = DashboardJwtHelper.GenerateToken(request.Username, _jwtSecret!);
+        if (!_sessions.TryCreate(request.Username, _jwtSecret!, generation, out var token))
+        {
+            return StatusCode(503, new { code = 503, message = "Session creation is unavailable. Sign in again." });
+        }
 
         Response.Cookies.Append("dashboard_token", token, new CookieOptions
         {
@@ -130,10 +136,13 @@ public class DashboardAuthController : Controller
         return Json(new { code = 200, token });
     }
 
-    /// <summary>Logout — clear the auth token cookie.</summary>
+    /// <summary>Revoke presented sessions and clear the auth token cookie.</summary>
     [HttpPost("logout")]
     public IActionResult Logout()
     {
+        _sessions.Revoke(Request.Cookies["dashboard_token"]);
+        var authorization = Request.Headers.Authorization.ToString();
+        if (authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)) _sessions.Revoke(authorization[7..]);
         Response.Cookies.Delete("dashboard_token");
         return Json(new { code = 200, message = "Logged out successfully" });
     }
@@ -203,7 +212,10 @@ public class DashboardAuthController : Controller
     }
 
     private void SaveTwoFactorState(bool enabled, string? secret)
-        => TwoFactorStateStore.Write(_twoFactorStateFile, new(enabled, secret));
+    {
+        TwoFactorStateStore.Write(_twoFactorStateFile, new(enabled, secret));
+        _sessions.InvalidateAll();
+    }
 
     #endregion
 

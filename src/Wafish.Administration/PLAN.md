@@ -8,7 +8,11 @@ The [root execution plan](../../PLAN.md) remains the historical and cross-projec
 
 ### IMP-01: Unify mutation error contracts
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [mutation and lifecycle contracts](../../tests/Wafish.Regression/evidence/mutation-contracts/README.md).
+Release build, 200 main cases, 35 administration cases, and 23 browser cases pass.
+Changed C# coverage is 87.36%. Three isolated package consumers and six compatibility guards pass.
 
 Define shared response models for validation, version, storage, and activation failures.
 
@@ -16,7 +20,10 @@ Acceptance: Clients receive consistent status and revision fields across mutatio
 
 ### IMP-02: Expand shutdown and notification tests
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [lifetime stress evidence](../../tests/Wafish.Regression/evidence/lifetime-stress/README.md).
+Release build, 187 main cases, and 34 administration cases pass. Changed source coverage is 89.69%.
 
 Exercise queued audit notifications and realtime clients during host shutdown.
 

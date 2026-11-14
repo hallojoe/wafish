@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Text.Json;
@@ -19,7 +20,7 @@ public sealed record ExternalPluginRegistration(
     bool? IsLoadContextAlive = null);
 
 /// <summary>Discovers plugin.json files without loading plugin assemblies and activates enabled plugins in collectible contexts.</summary>
-public sealed class ExternalGatewayPluginHost : IDisposable
+public sealed class ExternalGatewayPluginHost : IDisposable, IAsyncDisposable
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -29,9 +30,11 @@ public sealed class ExternalGatewayPluginHost : IDisposable
 
     private readonly ILogger<ExternalGatewayPluginHost> _logger;
     private readonly string _pluginRoot;
-    private readonly Dictionary<string, ExternalPluginRegistration> _registrations = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<string, LoadedExternalPlugin> _loaded = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<string, WeakReference> _unloadingContexts = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, ExternalPluginRegistration> _registrations = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, ExternalPluginRuntimeLoad> _loaded = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, WeakReference> _unloadingContexts = new(StringComparer.OrdinalIgnoreCase);
+    private readonly object _shutdownGate = new();
+    private Task? _shutdownTask;
 
     public ExternalGatewayPluginHost(
         IHostEnvironment environment,
@@ -58,7 +61,7 @@ public sealed class ExternalGatewayPluginHost : IDisposable
 
     public IReadOnlyList<PluginManifest> Manifests => Registrations.Select(x => x.Manifest).ToList();
 
-    public IReadOnlyList<IGatewayPlugin> LoadedPlugins => _loaded.Values.Select(x => x.Plugin).ToList();
+    public IReadOnlyList<IGatewayPlugin> LoadedPlugins => _loaded.Values.Select(x => x.CurrentPlugin).OfType<IGatewayPlugin>().ToList();
 
     public void ActivateEnabled(
         Func<string, bool> isEnabled,
@@ -95,6 +98,10 @@ public sealed class ExternalGatewayPluginHost : IDisposable
         out string? error)
     {
         error = null;
+        lock (_shutdownGate)
+        {
+            if (_shutdownTask != null) { error = "External plugin host is stopping."; return false; }
+        }
         if (!_registrations.TryGetValue(pluginId, out var registration))
         {
             error = $"External plugin '{pluginId}' was not discovered.";
@@ -117,19 +124,18 @@ public sealed class ExternalGatewayPluginHost : IDisposable
         return Load(registration, out error);
     }
 
-    public void Deactivate(string pluginId)
-    {
-        if (_loaded.Remove(pluginId, out var loaded))
-        {
-            var contextReference = new WeakReference(loaded.Context, trackResurrection: false);
-            _unloadingContexts[pluginId] = contextReference;
-            loaded.Context.Unload();
-            loaded = null;
-            UpdateStatus(pluginId, ExternalPluginRegistrationStatus.UnloadPending, isCollectible: true, isLoadContextAlive: contextReference.IsAlive);
-            return;
-        }
+    public void Deactivate(string pluginId) => DeactivateAsync(pluginId).AsTask().GetAwaiter().GetResult();
 
-        if (_registrations.ContainsKey(pluginId))
+    public async ValueTask DeactivateAsync(string pluginId)
+    {
+        ExternalPluginRuntimeLoad? loaded;
+        lock (_shutdownGate) _loaded.TryGetValue(pluginId, out loaded);
+        if (loaded != null)
+        {
+            try { await loaded.DisposeAsync().ConfigureAwait(false); }
+            finally { lock (_shutdownGate) _loaded.TryRemove(new KeyValuePair<string, ExternalPluginRuntimeLoad>(pluginId, loaded)); }
+        }
+        else if (_registrations.ContainsKey(pluginId))
         {
             UpdateStatus(pluginId, ExternalPluginRegistrationStatus.Disabled);
         }
@@ -183,6 +189,7 @@ public sealed class ExternalGatewayPluginHost : IDisposable
 
     public ExternalPluginRuntimeLoad LoadRuntime(string pluginId)
     {
+        lock (_shutdownGate) ObjectDisposedException.ThrowIf(_shutdownTask != null, this);
         if (!_registrations.TryGetValue(pluginId, out var registration))
         {
             throw new KeyNotFoundException($"External plugin manifest '{pluginId}' was not discovered.");
@@ -245,18 +252,25 @@ public sealed class ExternalGatewayPluginHost : IDisposable
 
     private bool Load(ExternalPluginRegistration registration, out string? error)
     {
-        try
+        lock (_shutdownGate)
         {
-            var runtime = LoadRuntime(registration.Manifest.Id);
-            _unloadingContexts.Remove(registration.Manifest.Id);
-            _loaded[registration.Manifest.Id] = new LoadedExternalPlugin(runtime.Plugin, runtime.DetachContext());
-            error = null;
-            return true;
-        }
-        catch (Exception ex)
-        {
-            error = ex.Message;
-            return false;
+            try
+            {
+                ObjectDisposedException.ThrowIf(_shutdownTask != null, this);
+                if (!_loaded.ContainsKey(registration.Manifest.Id))
+                {
+                    var runtime = LoadRuntime(registration.Manifest.Id);
+                    _unloadingContexts.TryRemove(registration.Manifest.Id, out _);
+                    _loaded[registration.Manifest.Id] = runtime;
+                }
+                error = null;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+                return false;
+            }
         }
     }
 
@@ -302,7 +316,7 @@ public sealed class ExternalGatewayPluginHost : IDisposable
         bool isCollectible = false,
         bool? isLoadContextAlive = null)
     {
-        var current = _registrations[pluginId];
+        if (!_registrations.TryGetValue(pluginId, out var current)) return;
         _registrations[pluginId] = current with
         {
             Status = status,
@@ -323,7 +337,7 @@ public sealed class ExternalGatewayPluginHost : IDisposable
             }
 
             UpdateStatus(pluginId, ExternalPluginRegistrationStatus.Unloaded, isCollectible: true, isLoadContextAlive: false);
-            _unloadingContexts.Remove(pluginId);
+            _unloadingContexts.TryRemove(pluginId, out _);
         }
     }
 
@@ -416,8 +430,8 @@ public sealed class ExternalGatewayPluginHost : IDisposable
                 Directory.Delete(pluginDir, recursive: true);
             }
 
-            _registrations.Remove(pluginId);
-            _unloadingContexts.Remove(pluginId);
+            _registrations.TryRemove(pluginId, out _);
+            _unloadingContexts.TryRemove(pluginId, out _);
             if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
             {
                 _logger.LogInformation("External plugin {PluginId} uninstalled", pluginId);
@@ -505,17 +519,28 @@ public sealed class ExternalGatewayPluginHost : IDisposable
         }
     }
 
-    public void Dispose()
+    public void Dispose() => DisposeAsync().AsTask().GetAwaiter().GetResult();
+
+    public ValueTask DisposeAsync()
     {
-        foreach (var pluginId in _loaded.Keys.ToArray())
+        lock (_shutdownGate) return new ValueTask(_shutdownTask ??= DisposeOwnedAsync());
+    }
+
+    private async Task DisposeOwnedAsync()
+    {
+        await Task.Yield();
+        var failures = new List<Exception>();
+        string[] pluginIds;
+        lock (_shutdownGate) pluginIds = _loaded.Keys.ToArray();
+        foreach (var pluginId in pluginIds)
         {
-            Deactivate(pluginId);
+            try { await DeactivateAsync(pluginId).ConfigureAwait(false); }
+            catch (Exception ex) { failures.Add(ex); }
         }
 
         _loaded.Clear();
+        if (failures.Count > 0) throw new AggregateException("External plugin host shutdown failed.", failures);
     }
-
-    private sealed record LoadedExternalPlugin(IGatewayPlugin Plugin, AssemblyLoadContext Context);
 
     private sealed class CollectiblePluginLoadContext : AssemblyLoadContext
     {
@@ -550,42 +575,66 @@ public sealed class ExternalGatewayPluginHost : IDisposable
 public sealed class ExternalPluginRuntimeLoad : IAsyncDisposable
 {
     private AssemblyLoadContext? _context;
+    private IGatewayPlugin? _plugin;
     private readonly Action<WeakReference> _onUnload;
+    private readonly object _disposeGate = new();
+    private Task? _disposeTask;
 
     internal ExternalPluginRuntimeLoad(IGatewayPlugin plugin, AssemblyLoadContext context, Action<WeakReference> onUnload)
     {
-        Plugin = plugin;
+        _plugin = plugin;
         _context = context;
         _onUnload = onUnload;
     }
 
-    public IGatewayPlugin Plugin { get; }
-
-    internal AssemblyLoadContext DetachContext() =>
-        Interlocked.Exchange(ref _context, null)
-        ?? throw new ObjectDisposedException(nameof(ExternalPluginRuntimeLoad));
+    internal IGatewayPlugin? CurrentPlugin => Volatile.Read(ref _plugin);
+    public IGatewayPlugin Plugin => CurrentPlugin ?? throw new ObjectDisposedException(nameof(ExternalPluginRuntimeLoad));
 
     public ValueTask DisposeAsync()
     {
-        if (Plugin is IPluginRuntimeResource runtimeResource)
-        {
-            try { runtimeResource.StopResourceAsync(CancellationToken.None).AsTask().GetAwaiter().GetResult(); }
-            catch { }
-        }
-        if (Plugin is IDisposable disposable)
-        {
-            disposable.Dispose();
-        }
-
-        var context = Interlocked.Exchange(ref _context, null);
-        if (context != null)
-        {
-            var reference = new WeakReference(context, trackResurrection: false);
-            context.Unload();
-            _onUnload(reference);
-        }
-        return ValueTask.CompletedTask;
+        lock (_disposeGate) return new ValueTask(_disposeTask ??= DisposeOwnedAsync());
     }
+
+    private async Task DisposeOwnedAsync()
+    {
+        var plugin = Interlocked.Exchange(ref _plugin, null);
+        var context = Interlocked.Exchange(ref _context, null);
+        var failures = new List<Exception>();
+        try
+        {
+            if (plugin is IPluginRuntimeResource resource)
+            {
+                try { await resource.StopResourceAsync(CancellationToken.None).ConfigureAwait(false); }
+                catch (Exception ex) { failures.Add(DetachedFailure(ex)); }
+                finally { resource = null!; }
+            }
+            try
+            {
+                if (plugin is IAsyncDisposable asynchronous)
+                {
+                    try { await asynchronous.DisposeAsync().ConfigureAwait(false); }
+                    finally { asynchronous = null!; }
+                }
+                else if (plugin is IDisposable disposable) disposable.Dispose();
+            }
+            catch (Exception ex) { failures.Add(DetachedFailure(ex)); }
+        }
+        finally
+        {
+            plugin = null;
+            if (context != null)
+            {
+                var reference = new WeakReference(context, trackResurrection: false);
+                context.Unload();
+                context = null;
+                _onUnload(reference);
+            }
+        }
+        if (failures.Count > 0) throw new AggregateException("External plugin shutdown failed.", failures);
+    }
+
+    // Retained failure tasks must not keep collectible exception types or stack frames alive.
+    private static Exception DetachedFailure(Exception failure) => new InvalidOperationException($"{failure.GetType().FullName}: {failure.Message}");
 }
 
 /// <summary>Semantic-version dependency validation used before an external assembly is loaded.</summary>

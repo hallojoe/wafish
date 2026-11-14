@@ -30,6 +30,8 @@ public sealed class RequestRetryBindingOptions
     public int BackoffBaseMs { get; set; } = 100;
     public int BackoffJitterMs { get; set; } = 50;
     public int TimeoutSeconds { get; set; } = 30;
+    public int TotalTimeoutSeconds { get; set; } = 120;
+    public int MaxRetryAfterSeconds { get; set; } = 60;
     public bool RetryOnExceptions { get; set; } = true;
     public bool UseDifferentDestination { get; set; }
     public bool RetryNonIdempotent { get; set; }
@@ -137,4 +139,6 @@ public sealed record ServiceDiscoveryExecutionConfig
     public string Scheme { get; init; } = "http";
     public int RefreshSeconds { get; init; } = 30;
     public int RequestTimeoutSeconds { get; init; } = 5;
+    public int MaxStaleSeconds { get; init; }
+    public string StalePolicy { get; init; } = "RetainLastKnown";
 }

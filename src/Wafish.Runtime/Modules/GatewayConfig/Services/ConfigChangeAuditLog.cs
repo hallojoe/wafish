@@ -16,7 +16,7 @@ namespace Wafish.Dashboard.Modules.GatewayConfig.Services;
 /// Config-change events are queued for the administration event dispatcher
 /// to guarantee delivery even when the first request arrives before all consumers are constructed.
 /// </summary>
-public class ConfigChangeAuditLog : IConfigChangeAuditLog
+public class ConfigChangeAuditLog : IConfigChangeAuditLog, IAsyncDisposable
 {
     private static readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -30,6 +30,9 @@ public class ConfigChangeAuditLog : IConfigChangeAuditLog
     private int _totalCount;
     private long _evictedCount;
     private readonly Lazy<Task> _loadTask;
+    private readonly object _lifetimeGate = new();
+    private readonly HashSet<Task> _pendingWrites = [];
+    private Task? _shutdownTask;
 
     private readonly ConcurrentQueue<PendingNotification> _pendingNotifications = new();
     private readonly IAuditLogRepository _auditRepo;
@@ -51,10 +54,16 @@ public class ConfigChangeAuditLog : IConfigChangeAuditLog
         try
         {
             var persisted = await _auditRepo.GetAuditLogsAsync(MaxCapacity);
-            foreach (var entity in persisted)
+            lock (_lifetimeGate)
             {
-                _entries.Enqueue(entity.ToConfigChangeAudit());
-                Interlocked.Increment(ref _totalCount);
+                // Merge before trimming: writes accepted during loading must remain newer than stored history.
+                var merged = persisted.Select(entity => entity.ToConfigChangeAudit()).Concat(_entries)
+                    .OrderBy(entry => entry.Timestamp).ToArray();
+                var skipped = Math.Max(0, merged.Length - MaxCapacity);
+                _entries.Clear();
+                foreach (var entry in merged.Skip(skipped)) _entries.Enqueue(entry);
+                _totalCount = merged.Length - skipped;
+                Interlocked.Add(ref _evictedCount, skipped);
             }
             if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Debug))
             {
@@ -68,64 +77,77 @@ public class ConfigChangeAuditLog : IConfigChangeAuditLog
     }
 
     /// <summary>Non-blocking ensure loaded for synchronous contexts.</summary>
-    private void EnsureLoaded() => _ = _loadTask.Value;
+    private void EnsureLoaded()
+    {
+        lock (_lifetimeGate)
+        {
+            ObjectDisposedException.ThrowIf(_shutdownTask != null, this);
+            _ = _loadTask.Value;
+        }
+    }
 
     /// <inheritdoc />
     public void Record(ConfigChangeAudit entry)
     {
-        EnsureLoaded();
-
-        _entries.Enqueue(entry);
-        var count = Interlocked.Increment(ref _totalCount);
-
-        while (count > MaxCapacity)
+        lock (_lifetimeGate)
         {
-            if (_entries.TryDequeue(out _))
+            EnsureLoaded();
+
+            _entries.Enqueue(entry);
+            var count = Interlocked.Increment(ref _totalCount);
+
+            while (count > MaxCapacity)
             {
-                Interlocked.Decrement(ref _totalCount);
-                Interlocked.Increment(ref _evictedCount);
-                count--;
+                if (_entries.TryDequeue(out _))
+                {
+                    Interlocked.Decrement(ref _totalCount);
+                    Interlocked.Increment(ref _evictedCount);
+                    count--;
+                }
+                else
+                {
+                    break;
+                }
             }
-            else
+
+            if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Debug))
             {
-                break;
+                _logger.LogDebug("Audit queued: {Action} on '{Target}' — {Status}",
+                    entry.Action, entry.Target,
+                    entry.Success ? "OK" : $"FAIL: {entry.ErrorMessage}");
             }
-        }
 
-        if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Debug))
-        {
-            _logger.LogDebug("Audit queued: {Action} on '{Target}' — {Status}",
-                entry.Action, entry.Target,
-                entry.Success ? "OK" : $"FAIL: {entry.ErrorMessage}");
-        }
-
-        // Persist to repository (fire-and-forget)
-        _ = Task.Run(async () =>
-        {
-            try
+            // Retain background ownership until host disposal joins every accepted write.
+            Task? write = null;
+            write = Task.Run(async () =>
             {
-                // Finish the initial read before a new write can appear in that read.
-                await _loadTask.Value.ConfigureAwait(false);
-                var entity = entry.ToEntity();
-                entity.BeforeData = SafeErrorMessages.Redact(entity.BeforeData);
-                entity.AfterData = SafeErrorMessages.Redact(entity.AfterData);
-                entity.ErrorMessage = SafeErrorMessages.Redact(entity.ErrorMessage);
-                await _auditRepo.SaveAuditLogAsync(entity);
-            }
-            catch (Exception ex) { _logger.LogWarning(ex, "Failed to persist audit entry"); }
-        });
-
-        // Queue the notification for the background dispatcher to deliver.
-        // This is reliable regardless of when consumers are constructed.
-        if (entry.Success)
-        {
-            _pendingNotifications.Enqueue(new PendingNotification
-            {
-                EventType = entry.Action,
-                Target = entry.Target,
-                Operator = entry.Operator,
-                Details = entry.After
+                try
+                {
+                    // Finish the initial read before a new write can appear in that read.
+                    await _loadTask.Value.ConfigureAwait(false);
+                    var entity = entry.ToEntity();
+                    entity.BeforeData = SafeErrorMessages.Redact(entity.BeforeData);
+                    entity.AfterData = SafeErrorMessages.Redact(entity.AfterData);
+                    entity.ErrorMessage = SafeErrorMessages.Redact(entity.ErrorMessage);
+                    await _auditRepo.SaveAuditLogAsync(entity);
+                }
+                catch (Exception ex) { _logger.LogWarning(ex, "Failed to persist audit entry"); }
+                finally { lock (_lifetimeGate) _pendingWrites.Remove(write!); }
             });
+            _pendingWrites.Add(write);
+
+            // Queue the notification for the background dispatcher to deliver.
+            // This is reliable regardless of when consumers are constructed.
+            if (entry.Success)
+            {
+                _pendingNotifications.Enqueue(new PendingNotification
+                {
+                    EventType = entry.Action,
+                    Target = entry.Target,
+                    Operator = entry.Operator,
+                    Details = entry.After
+                });
+            }
         }
     }
 
@@ -163,7 +185,8 @@ public class ConfigChangeAuditLog : IConfigChangeAuditLog
     {
         EnsureLoaded();
 
-        var entries = _entries.ToArray();
+        ConfigChangeAudit[] entries;
+        lock (_lifetimeGate) entries = _entries.ToArray();
         if (entries.Length <= 1)
         {
             return entries.Take(count).ToList();
@@ -181,8 +204,9 @@ public class ConfigChangeAuditLog : IConfigChangeAuditLog
         page = Math.Max(1, page);
         pageSize = Math.Clamp(pageSize, 1, MaxCapacity);
 
-        IEnumerable<ConfigChangeAudit> query = _entries.ToArray()
-            .OrderByDescending(e => e.Timestamp);
+        ConfigChangeAudit[] snapshot;
+        lock (_lifetimeGate) snapshot = _entries.ToArray();
+        IEnumerable<ConfigChangeAudit> query = snapshot.OrderByDescending(e => e.Timestamp);
 
         if (!string.IsNullOrWhiteSpace(action))
         {
@@ -200,7 +224,7 @@ public class ConfigChangeAuditLog : IConfigChangeAuditLog
     }
 
     /// <inheritdoc />
-    public int Count => _entries.Count;
+    public int Count { get { lock (_lifetimeGate) return _entries.Count; } }
 
     /// <inheritdoc />
     public long EvictedCount => Volatile.Read(ref _evictedCount);
@@ -219,4 +243,19 @@ public class ConfigChangeAuditLog : IConfigChangeAuditLog
     /// <inheritdoc />
     public void InvokeOnConfigChanged(string eventType, string target, string? @operator, object? details)
         => OnConfigChanged?.Invoke(eventType, target, @operator, details);
+    /// <summary>Stop admission and join the initial read and all accepted background writes.</summary>
+    public ValueTask DisposeAsync()
+    {
+        lock (_lifetimeGate)
+        {
+            if (_shutdownTask == null)
+            {
+                var work = _pendingWrites.ToList();
+                if (_loadTask.IsValueCreated) work.Add(_loadTask.Value);
+                _shutdownTask = Task.WhenAll(work);
+            }
+            return new ValueTask(_shutdownTask);
+        }
+    }
+
 }

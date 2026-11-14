@@ -11,6 +11,8 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Verify algorithm-specific Retry-After values, queue cancellation, and partition churn with `--lifetime-stress`.
+
 - Local counters belong to the runtime store, not static mutable plugin fields.
 - Keep algorithm defaults aligned with manifest schemas and compiled execution plans.
 - Honor request cancellation while waiting for a permit.

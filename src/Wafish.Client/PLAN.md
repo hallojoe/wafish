@@ -54,7 +54,11 @@ This implements the behavior currently covered by proposal IMP-02.
 
 ### FEAT-02: Return structured registration outcomes
 
-Status: TODO. Priority: P2. Type: feature.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [mutation and lifecycle contracts](../../tests/Wafish.Regression/evidence/mutation-contracts/README.md).
+Release build, 200 main cases, 35 administration cases, and 23 browser cases pass.
+Changed C# coverage is 87.36%. Three isolated package consumers and six compatibility guards pass. Priority: P2. Type: feature.
 
 Evidence: [GatewayAutoRegistrationClient.cs](Services/GatewayAutoRegistrationClient.cs), `RegisterWithGrpcAsync` and `UpdateDestinationsAsync`.
 

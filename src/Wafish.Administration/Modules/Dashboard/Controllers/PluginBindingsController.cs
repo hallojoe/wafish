@@ -13,6 +13,7 @@ namespace Wafish.Dashboard.Modules.Dashboard.Controllers;
 
 /// <summary>Manages plugin configuration bindings for routes and clusters.</summary>
 [ApiController]
+[Wafish.Filters.ConfigurationMutation]
 [Route("api/plugin-bindings")]
 public sealed class PluginBindingsController : ControllerBase
 {

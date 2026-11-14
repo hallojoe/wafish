@@ -1,0 +1,6 @@
+PASS: removing a public API fails compatibility validation
+PASS: new abstract interface member has the expected compatibility result
+PASS: new default interface member has the expected compatibility result
+PASS: record constructor change has the expected compatibility result
+PASS: new interface type has the expected compatibility result
+PASS: removing a package assembly fails compatibility validation

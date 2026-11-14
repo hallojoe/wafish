@@ -1,0 +1,13 @@
+PASS: Registration outcomes: HTTP and gRPC preserve application statuses and revisions
+PASS: Registration outcomes: transport failures retain uncertainty and credential classification
+PASS: Registration outcomes: caller cancellation propagates and disabled operations stay local
+PASS: Registration outcomes: wire omissions and malformed responses do not invent confirmed revisions
+PASS: Registration protocol: validation, conflicts, storage, activation, and internal errors remain distinct
+PASS: Audit lifetime: shutdown joins lazy loading and accepted writes before releasing storage
+PASS: Plugin lifecycle contract: repeated reconciliation and partial-start cleanup retain ownership
+PASS: Plugin lifecycle contract: cancelled partial startup performs uncancelled cleanup
+PASS: Plugin lifecycle contract: shutdown joins startup and prevents restart after cleanup
+PASS: Plugin lifecycle contract: stop and health failures do not skip peer cleanup
+PASS: Registration wire: legacy fields, additive extensions, optional presence, and round trips remain compatible
+PASS: Mutation responses: all configuration outcomes share HTTP status, outcome, and revision fields
+PASS: Mutation responses: safe exceptions preserve typed failures and caller cancellation

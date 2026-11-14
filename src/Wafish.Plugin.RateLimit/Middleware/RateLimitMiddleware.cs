@@ -96,7 +96,7 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
             context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
             context.Response.ContentType = "application/json";
 
-            var retryAfter = GetRetryAfterSeconds(config);
+            var retryAfter = GetRetryAfterSeconds(config, lease);
             if (retryAfter > 0)
             {
                 context.Response.Headers.RetryAfter = retryAfter.ToString();
@@ -252,10 +252,19 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
         };
     }
 
-    private static int GetRetryAfterSeconds(RouteRateLimitConfig config)
+    private static int GetRetryAfterSeconds(RouteRateLimitConfig config, RateLimitLease? lease)
     {
-        var window = ParseTimeSpan(config.Window);
-        return Math.Max(1, (int)Math.Ceiling(window.TotalSeconds));
+        if (lease != null && lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        {
+            return Math.Max(1, (int)Math.Ceiling(retryAfter.TotalSeconds));
+        }
+        var interval = config.Algorithm switch
+        {
+            RateLimitAlgorithm.TokenBucket => ParseTimeSpan(config.ReplenishmentPeriod),
+            RateLimitAlgorithm.Concurrency => TimeSpan.FromSeconds(1),
+            _ => ParseTimeSpan(config.Window)
+        };
+        return Math.Max(1, (int)Math.Ceiling(interval.TotalSeconds));
     }
 
     private sealed class RouteRateLimitConfig

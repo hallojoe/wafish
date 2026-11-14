@@ -17,7 +17,7 @@ namespace Wafish.Services;
 ///
 /// Config priority (high to low): code > env vars > appsettings.json.
 /// </summary>
-public class GatewayAutoRegistrationClient
+public partial class GatewayAutoRegistrationClient
 {
     private long _registrationVersion = -1;
 
@@ -57,12 +57,16 @@ public class GatewayAutoRegistrationClient
     }
 
     /// <summary>Register this service's route with the gateway.</summary>
-    public async Task<bool> RegisterAsync(CancellationToken ct = default)
+    public async Task<bool> RegisterAsync(CancellationToken ct = default) => (await RegisterResultAsync(ct).ConfigureAwait(false)).Success;
+
+    /// <summary>Register with revision and retry information. Caller cancellation propagates.</summary>
+    public async Task<RegistrationResult> RegisterResultAsync(CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         if (!RegistrationOptionsResolver.IsEnabled(_options))
         {
             _logger.LogDebug("Auto-registration disabled (no GatewayUrl configured)");
-            return false;
+            return new(false, RegistrationStatus.Disabled, "Auto-registration is disabled.");
         }
 
         var gatewayUrl = _options.GatewayUrl;
@@ -78,7 +82,7 @@ public class GatewayAutoRegistrationClient
         if (string.IsNullOrWhiteSpace(gatewayUrl) || string.IsNullOrWhiteSpace(destinationAddress))
         {
             _logger.LogWarning("Registration info incomplete, skipping");
-            return false;
+            return new(false, RegistrationStatus.ValidationRejected, "Gateway URL and destination address are required.");
         }
 
         if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Debug))
@@ -144,144 +148,60 @@ public class GatewayAutoRegistrationClient
                 clientIp = useIpIsolation ? GetLocalIpv4() : null
             }, _jsonOptions);
 
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            using var content = new StringContent(json, Encoding.UTF8, "application/json");
             var url = $"{gatewayUrl.TrimEnd('/')}/api/gateway/register-route";
-
-            var response = await http.PostAsync(url, content, ct).ConfigureAwait(false);
-            var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-
-            if (response.IsSuccessStatusCode)
-            {
-                if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
-                {
-                    _logger.LogInformation("Registration OK: {Body}", body);
-                }
-                return true;
-            }
-
-            _logger.LogWarning("Registration failed ({StatusCode}): {Body}", (int)response.StatusCode, body);
-            return false;
+            using var response = await http.PostAsync(url, content, ct).ConfigureAwait(false);
+            return await ReadResultAsync(response, ct).ConfigureAwait(false);
         }
-        catch (HttpRequestException ex)
-        {
-            _logger.LogWarning(ex, "Gateway unreachable ({Url}), skipping", gatewayUrl);
-            return false;
-        }
-        catch (TaskCanceledException)
-        {
-            _logger.LogWarning("Registration timed out ({Url}), skipping", gatewayUrl);
-            return false;
-        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (OperationCanceledException) { return new(false, RegistrationStatus.DeadlineExceeded, "Registration timed out. Inspect the gateway before retrying."); }
+        catch (HttpRequestException) { return new(false, RegistrationStatus.Unavailable, "Gateway transport failed. Inspect the gateway before retrying."); }
+        catch (RpcException ex) { return RpcResult(ex, ct); }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected registration error");
-            return false;
+            return new(false, RegistrationStatus.InternalError, "Registration failed. Inspect the gateway before retrying.");
         }
     }
 
     /// <summary>Unregister this service's route from the gateway.</summary>
     public async Task<bool> UnregisterAsync(CancellationToken ct = default)
     {
-        var gatewayUrl = _options.GatewayUrl;
+        var result = await UnregisterResultAsync(ct).ConfigureAwait(false);
+        return result.Success || result.Status == RegistrationStatus.NotFound;
+    }
+
+    /// <summary>Unregister with revision and retry information. Caller cancellation propagates.</summary>
+    public async Task<RegistrationResult> UnregisterResultAsync(CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (string.IsNullOrWhiteSpace(_options.GatewayUrl)) return new(false, RegistrationStatus.Disabled, "Gateway URL is not configured.");
         var routeName = RegistrationOptionsResolver.GetRouteName(_options);
-        var useGrpcRegistration = _options.UseGrpcRegistration == true;
-
-        if (string.IsNullOrWhiteSpace(gatewayUrl))
-        {
-            _logger.LogWarning("GatewayUrl not configured, skipping unregistration");
-            return false;
-        }
-
         try
         {
-            if (useGrpcRegistration)
+            if (_options.UseGrpcRegistration == true)
             {
-                try
-                {
-                    var callOptions = BuildGrpcCallOptions(ct);
-                    var grpcResponse = await _grpcClient.UnregisterServiceAsync(new UnregisterServiceRequest
-                    {
-                        ServiceId = routeName,
-                        InstanceId = _options.InstanceId ?? ""
-                    }, callOptions).ConfigureAwait(false);
-
-                    if (grpcResponse.Success)
-                    {
-                        if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
-                        {
-                            _logger.LogInformation("gRPC unregistration OK: {Message}", grpcResponse.Message);
-                        }
-                        return true;
-                    }
-
-                    _logger.LogWarning("gRPC unregistration failed: {Message}", grpcResponse.Message);
-                    return false;
-                }
-                catch (RpcException ex)
-                {
-                    _logger.LogWarning(ex, "gRPC unregistration RPC error: {Status}", ex.Status);
-                    return false;
-                }
+                var response = await _grpcClient.UnregisterServiceAsync(new UnregisterServiceRequest
+                    { ServiceId = routeName, InstanceId = _options.InstanceId ?? "" }, BuildGrpcCallOptions(ct)).ConfigureAwait(false);
+                return RegistrationResult.Remote(response.Success, response.Message, response.Status,
+                    response.HasPersistedVersion ? response.PersistedVersion : null, response.HasActiveVersion ? response.ActiveVersion : null);
             }
-
             using var http = _httpClientFactory.CreateClient();
             http.Timeout = TimeSpan.FromSeconds(RegistrationOptionsResolver.GetTimeoutSeconds(_options));
             ApplyAuthHeaders(http);
-
+            var url = $"{_options.GatewayUrl.TrimEnd('/')}/api/gateway/{Uri.EscapeDataString(routeName)}";
             var clientIp = RegistrationOptionsResolver.UseIpIsolation(_options) ? GetLocalIpv4() : null;
-            var url = $"{gatewayUrl.TrimEnd('/')}/api/gateway/{routeName}";
-            if (!string.IsNullOrWhiteSpace(clientIp))
-            {
-                url += $"?clientIp={Uri.EscapeDataString(clientIp)}";
-            }
-
-            if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
-            {
-                _logger.LogInformation("Unregistering: [{RouteName}] (ClientIp: {ClientIp})", routeName, clientIp ?? "N/A");
-            }
-
-            var response = await http.DeleteAsync(url, ct).ConfigureAwait(false);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-                if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
-                {
-                    _logger.LogInformation("Unregistration OK: {Body}", body);
-                }
-                return true;
-            }
-
-            if (response.StatusCode == HttpStatusCode.NotFound)
-            {
-                if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
-                {
-                    _logger.LogInformation("Route [{RouteName}] no longer exists, ignoring", routeName);
-                }
-                return true;
-            }
-
-            _logger.LogWarning("Unregistration failed ({StatusCode})", (int)response.StatusCode);
-            return false;
+            if (!string.IsNullOrWhiteSpace(clientIp)) url += $"?clientIp={Uri.EscapeDataString(clientIp)}";
+            using var responseHttp = await http.DeleteAsync(url, ct).ConfigureAwait(false);
+            return await ReadResultAsync(responseHttp, ct).ConfigureAwait(false);
         }
-        catch (HttpRequestException ex)
-        {
-            _logger.LogWarning(ex, "Gateway unreachable, skipping unregistration");
-            return false;
-        }
-        catch (TaskCanceledException)
-        {
-            _logger.LogWarning("Unregistration timed out, skipping");
-            return false;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected unregistration error");
-            return false;
-        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (OperationCanceledException) { return new(false, RegistrationStatus.DeadlineExceeded, "Unregistration timed out. Inspect the gateway before retrying."); }
+        catch (HttpRequestException) { return new(false, RegistrationStatus.Unavailable, "Gateway transport failed. Inspect the gateway before retrying."); }
+        catch (RpcException ex) { return RpcResult(ex, ct); }
     }
 
-    private async Task<bool> RegisterWithGrpcAsync(
+    private async Task<RegistrationResult> RegisterWithGrpcAsync(
         string routeName,
         string clusterName,
         string destinationAddress,
@@ -329,23 +249,10 @@ public class GatewayAutoRegistrationClient
                 Interlocked.Exchange(ref _registrationVersion, response.ActiveVersion);
             }
 
-            if (response.Success)
-            {
-                if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
-                {
-                    _logger.LogInformation("gRPC registration OK: {Message}", response.Message);
-                }
-                return true;
-            }
-
-            _logger.LogWarning("gRPC registration failed: {Message}", response.Message);
-            return false;
+            return RegistrationResult.Remote(response.Success, response.Message, response.Status,
+                response.HasPersistedVersion ? response.PersistedVersion : null, response.HasActiveVersion ? response.ActiveVersion : null);
         }
-        catch (RpcException ex)
-        {
-            _logger.LogWarning(ex, "gRPC registration RPC error: {Status}", ex.Status);
-            return false;
-        }
+        catch (RpcException ex) { return RpcResult(ex, ct); }
     }
 
     /// <summary>
@@ -411,7 +318,7 @@ public class GatewayAutoRegistrationClient
             metadata.Add("x-api-key", _options.ApiKey);
         }
 
-        return new CallOptions(headers: metadata, cancellationToken: ct);
+        return new CallOptions(headers: metadata, deadline: DateTime.UtcNow.AddSeconds(RegistrationOptionsResolver.GetTimeoutSeconds(_options)), cancellationToken: ct);
     }
 
     /// <summary>Resolve localhost/127.0.0.1/0.0.0.0 in destination to LAN IPv4 with listening check.</summary>
@@ -588,6 +495,7 @@ public class GatewayAutoRegistrationClient
                 }
                 catch (RpcException ex)
                 {
+                    ct.ThrowIfCancellationRequested();
                     _logger.LogWarning(ex, "gRPC heartbeat RPC error: {Status}", ex.Status);
                     return false;
                 }
@@ -604,10 +512,11 @@ public class GatewayAutoRegistrationClient
                 url += $"?clientIp={Uri.EscapeDataString(clientIp)}";
             }
 
-            var response = await http.PostAsync(url, null, ct).ConfigureAwait(false);
+            using var response = await http.PostAsync(url, null, ct).ConfigureAwait(false);
 
             return response.IsSuccessStatusCode;
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
         catch
         {
             return false;
@@ -638,6 +547,7 @@ public class GatewayAutoRegistrationClient
         }
         catch (RpcException ex)
         {
+            ct.ThrowIfCancellationRequested();
             _logger.LogWarning(ex, "gRPC GetServices RPC error: {Status}", ex.Status);
             return null;
         }
@@ -648,22 +558,26 @@ public class GatewayAutoRegistrationClient
     /// (requires <c>UseGrpcRegistration</c>). Pass the full destination set — it replaces the existing one.
     /// </summary>
     public async Task<bool> UpdateDestinationsAsync(IReadOnlyList<string> addresses, CancellationToken ct = default)
+        => (await UpdateDestinationsResultAsync(addresses, ct).ConfigureAwait(false)).Success;
+
+    /// <summary>Replace owned destinations with explicit revisions and retry guidance.</summary>
+    public async Task<RegistrationResult> UpdateDestinationsResultAsync(IReadOnlyList<string> addresses, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         if (_options.UseGrpcRegistration != true)
         {
             _logger.LogWarning("UpdateDestinationsAsync is only available in gRPC registration mode");
-            return false;
+            return new(false, RegistrationStatus.Disabled, "Destination updates require gRPC registration.");
         }
 
         if (addresses == null || addresses.Count == 0)
         {
             _logger.LogWarning("UpdateDestinationsAsync requires at least one address");
-            return false;
+            return new(false, RegistrationStatus.ValidationRejected, "At least one destination address is required.");
         }
 
         try
         {
-            var clusterName = RegistrationOptionsResolver.GetClusterName(_options);
             var request = new UpdateDestinationsRequest { ServiceId = RegistrationOptionsResolver.GetRouteName(_options),
                 InstanceId = _options.InstanceId ?? "", ExpectedVersion = Interlocked.Read(ref _registrationVersion) };
             for (int i = 0; i < addresses.Count; i++)
@@ -693,12 +607,13 @@ public class GatewayAutoRegistrationClient
                 _logger.LogWarning("gRPC UpdateDestinations failed: {Message}", response.Message);
             }
 
-            return response.Success;
+            return RegistrationResult.Remote(response.Success, response.Message, response.Status,
+                response.HasPersistedVersion ? response.PersistedVersion : null, response.HasActiveVersion ? response.ActiveVersion : null);
         }
         catch (RpcException ex)
         {
             _logger.LogWarning(ex, "gRPC UpdateDestinations RPC error: {Status}", ex.Status);
-            return false;
+            return RpcResult(ex, ct);
         }
     }
 }

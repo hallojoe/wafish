@@ -11,6 +11,8 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Keep every mapped administration action in the authorization matrix. Test revoked tokens against both APIs and existing hubs.
+
 - Keep this host free of the removed dashboard assembly and Razor assets.
 - Generate temporary credentials and isolate database and two-factor files.
 - Assert HTTP status and side effects, not only response text.

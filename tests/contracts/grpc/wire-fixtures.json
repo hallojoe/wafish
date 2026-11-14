@@ -1,0 +1,37 @@
+[
+  {
+    "name": "register-request-v1",
+    "type": "RegisterServiceRequest",
+    "hex": "0a07666978747572651207636c75737465721a042f617069221f0a036f6e651216687474703a2f2f6c6f63616c686f73743a393030302f18012a0f0a047465616d1207666978747572653002"
+  },
+  {
+    "name": "register-response-v1",
+    "type": "RegisterServiceResponse",
+    "hex": "080112026f6b1a07636c75737465722080e2cfaa062a0766697874757265"
+  },
+  {
+    "name": "register-response-current",
+    "type": "RegisterServiceResponse",
+    "hex": "080112026f6b1a07636c75737465722080e2cfaa062a076669787475726532074170706c696564380c400c"
+  },
+  {
+    "name": "register-response-future",
+    "type": "RegisterServiceResponse",
+    "hex": "080112026f6b1a07636c75737465722080e2cfaa062a0766697874757265ba0c106675747572652d657874656e73696f6e"
+  },
+  {
+    "name": "update-response-activation-failed",
+    "type": "UpdateDestinationsResponse",
+    "hex": "121573746f72656420627574206e6f74206163746976651a1041637469766174696f6e4661696c6564200c280b"
+  },
+  {
+    "name": "update-request-zero-version",
+    "type": "UpdateDestinationsRequest",
+    "hex": "0a07666978747572651a08696e7374616e63652000"
+  },
+  {
+    "name": "heartbeat-present-empty-destination",
+    "type": "HeartbeatRequest",
+    "hex": "0a07666978747572651200"
+  }
+]

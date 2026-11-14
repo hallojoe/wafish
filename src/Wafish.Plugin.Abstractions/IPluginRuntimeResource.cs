@@ -26,8 +26,13 @@ public interface IPluginRuntimeResource
     string PluginId { get; }
     string ResourceId { get; }
     string ResourceType { get; }
+    /// <summary>Start once. Repeated starts while running are no-ops. Caller cancellation must propagate.</summary>
+    /// <remarks>A failed or cancelled partial start retains cleanup ownership until StopResourceAsync completes.</remarks>
     ValueTask StartResourceAsync(CancellationToken cancellationToken);
+    /// <summary>Join owned work and release handles. Repeated stops after completion are no-ops.</summary>
+    /// <remarks>Stop must also handle partial startup. Cancellation may interrupt waiting; callers retain ownership and retry cleanup.</remarks>
     ValueTask StopResourceAsync(CancellationToken cancellationToken);
+    /// <summary>Read lifecycle state without starting work. Report faults without exposing credentials.</summary>
     ValueTask<PluginRuntimeResourceSnapshot> CheckHealthAsync(CancellationToken cancellationToken = default);
 }
 

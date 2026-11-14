@@ -1,14 +1,18 @@
 # Wafish.Plugin.Abstractions: proposed work
 
 Reviewed against source on 2026-11-14.
-All items below are TODO proposals, not implemented capabilities or scheduled commitments.
+Statuses distinguish completed contract work from remaining proposals.
 The [root execution plan](../../PLAN.md) remains the historical and cross-project record.
 
-## Improvements not yet implemented
+## Improvements
 
 ### IMP-01: Add contract compatibility checks
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [mutation and lifecycle contracts](../../tests/Wafish.Regression/evidence/mutation-contracts/README.md).
+Release build, 200 main cases, 35 administration cases, and 23 browser cases pass.
+Changed C# coverage is 87.36%. Three isolated package consumers and six compatibility guards pass.
 
 Check public interface and record changes during package updates.
 
@@ -16,7 +20,11 @@ Acceptance: Unexpected binary or source breaks fail a dedicated compatibility ch
 
 ### IMP-02: Clarify lifecycle failure contracts
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [mutation and lifecycle contracts](../../tests/Wafish.Regression/evidence/mutation-contracts/README.md).
+Release build, 200 main cases, 35 administration cases, and 23 browser cases pass.
+Changed C# coverage is 87.36%. Three isolated package consumers and six compatibility guards pass.
 
 Specify cancellation, repeat calls, and partial startup behavior for resources.
 

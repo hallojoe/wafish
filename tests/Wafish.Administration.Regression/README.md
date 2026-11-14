@@ -54,3 +54,15 @@ Set `WAFISH_TEST_REPORT` to a JSON output path before running the executable.
 Schema version 1 includes suite, case name, duration, status, and exception details.
 Normal exits write reports, including focused modes and failed assertions.
 Process termination cannot guarantee a report. CI also retains console logs.
+
+The authorization matrix checks all 87 mapped administration actions across four authentication modes.
+It tests anonymous, invalid, and authorized credentials without invoking action side effects.
+`--authorization-matrix` selects the matrix. `--sessions` also runs cleanup and session lifecycle checks.
+Session tests use controlled time and real HTTP/WebSocket connections.
+See [verification](../Wafish.Regression/evidence/administration-lifecycle/README.md).
+
+Shutdown checks hold authenticated overview and traffic sockets while notifications remain queued or in flight.
+They verify connection closure, exact notification accounting, and credential exclusion.
+
+Mutation contract checks cover model validation, configuration and registration writes, plugin persistence faults, and AI plugin discovery.
+Error assertions require Problem Details, named outcomes, and nullable revision fields.

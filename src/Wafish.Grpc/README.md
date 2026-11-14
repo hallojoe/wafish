@@ -47,3 +47,16 @@ Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in
 Existing field numbers remain unchanged. Requests without these fields fail explicitly.
 Updates replace only the registered instance destinations. Use authenticated administration APIs for full-cluster replacement.
 Instance IDs identify ownership within the trusted registration boundary; they are not independent authentication credentials.
+
+The generated C# namespace is `Wafish.GatewayRegistry`, matching the renamed client and server consumers.
+The protobuf package remains `wafish.v1`.
+
+Registration RPCs pass caller cancellation into configuration preparation.
+Cancellation after persistence starts does not abandon activation.
+
+## Outcome and wire compatibility
+
+Mutation outcomes use response `status` fields with optional stored and active revisions.
+Application failures preserve gRPC `OK`; unexpected service failures return sanitized `Internal` errors.
+Old responses without revisions remain valid. Fixed fixtures verify unknown fields and optional zero or empty values.
+See [protocol mappings](../../docs/mutation-contracts.md#grpc-mapping) and [wire fixtures](../../tests/contracts/grpc/README.md).

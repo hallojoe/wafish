@@ -216,7 +216,7 @@ public class GatewayPluginManager : IGatewayPluginManager, IPluginActivationStat
             }
 
             _logger.LogError(ex, "Failed to persist plugin '{PluginId}' state", pluginId);
-            return new(false, ex.Message);
+            return new(false, "Plugin state storage failed. The previous enabled state is unchanged.") { Status = PluginStateChangeStatus.StorageFailed };
         }
     }
 

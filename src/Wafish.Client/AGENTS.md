@@ -13,6 +13,8 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Preserve structured outcomes and unknown commit state. Propagate caller cancellation through mutation wrappers.
+
 - Do not add YARP or administration dependencies.
 - Preserve InstanceId when registering, sending heartbeats, and unregistering.
 - Use explicit GrpcUrl when the gateway exposes a separate gRPC listener.

@@ -1,0 +1,9 @@
+PASS: Lifetime: copied leases release once and direct disposal drains requests
+PASS: Lifetime: 64 replacements preserve overlapping requests through shutdown
+PASS: Lifetime: collectible contexts unload after success and shutdown faults
+PASS: Lifetime: external resources stop before domain dependencies are disposed
+PASS: Lifetime: limiter rejection status and headers match each algorithm
+PASS: Lifetime: concurrent legacy deactivation and host shutdown share ownership
+PASS: Lifetime: half-open probe contention and cancellation preserve the limit
+PASS: Lifetime: native limiter queues cancel and replenish at algorithm boundaries
+PASS: Lifetime: partition churn preserves active quotas and bounds retained state

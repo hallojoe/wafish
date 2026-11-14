@@ -30,14 +30,6 @@ using Yarp.ReverseProxy.Forwarder;
 
 using var report = new RegressionReport("main");
 
-if (args is ["--redis"])
-{
-    var started = System.Diagnostics.Stopwatch.GetTimestamp();
-    try { await RedisFailureChecks.RunLiveAsync(); report.Record("Live Redis integration", started); }
-    catch (Exception ex) { report.Record("Live Redis integration", started, ex); throw; }
-    return 0;
-}
-
 if (args is ["--dashboard-routes"])
 {
     Console.WriteLine(JsonSerializer.Serialize(await DashboardContractChecks.GetRoutesAsync(), new JsonSerializerOptions { WriteIndented = true }));
@@ -50,88 +42,36 @@ if (args is ["--migration-crash", var database, var ready])
     return 0;
 }
 
-var failures = new List<string>();
-if (args is ["--storage-reliability"])
-{
-    await StorageReliabilityChecks.RunAsync(RunAsync);
-    foreach (var failure in failures) Console.Error.WriteLine(failure);
-    return failures.Count == 0 ? 0 : 1;
-}
-
-if (args is ["--review-release"])
-{
-    await ReviewReleaseChecks.RunAsync(RunAsync);
-    foreach (var failure in failures)
-    {
-        Console.Error.WriteLine(failure);
-    }
-
-    return failures.Count == 0 ? 0 : 1;
-}
-if (args is ["--review-deployment"])
-{
-    await ReviewDeploymentChecks.RunAsync(RunAsync);
-    foreach (var failure in failures)
-    {
-        Console.Error.WriteLine(failure);
-    }
-
-    return failures.Count == 0 ? 0 : 1;
-}
-if (args is ["--review-accounting"])
-{
-    await ReviewAccountingChecks.RunAsync(RunAsync);
-    foreach (var failure in failures)
-    {
-        Console.Error.WriteLine(failure);
-    }
-
-    return failures.Count == 0 ? 0 : 1;
-}
-if (args is ["--review-lifecycle"])
-{
-    await ReviewLifecycleChecks.RunAsync(RunAsync);
-    foreach (var failure in failures)
-    {
-        Console.Error.WriteLine(failure);
-    }
-
-    return failures.Count == 0 ? 0 : 1;
-}
-
-
-if (args is ["--storage"])
-{
-    await SqliteEncryptionChecks.RunAsync(RunAsync);
-    foreach (var failure in failures)
-    {
-        Console.Error.WriteLine(failure);
-    }
-
-    return failures.Count == 0 ? 0 : 1;
-}
-
-await ReviewReleaseChecks.RunAsync(RunAsync);
-await ReviewDeploymentChecks.RunAsync(RunAsync);
-await ReviewAccountingChecks.RunAsync(RunAsync);
-await ReviewLifecycleChecks.RunAsync(RunAsync);
-await ReviewSecurityChecks.RunAsync(RunAsync);
-await RetryStreamingChecks.RunAsync(RunAsync);
-await ConfigurationTransactionChecks.RunAsync(RunAsync);
-await StorageReliabilityChecks.RunAsync(RunAsync);
-await StorageRepositoryChecks.RunAsync(RunAsync);
-await SonarRegressionChecks.RunAsync(RunAsync);
-await SecurityChecks.RunAsync(RunAsync);
-await SecurityBoundaryChecks.RunAsync(RunAsync);
-await ClientTlsChecks.RunAsync(RunAsync);
-await RegistrationClientChecks.RunAsync(RunAsync);
-await WafBodyChecks.RunAsync(RunAsync);
-await ResponseStreamingChecks.RunAsync(RunAsync);
-await RedisFailureChecks.RunAsync(RunAsync);
-await RuntimeHostChecks.RunAsync(RunAsync);
-await RunAsync("Runtime: split and isolated deployment modes preserve endpoint roles", RuntimeHostChecks.CheckEndpointModesAsync);
-await SqliteEncryptionChecks.RunAsync(RunAsync);
-await DashboardContractChecks.RunAsync(RunAsync);
+var registry = new RegressionCaseRegistry(report);
+await registry.DefineGroupAsync("runner", RegressionRegistryChecks.RunAsync);
+await registry.DefineGroupAsync("async-policy", AsyncConfigurationChecks.RunAsync);
+await registry.DefineGroupAsync("review-release", ReviewReleaseChecks.RunAsync);
+await registry.DefineGroupAsync("review-deployment", ReviewDeploymentChecks.RunAsync);
+await registry.DefineGroupAsync("review-accounting", ReviewAccountingChecks.RunAsync);
+await registry.DefineGroupAsync("review-lifecycle", ReviewLifecycleChecks.RunAsync);
+await registry.DefineGroupAsync("lifetime-stress", LifetimeStressChecks.RunAsync);
+await registry.DefineGroupAsync("contracts", RegistrationOutcomeChecks.RunAsync);
+await registry.DefineGroupAsync("contracts", PluginLifecycleContractChecks.RunAsync);
+await registry.DefineGroupAsync("contracts", RegistrationWireChecks.RunAsync);
+await registry.DefineGroupAsync("contracts", MutationResponseChecks.RunAsync);
+await registry.DefineGroupAsync("security", ReviewSecurityChecks.RunAsync);
+await registry.DefineGroupAsync("retry-streaming", RetryStreamingChecks.RunAsync);
+await registry.DefineGroupAsync("configuration", ConfigurationTransactionChecks.RunAsync);
+await registry.DefineGroupAsync("storage-reliability", StorageReliabilityChecks.RunAsync);
+await registry.DefineGroupAsync("repositories", StorageRepositoryChecks.RunAsync);
+await registry.DefineGroupAsync("sonar", SonarRegressionChecks.RunAsync);
+await registry.DefineGroupAsync("security", SecurityChecks.RunAsync);
+await registry.DefineGroupAsync("security", SecurityBoundaryChecks.RunAsync);
+await registry.DefineGroupAsync("client", ClientTlsChecks.RunAsync);
+await registry.DefineGroupAsync("client", RegistrationClientChecks.RunAsync);
+await registry.DefineGroupAsync("waf", WafBodyChecks.RunAsync);
+await registry.DefineGroupAsync("streaming", ResponseStreamingChecks.RunAsync);
+await registry.DefineGroupAsync("rate-limit", RedisFailureChecks.RunAsync);
+await registry.DefineGroupAsync("runtime", RuntimeHostChecks.RunAsync);
+await registry.DefineGroupAsync("runtime", run => run("Runtime: split and isolated deployment modes preserve endpoint roles", RuntimeHostChecks.CheckEndpointModesAsync));
+await registry.DefineGroupAsync("storage", SqliteEncryptionChecks.RunAsync);
+await registry.DefineGroupAsync("dashboard", DashboardContractChecks.RunAsync);
+await registry.DefineGroupAsync("redis-live", run => run("Live Redis integration", RedisFailureChecks.RunLiveAsync));
 
 Run("Removed compatibility contracts stay isolated from runtime source", () =>
 {
@@ -417,18 +357,7 @@ await RunAsync("Plugin health and runtime resource contracts expose accurate sta
 Run("Plugin schema validates nested composition", TestPluginSchemaValidation);
 Run("Legacy global policy chains stay isolated from dashboard activation", TestLegacyGlobalPolicyIsolation);
 
-if (failures.Count > 0)
-{
-    Console.Error.WriteLine($"Regression checks failed: {failures.Count}");
-    foreach (var failure in failures)
-    {
-        Console.Error.WriteLine($"- {failure}");
-    }
-
-    return 1;
-}
-Console.WriteLine("All regression checks passed.");
-return 0;
+return await registry.RunAsync(args);
 
 async Task TestPluginBindingRepositoryAsync()
 {
@@ -724,18 +653,9 @@ void TestLegacyGlobalPolicyIsolation()
     }
 }
 
-void Run(string name, Action action)
-{
-    var started = System.Diagnostics.Stopwatch.GetTimestamp();
-    try { action(); report.Record(name, started); Console.WriteLine($"PASS: {name}"); }
-    catch (Exception ex) { report.Record(name, started, ex); failures.Add($"{name}: {ex.Message}"); }
-}
-async Task RunAsync(string name, Func<Task> action)
-{
-    var started = System.Diagnostics.Stopwatch.GetTimestamp();
-    try { await action(); report.Record(name, started); Console.WriteLine($"PASS: {name}"); }
-    catch (Exception ex) { report.Record(name, started, ex); failures.Add($"{name}: {ex.Message}"); }
-}
+void Run(string name, Action action) => registry.Add(name, action);
+Task RunAsync(string name, Func<Task> action) => registry.AddAsync(name, action);
+
 void Equal<T>(T expected, T actual) { if (!EqualityComparer<T>.Default.Equals(expected, actual)) { throw new InvalidOperationException($"Expected '{expected}', got '{actual}'."); } }
 void True(bool value) { if (!value) { throw new InvalidOperationException("Expected true."); } }
 void False(bool value) { if (value) { throw new InvalidOperationException("Expected false."); } }

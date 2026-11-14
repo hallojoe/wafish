@@ -59,3 +59,10 @@ Runtime circuit state accepts an injected `TimeProvider`.
 Recovery, sampling, and idle retention use monotonic elapsed time. External legacy state timestamps retain UTC comparison fallback.
 
 Verification: [review evidence](../../tests/Wafish.Regression/evidence/review141516/README.md).
+
+## Concurrent recovery verification
+
+Controlled-time tests cover recovery without wall-clock delays.
+Contention checks admit exactly four probes from each wave of 128 competing requests.
+Cancelled probes release capacity without recording success or failure.
+See [lifetime stress evidence](../../tests/Wafish.Regression/evidence/lifetime-stress/README.md).

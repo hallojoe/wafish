@@ -15,6 +15,7 @@ public sealed class PluginResourceLifecycleCoordinator : BackgroundService, IPlu
     private readonly GatewayPluginExecutionPlanProvider _executionPlans;
     private readonly IPluginRuntimeResource[] _resources;
     private readonly ILogger<PluginResourceLifecycleCoordinator> _logger;
+    private int _stopping;
     private readonly SemaphoreSlim _reconcileLock = new(1, 1);
     private volatile IReadOnlyList<PluginRuntimeResourceSnapshot> _snapshots = Array.Empty<PluginRuntimeResourceSnapshot>();
 
@@ -38,6 +39,7 @@ public sealed class PluginResourceLifecycleCoordinator : BackgroundService, IPlu
         await _reconcileLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
+            if (Volatile.Read(ref _stopping) != 0) return;
             var plan = _executionPlans.Current;
             foreach (var resource in _resources)
             {
@@ -47,7 +49,14 @@ public sealed class PluginResourceLifecycleCoordinator : BackgroundService, IPlu
                     var current = await resource.CheckHealthAsync(cancellationToken).ConfigureAwait(false);
                     if (shouldRun && !current.Running)
                     {
-                        await resource.StartResourceAsync(cancellationToken).ConfigureAwait(false);
+                        try { await resource.StartResourceAsync(cancellationToken).ConfigureAwait(false); }
+                        catch
+                        {
+                            // A partially started resource still owns its acquired handles.
+                            try { await resource.StopResourceAsync(CancellationToken.None).ConfigureAwait(false); }
+                            catch (Exception cleanup) { _logger.LogError(cleanup, "Partial startup cleanup failed for {ResourceId}", resource.ResourceId); }
+                            throw;
+                        }
                     }
                     else if (!shouldRun && current.Health != PluginResourceHealthStatus.Stopped)
                     {
@@ -83,6 +92,8 @@ public sealed class PluginResourceLifecycleCoordinator : BackgroundService, IPlu
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
+        Interlocked.Exchange(ref _stopping, 1);
+        await base.StopAsync(cancellationToken).ConfigureAwait(false);
         await _reconcileLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -103,7 +114,6 @@ public sealed class PluginResourceLifecycleCoordinator : BackgroundService, IPlu
         {
             _reconcileLock.Release();
         }
-        await base.StopAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private async Task RefreshSnapshotsAsync(CancellationToken cancellationToken)
@@ -129,7 +139,7 @@ public sealed class PluginResourceLifecycleCoordinator : BackgroundService, IPlu
                     PluginResourceHealthStatus.Faulted,
                     null,
                     DateTimeOffset.UtcNow,
-                    exception.Message,
+                    "Resource health check failed. See host logs.",
                     new Dictionary<string, long>()));
             }
         }

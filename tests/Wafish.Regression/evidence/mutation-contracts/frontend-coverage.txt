@@ -1,0 +1,3 @@
+src/Wafish.ReactUi/ClientApp/src/components/workspace.tsx:152: 10 executions
+src/Wafish.ReactUi/ClientApp/src/components/workspace.tsx:181: 20 executions
+Changed frontend expressions: 2/2 covered (100%).

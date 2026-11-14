@@ -9,8 +9,12 @@ public partial class DynamicYarpConfigService
     private const string RegistrationInstanceKey = "aneiang.registration.instance";
 
     /// <summary>Atomically replaces only this instance's destinations in a shared service cluster.</summary>
-    public async Task<RouteOperationResult> RegisterInstanceAsync(string serviceId, string instanceId,
+    public Task<RouteOperationResult> RegisterInstanceAsync(string serviceId, string instanceId,
         ClusterConfig cluster, IReadOnlyList<RouteConfig> routes)
+        => RegisterInstanceAsync(serviceId, instanceId, cluster, routes, CancellationToken.None);
+
+    public async Task<RouteOperationResult> RegisterInstanceAsync(string serviceId, string instanceId,
+        ClusterConfig cluster, IReadOnlyList<RouteConfig> routes, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(serviceId) || instanceId.Length is < 1 or > 128 ||
             instanceId.Any(c => !char.IsAsciiLetterOrDigit(c) && c is not '-' and not '_' and not '.'))
@@ -18,10 +22,10 @@ public partial class DynamicYarpConfigService
             return new(false, "ServiceId and a valid InstanceId are required.");
         }
 
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(cancellationToken);
         try
         {
-            using var mutation = BeginMutation();
+            using var mutation = BeginMutation(cancellationToken);
             var config = mutation.Config;
             var existing = config.Clusters.FirstOrDefault(c => c.Config.ClusterId.Equals(cluster.ClusterId, StringComparison.OrdinalIgnoreCase));
             if (existing != null && (!OwnedBy(existing.Config.Metadata, serviceId) || existing.Source != "grpc"))
@@ -102,12 +106,15 @@ public partial class DynamicYarpConfigService
     }
 
     /// <summary>Removes this instance only. Shared routes remain until their final destination leaves.</summary>
-    public async Task<RouteOperationResult> UnregisterInstanceAsync(string serviceId, string instanceId)
+    public Task<RouteOperationResult> UnregisterInstanceAsync(string serviceId, string instanceId)
+        => UnregisterInstanceAsync(serviceId, instanceId, CancellationToken.None);
+
+    public async Task<RouteOperationResult> UnregisterInstanceAsync(string serviceId, string instanceId, CancellationToken cancellationToken)
     {
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(cancellationToken);
         try
         {
-            using var mutation = BeginMutation();
+            using var mutation = BeginMutation(cancellationToken);
             var config = mutation.Config;
             foreach (var cluster in config.Clusters.Where(c => OwnedBy(c.Config.Metadata, serviceId)).ToArray())
             {
@@ -136,8 +143,12 @@ public partial class DynamicYarpConfigService
         finally { _semaphore.Release(); }
     }
 
-    public async Task<RouteOperationResult> UpdateInstanceDestinationsAsync(string serviceId, string instanceId,
+    public Task<RouteOperationResult> UpdateInstanceDestinationsAsync(string serviceId, string instanceId,
         IReadOnlyDictionary<string, string> addresses, long expectedVersion)
+        => UpdateInstanceDestinationsAsync(serviceId, instanceId, addresses, expectedVersion, CancellationToken.None);
+
+    public async Task<RouteOperationResult> UpdateInstanceDestinationsAsync(string serviceId, string instanceId,
+        IReadOnlyDictionary<string, string> addresses, long expectedVersion, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(instanceId) || addresses.Count == 0 ||
             addresses.Any(p => string.IsNullOrWhiteSpace(p.Key) || !Uri.TryCreate(p.Value, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https")))
@@ -145,7 +156,7 @@ public partial class DynamicYarpConfigService
             return new(false, "InstanceId and valid HTTP destinations are required.");
         }
 
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(cancellationToken);
         try
         {
             if (_state.Version != expectedVersion)
@@ -154,7 +165,7 @@ public partial class DynamicYarpConfigService
                 { Status = ConfigurationUpdateStatus.VersionConflict, ActiveVersion = _state.Version, PersistedVersion = _state.PersistedVersion };
             }
 
-            using var mutation = BeginMutation();
+            using var mutation = BeginMutation(cancellationToken);
             var cluster = mutation.Config.Clusters.FirstOrDefault(c => c.Source == "grpc" && OwnedBy(c.Config.Metadata, serviceId));
             if (cluster?.Config.Destinations?.Values.Any(d => OwnedBy(d.Metadata, serviceId, instanceId)) != true)
             {

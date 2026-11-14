@@ -11,6 +11,12 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Run `--contracts` after protocol changes. Preserve optional field presence and the fixed wire fixtures.
+
+- Pass RPC cancellation to precommit configuration work. Do not abandon an in-progress storage commit.
+
+- Keep the generated C# namespace `Wafish.GatewayRegistry` aligned with Client and core consumers.
+
 - Edit the proto source, not generated files under obj.
 - Never reuse a removed field number; reserve it when removing a field.
 - Check both Client and core service consumers after protocol changes.
