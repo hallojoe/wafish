@@ -83,3 +83,15 @@ See [HTTP and gRPC contracts](../../docs/mutation-contracts.md).
 
 Registration ownership metadata uses `wafish.registration.service` and `wafish.registration.instance`.
 See [naming migration](../../docs/naming-migration.md#repository-branding-and-configured-names) before upgrading stored registrations.
+
+## Configuration previews and retry receipts
+
+`IConfigurationChangeService` accepts complete route and cluster lists with an expected persisted revision.
+Preview returns normalized configuration, identity-level differences, and validation errors without saving or publishing.
+Live configuration health errors remain unchanged. Existing plugin bindings participate in validation.
+Apply requires an idempotency key and an atomic receipt-capable storage provider.
+Matching retries return the original result, including activation failures, without creating another revision.
+Changed payloads with the same key return a version conflict.
+Cancellation is accepted before persistence. Commit, activation, and receipt completion retain ownership afterward.
+Existing CRUD methods retain their contracts. Idempotency applies only to this new workflow.
+See [limits and examples](../../docs/configuration-changes.md).

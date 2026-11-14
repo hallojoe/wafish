@@ -118,3 +118,13 @@ With 3,000 routes, changing one route writes two rows instead of 6,004 rows.
 The measured WAL shrank from 1,141,272 bytes to 41,232 bytes.
 The focused transaction took approximately 24 ms, versus 81 ms before this change.
 These local measurements establish reduced write work; timings depend on the host and workload.
+
+## Configuration retry receipts
+
+Migration 022 adds durable configuration receipts. The receipt reservation and configuration revision commit atomically.
+Receipts retain their original acknowledgement across host restarts.
+The retention period is 24 hours, with a maximum of 10,000 unexpired receipts.
+Capacity exhaustion rejects new writes without evicting unexpired receipts.
+Expired receipts are removed during the next receipt reservation.
+Keys are limited to 128 characters; acknowledgements are limited to 16,384 characters.
+A missing acknowledgement reports an unknown activation outcome and prevents duplicate commits during retention.

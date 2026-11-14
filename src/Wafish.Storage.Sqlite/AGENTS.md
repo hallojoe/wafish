@@ -13,6 +13,8 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Preserve atomic receipt reservation, first acknowledgements, and unexpired receipt retention.
+
 - Keep backup sources unchanged. Explicitly await cancellable migrations on private verification copies before deleting them.
 
 - Write invariant UTC timestamps. Preserve invalid legacy text during normalization migrations.

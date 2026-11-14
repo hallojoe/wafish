@@ -40,9 +40,15 @@ internal class DynamicConfigPublisher : IDynamicConfigPublisher
     public async Task PublishAsync(GatewayDynamicConfig config, long version, CancellationToken cancellationToken = default)
         => (await PrepareAsync(config, version, cancellationToken).ConfigureAwait(false))();
 
-    public async Task<Action> PrepareAsync(GatewayDynamicConfig config, long version, CancellationToken cancellationToken = default)
+    public Task<Action> PrepareAsync(GatewayDynamicConfig config, long version, CancellationToken cancellationToken = default)
+        => PrepareCoreAsync(config, version, true, cancellationToken);
+
+    internal Task<Action> PreparePreviewAsync(GatewayDynamicConfig config, long version, CancellationToken cancellationToken)
+        => PrepareCoreAsync(config, version, false, cancellationToken);
+
+    private async Task<Action> PrepareCoreAsync(GatewayDynamicConfig config, long version, bool recordErrors, CancellationToken cancellationToken)
     {
-        await PreValidateAsync(config.Routes, config.Clusters, cancellationToken).ConfigureAwait(false);
+        await PreValidateAsync(config.Routes, config.Clusters, recordErrors, cancellationToken).ConfigureAwait(false);
         var publishRoutes = new List<DynamicRouteConfig>(config.Routes.Count);
         foreach (var dynRoute in config.Routes)
         {
@@ -128,7 +134,7 @@ internal class DynamicConfigPublisher : IDynamicConfigPublisher
         }
 
         // Reject invalid compiled configuration before storage or publication.
-        await PreValidateAsync(publishRoutes, publishClusters, cancellationToken).ConfigureAwait(false);
+        await PreValidateAsync(publishRoutes, publishClusters, recordErrors, cancellationToken).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
 
         return () =>
@@ -147,7 +153,7 @@ internal class DynamicConfigPublisher : IDynamicConfigPublisher
     /// </summary>
     private async Task PreValidateAsync(
         IReadOnlyList<DynamicRouteConfig> routes,
-        IReadOnlyList<DynamicClusterConfig> clusters, CancellationToken cancellationToken)
+        IReadOnlyList<DynamicClusterConfig> clusters, bool recordErrors, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         var errors = new List<ProxyConfigError>();
@@ -215,7 +221,7 @@ internal class DynamicConfigPublisher : IDynamicConfigPublisher
             }
         }
 
-        _errorStore.ReplaceErrors("prevalidate", errors);
+        if (recordErrors) _errorStore.ReplaceErrors("prevalidate", errors);
         var clusterIds = clusters.Select(c => c.Config.ClusterId).ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var route in routes)
         {

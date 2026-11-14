@@ -13,6 +13,8 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Atomic receipt support is optional. Existing snapshot providers must remain source compatible.
+
 - Keep history read limits and stable ordering aligned with RepositoryQueryLimits and the provider-neutral conformance suite.
 
 - Keep SQL and native database dependencies out of this project.

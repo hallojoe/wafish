@@ -13,6 +13,8 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Preview must not update live health errors. Reserve retry receipts atomically with the configuration revision.
+
 - Keep precommit work cancellable. Retain commit ownership from persistence through activation and audit.
 
 - Keep discovery stale-policy execution fields aligned with the plugin schema and documented defaults.

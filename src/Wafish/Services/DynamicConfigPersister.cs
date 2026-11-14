@@ -22,9 +22,11 @@ internal sealed class DynamicConfigPersister(IConfigurationSnapshotRepository sn
     }
 
     public Task SaveAsync(GatewayDynamicConfig config, string operationName, string? targetName = null)
-        => snapshots.SaveAsync(new ConfigurationSnapshot(config.Version,
+        => snapshots.SaveAsync(ToSnapshot(config), config.Version - 1);
+
+    internal static ConfigurationSnapshot ToSnapshot(GatewayDynamicConfig config) => new(config.Version,
             config.Routes.Select(r => r.ToEntity()).ToList(),
             config.Clusters.Select(c => c.ToEntity()).ToList(),
             config.Clusters.SelectMany(c => (c.Config.Destinations ?? new Dictionary<string, global::Yarp.ReverseProxy.Configuration.DestinationConfig>())
-                .Select(d => d.ToEntity(c.Config.ClusterId))).ToList()), config.Version - 1);
+                .Select(d => d.ToEntity(c.Config.ClusterId))).ToList());
 }

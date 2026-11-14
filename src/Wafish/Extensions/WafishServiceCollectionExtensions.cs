@@ -77,6 +77,7 @@ public static class WafishServiceCollectionExtensions
         // Dynamic config service (depends on IRouteRepository, IClusterRepository and IConfigChangeAuditLog
         // which are registered by Dashboard when AddWafishAdministration is called)
         services.AddSingleton<DynamicYarpConfigService>();
+        services.AddSingleton<IConfigurationChangeService>(sp => sp.GetRequiredService<DynamicYarpConfigService>());
         services.AddSingleton<IDynamicYarpConfigService>(sp => sp.GetRequiredService<DynamicYarpConfigService>());
         services.AddSingleton<IGatewaySnapshotCompiler, GatewaySnapshotCompiler>();
         services.AddSingleton<IGatewaySnapshotPublisher, GatewaySnapshotPublisher>();

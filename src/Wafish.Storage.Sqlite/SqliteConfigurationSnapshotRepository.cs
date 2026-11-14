@@ -4,7 +4,7 @@ namespace Wafish.Storage.Sqlite;
 
 /// <summary>Commits the complete configuration in one SQLite transaction.</summary>
 public sealed partial class SqliteConfigurationSnapshotRepository(SqliteConnectionFactory connections)
-    : IConfigurationSnapshotRepository
+    : IIdempotentConfigurationSnapshotRepository
 {
     public async Task<ConfigurationSnapshot> LoadAsync(CancellationToken ct = default)
     {
@@ -24,11 +24,15 @@ public sealed partial class SqliteConfigurationSnapshotRepository(SqliteConnecti
         return new(version, routes, clusters, destinations);
     }
 
-    public async Task SaveAsync(ConfigurationSnapshot snapshot, long expectedVersion, CancellationToken ct = default)
+    public Task SaveAsync(ConfigurationSnapshot snapshot, long expectedVersion, CancellationToken ct = default)
+        => SaveCoreAsync(snapshot, expectedVersion, null, ct);
+
+    private async Task SaveCoreAsync(ConfigurationSnapshot snapshot, long expectedVersion, ConfigurationMutationReceipt? receipt, CancellationToken ct)
     {
         await using var conn = await connections.CreateConnectionAsync(ct);
         await conn.OpenAsync(ct);
         await using var tx = (SqliteTransaction)await conn.BeginTransactionAsync(ct);
+        if (receipt is not null) await InsertReceiptAsync(conn, tx, receipt, ct);
         var actual = await ReadVersion(conn, tx, ct);
         if (actual != expectedVersion)
         {

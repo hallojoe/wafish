@@ -38,6 +38,7 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
         IConfigValidator configValidator,
         IProxyConfigErrorStore errorStore)
     {
+        _snapshotRepository = snapshots;
         _auditLog = new DeferredConfigChangeAuditLog(auditLog);
         _configProvider = configProvider;
         _snapshotCompiler = snapshotCompiler;

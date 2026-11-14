@@ -70,3 +70,11 @@ Consumers requesting zero, negative, or oversized read limits must account for n
 
 The provider-neutral suite accepts an isolated fixture factory and uses repository interfaces only.
 See [contract checks](../../tests/Wafish.Regression/StorageConformanceChecks.cs) and [verification](../../tests/Wafish.Regression/evidence/storage-reliability/README.md).
+
+## Atomic configuration receipts
+
+`IIdempotentConfigurationSnapshotRepository` extends snapshot storage without changing existing provider requirements.
+Receipt reservation and the configuration save must share one transaction and expected-version check.
+Duplicate keys throw `ConfigurationReceiptExistsException`. Receipt completion retains the first acknowledgement.
+A null acknowledgement means the configuration committed but its original activation outcome is unknown.
+Providers without this optional contract reject idempotent configuration applies before writing.
