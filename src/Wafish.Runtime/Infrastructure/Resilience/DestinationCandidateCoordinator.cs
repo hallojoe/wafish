@@ -12,6 +12,10 @@ public sealed class DestinationCandidateCoordinator(
     ICircuitStateStore circuitStateStore,
     GatewayPluginExecutionPlanProvider planProvider) : IDestinationCandidateCoordinator
 {
+    private readonly IDestinationMaintenanceStore? _maintenance;
+    public DestinationCandidateCoordinator(ICircuitStateStore circuits, GatewayPluginExecutionPlanProvider plans, IDestinationMaintenanceStore maintenance)
+        : this(circuits, plans) => _maintenance = maintenance;
+
     private static readonly object InitialCandidatesKey = new();
     private static readonly object AttemptedDestinationsKey = new();
 
@@ -46,6 +50,8 @@ public sealed class DestinationCandidateCoordinator(
                 continue;
             }
 
+            if (_maintenance is not null && !_maintenance.AllowsTraffic(clusterId, destination.DestinationId,
+                circuitConfig is { Enabled: true } && circuitStateStore is ICircuitRecoveryState recovery && recovery.IsRecoveryProbeEligible(clusterId, destination.DestinationId))) continue;
             if (circuitConfig is not { Enabled: true } ||
                 !circuitStateStore.IsCircuitOpen(clusterId, destination.DestinationId))
             {

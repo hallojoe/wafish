@@ -59,3 +59,20 @@ Cancellation also retains uncertain ownership. Lease expiry alone does not prove
 If the previous gateway cannot confirm release, failover waits for connectivity to return.
 This favors exclusive ownership over availability during network partitions. There is no automatic failback while ownership remains healthy.
 `RegistrationEndpoint` exposes the selected endpoint. Readiness remains available through `IRegistrationStatusSource`.
+
+## Destination maintenance
+
+`PUT /{prefix}/api/circuit-breaker/maintenance` accepts `clusterId`, `destinationId`, `reason`, `durationSeconds`, and `allowRecoveryProbes`.
+The destination must exist. Duration must be 1–86400 seconds; reason is limited to 1024 printable characters.
+The authenticated actor and UTC start/expiry times are recorded.
+`GET` lists active windows. `DELETE` cancels one window using `clusterId` and `destinationId` query parameters.
+Reads require `Read`; changes require `PluginManagement`.
+
+Windows are process-local and expire using monotonic time. Apply each window to every serving replica when required.
+Restart clears windows. At most 10,000 windows can exist per process.
+Windows address exact cluster and destination IDs. Rename or replacement requires a new window for the new IDs.
+
+Maintenance filters new proxy traffic and retry candidates, including clusters without circuit-breaker bindings.
+Existing requests can finish. Maintenance does not add failures or reset circuit statistics.
+`allowRecoveryProbes` permits only eligible half-open probes from an enabled circuit breaker, within its existing concurrency limit.
+A closed circuit remains blocked during maintenance. Expiry or cancellation restores normal eligibility.

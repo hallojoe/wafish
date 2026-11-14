@@ -1,5 +1,6 @@
 [
   "DELETE control/api/ai/sessions/{sessionId}",
+  "DELETE control/api/circuit-breaker/maintenance",
   "DELETE control/api/config/clusters/{clusterId}",
   "DELETE control/api/config/history",
   "DELETE control/api/config/routes/{routeId}",
@@ -16,6 +17,7 @@
   "GET control/api/audit-logs",
   "GET control/api/auth/status",
   "GET control/api/circuit-breaker/config",
+  "GET control/api/circuit-breaker/maintenance",
   "GET control/api/circuit-breaker/status",
   "GET control/api/clusters",
   "GET control/api/config/apply-errors",
@@ -88,6 +90,7 @@
   "POST control/api/webhook/test",
   "POST control/login",
   "POST control/logout",
+  "PUT control/api/circuit-breaker/maintenance",
   "PUT control/api/config/clusters/{clusterId}",
   "PUT control/api/config/clusters/{clusterId}/rename",
   "PUT control/api/config/routes/{routeId}",

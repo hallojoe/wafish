@@ -10,7 +10,7 @@ namespace Wafish.Dashboard.Infrastructure.State;
 /// In-memory singleton implementation of <see cref="ICircuitStateStore"/>.
 /// Replaces the static ConcurrentDictionary that was previously in CircuitBreakerMiddleware.
 /// </summary>
-public sealed class InMemoryCircuitStateStore : ICircuitStateStore
+public sealed class InMemoryCircuitStateStore : ICircuitStateStore, ICircuitRecoveryState
 {
     private readonly ConcurrentDictionary<string, CircuitState> _circuits = new();
     private readonly TimeProvider _time;
@@ -146,6 +146,13 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
         }
     }
 
+    public bool IsRecoveryProbeEligible(string clusterId, string destinationId)
+    {
+        if (!_circuits.TryGetValue(BuildCircuitKey(null, clusterId, destinationId), out var state)) return false;
+        lock (state.SyncRoot)
+            return state.Status == CircuitStatus.HalfOpen || state.Status == CircuitStatus.Open && OpenElapsed(state) >= RecoveryDelay(state);
+    }
+
     public bool TryAcquire(
         string clusterId,
         string destinationId,
@@ -232,7 +239,7 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
                             state.HalfOpenRequests = Math.Max(0, state.HalfOpenRequests - 1);
                         }
                     }
-                });
+                }) { IsRecoveryProbe = probe };
             }
         }
     }

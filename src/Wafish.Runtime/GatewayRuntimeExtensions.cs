@@ -84,6 +84,7 @@ public static class GatewayRuntimeExtensions
         services.TryAddSingleton<IConfigChangeAuditLog, ConfigChangeAuditLog>();
         services.TryAddSingleton<ConfigChangeAuditLog>(sp => (ConfigChangeAuditLog)sp.GetRequiredService<IConfigChangeAuditLog>());
         services.TryAddSingleton<ICircuitStateStore, InMemoryCircuitStateStore>();
+        services.TryAddSingleton<IDestinationMaintenanceStore, InMemoryDestinationMaintenanceStore>();
         services.TryAddSingleton<IDestinationCandidateCoordinator, Wafish.Dashboard.Infrastructure.Resilience.DestinationCandidateCoordinator>();
         services.TryAddSingleton<IRateLimiterStore, InMemoryRateLimiterStore>();
         services.AddHostedService(sp => sp.GetRequiredService<DynamicYarpConfigService>());
@@ -180,6 +181,7 @@ public static class GatewayRuntimeExtensions
         Action<IReverseProxyApplicationBuilder>? configure = null, bool useBuiltInPipeline = true)
         => endpoints.MapReverseProxy(proxy =>
         {
+            proxy.UseMiddleware<Wafish.Dashboard.Infrastructure.Resilience.DestinationMaintenanceMiddleware>();
             if (useBuiltInPipeline)
             {
                 proxy.UseMiddleware<BuiltinTransformMiddleware>();

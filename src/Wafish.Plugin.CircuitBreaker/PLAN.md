@@ -63,7 +63,10 @@ Each forwarding attempt records one outcome.
 
 ### FEAT-02: Add destination maintenance windows
 
-Status: TODO. Priority: P2. Type: feature.
+Status: DONE. Owner: Codex. Completed: 2026-11-15.
+
+Verification: main `--group need-six` and administration `--need-six`.
+Real HTTP traffic checks cover selected destinations, retries, in-flight completion, and expiry.
 
 Evidence: [CircuitBreakerController.cs](Controllers/CircuitBreakerController.cs) currently exposes status and global reset.
 

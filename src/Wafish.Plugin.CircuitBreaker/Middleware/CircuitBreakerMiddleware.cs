@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Wafish.Infrastructure.Middleware;
@@ -63,7 +64,8 @@ public sealed class CircuitBreakerMiddleware : GatewayMiddlewareBase
 
         var destination = feature!.AvailableDestinations.Count == 1 ? feature.AvailableDestinations[0] : null;
         using var attempt = destination == null ? null : _circuitStore.TryAcquireAttempt(clusterId, destination.DestinationId, config);
-        if (attempt == null)
+        var maintenance = context.RequestServices?.GetService<IDestinationMaintenanceStore>();
+        if (attempt == null || maintenance?.AllowsTraffic(clusterId, destination!.DestinationId, attempt.IsRecoveryProbe) == false)
         {
             context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
             return;

@@ -73,3 +73,9 @@ See [lifetime stress evidence](../../tests/Wafish.Regression/evidence/lifetime-s
 The default is zero. The maximum is 300 seconds.
 Each opening samples once. Polling and configuration changes cannot extend an existing recovery deadline.
 A failed recovery probe starts a new delay. Probe limits still apply.
+
+## Destination maintenance
+
+Authenticated operators can set process-local maintenance windows for individual destinations.
+Windows expire automatically and can optionally admit bounded recovery probes.
+See [maintenance contracts](../../docs/need-six-features.md#destination-maintenance).

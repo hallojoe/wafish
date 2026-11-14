@@ -37,6 +37,31 @@ internal static class NeedSixEndpointChecks
             Check(result!.Configuration.Success && !string.IsNullOrWhiteSpace(result.Actor), "Apply omitted its actor or outcome.");
             Check((await client.PostAsJsonAsync("/ops/api/config/change-sets", request)).IsSuccessStatusCode, "Retry lost the receipt.");
         });
+        await run("Maintenance API: authorization, actor, reason, expiry, and cancellation are enforced", async () =>
+        {
+            await using var host = await start(null);
+            using var client = new HttpClient { BaseAddress = new Uri(host.Urls.Single()) };
+            var config = host.Services.GetRequiredService<IDynamicYarpConfigService>();
+            await config.TryAddClusterConfig(new Yarp.ReverseProxy.Configuration.ClusterConfig
+            { ClusterId = "maintenance-test", Destinations = new Dictionary<string, Yarp.ReverseProxy.Configuration.DestinationConfig> { ["one"] = new() { Address = "http://127.0.0.1:9/" } } });
+            var request = new { clusterId = "maintenance-test", destinationId = "one", reason = "repair", durationSeconds = 60, allowRecoveryProbes = true };
+            Check((await client.PutAsJsonAsync("/ops/api/circuit-breaker/maintenance", request)).StatusCode == HttpStatusCode.Unauthorized, "Anonymous maintenance succeeded.");
+            client.DefaultRequestHeaders.Add("X-Api-Key", key);
+            var auth = host.Services.GetRequiredService<IOptions<DashboardOptions>>().Value.Auth;
+            auth.Permissions = [DashboardPermission.Read];
+            Check((await client.PutAsJsonAsync("/ops/api/circuit-breaker/maintenance", request)).StatusCode == HttpStatusCode.Forbidden, "Reader changed maintenance.");
+            auth.Permissions = [DashboardPermission.Read, DashboardPermission.PluginManagement];
+            using var response = await client.PutAsJsonAsync("/ops/api/circuit-breaker/maintenance", request);
+            Check(response.IsSuccessStatusCode, "Authorized maintenance failed.");
+            var window = await response.Content.ReadFromJsonAsync<Wafish.Infrastructure.State.DestinationMaintenanceWindow>();
+            Check(window!.Reason == "repair" && window.AllowRecoveryProbes && window.ExpiresAt > window.StartedAt && !string.IsNullOrWhiteSpace(window.Actor), "Maintenance metadata was lost.");
+            Check((await client.GetFromJsonAsync<Wafish.Infrastructure.State.DestinationMaintenanceWindow[]>("/ops/api/circuit-breaker/maintenance"))!.Length == 1, "Maintenance listing omitted the window.");
+            Check((await client.PutAsJsonAsync("/ops/api/circuit-breaker/maintenance", new { clusterId = "maintenance-test", destinationId = "one", reason = "repair", durationSeconds = 0 })).StatusCode == HttpStatusCode.BadRequest, "Invalid duration accepted.");
+            Check((await client.PutAsJsonAsync("/ops/api/circuit-breaker/maintenance", new { clusterId = "maintenance-test", destinationId = "missing", reason = "repair", durationSeconds = 60 })).StatusCode == HttpStatusCode.NotFound, "Missing destination accepted.");
+            Check((await client.DeleteAsync("/ops/api/circuit-breaker/maintenance?clusterId=maintenance-test&destinationId=one")).StatusCode == HttpStatusCode.NoContent, "Maintenance cancellation failed.");
+            Check((await client.DeleteAsync("/ops/api/circuit-breaker/maintenance?clusterId=maintenance-test&destinationId=one")).StatusCode == HttpStatusCode.NotFound, "Missing cancellation reported success.");
+        });
+
     }
     private static void Check(bool value, string message) { if (!value) throw new Exception(message); }
 }

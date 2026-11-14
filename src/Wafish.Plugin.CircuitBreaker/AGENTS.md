@@ -46,3 +46,5 @@ Keep future work in PLAN.md until its acceptance checks pass.
 Record implementation evidence when completing a plan item.
 
 Sample recovery jitter once per opening. Run `--group need-six` for bounded monotonic recovery deadlines.
+
+Maintenance must remain separate from failure statistics. Recheck actual probe ownership before forwarding a maintenance probe.

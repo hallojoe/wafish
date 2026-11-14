@@ -70,6 +70,7 @@ public interface ICircuitStateStore
 /// <summary>Completes at most once. Disposal releases an unfinished probe without recording an outcome.</summary>
 public sealed class CircuitAttempt(Action<bool?> finish) : IDisposable
 {
+    public bool IsRecoveryProbe { get; init; }
     private Action<bool?>? _finish = finish;
     public void Complete(bool failed) => Interlocked.Exchange(ref _finish, null)?.Invoke(failed);
     public void Dispose() => Interlocked.Exchange(ref _finish, null)?.Invoke(null);
