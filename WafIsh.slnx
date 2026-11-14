@@ -1,0 +1,45 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/samples/">
+    <Project Path="samples/SampleGateway/SampleGateway.csproj" />
+    <Project Path="samples/SampleLocalService/SampleLocalService.csproj" />
+    <Project Path="samples/SampleServiceDefaults/SampleServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/WafIsh.Administration/WafIsh.Administration.csproj" />
+    <Project Path="src/WafIsh.Client/WafIsh.Client.csproj" />
+    <Project Path="src/WafIsh.Grpc/WafIsh.Grpc.csproj" />
+    <Project Path="src/WafIsh.Plugin.Abstractions/WafIsh.Plugin.Abstractions.csproj" />
+    <Project Path="src/WafIsh.Plugin.Cache/WafIsh.Plugin.Cache.csproj" />
+    <Project Path="src/WafIsh.Plugin.CircuitBreaker/WafIsh.Plugin.CircuitBreaker.csproj" />
+    <Project Path="src/WafIsh.Plugin.Compression/WafIsh.Plugin.Compression.csproj" />
+    <Project Path="src/WafIsh.Plugin.Metrics/WafIsh.Plugin.Metrics.csproj" />
+    <Project Path="src/WafIsh.Plugin.ProxyLog/WafIsh.Plugin.ProxyLog.csproj" />
+    <Project Path="src/WafIsh.Plugin.RateLimit.Redis/WafIsh.Plugin.RateLimit.Redis.csproj" />
+    <Project Path="src/WafIsh.Plugin.RateLimit/WafIsh.Plugin.RateLimit.csproj" />
+    <Project Path="src/WafIsh.Plugin.Retry/WafIsh.Plugin.Retry.csproj" />
+    <Project Path="src/WafIsh.Plugin.ServiceDiscovery/WafIsh.Plugin.ServiceDiscovery.csproj" />
+    <Project Path="src/WafIsh.Plugin.Waf/WafIsh.Plugin.Waf.csproj" />
+    <Project Path="src/WafIsh.ReactUi/WafIsh.ReactUi.csproj" />
+    <Project Path="src/WafIsh.Runtime/WafIsh.Runtime.csproj" />
+    <Project Path="src/WafIsh.Storage.Abstractions/WafIsh.Storage.Abstractions.csproj" />
+    <Project Path="src/WafIsh.Storage.Sqlite/WafIsh.Storage.Sqlite.csproj" />
+    <Project Path="src/WafIsh/WafIsh.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/WafIsh.Administration.Regression/WafIsh.Administration.Regression.csproj" />
+    <Project Path="tests/WafIsh.ReactUi.Host/WafIsh.ReactUi.Host.csproj" />
+    <Project Path="tests/WafIsh.Regression/WafIsh.Regression.csproj" />
+  </Folder>
+  <Folder Name="/tests/WafIsh.Performance/">
+    <Project Path="tests/WafIsh.Performance/Backend/Backend.csproj" />
+    <Project Path="tests/WafIsh.Performance/EnhancedYarp/EnhancedYarp.csproj" />
+    <Project Path="tests/WafIsh.Performance/NativeYarp/NativeYarp.csproj" />
+    <Project Path="tests/WafIsh.Performance/Runner/Runner.csproj" />
+  </Folder>
+  <Project Path="WafIsh.AppHost/WafIsh.AppHost.csproj" />
+</Solution>

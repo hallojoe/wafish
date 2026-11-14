@@ -1,0 +1,46 @@
+info: Microsoft.AspNetCore.Mvc.Infrastructure.DefaultActionDescriptorCollectionProvider[1]
+      No action descriptors found. This may indicate an incorrectly configured application or missing application parts. To learn more, visit https://aka.ms/aspnet/mvc/app-parts
+PASS: Security: disabled registration removes REST and gRPC endpoints
+PASS: Security: enabled registration retains REST and gRPC endpoints
+PASS: Security: empty dashboard API key denies requests
+PASS: Security: nested dashboard credentials configure gateway authentication
+PASS: Security: explicit control-plane authentication wins over legacy settings
+PASS: Security: invalid gateway credentials and modes are rejected
+PASS: Security: gRPC accepts only credentials for its configured mode
+PASS: Security: cache excludes private responses
+PASS: Security: cache excludes no-store responses
+PASS: Security: cache excludes private="Authorization" responses
+PASS: Security: Set-Cookie responses are not cached
+PASS: Security: authorization bypasses cache reads and writes
+PASS: Security: cookie bypasses cache reads and writes
+PASS: Security: principal bypasses cache reads and writes
+PASS: Security: eligible public responses remain cached
+PASS: Runtime: starts and proxies without dashboard registration
+Native storage: SQLCipher 4.5.2 community; SQLite 3.39.2
+PASS: Storage: encrypted database survives reopen and rejects missing or incorrect keys
+PASS: Removed compatibility contracts stay isolated from runtime source
+PASS: Infrastructure plugin schemas expose discovery adapters
+PASS: Semantic version constraints support AND ranges and SemVer prerelease precedence
+PASS: External plugin registration exposes verifiable unload state
+PASS: Plugin runtime domain resolves plugin DI and preserves the old domain on failed health
+PASS: Plugin runtime domain drains in-flight requests before disposal
+PASS: Plugin manifest dependencies are exposed and built-in adapters are protected
+PASS: ClientIpResolver ignores spoofed forwarding headers
+PASS: Dashboard API key is header-only
+PASS: JWT query token is restricted to dashboard hubs
+PASS: Response capture does not depend on request content type
+PASS: Proxy log runtime settings use dashboard defaults
+PASS: Destination persistence mapping is lossless
+PASS: Cluster rename preserves native extensions
+PASS: PluginBinding SQLite CRUD and uniqueness
+PASS: GatewayPluginManager persists state in gateway_plugins and imports legacy JSON
+PASS: GatewaySnapshotCompiler filters disabled and missing targets
+PASS: GatewaySnapshotCompiler keeps UID bindings stable across target renames
+PASS: GatewaySnapshotPublisher rejects stale versions
+PASS: Plugin execution plan is reused and invalidated by snapshot publication
+PASS: Service discovery manifest and execution plan share the canonical plugin id
+PASS: Service discovery refreshes static destinations only while its resource runs
+PASS: Plugin health and runtime resource contracts expose accurate state
+PASS: Plugin schema validates nested composition
+PASS: Legacy global policy chains stay isolated from dashboard activation
+All regression checks passed.

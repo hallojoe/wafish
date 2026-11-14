@@ -1,0 +1,3 @@
+PASS: Production sample rejects missing credentials
+PASS: Production sample starts with injected credentials on loopback
+PASS: Startup output excludes credentials

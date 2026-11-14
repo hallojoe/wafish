@@ -1,0 +1,35 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  WafIsh.Grpc -> src/WafIsh.Grpc/bin/Release/net10.0/WafIsh.Grpc.dll
+  WafIsh.Storage.Abstractions -> src/WafIsh.Storage.Abstractions/bin/Release/net10.0/WafIsh.Storage.Abstractions.dll
+  NativeYarp -> tests/WafIsh.Performance/NativeYarp/bin/Release/net10.0/NativeYarp.dll
+  Backend -> tests/WafIsh.Performance/Backend/bin/Release/net10.0/Backend.dll
+  Runner -> tests/WafIsh.Performance/Runner/bin/Release/net10.0/Runner.dll
+  WafIsh.Plugin.Abstractions -> src/WafIsh.Plugin.Abstractions/bin/Release/net10.0/WafIsh.Plugin.Abstractions.dll
+  WafIsh.Storage.Sqlite -> src/WafIsh.Storage.Sqlite/bin/Release/net10.0/WafIsh.Storage.Sqlite.dll
+  WafIsh.Client -> src/WafIsh.Client/bin/Release/net10.0/WafIsh.Client.dll
+  SampleLocalService -> samples/SampleLocalService/bin/Release/net10.0/SampleLocalService.dll
+  WafIsh -> src/WafIsh/bin/Release/net10.0/WafIsh.dll
+  WafIsh.Plugin.ProxyLog -> src/WafIsh.Plugin.ProxyLog/bin/Release/net10.0/WafIsh.Plugin.ProxyLog.dll
+  WafIsh.Plugin.CircuitBreaker -> src/WafIsh.Plugin.CircuitBreaker/bin/Release/net10.0/WafIsh.Plugin.CircuitBreaker.dll
+  WafIsh.Plugin.RateLimit.Redis -> src/WafIsh.Plugin.RateLimit.Redis/bin/Release/net10.0/WafIsh.Plugin.RateLimit.Redis.dll
+  WafIsh.Plugin.ServiceDiscovery -> src/WafIsh.Plugin.ServiceDiscovery/bin/Release/net10.0/WafIsh.Plugin.ServiceDiscovery.dll
+  WafIsh.Plugin.Waf -> src/WafIsh.Plugin.Waf/bin/Release/net10.0/WafIsh.Plugin.Waf.dll
+  WafIsh.Plugin.Retry -> src/WafIsh.Plugin.Retry/bin/Release/net10.0/WafIsh.Plugin.Retry.dll
+  WafIsh.Plugin.Metrics -> src/WafIsh.Plugin.Metrics/bin/Release/net10.0/WafIsh.Plugin.Metrics.dll
+  WafIsh.Plugin.Compression -> src/WafIsh.Plugin.Compression/bin/Release/net10.0/WafIsh.Plugin.Compression.dll
+  WafIsh.Plugin.Cache -> src/WafIsh.Plugin.Cache/bin/Release/net10.0/WafIsh.Plugin.Cache.dll
+  WafIsh.Plugin.RateLimit -> src/WafIsh.Plugin.RateLimit/bin/Release/net10.0/WafIsh.Plugin.RateLimit.dll
+  WafIsh.Runtime -> src/WafIsh.Runtime/bin/Release/net10.0/WafIsh.Runtime.dll
+  WafIsh.Administration -> src/WafIsh.Administration/bin/Release/net10.0/WafIsh.Administration.dll
+  WafIsh.Administration.Regression -> tests/WafIsh.Administration.Regression/bin/Release/net10.0/WafIsh.Administration.Regression.dll
+  WafIsh.Dashboard -> src/WafIsh.Dashboard/bin/Release/net10.0/WafIsh.Dashboard.dll
+  WafIsh.Regression -> tests/WafIsh.Regression/bin/Release/net10.0/WafIsh.Regression.dll
+  EnhancedYarp -> tests/WafIsh.Performance/EnhancedYarp/bin/Release/net10.0/EnhancedYarp.dll
+  SampleGateway -> samples/SampleGateway/bin/Release/net10.0/SampleGateway.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:05.36

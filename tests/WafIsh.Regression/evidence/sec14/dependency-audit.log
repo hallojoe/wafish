@@ -1,0 +1,36 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+
+The following sources were used:
+   https://api.nuget.org/v3/index.json
+
+The given project `WafIsh` has no vulnerable packages given the current sources.
+The given project `WafIsh.Client` has no vulnerable packages given the current sources.
+The given project `SampleGateway` has no vulnerable packages given the current sources.
+The given project `SampleLocalService` has no vulnerable packages given the current sources.
+The given project `WafIsh.Grpc` has no vulnerable packages given the current sources.
+The given project `WafIsh.Storage.Abstractions` has no vulnerable packages given the current sources.
+The given project `WafIsh.Storage.Sqlite` has no vulnerable packages given the current sources.
+The given project `Backend` has no vulnerable packages given the current sources.
+The given project `NativeYarp` has no vulnerable packages given the current sources.
+The given project `EnhancedYarp` has no vulnerable packages given the current sources.
+The given project `Runner` has no vulnerable packages given the current sources.
+The given project `WafIsh.Regression` has no vulnerable packages given the current sources.
+The given project `WafIsh.Plugin.Abstractions` has no vulnerable packages given the current sources.
+The given project `WafIsh.Plugin.Waf` has no vulnerable packages given the current sources.
+The given project `WafIsh.Plugin.Retry` has no vulnerable packages given the current sources.
+The given project `WafIsh.Plugin.CircuitBreaker` has no vulnerable packages given the current sources.
+The given project `WafIsh.Plugin.RateLimit` has no vulnerable packages given the current sources.
+The given project `WafIsh.Plugin.ProxyLog` has no vulnerable packages given the current sources.
+The given project `WafIsh.Plugin.Cache` has no vulnerable packages given the current sources.
+The given project `WafIsh.Plugin.ServiceDiscovery` has no vulnerable packages given the current sources.
+The given project `WafIsh.Plugin.Metrics` has no vulnerable packages given the current sources.
+The given project `WafIsh.Plugin.Compression` has no vulnerable packages given the current sources.
+The given project `WafIsh.Plugin.RateLimit.Redis` has no vulnerable packages given the current sources.
+The given project `WafIsh.Runtime` has no vulnerable packages given the current sources.
+The given project `WafIsh.Administration` has no vulnerable packages given the current sources.
+The given project `WafIsh.Administration.Regression` has no vulnerable packages given the current sources.
+The given project `WafIsh.AppHost` has no vulnerable packages given the current sources.
+The given project `SampleServiceDefaults` has no vulnerable packages given the current sources.
+The given project `WafIsh.ReactUi` has no vulnerable packages given the current sources.
+The given project `WafIsh.ReactUi.Host` has no vulnerable packages given the current sources.

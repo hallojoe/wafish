@@ -1,0 +1,3 @@
+PASS: Original SQLCipher 4.5.2 reads and writes the encrypted backup created by the published replacement.
+PASS: Published native library reports SQLite 3.54.1 and SQLite3MC 2.7.0.
+PASS: Both engines retain each other's writes with the SQLCipher 4 file format.

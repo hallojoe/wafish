@@ -1,0 +1,12 @@
+.git
+**/bin
+**/obj
+**/node_modules
+**/test-results
+**/playwright-report
+**/.data
+**/wwwroot/assets
+.env
+**/*.db
+**/*.db-wal
+**/*.db-shm

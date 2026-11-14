@@ -1,0 +1,9 @@
+PASS: Administration deploys without the dashboard assembly or Razor assets
+PASS: Administration rejects missing and invalid API credentials
+PASS: Administration APIs work without page or static-asset endpoints
+PASS: Administration creates clusters and routes through the preserved JSON API
+PASS: Administration serves system settings and database downloads without Razor
+PASS: Administration realtime hubs accept subscriptions and send overview updates
+PASS: Administration login issues a usable JWT without a Razor login page
+PASS: Administration retains configuration after host restart and supports deletion
+All administration checks passed.

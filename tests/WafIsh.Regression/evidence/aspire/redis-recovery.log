@@ -1,0 +1,4 @@
+PASS: Two gateway processes share the managed Redis counter; missing credentials fail
+PASS: Managed Redis outage enforces FailClosed and explicit FailOpen
+PASS: Managed Redis restart restores shared enforcement
+PASS: Temporary rate-limit bindings removed

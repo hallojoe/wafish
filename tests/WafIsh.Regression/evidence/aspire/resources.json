@@ -1,0 +1,83 @@
+{
+  "resources": [
+    {
+      "displayName": "backend-one",
+      "resourceType": "Project",
+      "state": "Running",
+      "healthStatus": "Healthy",
+      "urls": [
+        {
+          "name": "http",
+          "url": "http://localhost:15085"
+        }
+      ]
+    },
+    {
+      "displayName": "backend-two",
+      "resourceType": "Project",
+      "state": "Running",
+      "healthStatus": "Healthy",
+      "urls": [
+        {
+          "name": "http",
+          "url": "http://localhost:15086"
+        }
+      ]
+    },
+    {
+      "displayName": "control-plane-password",
+      "resourceType": "Parameter",
+      "state": "Running",
+      "healthStatus": "Healthy",
+      "urls": []
+    },
+    {
+      "displayName": "gateway",
+      "resourceType": "Project",
+      "state": "Running",
+      "healthStatus": "Healthy",
+      "urls": [
+        {
+          "name": "grpc",
+          "url": "http://localhost:15084"
+        },
+        {
+          "name": "http",
+          "url": "http://localhost:15083"
+        }
+      ]
+    },
+    {
+      "displayName": "gateway-secondary",
+      "resourceType": "Project",
+      "state": "Running",
+      "healthStatus": "Healthy",
+      "urls": [
+        {
+          "name": "grpc",
+          "url": "http://localhost:15088"
+        },
+        {
+          "name": "http",
+          "url": "http://localhost:15087"
+        }
+      ]
+    },
+    {
+      "displayName": "rate-limit",
+      "resourceType": "Container",
+      "state": "Running",
+      "healthStatus": "Healthy",
+      "urls": [
+        {
+          "name": "secondary",
+          "url": "tcp://localhost:37637"
+        },
+        {
+          "name": "tcp",
+          "url": "rediss://localhost:45353"
+        }
+      ]
+    }
+  ]
+}

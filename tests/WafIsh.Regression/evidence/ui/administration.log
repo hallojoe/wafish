@@ -1,0 +1,20 @@
+PASS: Administration deploys without the dashboard assembly or Razor assets
+PASS: Two-factor state persists privately and fails on corruption or write failure
+PASS: Administration rejects missing and invalid API credentials
+PASS: AI and MCP configuration cannot activate unregistered services
+PASS: Administration APIs work without page or static-asset endpoints
+PASS: Administration creates clusters and routes through the preserved JSON API
+PASS: Snapshots, rollback, and import preserve route activation
+PASS: Administration exposes storage failures and preserves the active revision
+PASS: Administration serves system settings and database downloads without Razor
+PASS: Administration realtime hubs accept subscriptions and send overview updates
+PASS: Corrupted two-factor persistence rejects JWT login
+PASS: Administration login issues a usable JWT without a Razor login page
+PASS: Administration retains configuration after host restart and supports deletion
+PASS: Explicit AI registration resolves services and preserves administration authentication
+PASS: MCP binds loopback, enforces parent credentials, rejects origins, and limits request bodies
+PASS: Anonymous administration requires explicit loopback permission in Development
+PASS: Anonymous administration requires explicit loopback permission in Staging
+PASS: Anonymous administration requires explicit loopback permission in Production
+PASS: Explicit MCP registration is independent and idempotent
+All administration checks passed.

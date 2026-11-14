@@ -1,0 +1,9 @@
+Waiting for resource 'gateway' to be healthy...
+
+✅ Resource 'gateway' is healthy. (0.0s)
+Waiting for resource 'backend-one' to be healthy...
+
+✅ Resource 'backend-one' is healthy. (0.0s)
+Waiting for resource 'backend-two' to be healthy...
+
+✅ Resource 'backend-two' is healthy. (0.0s)

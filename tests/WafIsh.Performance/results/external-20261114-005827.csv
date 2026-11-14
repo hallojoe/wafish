@@ -1,0 +1,3 @@
+Kind,Gateway,Scenario,Repetition,RPS,P50Ms,P95Ms,P99Ms,ErrorRatePercent,CpuPercent,WorkingSetMb,Requests,Failures
+run,"External","external",1,2492.663,0.66,1.3,2.622,0,0,0,2494,0
+median,"External","external",0,2492.663,0.66,1.3,2.622,0,0,0,2494,0

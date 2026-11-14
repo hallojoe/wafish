@@ -1,0 +1,13 @@
+{
+  "plain.db": {
+    "cipher": "4.5.2 community",
+    "sqlite": "3.39.2",
+    "sha256": "1bc59f85f03ca1df974de4f1866862d1bc5fdb56eca0804655da7d2472e61d78"
+  },
+  "sqlcipher4.db": {
+    "cipher": "4.5.2 community",
+    "sqlite": "3.39.2",
+    "sha256": "dc5d5b6bfce6cdd1fc73a80e9035122a71646af77c84427dd285d119ea90d829"
+  },
+  "native_sha256": "0e948f782bcb68ceaab4f89f16d57b603ac7377ed24af71cf047314809f22dc7"
+}

@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Description>Gateway runtime and plugin lifecycle independent of the administration UI.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="WafIsh.Regression" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="..\WafIsh\WafIsh.csproj" />
+    <ProjectReference Include="..\WafIsh.Plugin.Abstractions\WafIsh.Plugin.Abstractions.csproj" />
+    <ProjectReference Include="..\WafIsh.Storage.Abstractions\WafIsh.Storage.Abstractions.csproj" />
+    <ProjectReference Include="..\WafIsh.Plugin.Waf\WafIsh.Plugin.Waf.csproj" />
+    <ProjectReference Include="..\WafIsh.Plugin.Retry\WafIsh.Plugin.Retry.csproj" />
+    <ProjectReference Include="..\WafIsh.Plugin.CircuitBreaker\WafIsh.Plugin.CircuitBreaker.csproj" />
+    <ProjectReference Include="..\WafIsh.Plugin.RateLimit\WafIsh.Plugin.RateLimit.csproj" />
+    <ProjectReference Include="..\WafIsh.Plugin.RateLimit.Redis\WafIsh.Plugin.RateLimit.Redis.csproj" />
+    <ProjectReference Include="..\WafIsh.Plugin.ProxyLog\WafIsh.Plugin.ProxyLog.csproj" />
+    <ProjectReference Include="..\WafIsh.Plugin.Cache\WafIsh.Plugin.Cache.csproj" />
+    <ProjectReference Include="..\WafIsh.Plugin.Compression\WafIsh.Plugin.Compression.csproj" />
+    <ProjectReference Include="..\WafIsh.Plugin.ServiceDiscovery\WafIsh.Plugin.ServiceDiscovery.csproj" />
+    <ProjectReference Include="..\WafIsh.Plugin.Metrics\WafIsh.Plugin.Metrics.csproj" />
+  </ItemGroup>
+</Project>

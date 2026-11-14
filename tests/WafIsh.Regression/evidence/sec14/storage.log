@@ -1,0 +1,7 @@
+Native storage: SQLite3MC SQLite3 Multiple Ciphers 2.7.0; SQLite 3.54.1
+PASS: Storage: maintained native engine meets the patched version floor
+PASS: Storage: legacy plain SQLite data survives migration, write, and reopen
+PASS: Storage: legacy SQLCipher 4 data survives migration, write, and reopen
+PASS: Storage: explicit SQLCipher URI options and pooling settings are preserved
+Encrypted storage: SQLite3MC SQLite3 Multiple Ciphers 2.7.0; SQLite 3.54.1
+PASS: Storage: encrypted database survives reopen and rejects missing or incorrect keys

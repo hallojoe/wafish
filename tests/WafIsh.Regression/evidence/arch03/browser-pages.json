@@ -1,0 +1,61 @@
+{
+  "passed": [
+    {
+      "route": "routes",
+      "title": "Routes - Gateway Dashboard"
+    },
+    {
+      "route": "history",
+      "title": "Configuration History - Gateway Dashboard"
+    },
+    {
+      "route": "plugins",
+      "title": "Plugin Management - Gateway Dashboard"
+    },
+    {
+      "route": "audit",
+      "title": "Audit Log - Gateway Dashboard"
+    },
+    {
+      "route": "settings",
+      "title": "Settings - Gateway Dashboard"
+    },
+    {
+      "route": "notifications",
+      "title": "Notifications - Gateway Dashboard"
+    },
+    {
+      "route": "plugin-resources",
+      "title": "Plugin Resources - Gateway Dashboard"
+    },
+    {
+      "route": "plugin-center",
+      "title": "Plugin Center - Gateway Dashboard"
+    },
+    {
+      "route": "logs",
+      "title": "Real-time Logs - Gateway Dashboard"
+    },
+    {
+      "route": "traffic",
+      "title": "Traffic Monitor - Gateway Dashboard"
+    },
+    {
+      "route": "cluster-metrics",
+      "title": "Cluster Metrics - Gateway Dashboard"
+    },
+    {
+      "route": "circuits",
+      "title": "Circuit Breaker - Gateway Dashboard"
+    },
+    {
+      "locale": "en-US",
+      "title": "System Settings - Gateway Dashboard"
+    },
+    {
+      "locale": "en-US",
+      "title": "Settings - Gateway Dashboard"
+    }
+  ],
+  "uncaughtErrors": []
+}

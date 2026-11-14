@@ -1,0 +1,25 @@
+npm notice run @wafish/react-ui@0.0.0 test:e2e
+npm notice run playwright test
+
+Running 16 tests using 1 worker
+
+(node:553351) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests/browser/workspace.spec.ts:21:1 › login rejects invalid credentials and restores cookie sessions on deep links (2.3s)
+  ✓   2 tests/browser/workspace.spec.ts:50:1 › all administration workspaces load without Razor (9.6s)
+  ✓   3 tests/browser/workspace.spec.ts:78:1 › route and cluster CRUD preserve advanced fields and show applied state (6.8s)
+  ✓   4 tests/browser/workspace.spec.ts:161:3 › failed save ValidationRejected preserves the editor and revision details (1.6s)
+  ✓   5 tests/browser/workspace.spec.ts:161:3 › failed save VersionConflict preserves the editor and revision details (1.6s)
+  ✓   6 tests/browser/workspace.spec.ts:161:3 › failed save StorageFailed preserves the editor and revision details (1.7s)
+  ✓   7 tests/browser/workspace.spec.ts:161:3 › failed save ActivationFailed preserves the editor and revision details (1.6s)
+  ✓   8 tests/browser/workspace.spec.ts:194:1 › snapshot comparison, rollback, import validation and export work (3.2s)
+  ✓   9 tests/browser/workspace.spec.ts:242:1 › live connection can pause and reconnect (1.3s)
+  ✓  10 tests/browser/workspace.spec.ts:255:1 › expired sessions return to login and clear the authenticated view (9.0s)
+  ✓  11 tests/browser/workspace.spec.ts:270:1 › English and Chinese layouts pass automated accessibility checks (6.8s)
+  ✓  12 tests/browser/workspace.spec.ts:361:3 › BasicAuth credentials stay in memory and authorize realtime requests (2.0s)
+  ✓  13 tests/browser/workspace.spec.ts:361:3 › ApiKey credentials stay in memory and authorize realtime requests (2.2s)
+  ✓  14 tests/browser/workspace.spec.ts:398:1 › plugin bindings, presets, and activation use real administration APIs (6.4s)
+  ✓  15 tests/browser/workspace.spec.ts:495:1 › two-factor setup, login challenge, and disable work (2.0s)
+  ✓  16 tests/browser/workspace.spec.ts:526:1 › assistant write tools require confirmation and retain returned results (1.6s)
+
+  16 passed (1.3m)

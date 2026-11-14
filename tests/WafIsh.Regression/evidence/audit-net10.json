@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "parameters": "--vulnerable --include-transitive",
+  "sources": [
+    "https://api.nuget.org/v3/index.json"
+  ],
+  "projects": [
+    {
+      "path": "src/WafIsh.Dashboard/WafIsh.Dashboard.csproj"
+    },
+    {
+      "path": "src/WafIsh/WafIsh.csproj"
+    },
+    {
+      "path": "src/WafIsh.Client/WafIsh.Client.csproj"
+    },
+    {
+      "path": "samples/SampleGateway/SampleGateway.csproj"
+    },
+    {
+      "path": "samples/SampleLocalService/SampleLocalService.csproj"
+    },
+    {
+      "path": "src/WafIsh.Grpc/WafIsh.Grpc.csproj"
+    },
+    {
+      "path": "src/WafIsh.Storage.Abstractions/WafIsh.Storage.Abstractions.csproj"
+    },
+    {
+      "path": "src/WafIsh.Storage.Sqlite/WafIsh.Storage.Sqlite.csproj"
+    },
+    {
+      "path": "tests/WafIsh.Performance/Backend/Backend.csproj"
+    },
+    {
+      "path": "tests/WafIsh.Performance/NativeYarp/NativeYarp.csproj"
+    },
+    {
+      "path": "tests/WafIsh.Performance/EnhancedYarp/EnhancedYarp.csproj"
+    },
+    {
+      "path": "tests/WafIsh.Performance/Runner/Runner.csproj"
+    },
+    {
+      "path": "tests/WafIsh.Regression/WafIsh.Regression.csproj"
+    },
+    {
+      "path": "src/WafIsh.Plugin.Abstractions/WafIsh.Plugin.Abstractions.csproj"
+    },
+    {
+      "path": "src/WafIsh.Plugin.Waf/WafIsh.Plugin.Waf.csproj"
+    },
+    {
+      "path": "src/WafIsh.Plugin.Retry/WafIsh.Plugin.Retry.csproj"
+    },
+    {
+      "path": "src/WafIsh.Plugin.CircuitBreaker/WafIsh.Plugin.CircuitBreaker.csproj"
+    },
+    {
+      "path": "src/WafIsh.Plugin.RateLimit/WafIsh.Plugin.RateLimit.csproj"
+    },
+    {
+      "path": "src/WafIsh.Plugin.ProxyLog/WafIsh.Plugin.ProxyLog.csproj"
+    },
+    {
+      "path": "src/WafIsh.Plugin.Cache/WafIsh.Plugin.Cache.csproj"
+    },
+    {
+      "path": "src/WafIsh.Plugin.ServiceDiscovery/WafIsh.Plugin.ServiceDiscovery.csproj"
+    },
+    {
+      "path": "src/WafIsh.Plugin.Metrics/WafIsh.Plugin.Metrics.csproj"
+    },
+    {
+      "path": "src/WafIsh.Plugin.Compression/WafIsh.Plugin.Compression.csproj"
+    },
+    {
+      "path": "src/WafIsh.Plugin.RateLimit.Redis/WafIsh.Plugin.RateLimit.Redis.csproj"
+    },
+    {
+      "path": "src/WafIsh.Runtime/WafIsh.Runtime.csproj"
+    }
+  ]
+}

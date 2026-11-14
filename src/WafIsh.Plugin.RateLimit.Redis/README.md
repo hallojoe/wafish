@@ -1,0 +1,45 @@
+# WafIsh.Plugin.RateLimit.Redis
+
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../../docs/projects.md)
+
+## Intro
+
+This plugin uses Redis Lua operations for shared route limits. Its binding ID is `rate-limit-redis`.
+
+```mermaid
+flowchart TD
+    Gateways["Gateway replicas"] --> Keys["Shared Redis rate-limit keys"]
+    Keys --> Lua["Atomic Lua operation"]
+    Lua --> Decision{"Within limit?"}
+    Decision -->|"Yes"| Forward["Forward upstream"]
+    Decision -->|"No"| Reject["Return HTTP 429"]
+    Lua -. "Redis unavailable" .-> Policy["Apply configured outage policy"]
+```
+
+## Real-world example
+
+Two gateway replicas protect the same public API. Requests reaching either replica consume the same Redis-backed allowance.
+
+## Real-world value
+
+Horizontal scaling does not multiply the allowed traffic for each shared key.
+
+## What it does
+
+- Apply fixed-window, sliding-window, and token-bucket limits atomically.
+- Use configured key prefixes and connection settings.
+- Distinguish exhausted quotas from Redis outages using FailClosed or FailOpen policy.
+
+## What it does not do
+
+- Run Redis automatically outside an explicitly configured host topology.
+- Implement the local concurrency-limiter algorithm in Redis.
+
+## Start here
+
+Source project: [WafIsh.Plugin.RateLimit.Redis.csproj](WafIsh.Plugin.RateLimit.Redis.csproj).
+Direct project references: [WafIsh.Plugin.Abstractions](../WafIsh.Plugin.Abstractions/README.md), [WafIsh](../WafIsh/README.md).
+
+Live Redis checks use `ANEIANG_REDIS_SERVER` and the regression runner's `--redis` option.
+
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).

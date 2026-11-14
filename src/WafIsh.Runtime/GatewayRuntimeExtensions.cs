@@ -1,0 +1,181 @@
+using System.Collections.Concurrent;
+using WafIsh.Dashboard.Infrastructure;
+using WafIsh.Dashboard.Infrastructure.State;
+using WafIsh.Dashboard.Infrastructure.Performance;
+using WafIsh.Infrastructure.Performance;
+using WafIsh.Plugins.CircuitBreaker.Services;
+using WafIsh.Dashboard.Infrastructure.Plugin;
+using WafIsh.Dashboard.Modules.Dashboard.Services;
+using WafIsh.Dashboard.Modules.GatewayConfig.Services;
+using WafIsh.Plugin.Cache;
+using WafIsh.Plugin.CircuitBreaker;
+using WafIsh.Plugin.Compression;
+using WafIsh.Plugin.Metrics;
+using WafIsh.Plugin.ProxyLog;
+using WafIsh.Plugin.ProxyLog.Services;
+using WafIsh.Plugin.RateLimit;
+using WafIsh.Plugin.RateLimit.Redis;
+using WafIsh.Plugin.Retry;
+using WafIsh.Plugin.ServiceDiscovery;
+using WafIsh.Plugin.Waf;
+using WafIsh.Models;
+using WafIsh.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.IO;
+using Yarp.ReverseProxy.Transforms.Builder;
+using WafIsh.Infrastructure.State;
+using WafIsh.Infrastructure.Resilience;
+using WafIsh.Plugins;
+using WafIsh.Extensions;
+using WafIsh.Infrastructure.Middleware;
+using WafIsh.Dashboard.Infrastructure.Yarp;
+using Microsoft.AspNetCore.Routing;
+using WafIsh.Dashboard.Infrastructure.Deployment;
+using Microsoft.AspNetCore.ResponseCompression;
+
+namespace WafIsh.Runtime;
+
+/// <summary>Registers the gateway runtime without administration controllers or Razor views.</summary>
+public static class GatewayRuntimeExtensions
+{
+    public static IServiceCollection AddWafIshRuntime(this IServiceCollection services, bool enableRegistration = false)
+    {
+        if (services.Any(d => d.ServiceType == typeof(RuntimeMarker))) return services;
+        services.AddSingleton<RuntimeMarker>();
+        services.AddWafIsh(enableRegistration: enableRegistration);
+        services.AddMemoryCache();
+        services.AddOptions<ResponseCacheBudgetOptions>().BindConfiguration("Gateway:ResponseCache");
+        services.AddSingleton<ResponseCacheStore>();
+        services.TryAddSingleton<RecyclableMemoryStreamManager>();
+        services.TryAddSingleton<LockFreeStatistics>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<ITransformProvider, DownstreamCaptureTransformProvider>());
+        services.AddOptions<GatewayMiddlewareOptions>().BindConfiguration("Gateway:Dashboard");
+        services.AddOptions<DeploymentOptions>().BindConfiguration(DeploymentOptions.SectionName);
+        services.TryAddSingleton<EndpointRoleResolver>(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<DeploymentOptions>>().Value;
+            options.ResolvedEndpoints.Clear();
+            return new EndpointRoleResolver(sp.GetRequiredService<IConfiguration>(), options);
+        });
+        services.AddResponseCompression(options =>
+        {
+            options.EnableForHttps = true;
+            options.Providers.Add<BrotliCompressionProvider>();
+            options.Providers.Add<GzipCompressionProvider>();
+            options.MimeTypes = ["text/plain", "text/css", "text/javascript", "text/xml", "application/javascript",
+                "application/json", "application/xml", "application/xml-dtd", "application/atom+xml", "application/octet-stream",
+                "image/svg+xml", "font/woff", "font/woff2", "font/ttf", "application/wasm"];
+        });
+        services.Configure<BrotliCompressionProviderOptions>(options => options.Level = System.IO.Compression.CompressionLevel.Optimal);
+        services.Configure<GzipCompressionProviderOptions>(options => options.Level = System.IO.Compression.CompressionLevel.Optimal);
+        services.AddOptions<ProxyLogPluginOptions>().BindConfiguration("Gateway:ProxyLog");
+        services.TryAddSingleton<IConfigChangeAuditLog, ConfigChangeAuditLog>();
+        services.TryAddSingleton<ConfigChangeAuditLog>(sp => (ConfigChangeAuditLog)sp.GetRequiredService<IConfigChangeAuditLog>());
+        services.TryAddSingleton<ICircuitStateStore, InMemoryCircuitStateStore>();
+        services.TryAddSingleton<IDestinationCandidateCoordinator, WafIsh.Dashboard.Infrastructure.Resilience.DestinationCandidateCoordinator>();
+        services.TryAddSingleton<IRateLimiterStore, InMemoryRateLimiterStore>();
+        services.AddHostedService(sp => sp.GetRequiredService<DynamicYarpConfigService>());
+        services.TryAddSingleton<ProxyLogRuntimeSettings>();
+        services.AddSingleton<LogSettingsService>();
+        services.AddHostedService(sp => sp.GetRequiredService<LogSettingsService>());
+        services.AddSingleton<IProxyLogStore>(sp =>
+        {
+            var opts = sp.GetRequiredService<IOptions<ProxyLogPluginOptions>>().Value;
+            var runtimeSettings = sp.GetRequiredService<ProxyLogRuntimeSettings>();
+            return new ProxyLogStore(
+                opts.LogBufferCapacity,
+                persistenceEnabled: opts.LogPersistenceEnabled,
+                runtimeSettings: runtimeSettings);
+        });
+        services.AddSingleton<ProxyLogStore>(sp => (ProxyLogStore)sp.GetRequiredService<IProxyLogStore>());
+        services.AddSingleton<LogSanitizer>();
+        services.AddSingleton<ILogSanitizer>(sp => sp.GetRequiredService<LogSanitizer>());
+
+        // Log sampling + filtering (extracted from YarpRequestCaptureMiddleware)
+        services.AddSingleton<ILogSampler, LogSampler>();
+        services.AddSingleton<ILogFilter, LogFilter>();
+        services.AddSingleton<IProxyLogCapture, ProxyLogCapture>();
+
+        // SqliteProxyLogWriter: converts LogEntry → Entity and delegates to IProxyLogRepository
+        services.AddSingleton<SqliteProxyLogWriter>();
+        // AsyncLogPersistenceService: background service that reads from Channel and writes batches to SQLite
+        services.AddSingleton<AsyncLogPersistenceService>();
+        services.AddSingleton<IProxyLogPersistenceService>(sp => sp.GetRequiredService<AsyncLogPersistenceService>());
+        services.AddSingleton<IPluginRuntimeResource>(sp => sp.GetRequiredService<AsyncLogPersistenceService>());
+
+        services.AddSingleton<IGatewayPlugin, CircuitBreakerPlugin>();
+        services.AddSingleton<IGatewayPlugin, RequestRetryPlugin>();
+        services.AddSingleton<IGatewayPlugin, RateLimitPlugin>();
+        // Redis rate limits use a route connection override or Gateway:RateLimit:Redis configuration.
+        services.AddSingleton<IGatewayPlugin, RedisRateLimitPlugin>();
+        services.AddOptions<RedisRateLimitStoreOptions>().BindConfiguration("Gateway:RateLimit:Redis");
+        services.AddSingleton<IDistributedRateLimitStore, RedisLuaRateLimitStore>();
+        services.AddSingleton<IGatewayPlugin, WafPlugin>();
+        services.AddSingleton<IGatewayPlugin, ProxyLogPlugin>();
+        services.AddSingleton<IGatewayPlugin, ResponseCachePlugin>();
+        services.AddSingleton<IGatewayPlugin, TrafficMetricsPlugin>();
+        services.AddSingleton<IGatewayPlugin, ClusterMetricsPlugin>();
+        services.AddSingleton<IGatewayPlugin, HttpServiceDiscoveryPlugin>();
+        services.AddSingleton<IGatewayPlugin, CompressionPlugin>();
+        services.AddSingleton<PluginMetricStore>();
+        services.AddSingleton<ExternalGatewayPluginHost>();
+        services.AddSingleton<GatewayPluginManager>();
+        services.AddSingleton<IGatewayPluginManager>(provider => provider.GetRequiredService<GatewayPluginManager>());
+        services.AddSingleton<IPluginDashboardBuilder, PluginDashboardBuilder>();
+        services.AddSingleton<PluginDashboardInitializer>();
+        services.AddSingleton<IPluginRuntimeDomainManager, PluginRuntimeDomainManager>();
+        services.AddSingleton<IPluginBindingMutationService, PluginBindingMutationService>();
+        services.AddSingleton(provider => (PluginRuntimeDomainManager)provider.GetRequiredService<IPluginRuntimeDomainManager>());
+        services.AddHostedService<PluginRuntimeDomainInitializer>();
+        services.AddSingleton<IPluginActivationState>(provider => provider.GetRequiredService<GatewayPluginManager>());
+        services.AddSingleton<GatewayPluginExecutionPlanProvider>();
+        services.AddSingleton<IPluginManifestCatalog>(provider => provider.GetRequiredService<IGatewayPluginManager>());
+        services.AddSingleton<IPluginConfigurationSchemaValidator, PluginConfigurationSchemaValidator>();
+        services.AddSingleton<IPluginConfigurationMigrationService, PluginConfigurationMigrationService>();
+        services.AddSingleton<IPluginConfigurationMigrator, CircuitBreakerConfigMigrator>();
+        services.AddSingleton<IPluginConfigurationMigrator, RetryConfigMigrator>();
+        services.AddSingleton<IPluginConfigurationMigrator, WafConfigMigrator>();
+        services.AddSingleton<IPluginConfigurationMigrator, RateLimitConfigMigrator>();
+        services.AddSingleton<IPluginConfigurationMigrator, ProxyLogConfigMigrator>();
+        services.AddSingleton<CircuitBreakerWarmupService>();
+        services.AddSingleton<IPluginRuntimeResource>(provider => provider.GetRequiredService<CircuitBreakerWarmupService>());
+        services.AddSingleton<IPluginRuntimeResource, ServiceDiscoveryRefreshService>();
+        services.AddHttpClient("service-discovery");
+        services.AddSingleton<PluginResourceLifecycleCoordinator>();
+        services.AddSingleton<IPluginResourceLifecycleCoordinator>(provider => provider.GetRequiredService<PluginResourceLifecycleCoordinator>());
+        services.AddHostedService(provider => provider.GetRequiredService<PluginResourceLifecycleCoordinator>());
+        services.AddSingleton<PluginResourceMonitor>();
+        services.AddSingleton<IPluginResourceMonitor>(provider => provider.GetRequiredService<PluginResourceMonitor>());
+
+        return services;
+    }
+
+    public static IApplicationBuilder UseWafIshRuntime(this IApplicationBuilder app)
+    {
+        app.Use((context, next) => context.RequestServices.GetRequiredService<PluginRuntimeDomainManager>()
+            .InvokeMiddlewareAsync(context, next));
+        return app;
+    }
+
+    public static IEndpointConventionBuilder MapWafIshProxy(this IEndpointRouteBuilder endpoints,
+        Action<IReverseProxyApplicationBuilder>? configure = null, bool useBuiltInPipeline = true)
+        => endpoints.MapReverseProxy(proxy =>
+        {
+            if (useBuiltInPipeline)
+            {
+                proxy.UseMiddleware<BuiltinTransformMiddleware>();
+                proxy.Use((context, next) => context.RequestServices.GetRequiredService<PluginRuntimeDomainManager>()
+                    .InvokeProxyPipelineAsync(context, next));
+            }
+            configure?.Invoke(proxy);
+        });
+
+    private sealed class RuntimeMarker;
+}

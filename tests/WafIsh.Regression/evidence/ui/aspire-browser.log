@@ -1,0 +1,3 @@
+PASS: Aspire-hosted React UI authenticates with Basic credentials and receives realtime updates.
+PASS: Razor Monaco JSON worker loads and validates JSON without missing assets.
+PASS: Razor Settings navigation remains reachable at 1280x720.

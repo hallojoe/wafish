@@ -1,0 +1,6 @@
+PASS: Sample container builds with .NET 10 and embedded React assets.
+PASS: Published image contains no WafIsh.Dashboard.dll or Razor static-asset directory.
+PASS: Published sample retains administration APIs; former Razor pages and assets are unavailable.
+PASS: Published React workspace renders, connects to realtime APIs, and supports deep links without Razor.
+PASS: ProxyOnly deployment does not expose React, administration APIs, or realtime hubs.
+PASS: Test containers stopped normally and were removed.

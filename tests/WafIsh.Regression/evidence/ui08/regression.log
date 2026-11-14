@@ -1,0 +1,68 @@
+PASS: Registration: concurrent instances share routes and preserve peer destinations
+PASS: Configuration: atomic rollback covers single, batch, import, and replacement writes
+PASS: Configuration: cluster rename commits route references and binding identities together
+PASS: Configuration: route rename preserves disabled state and native match fields
+PASS: Configuration: validation and stale revisions cannot change stored or active state
+PASS: Configuration: readers see active state while a candidate waits for persistence
+PASS: Configuration: activation failure reports both revisions and recovers after restart
+info: Microsoft.AspNetCore.Mvc.Infrastructure.DefaultActionDescriptorCollectionProvider[1]
+      No action descriptors found. This may indicate an incorrectly configured application or missing application parts. To learn more, visit https://aka.ms/aspnet/mvc/app-parts
+PASS: Security: disabled registration removes REST and gRPC endpoints
+PASS: Security: enabled registration retains REST and gRPC endpoints
+PASS: Security: empty dashboard API key denies requests
+PASS: Security: nested dashboard credentials configure gateway authentication
+PASS: Security: explicit control-plane authentication wins over legacy settings
+PASS: Security: invalid gateway credentials and modes are rejected
+PASS: Security: gRPC accepts only credentials for its configured mode
+PASS: Security: cache excludes private responses
+PASS: Security: cache excludes no-store responses
+PASS: Security: cache excludes private="Authorization" responses
+PASS: Security: Set-Cookie responses are not cached
+PASS: Security: authorization bypasses cache reads and writes
+PASS: Security: cookie bypasses cache reads and writes
+PASS: Security: principal bypasses cache reads and writes
+PASS: Security: eligible public responses remain cached
+PASS: Security: network policy rejects remote HTTP and anonymous forwarding
+PASS: Security: JWT requires algorithm, issuer, subject, signature, and expiry
+PASS: Security: query JWT matches only the two exact hub paths
+PASS: Security: registration client rejects an untrusted TLS certificate
+PASS: WAF: unknown-length short reads are fully inspected and preserved
+PASS: WAF: body and inspection limits count bytes without Content-Length
+PASS: WAF: decoding, read failures, and cancellation fail closed
+PASS: Cache: host, query, response Vary, GET/HEAD, and configuration generations
+PASS: Cache: directives, freshness, malformed metadata, and conditional requests
+PASS: Cache: overflow streams intact and concurrent captures stay within budget
+PASS: Compression: exact negotiation, streaming, cache variants, and exclusions
+PASS: Redis: route failure policy distinguishes outages from exhausted limits
+PASS: Runtime: starts and proxies without dashboard registration
+PASS: Runtime: split and isolated deployment modes preserve endpoint roles
+Native storage: SQLCipher 4.5.2 community; SQLite 3.39.2
+PASS: Storage: encrypted database survives reopen and rejects missing or incorrect keys
+PASS: Administration: API contracts remain unchanged after removing Razor pages
+PASS: Administration: registration is idempotent and does not enable Razor
+PASS: Removed compatibility contracts stay isolated from runtime source
+PASS: Infrastructure plugin schemas expose discovery adapters
+PASS: Semantic version constraints support AND ranges and SemVer prerelease precedence
+PASS: External plugin registration exposes verifiable unload state
+PASS: Plugin runtime domain resolves plugin DI and preserves the old domain on failed health
+PASS: Plugin runtime domain drains in-flight requests before disposal
+PASS: Plugin manifest dependencies are exposed and built-in adapters are protected
+PASS: ClientIpResolver ignores spoofed forwarding headers
+PASS: Dashboard API key is header-only
+PASS: JWT query token is restricted to dashboard hubs
+PASS: Response capture does not depend on request content type
+PASS: Proxy log runtime settings use dashboard defaults
+PASS: Destination persistence mapping is lossless
+PASS: Cluster rename preserves native extensions
+PASS: PluginBinding SQLite CRUD and uniqueness
+PASS: GatewayPluginManager persists state in gateway_plugins and imports legacy JSON
+PASS: GatewaySnapshotCompiler filters disabled and missing targets
+PASS: GatewaySnapshotCompiler keeps UID bindings stable across target renames
+PASS: GatewaySnapshotPublisher rejects stale versions
+PASS: Plugin execution plan is reused and invalidated by snapshot publication
+PASS: Service discovery manifest and execution plan share the canonical plugin id
+PASS: Service discovery refreshes static destinations only while its resource runs
+PASS: Plugin health and runtime resource contracts expose accurate state
+PASS: Plugin schema validates nested composition
+PASS: Legacy global policy chains stay isolated from dashboard activation
+All regression checks passed.

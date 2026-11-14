@@ -1,0 +1,211 @@
+# Gateway package boundaries
+
+Decision date: 2026-11-13. Related tasks: ARCH-01 through ARCH-09.
+
+## Ownership
+
+| Package | Responsibility | Dependencies |
+|---|---|---|
+| WafIsh | Configuration, snapshots, registration protocols, and core contracts | Storage and plugin abstractions; client and gRPC contracts |
+| WafIsh.Runtime | Runtime startup, plugin lifecycle, state, proxy middleware, and request logging | Core and plugin implementations |
+| WafIsh.Administration | Administration APIs, authentication, history, telemetry queries, shared translations, and AI/MCP services | Runtime and storage abstractions |
+| WafIsh.ReactUi | React workspace, navigation, localization, and embedded frontend assets | Administration |
+| WafIsh.Storage.Sqlite | SQLite repositories and transactional persistence | Storage abstractions |
+
+Existing core models and plugin abstractions provide shared contracts. Do not duplicate these types in the UI.
+Package dependencies must not point from runtime to administration or presentation.
+Existing namespaces may remain during assembly extraction. Namespace names do not establish assembly dependencies.
+
+## Hosting APIs
+
+- `AddWafIshRuntime` registers runtime services without administration controllers or views.
+- `UseWafIshRuntime` installs runtime middleware.
+- `MapWafIshProxy` maps the proxy pipeline and optional host customization.
+- `AddWafIshAdministration` registers administration services and API controllers.
+- `MapWafIshAdministration` maps administration endpoints and realtime hubs.
+- `AddWafIshReactUi` registers React presentation over administration services.
+- `MapWafIshReactUi` maps the workspace and embedded assets.
+- `AddWafIshAI` enables AI chat and analysis.
+- `AddWafIshMcp` registers the separate MCP host. Neither method enables the other feature.
+
+The host selects storage and registers it once. Registration endpoints are disabled by default in the runtime entry point.
+Hosts use explicit runtime, administration, and React composition. The old Razor wrappers are removed.
+
+## Behavior boundaries
+
+Runtime owns plugin activation, configuration loading, request state, capture, and forwarding.
+Administration owns configuration commands, history, queries, authentication, and operator notifications.
+Presentation owns view selection, navigation, locale rendering, and browser interaction.
+Plugin navigation contributions remain plain metadata usable by different presentation clients.
+
+Persistence uses candidate configuration. Validation and transaction commit precede activation.
+Storage failure preserves the active version. Activation failure reports separate persisted and active outcomes.
+
+## Migration requirements
+
+All packages now target .NET 10. Consumers need a .NET 10 SDK and runtime.
+The SDK is selected through `global.json`. Containers use the .NET 10 SDK and ASP.NET Core images.
+SQLite consumers must use `Microsoft.Data.Sqlite.Core` with `SQLite3MC.PCLRaw.bundle` 2.7.0.
+Adding `Microsoft.Data.Sqlite` also adds a competing native bundle and can break encrypted storage.
+The storage factory preserves the SQLCipher 4 format when a database password is configured.
+Plaintext databases remain plaintext. See [storage migration and backup guidance](security.md#native-sqlite-replacement-sec-14).
+Rebuild consumers after these assembly changes. Moved types retain their namespaces.
+Custom storage and snapshot compiler implementations require the interface changes documented below.
+Do not add remote administration transport in this phase. See [IDEAS.md](../IDEAS.md).
+
+## Verification
+
+Build and test after each extraction. Preserve existing controller routes and serialized field names during the move.
+Start a host that references runtime and SQLite only. Verify configuration, plugins, and forwarding without dashboard dependencies.
+Start the full sample and verify authentication, administration APIs, React pages, and embedded assets.
+
+## Administration extraction: ARCH-03
+
+Completed: 2026-11-14.
+
+Administration controllers, authentication, configuration history, realtime hubs, models, and services now live in `WafIsh.Administration`.
+Shared translations moved with administration because APIs also return localized messages.
+Resource names remain unchanged. UI-08 subsequently removes the Razor presentation package.
+
+The initial extraction retained `DashboardPagesController`; UI-08 removes it and its 15 page routes.
+`DashboardAuthController` retains POST login, logout, and authentication APIs.
+`DashboardSettingsController` owns system information and database downloads.
+The extraction preserved 102 controller contracts. After UI-08, all 87 non-page contracts remain unchanged.
+
+### Host administration without Razor
+
+Reference `WafIsh.Administration` and your storage implementation. The dashboard package is unnecessary.
+
+```csharp
+using WafIsh.Administration;
+using WafIsh.Storage.Sqlite;
+
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddWafIshStorage();
+builder.Services.AddWafIshAdministration();
+
+var app = builder.Build();
+app.MapWafIshAdministration();
+app.Run();
+```
+
+Existing `Gateway:Dashboard` configuration controls the route prefix, authentication, localization, and log settings.
+For API-key authentication, set `Gateway:Dashboard:Auth:AuthMode` to `ApiKey`.
+Supply the key through `Gateway__Dashboard__Auth__ApiKey` or another configuration provider.
+Storage configuration remains under `Gateway:Storage`.
+
+This host serves administration APIs and realtime hubs. It has no Razor engine, login page, or dashboard assets.
+POST login remains available for configured JWT modes. GET login returns 405 without the presentation package.
+
+To forward proxy traffic in the same host, use `UseWafIshGateway()` before mapping administration.
+Their namespace is `WafIsh.Runtime`. Keep host authentication and authorization middleware in the required order.
+
+### Replace the removed Razor UI
+
+`AddWafIshDashboard()` and `UseWafIshDashboard()` are removed.
+Replace them using the [React hosting example](react-ui.md#host-registration).
+Replace `AddWafIshDeployment()` with `AddWafIshAdministrationDeployment()`.
+`UseWafIshGateway` owns deployment middleware, compression, plugin activation, and proxy mapping.
+Map administration APIs and the React UI explicitly after gateway middleware.
+No Razor view engine, page controller, static asset handler, or compatibility UI remains.
+
+### Consumer migration
+
+- Upgrade administration and runtime packages. Replace the dashboard package reference with `WafIsh.ReactUi`.
+- Existing CLR namespaces and JSON names remain unchanged.
+- Public types moved between assemblies. Rebuild consumers and plugins that reference these types.
+- Code that depended on assembly-qualified names must use the new owning assembly.
+- Remove code that constructs `DashboardPagesController`. React owns the login screen at `/console`.
+- System and database actions remain in `DashboardSettingsController`.
+- API clients keep their existing URLs, methods, credentials, and payloads. Old Razor page URLs are removed.
+
+AI and MCP require explicit service registration. Configuration alone cannot activate either feature.
+The sample explicitly registers AI. MCP remains unregistered until its security checks pass.
+Persistence ordering changes remain under ARCH-06 and ARCH-07.
+
+See [ARCH-03 verification](../tests/WafIsh.Regression/evidence/arch03/README.md).
+PLAN.md records the remaining target boundaries.
+
+## Configuration transactions: ARCH-06 and ARCH-07
+
+Configuration changes now use isolated candidates. Readers receive copies of active configuration.
+The gateway validates candidates before storage. SQLite commits routes, clusters, destinations, binding identities, and revision together.
+The gateway publishes only after the transaction commits. Failed writes leave active configuration unchanged.
+
+Storage providers must implement `IConfigurationSnapshotRepository`.
+`SaveAsync` requires the expected stored revision. Reject stale revisions without changing any rows.
+`LoadAsync` must return one consistent revision. Individual repository writes do not replace this transaction contract.
+SQLite migration 017 adds the revision record. Existing route and cluster UIDs remain stable.
+
+Operation results retain `Success` and `Message`. They add `Status`, `PersistedVersion`, and `ActiveVersion`.
+
+| Status | HTTP status | Required action |
+|---|---|---|
+| Applied | 200 | Continue. The candidate was stored and published. |
+| ValidationRejected | 400 | Correct the configuration. |
+| VersionConflict | 409 | Reload current configuration before another update. |
+| StorageFailed | 503 | Correct storage access, then retry. |
+| ActivationFailed | 500 | Inspect both revisions. Restart to activate the stored revision. |
+
+The active revision identifies the published configuration. Existing requests can finish against earlier snapshots.
+A pending stored revision blocks further configuration writes until restart.
+Startup now fails when loading, validating, storing, or publishing configuration fails.
+Success audit events follow storage and publication. Batch results report commit failures for all affected items.
+`ReplaceAllConfig` throws `ConfigurationUpdateException` with the structured outcome when replacement fails.
+
+Custom snapshot compilers must accept candidate route and cluster identity maps.
+These maps preserve plugin bindings when validation occurs before a rename is committed.
+
+```csharp
+var result = await configuration.TryAddRouteConfig(route);
+if (!result.Success)
+{
+    logger.LogError("Update failed: {Status}; stored {Stored}; active {Active}",
+        result.Status, result.PersistedVersion, result.ActiveVersion);
+}
+```
+
+The gRPC registration, deregistration, and destination update responses now include `status`, `persisted_version`, and `active_version`.
+Regenerate clients from `GatewayRegistry.proto` to consume these additive fields.
+Multi-path registration commits the cluster and all routes in one transaction.
+
+### Proxy-only host
+
+```csharp
+using WafIsh.Runtime;
+using WafIsh.Storage.Sqlite;
+
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddWafIshStorage();
+builder.Services.AddWafIshRuntime();
+var app = builder.Build();
+app.UseWafIshGateway();
+app.Run();
+```
+
+Set `Gateway:Deployment:Mode` to `ProxyOnly` when endpoint-role isolation is required.
+Registration stays disabled unless `enableRegistration: true` is supplied explicitly.
+
+## Route activation and rename preservation (ARCH-10)
+
+SQLite migration 018 adds persistent route activation state.
+Existing database rows default to enabled because earlier versions did not store this state.
+New disabled routes remain disabled after restart.
+Route renames preserve native match fields, metadata, transforms, identities, and activation.
+Cluster renames preserve destination settings.
+
+Configuration exports and snapshots include an optional `GatewayState.RouteActivation` map beside `ReverseProxy`.
+Keys contain route identifiers. Values contain Boolean activation states.
+Imports and rollback apply this map within the configuration transaction.
+Older documents without this section remain supported.
+Snapshot comparisons report activation changes separately from native YARP changes.
+
+Custom `IDynamicYarpConfigService` implementations must accept the new optional `routeActivation` argument.
+This applies to `ImportBatchAsync` and `ReplaceAllConfig`.
+
+## Optional React presentation
+
+`WafIsh.ReactUi` contains the modern administration workspace.
+It references administration services without referencing the Razor package.
+Its embedded assets support standalone hosts and container publishing.
+See [registration, development, authentication, and migration](react-ui.md).

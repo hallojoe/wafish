@@ -1,0 +1,4 @@
+PASS: Published image contains SQLite3MC and no retired SQLCipher library.
+PASS: Published sample starts with encrypted storage and produces an encrypted database backup.
+PASS: Published React workspace connects to administration and realtime APIs with the replacement native engine.
+PASS: Test container stopped normally and was removed.

@@ -1,0 +1,6 @@
+PASS: Node.js frontend stage and .NET 10 publish stage built the sample container.
+Image: e57b76714369d621d2ca709f133bf540f8d23089541d846c301d9a78de482e18
+PASS: Published deep links and embedded assets return HTTP 200 with expected cache and content headers.
+PASS: Published container renders the React workspace and connects to realtime APIs.
+PASS: Published container retains Razor fallback assets.
+PASS: Test container stopped normally and was removed.

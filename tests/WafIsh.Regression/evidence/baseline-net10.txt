@@ -1,0 +1,26 @@
+PASS: Removed compatibility contracts stay isolated from runtime source
+PASS: Infrastructure plugin schemas expose discovery adapters
+PASS: Semantic version constraints support AND ranges and SemVer prerelease precedence
+PASS: External plugin registration exposes verifiable unload state
+PASS: Plugin manifest dependencies are exposed and built-in adapters are protected
+PASS: ClientIpResolver ignores spoofed forwarding headers
+PASS: Dashboard API key is header-only
+PASS: JWT query token is restricted to dashboard hubs
+PASS: Response capture does not depend on request content type
+PASS: Proxy log runtime settings use dashboard defaults
+PASS: Destination persistence mapping is lossless
+PASS: Cluster rename preserves native extensions
+PASS: PluginBinding SQLite CRUD and uniqueness
+PASS: GatewaySnapshotCompiler filters disabled and missing targets
+PASS: GatewaySnapshotCompiler keeps UID bindings stable across target renames
+PASS: GatewaySnapshotPublisher rejects stale versions
+PASS: Plugin execution plan is reused and invalidated by snapshot publication
+PASS: Service discovery manifest and execution plan share the canonical plugin id
+PASS: Service discovery refreshes static destinations only while its resource runs
+PASS: Plugin health and runtime resource contracts expose accurate state
+PASS: Plugin schema validates nested composition
+PASS: Legacy global policy chains stay isolated from dashboard activation
+Regression checks failed: 3
+- Plugin runtime domain resolves plugin DI and preserves the old domain on failed health: Expected true.
+- Plugin runtime domain drains in-flight requests before disposal: Expected true.
+- GatewayPluginManager persists state in gateway_plugins and imports legacy JSON: Expected false.

@@ -1,0 +1,16 @@
+using WafIsh.Controllers;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
+
+namespace WafIsh.Dashboard.Infrastructure.Auth;
+
+/// <summary>Applies GatewayApiAuthFilter to GatewayConfigController only.</summary>
+internal sealed class GatewayApiAuthConvention : IApplicationModelConvention
+{
+    public void Apply(ApplicationModel application)
+    {
+        var ctrl = application.Controllers.FirstOrDefault(c => c.ControllerType == typeof(GatewayConfigController));
+        if (ctrl == null) return;
+        ctrl.Filters.Add(new ServiceFilterAttribute(typeof(GatewayApiAuthFilter)) { IsReusable = true });
+    }
+}

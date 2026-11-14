@@ -1,0 +1,47 @@
+name: Verify
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  native-storage:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet run --project tests/WafIsh.Regression -c Release -- --storage
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: src/WafIsh.ReactUi/ClientApp/package-lock.json
+      - run: dotnet build WafIsh.slnx -c Release
+      - run: dotnet run --project tests/WafIsh.Regression -c Release --no-build
+      - run: dotnet run --project tests/WafIsh.Administration.Regression -c Release --no-build
+      - run: npm run lint && npm run test:coverage && npm audit
+        working-directory: src/WafIsh.ReactUi/ClientApp
+      - run: npx playwright install --with-deps chromium
+        working-directory: src/WafIsh.ReactUi/ClientApp
+      - run: npm run test:e2e
+        working-directory: src/WafIsh.ReactUi/ClientApp
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-results
+          path: src/WafIsh.ReactUi/ClientApp/test-results

@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <DefaultItemExcludes>$(DefaultItemExcludes);ClientApp/node_modules/**;ClientApp/test-results/**;ClientApp/playwright-report/**</DefaultItemExcludes>
+    <Description>Optional React administration UI for WafIsh.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../WafIsh.Administration/WafIsh.Administration.csproj" />
+    <FrontendSource Include="ClientApp/src/**/*;ClientApp/index.html;ClientApp/vite.config.ts;ClientApp/tsconfig*.json;ClientApp/package-lock.json" />
+  </ItemGroup>
+  <Target Name="InstallFrontendDependencies" BeforeTargets="BuildFrontend" Inputs="ClientApp/package-lock.json" Outputs="ClientApp/node_modules/.package-lock.json" Condition="'$(DesignTimeBuild)' != 'true' And '$(SkipReactBuild)' != 'true'">
+    <Exec Command="npm ci --no-fund" WorkingDirectory="ClientApp" />
+  </Target>
+  <Target Name="BuildFrontend" BeforeTargets="PrepareForBuild" Inputs="@(FrontendSource)" Outputs="wwwroot/index.html" Condition="'$(DesignTimeBuild)' != 'true' And '$(SkipReactBuild)' != 'true'">
+    <Exec Command="npm run build" WorkingDirectory="ClientApp" />
+  </Target>
+  <Target Name="EmbedFrontend" BeforeTargets="AssignTargetPaths" DependsOnTargets="BuildFrontend">
+    <ItemGroup>
+      <FrontendAsset Include="wwwroot/**/*" />
+      <EmbeddedResource Include="@(FrontendAsset)" LogicalName="ReactUi/%(FrontendAsset.RecursiveDir)%(FrontendAsset.Filename)%(FrontendAsset.Extension)" />
+    </ItemGroup>
+  </Target>
+</Project>
