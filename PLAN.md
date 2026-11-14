@@ -23,6 +23,40 @@ The [2026-11-14 .NET source review](DOTNET_REVIEW.md) records new proposals, sha
 - Keep SQLite as local gateway storage. Add Redis only for scenarios that require it.
 - Defer separate administration and gateway processes to [IDEAS.md](IDEAS.md#idea-01-separate-administration-and-gateway-processes).
 
+## Active priority queue
+
+Execution paused after priority 13 at the user's request. Priorities 14–24 remain TODO.
+
+Continue in this order. Project plans contain the individual acceptance checks.
+The naming correction is complete; see [consumer migration](docs/naming-migration.md).
+
+| Priority | Work | Status |
+|---|---|---|
+| 1 | Redis construction recovery, outage tests, and deployment isolation | DONE |
+| 2 | Discovery provider fixtures, binding health, backoff, and stale policies | DONE |
+| 3 | Async configuration, cancellation, concurrent mutations, and retry deadlines | DONE |
+| 4 | HTTPS fixtures, cleanup, authorization matrix, and session lifecycle | DONE |
+| 5 | SQLite recovery, bounded queries, restore verification, storage contracts, and pagination | DONE |
+| 6 | Runtime replacement/unload stress, circuit probes, local limiter churn, and shutdown faults | DONE |
+| 7 | Shared mutation errors, client outcomes, gRPC mappings, and plugin contracts | DONE |
+| 8 | Regression organization, fault schedules, browser fixtures, and UI accessibility | DONE |
+| 9 | WAF fuzzing, cache headers, compression negotiation, and metric concurrency | DONE |
+| 10 | Benchmark cancellation, preflight, addresses, memory, metadata, and manifests | DONE |
+| 11 | Measured cache, compression, and snapshot-write optimization | DONE |
+| 12 | AppHost restart/Sonar/isolation and sample deployment checks | DONE |
+| 13 | Sample identities, contracts, telemetry, documentation, and probe filtering | DONE |
+| 14 | Operation permissions, log redaction, and quotas | TODO |
+| 15 | Configuration/idempotency/plugin previews, capabilities, and ordering | TODO |
+| 16 | Client retry/failover, capability handshake, leases, and readiness | TODO |
+| 17 | Metric units, OpenTelemetry, histograms, savings, and drain diagnostics | TODO |
+| 18 | Storage capabilities and backup abstraction; offline inspection completed with priority 5 | TODO |
+| 19 | Shared retry budgets, recovery jitter, maintenance, and cache fills/purge | TODO |
+| 20 | Named local quota groups, weights, tenants, and combined rate limits | TODO |
+| 21 | WAF detection/exclusions, EndpointSlice, and compression algorithms | TODO |
+| 22 | Benchmark fault, streaming, transport, arrival-rate, and budget scenarios | TODO |
+| 23 | Demonstration profiles, fault injection, blue/green, orders, streams, and telemetry | TODO |
+| 24 | WebAuthn, saved views, and asset metadata | TODO |
+
 ## Tracking rules
 
 Use these statuses consistently:
@@ -670,6 +704,14 @@ User decision: treat packages as first releases. Reviewed API snapshots establis
 
 | Date | Task | Owner | Status | Evidence and next action |
 |---|---|---|---|---|
+| 2026-11-14 | Waf IMP-01/02; Cache IMP-01; Compression IMP-01; Metrics IMP-01 | Codex | DONE | Generated protocol checks, six WAF false-positive fixes, mixed traversal rejection, and strict encoding qualities. 214 main and 35 administration cases pass; changed coverage 100%. [Evidence](tests/Wafish.Regression/evidence/protocol-properties/README.md). |
+| 2026-11-14 | Regression IMP-01/02, FEAT-01/02; ReactUi.Host IMP-02, FEAT-01/02; ReactUi IMP-01/02 | Codex | DONE | Registry, replay traces, isolated profiles, audit merge, realtime updates, and workspace states. 209 main, 35 administration, 81 frontend, and 30 browser tests pass. [Evidence](tests/Wafish.Regression/evidence/regression-infrastructure/README.md). |
+| 2026-11-14 | Administration IMP-01; Client FEAT-02; Grpc IMP-01/02; Plugin.Abstractions IMP-01/02 | Codex | DONE | Shared mutation responses, structured registration, wire/API compatibility, and lifecycle ownership. 200 main, 35 administration, and 23 browser cases pass. [Evidence](tests/Wafish.Regression/evidence/mutation-contracts/README.md). |
+| 2026-11-14 | Runtime IMP-01/02; CircuitBreaker IMP-01/02; RateLimit IMP-01/02; Administration IMP-02; ProxyLog IMP-02 | Codex | DONE | Lease ownership, collectible unload, probe contention, limiter churn, and shutdown accounting. 187 main and 34 administration cases pass. [Evidence](tests/Wafish.Regression/evidence/lifetime-stress/README.md). |
+| 2026-11-14 | Sqlite IMP-01, IMP-02, FEAT-01, FEAT-02; Storage.Abstractions IMP-01, IMP-02 | Codex | DONE | Migration faults, WAL recovery, bounded queries, provider conformance, and offline inspection/restore verification. 178 main and 33 administration cases pass. [Evidence](tests/Wafish.Regression/evidence/storage-reliability/README.md). |
+| 2026-11-14 | ReactUi.Host IMP-01, IMP-03; Administration.Regression IMP-02, FEAT-01, FEAT-02 | Codex | DONE | HTTPS fixtures, cleanup ownership, full authorization matrix, and session revocation. 168 main, 32 administration, and 23 browser cases pass. [Evidence](tests/Wafish.Regression/evidence/administration-lifecycle/README.md). |
+| 2026-11-14 | Core IMP-01, IMP-02, IMP-04; Retry IMP-01, IMP-02, FEAT-02 | Codex | DONE | Async preparation, cancellation ownership, generated concurrency checks, Retry-After, and total deadlines. 168 main and 24 administration cases pass. [Evidence](tests/Wafish.Regression/evidence/async-retry/README.md). |
+| 2026-11-14 | Redis IMP-01, IMP-02, IMP-04; ServiceDiscovery IMP-01, IMP-02, IMP-04, FEAT-02 | Codex | DONE | Bounded connection recovery, deployment isolation, interrupted Lua, provider parsing, per-binding health, backoff, and stale policies. 159 regression cases and seven live Redis groups pass. [Evidence](tests/Wafish.Regression/evidence/recovery/README.md). |
 | 2026-11-14 | REV-14 through REV-16 | Codex | DONE | Release build, 169 standard regression checks, live Redis, 20 browser checks, and three isolated consumers pass. [Evidence](tests/Wafish.Regression/evidence/review141516/README.md). |
 | 2026-11-14 | REV-11 through REV-13 | Codex | DONE | Release build, 163 regression executions, 20 browser checks, and package checks pass. Changed C# coverage: 93.85%. [Evidence](tests/Wafish.Regression/evidence/review111213/README.md). |
 | 2026-11-14 | REV-08 through REV-10 | Codex | DONE | Release build and 157 regression executions pass. Changed source coverage: 86.67%. [Evidence](tests/Wafish.Regression/evidence/review8910/README.md). |
@@ -707,3 +749,12 @@ For each completed task, add an evidence record with these fields:
 - [Adding Aspire to an existing application](https://aspire.dev/get-started/add-aspire-existing-app/).
 
 Check current guidance and installed package versions when implementing each task.
+
+Priority 10 completed: [benchmark reliability evidence](tests/Wafish.Regression/evidence/benchmark-reliability/README.md).
+
+Priority 11 completed: [allocation pressure evidence](tests/Wafish.Regression/evidence/allocation-pressure/README.md).
+
+Priority 12 completed: [sample deployment evidence](tests/Wafish.Regression/evidence/sample-deployment/README.md).
+
+Priority 13 completed: [sample contracts and final verification](tests/Wafish.Regression/evidence/sample-contracts/README.md).
+Paused after priority 13. Resume only when requested.

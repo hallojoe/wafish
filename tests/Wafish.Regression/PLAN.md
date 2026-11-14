@@ -8,7 +8,9 @@ The [root execution plan](../../PLAN.md) remains the historical and cross-projec
 
 ### IMP-01: Organize the runner around a shared case registry
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [regression infrastructure evidence](evidence/regression-infrastructure/README.md).
 
 Reduce scattered orchestration while preserving stable scenario names and exit behavior.
 
@@ -16,7 +18,9 @@ Acceptance: Existing checks still run once and failures remain individually iden
 
 ### IMP-02: Expand deterministic concurrency coverage
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [regression infrastructure evidence](evidence/regression-infrastructure/README.md).
 
 Exercise snapshot publication, background audit loading, and plugin replacement with explicit barriers.
 
@@ -26,7 +30,9 @@ Acceptance: Repeated runs reproduce ordering failures without relying on machine
 
 ### FEAT-01: Emit machine-readable test reports
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [regression infrastructure evidence](evidence/regression-infrastructure/README.md).
 
 Add a report format suitable for CI while retaining readable console output.
 
@@ -56,7 +62,9 @@ Large streaming responses remain bounded and deliver an early first byte.
 
 ### FEAT-02: Add reproducible fault schedules
 
-Status: TODO. Priority: P2. Type: test infrastructure feature.
+Status: DONE. Owner: Codex. Completed: 2026-11-14. Priority: P2. Type: test infrastructure feature.
+
+Verification: [regression infrastructure evidence](evidence/regression-infrastructure/README.md).
 
 Evidence: [ConfigurationTransactionChecks.cs](ConfigurationTransactionChecks.cs) already uses blocking storage and a failing publisher.
 

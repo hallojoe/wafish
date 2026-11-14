@@ -15,6 +15,22 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Run `--protocol-properties` for generated WAF, cache, compression, and metric checks. Retain corpus provenance.
+
+- Use `--list`, `--case`, and `--group` for registry selections. Retain stable scenario names.
+- Run `--fault-schedules --seed 91` to replay named barriers; retain JSON traces on failures.
+- Run `--ui-fixtures` after changes to browser-host ownership or profiles.
+
+- Run `--contracts` for mutation responses, registration outcomes, wire compatibility, and lifecycle contracts.
+
+- Run `--lifetime-stress` for replacement, unload, probe contention, and limiter lifetime changes.
+
+- Run `--storage-reliability` for migration faults, forced-process WAL recovery, pagination, and backup command checks.
+
+- Run `--async-policy` for focused configuration cancellation and retry deadline checks.
+
+- Run `--recovery` for deterministic Redis/discovery checks and `--redis` for isolated live Redis recovery.
+
 - Register new checks in Program.cs and return a failing process code when assertions fail.
 - Use isolated temporary resources and dispose hosts and database connections.
 - Use controlled synchronization for races instead of increasing arbitrary delays.
@@ -46,3 +62,8 @@ For documentation-only changes, check links and Mermaid rendering instead of sta
 Update the README when behavior or scope changes.
 Keep future work in PLAN.md until its acceptance checks pass.
 Record implementation evidence when completing a plan item.
+
+Run `--benchmarks` after benchmark changes. Build the complete Release solution before launching its child hosts.
+
+Use `--sample-deployment` and `--sample-contracts` for sample host changes.
+The real topology script requires the target AppHost to be stopped.

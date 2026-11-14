@@ -67,3 +67,68 @@ Schema version 1 includes suite, case name, duration, status, and exception deta
 Normal exits write reports, including focused modes and failed assertions.
 Process termination cannot guarantee a report. CI also retains console logs.
 Use `--review-release` for controlled-clock, retention, and UTC migration checks.
+
+## Redis and discovery recovery
+
+Run `--recovery` for controlled connection failures, provider fixtures, per-binding health, stale policies, and live proxy expiry.
+Run `--redis` for live connection replacement, deployment key isolation, interrupted Lua operations, and restart recovery.
+The standard runner includes all `--recovery` cases.
+[Verification evidence](evidence/recovery/README.md) records commands, results, and changed-source coverage.
+
+`--async-policy` runs nine configuration cancellation, concurrency, and retry deadline groups.
+See [verification](evidence/async-retry/README.md).
+
+`--storage-reliability` runs ten storage contract, recovery, query-budget, and backup-verification groups.
+It includes a forced child-process stop against isolated test databases.
+See [verification](evidence/storage-reliability/README.md).
+
+## Lifetime stress selection
+
+Run `dotnet run --project tests/Wafish.Regression -c Release -- --lifetime-stress` for nine focused groups.
+Checks cover domain replacement, collectible unloading, circuit probes, native limiter boundaries, and partition churn.
+The collectible fixture builds as a separate assembly and loads only through collectible contexts.
+See [evidence](evidence/lifetime-stress/README.md).
+
+## Contract selection
+
+Run `dotnet run --project tests/Wafish.Regression -c Release -- --contracts` for mutation, registration, wire, and lifecycle checks.
+The selection covers transport uncertainty, caller cancellation, partial startup, audit shutdown, and plugin interface compatibility semantics.
+Package API break detection runs separately through `tests/Wafish.PackageChecks/check-negative.py`.
+
+## Case selection and fault replay
+
+The shared registry defines every case before starting fixtures.
+Default execution runs each case once and excludes the opt-in live Redis integration.
+Existing focused flags remain available. Unknown selections return exit code 2.
+Failed checks return 1. Successful checks and dry listings return 0.
+
+```bash
+dotnet run --project tests/Wafish.Regression -c Release -- --list
+dotnet run --project tests/Wafish.Regression -c Release -- --group fault-schedules
+dotnet run --project tests/Wafish.Regression -c Release -- --case 'Fault schedules: audit loading retains recent writes within the capacity limit' --seed 91
+```
+
+`--list` emits JSON without starting hosts, storage, or network fixtures.
+`--case` selects an exact scenario name. `--group` selects a named group.
+`--seed` selects a signed 32-bit seed. Default fault runs use 17, 91, and 2026.
+Named barriers control persistence, publication, audit loading, retry delays, and log draining.
+Timeouts detect deadlocks; they do not select the operation order.
+
+Set `WAFISH_TEST_REPORT` to write a JSON report.
+Schema version 1 includes each case name, group, duration, status, and exception details.
+Scheduled cases also include seeds, ordered operations, and replay commands, including on failure.
+Tests do not include fixture passwords in schedule traces.
+`--ui-fixtures` verifies isolated profiles, authentication modes, HTTPS, failed starts, and failure responses.
+
+See [infrastructure evidence](evidence/regression-infrastructure/README.md).
+
+`--protocol-properties` checks the WAF corpus, seeded decoding, cache-header combinations, compression negotiation, and concurrent metrics.
+Use `--seed <integer>` to reproduce generated WAF and metric inputs.
+WAF corpus diagnostics appear in console output and JSON schedule metadata.
+
+`--benchmarks` verifies bounded measurements, cancellation, preflight, manifests, and owned process cleanup.
+Build the Release solution first; this group launches the performance host binaries.
+
+`--allocation-pressure` measures cache, streaming compression, and differential snapshot writes.
+`--sample-deployment` verifies topology naming, Sonar readiness, and operator links.
+`--sample-contracts` verifies proxied sample endpoints, identity, trace correlation, health filters, and telemetry sources.

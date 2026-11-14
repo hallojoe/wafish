@@ -314,6 +314,76 @@ If this project helps you, [⭐ Star it](https://github.com/aneiang/Wafish) to s
 
 ## Changelog
 
+### 2026-11-14 — Generated protocol checks
+
+- Correct six WAF false positives and reject mixed-encoding traversal. Retain explicit broad-rule limits.
+- Validate complete compression quality fields and malformed-list fallback.
+- Add seeded WAF, cache-header, encoding, and concurrent metric checks.
+- Pass 214 main and 35 administration cases with 100% changed production-line coverage.
+
+### 2026-11-14 — Regression infrastructure and workspace states
+
+- Add case listing, exact selections, JSON reports, and seeded fault replay.
+- Share isolated browser fixture setup and add large, plugin, and real failure profiles.
+- Preserve bounded audit history during background loading. Fix realtime overview query updates.
+- Show assistant loading and error states. Verify drafts, stale reads, keyboard focus, and accessibility.
+- Pass 209 main, 35 administration, 81 frontend, and 30 browser tests.
+
+### 2026-11-14 — Mutation and lifecycle contracts
+
+- Share HTTP mutation errors and revision fields. Read named application results from `outcome`.
+- Add structured registration results, retry guidance, gRPC deadlines, and caller cancellation.
+- Verify protobuf compatibility and reject new abstract requirements on existing plugin interfaces.
+- Prevent resource restarts during shutdown. Join accepted audit writes before releasing storage.
+- Pass 200 main, 35 administration, 32 frontend, and 23 browser cases.
+- [Migration and verification](tests/Wafish.Regression/evidence/mutation-contracts/README.md).
+
+### 2026-11-14 — Runtime lifetime and shutdown verification
+
+- Drain request leases before disposal. Copied leases release ownership once.
+- Stop and dispose external plugins before releasing their dependencies. Completed shutdown tasks release collectible references.
+- Correct local limiter retry guidance and verify probe limits, partition churn, and shutdown accounting.
+- Release build, 187 main tests, and 34 administration tests pass. Changed source coverage is 89.69%.
+- [Verification and compatibility](tests/Wafish.Regression/evidence/lifetime-stress/README.md).
+
+### 2026-11-14 — Storage recovery and offline verification
+
+- Verify migration rollback and recovery after forced process termination.
+- Bound history and log queries. Define stable ordering and prevent offset overflow.
+- Add provider-neutral storage contract checks.
+- Inspect and verify backup copies without changing source files.
+- Verify 178 main and 33 administration cases. See [evidence](tests/Wafish.Regression/evidence/storage-reliability/README.md).
+
+### 2026-11-14 — Administration lifecycle and HTTPS verification
+
+- Protect plugin controller actions through the shared authorization scope.
+- Revoke JWT sessions on sign-out, two-factor changes, expiry, and host restart.
+- Close revoked realtime connections and recheck credentials on existing hubs.
+- Add HTTPS browser fixtures and parent-owned cleanup after failures.
+- Verify 168 main, 32 administration, and 23 browser cases. See [evidence](tests/Wafish.Regression/evidence/administration-lifecycle/README.md).
+
+### 2026-11-14 — Consistent Wafish names
+
+- Align API names, assemblies, packages, project paths, resources, scripts, and documentation.
+- Rebuild consumers and sign in again. See [migration steps](docs/naming-migration.md).
+
+### 2026-11-14 — Async configuration and retry deadlines
+
+- Await configuration preparation and support cancellation before persistence.
+- Preserve commit ownership after persistence starts.
+- Honor bounded Retry-After delays within a configurable total deadline.
+- Correct the administration authorization namespace check.
+- Verify 168 main and 24 administration cases. See [evidence](tests/Wafish.Regression/evidence/async-retry/README.md).
+
+### 2026-11-14 — Redis and discovery recovery
+
+- Retry failed Redis connection creation with bounded backoff and one shared replacement.
+- Verify deployment isolation, interrupted Lua operations, and shared quotas after restart.
+- Preserve discovery failures per binding. Add jittered retries, freshness diagnostics, and configurable stale destination policies.
+- Correct Eureka and Kubernetes parsing. Add provider fixtures and live proxy expiry checks.
+- Complete protobuf and regression reflection namespace alignment with `Wafish`.
+- Verify 159 regression cases and seven live Redis scenario groups. See [evidence](tests/Wafish.Regression/evidence/recovery/README.md).
+
 ### 2026-11-14 — Review items 11–13
 
 - Included deployment path bases in UI, API, and asset URLs.
