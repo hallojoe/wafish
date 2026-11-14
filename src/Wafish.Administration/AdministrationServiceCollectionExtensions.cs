@@ -44,6 +44,7 @@ public static class AdministrationServiceCollectionExtensions
             return services;
         }
         services.AddSingleton<AdministrationMarker>();
+        services.AddSingleton<Wafish.Dashboard.Infrastructure.Diagnostics.DiagnosticBundleService>();
         var features = new AdministrationFeatures();
         services.AddSingleton(features);
         services.Configure<MvcOptions>(options => options.Conventions.Add(new AdministrationFeatureConvention(features)));

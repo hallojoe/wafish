@@ -124,3 +124,11 @@ Login and logout retain their public authentication behavior.
 
 The new endpoints are `POST api/config/changes/preview`, `POST api/config/changes`, and `POST api/plugins/preview`.
 The configured administration prefix applies. See [request examples](../../docs/configuration-changes.http) and [workflow](../../docs/configuration-changes.md).
+
+## Operational controls
+
+Protected endpoints expose latency buckets, cache purge, plugin drain progress, and redacted diagnostic bundles.
+Binding previews expose WAF exclusions. Binding mutations audit exclusion changes, including batch operations.
+Backup downloads use the provider-owned backup contract.
+
+See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.
