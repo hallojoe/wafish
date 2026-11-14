@@ -1,9 +1,9 @@
-PASS: /aneiang/login
+PASS: /wafish/login
 PASS: /_content/WafIsh.Dashboard/styles/dashboard-editor.css
 PASS: /health
 PASS: /ready
 PASS: Anonymous administration API request denied
-PASS: Authenticated /aneiang
-PASS: Authenticated /aneiang/api/info
+PASS: Authenticated /wafish
+PASS: Authenticated /wafish/api/info
 PASS: Published .NET 10 dashboard created encrypted SQLite storage
 PASS: No application errors during startup, requests, or shutdown

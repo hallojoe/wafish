@@ -14,7 +14,7 @@ SDK: 10.0.403. Target: net10.0.
 | `dotnet build Wafish.slnx -c Release --nologo` | Zero warnings and errors; [Release output](build-release.txt) |
 | `dotnet run --project tests/Wafish.Regression -c Release --no-build` | 44 checks pass; [output](regression.txt) |
 | `dotnet run --project tests/Wafish.Administration.Regression -c Release --no-build` | Eight checks pass; [output](administration.txt) |
-| `dotnet publish samples/SampleGateway/SampleGateway.csproj -c Release --no-build -o /tmp/aneiang-arch03-publish --nologo` | Succeeded |
+| `dotnet publish samples/SampleGateway/SampleGateway.csproj -c Release --no-build -o /tmp/wafish-arch03-publish --nologo` | Succeeded |
 
 The baseline build and all 42 original checks passed before extraction.
 Before moving files, `--dashboard-routes` captured 102 controller method/path pairs.

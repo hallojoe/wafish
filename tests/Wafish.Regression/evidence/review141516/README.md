@@ -86,7 +86,7 @@ Run from the repository root:
 dotnet build Wafish.slnx -c Release
 bash tests/Wafish.Regression/evidence/review141516/run-checks.sh
 TZ=Pacific/Auckland dotnet run --project tests/Wafish.Regression -c Release --no-build -- --review-release
-ANEIANG_REDIS_SERVER=/path/to/redis-server dotnet run --project tests/Wafish.Regression -c Release --no-build -- --redis
+WAFISH_REDIS_SERVER=/path/to/redis-server dotnet run --project tests/Wafish.Regression -c Release --no-build -- --redis
 python3 scripts/verify-packages.py
 python3 tests/Wafish.PackageChecks/check-negative.py
 python3 scripts/test-audit.py

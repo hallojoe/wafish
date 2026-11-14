@@ -11,7 +11,7 @@
           - generic [ref=f2e13]: Overview
           - generic [ref=f2e14]: 
         - link " Dashboard" [ref=f2e15] [cursor=pointer]:
-          - /url: /aneiang/
+          - /url: /wafish/
           - generic [ref=f2e16]: 
           - generic [ref=f2e17]: Dashboard
       - generic [ref=f2e19]:
@@ -20,15 +20,15 @@
           - generic [ref=f2e22]: 
         - generic:
           - link " Clusters" [ref=f2e23] [cursor=pointer]:
-            - /url: /aneiang/clusters
+            - /url: /wafish/clusters
             - generic [ref=f2e24]: 
             - generic [ref=f2e25]: Clusters
           - link " Routes" [ref=f2e27] [cursor=pointer]:
-            - /url: /aneiang/routes
+            - /url: /wafish/routes
             - generic [ref=f2e28]: 
             - generic [ref=f2e29]: Routes
           - link " History" [ref=f2e31] [cursor=pointer]:
-            - /url: /aneiang/history
+            - /url: /wafish/history
             - generic [ref=f2e32]: 
             - generic [ref=f2e33]: History
       - generic [ref=f2e35]:
@@ -37,15 +37,15 @@
           - generic [ref=f2e38]: 
         - generic:
           - link " Plugin Management" [ref=f2e39] [cursor=pointer]:
-            - /url: /aneiang/plugins
+            - /url: /wafish/plugins
             - generic [ref=f2e40]: 
             - generic [ref=f2e41]: Plugin Management
           - link " Plugin Center" [ref=f2e43] [cursor=pointer]:
-            - /url: /aneiang/plugin-center
+            - /url: /wafish/plugin-center
             - generic [ref=f2e44]: 
             - generic [ref=f2e45]: Plugin Center
           - link " Plugin Resources" [ref=f2e47] [cursor=pointer]:
-            - /url: /aneiang/plugin-resources
+            - /url: /wafish/plugin-resources
             - generic [ref=f2e48]: 
             - generic [ref=f2e49]: Plugin Resources
       - generic [ref=f2e51]:
@@ -54,19 +54,19 @@
           - generic [ref=f2e54]: 
         - generic:
           - link " Traffic Monitor" [ref=f2e55] [cursor=pointer]:
-            - /url: /aneiang/traffic
+            - /url: /wafish/traffic
             - generic [ref=f2e56]: 
             - generic [ref=f2e57]: Traffic Monitor
           - link " Cluster Metrics" [ref=f2e59] [cursor=pointer]:
-            - /url: /aneiang/cluster-metrics
+            - /url: /wafish/cluster-metrics
             - generic [ref=f2e60]: 
             - generic [ref=f2e61]: Cluster Metrics
           - link " Circuit Breaker" [ref=f2e63] [cursor=pointer]:
-            - /url: /aneiang/circuits
+            - /url: /wafish/circuits
             - generic [ref=f2e64]: 
             - generic [ref=f2e65]: Circuit Breaker
           - link " Live" [ref=f2e67] [cursor=pointer]:
-            - /url: /aneiang/logs
+            - /url: /wafish/logs
             - generic [ref=f2e68]: 
             - generic [ref=f2e69]: Live
       - generic [ref=f2e71]:
@@ -75,15 +75,15 @@
           - generic [ref=f2e74]: 
         - generic [ref=f2e75]:
           - link " Audit Log" [ref=f2e76] [cursor=pointer]:
-            - /url: /aneiang/audit
+            - /url: /wafish/audit
             - generic [ref=f2e77]: 
             - generic [ref=f2e78]: Audit Log
           - link " Notifications" [ref=f2e80] [cursor=pointer]:
-            - /url: /aneiang/notifications
+            - /url: /wafish/notifications
             - generic [ref=f2e81]: 
             - generic [ref=f2e82]: Notifications
           - link " System Settings" [ref=f2e84] [cursor=pointer]:
-            - /url: /aneiang/settings
+            - /url: /wafish/settings
             - generic [ref=f2e85]: 
             - generic [ref=f2e86]: System Settings
     - generic [ref=f2e88]:
@@ -103,7 +103,7 @@
         - generic "Live" [ref=f2e103]
         - generic [ref=f2e104]: Live
         - link "System Settings" [ref=f2e105] [cursor=pointer]:
-          - /url: /aneiang/settings
+          - /url: /wafish/settings
           - generic [ref=f2e106]: 
         - link "Switch to English" [ref=f2e107] [cursor=pointer]:
           - /url: "#"

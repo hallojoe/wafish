@@ -40,14 +40,14 @@ dotnet build src/Wafish.Plugin.ServiceDiscovery/Wafish.Plugin.ServiceDiscovery.c
 dotnet build tests/Wafish.Regression/Wafish.Regression.csproj -c Release
 dotnet run --project tests/Wafish.Regression -c Release --no-build
 dotnet run --project tests/Wafish.Regression -c Release --no-build -- --recovery
-ANEIANG_REDIS_SERVER=/path/to/redis-server dotnet run --project tests/Wafish.Regression -c Release --no-build -- --redis
+WAFISH_REDIS_SERVER=/path/to/redis-server dotnet run --project tests/Wafish.Regression -c Release --no-build -- --redis
 ```
 
 Coverage combines the standard runner and live Redis execution:
 
 ```bash
 dotnet tool run dotnet-coverage collect -f xml -o /tmp/recovery-main.xml 'dotnet tests/Wafish.Regression/bin/Release/net10.0/Wafish.Regression.dll'
-ANEIANG_REDIS_SERVER=/path/to/redis-server dotnet tool run dotnet-coverage collect -f xml -o /tmp/recovery-redis.xml 'dotnet tests/Wafish.Regression/bin/Release/net10.0/Wafish.Regression.dll --redis'
+WAFISH_REDIS_SERVER=/path/to/redis-server dotnet tool run dotnet-coverage collect -f xml -o /tmp/recovery-redis.xml 'dotnet tests/Wafish.Regression/bin/Release/net10.0/Wafish.Regression.dll --redis'
 dotnet tool run dotnet-coverage merge /tmp/recovery-main.xml /tmp/recovery-redis.xml -f xml -o /tmp/recovery.xml
 python3 tests/Wafish.Regression/evidence/recovery/changed-coverage.py /tmp/recovery.xml
 ```

@@ -61,7 +61,7 @@ Run from the repository root:
 dotnet build Wafish.slnx -c Release
 dotnet build tests/Wafish.Performance/EnhancedYarp -c Release
 dotnet build tests/Wafish.Performance/Runner -c Release
-export ANEIANG_REDIS_SERVER=/absolute/path/to/redis-server
+export WAFISH_REDIS_SERVER=/absolute/path/to/redis-server
 dotnet tool run dotnet-coverage collect -f xml -o /tmp/wafish4567-coverage.xml tests/Wafish.Regression/evidence/review4567/run-checks.sh
 python3 tests/Wafish.Regression/evidence/review4567/changed-coverage.py /tmp/wafish4567-coverage.xml
 dotnet tests/Wafish.Performance/Runner/bin/Release/net10.0/Runner.dll --suite first --duration 1 --warmup 0 --soak-duration 1

@@ -37,7 +37,7 @@ Tested working tree: baseline commit above, plus the uncommitted implementation 
 | Debug build | `dotnet build Wafish.slnx --nologo` | Zero warnings and errors; [output](build-net10-debug.txt) |
 | Release build | `dotnet build Wafish.slnx -c Release --nologo` | Zero warnings and errors; [output](build-net10-release.txt) |
 | Regression executable | `dotnet tests/Wafish.Regression/bin/Release/net10.0/Wafish.Regression.dll` | All 42 checks pass; [output](regression-net10.txt) |
-| Publication | `dotnet publish samples/SampleGateway/SampleGateway.csproj -c Release --no-build -o /tmp/aneiang-net10-verified-publish --nologo` | Succeeded |
+| Publication | `dotnet publish samples/SampleGateway/SampleGateway.csproj -c Release --no-build -o /tmp/wafish-net10-verified-publish --nologo` | Succeeded |
 | Published sample | Start the published DLL with temporary encrypted storage, generated credentials, and loopback HTTP/gRPC endpoints | Nine checks pass; [output](smoke-net10.txt) |
 | Dependency audit | `dotnet list Wafish.slnx package --vulnerable --include-transitive --format json` | No known package vulnerabilities reported; [output](audit-net10.json) |
 | Docker | `docker info` | Docker socket access denied; image build and container execution remain unverified |

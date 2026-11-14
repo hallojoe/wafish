@@ -6,16 +6,16 @@
 
 | Group | Scenario | C | RPS | P95 ms | P99 ms | Non-success % | Backend calls | Check |
 |---|---|---:|---:|---:|---:|---:|---:|---|
-| Aneiang full | concurrency-1 | 1 | 2,474 | 0.53 | 0.67 | 0.00 | 2474 | PASS |
-| Aneiang full | concurrency-16 | 16 | 18,971 | 1.11 | 1.57 | 0.00 | 18982 | PASS |
-| Aneiang full | concurrency-64 | 64 | 22,011 | 4.04 | 5.15 | 0.00 | 22046 | PASS |
-| Aneiang full | concurrency-128 | 128 | 21,337 | 8.87 | 11.91 | 0.00 | 21392 | PASS |
-| Aneiang full | response-1024 | 32 | 19,633 | 2.26 | 3.08 | 0.00 | 19658 | PASS |
-| Aneiang full | request-1024 | 32 | 16,662 | 2.62 | 4.05 | 0.00 | 16680 | PASS |
-| Aneiang full | response-65536 | 32 | 8,281 | 15.60 | 21.33 | 0.00 | 8311 | PASS |
-| Aneiang full | request-65536 | 32 | 5,974 | 10.97 | 20.24 | 0.00 | 6013 | PASS |
-| Aneiang full | response-1048576 | 32 | 940 | 50.96 | 80.51 | 0.00 | 947 | PASS |
-| Aneiang full | request-1048576 | 32 | 581 | 84.65 | 127.86 | 0.00 | 597 | PASS |
+| Wafish full | concurrency-1 | 1 | 2,474 | 0.53 | 0.67 | 0.00 | 2474 | PASS |
+| Wafish full | concurrency-16 | 16 | 18,971 | 1.11 | 1.57 | 0.00 | 18982 | PASS |
+| Wafish full | concurrency-64 | 64 | 22,011 | 4.04 | 5.15 | 0.00 | 22046 | PASS |
+| Wafish full | concurrency-128 | 128 | 21,337 | 8.87 | 11.91 | 0.00 | 21392 | PASS |
+| Wafish full | response-1024 | 32 | 19,633 | 2.26 | 3.08 | 0.00 | 19658 | PASS |
+| Wafish full | request-1024 | 32 | 16,662 | 2.62 | 4.05 | 0.00 | 16680 | PASS |
+| Wafish full | response-65536 | 32 | 8,281 | 15.60 | 21.33 | 0.00 | 8311 | PASS |
+| Wafish full | request-65536 | 32 | 5,974 | 10.97 | 20.24 | 0.00 | 6013 | PASS |
+| Wafish full | response-1048576 | 32 | 940 | 50.96 | 80.51 | 0.00 | 947 | PASS |
+| Wafish full | request-1048576 | 32 | 581 | 84.65 | 127.86 | 0.00 | 597 | PASS |
 | log-meta | plain | 32 | 21,209 | 1.97 | 2.59 | 0.00 | 21226 | PASS |
 | log-request | post-64kb | 32 | 4,757 | 13.39 | 23.48 | 0.00 | 4771 | PASS |
 | log-response | response-64kb | 32 | 8,618 | 14.52 | 22.28 | 0.00 | 8639 | PASS |
@@ -32,16 +32,16 @@
 
 ## Functional Assertions
 
-- Aneiang full/concurrency-1: PASS - All responses successful; observed `load`.
-- Aneiang full/concurrency-16: PASS - All responses successful; observed `load`.
-- Aneiang full/concurrency-64: PASS - All responses successful; observed `load`.
-- Aneiang full/concurrency-128: PASS - All responses successful; observed `load`.
-- Aneiang full/response-1024: PASS - All responses successful; observed `load`.
-- Aneiang full/request-1024: PASS - All responses successful; observed `load`.
-- Aneiang full/response-65536: PASS - All responses successful; observed `load`.
-- Aneiang full/request-65536: PASS - All responses successful; observed `load`.
-- Aneiang full/response-1048576: PASS - All responses successful; observed `load`.
-- Aneiang full/request-1048576: PASS - All responses successful; observed `load`.
+- Wafish full/concurrency-1: PASS - All responses successful; observed `load`.
+- Wafish full/concurrency-16: PASS - All responses successful; observed `load`.
+- Wafish full/concurrency-64: PASS - All responses successful; observed `load`.
+- Wafish full/concurrency-128: PASS - All responses successful; observed `load`.
+- Wafish full/response-1024: PASS - All responses successful; observed `load`.
+- Wafish full/request-1024: PASS - All responses successful; observed `load`.
+- Wafish full/response-65536: PASS - All responses successful; observed `load`.
+- Wafish full/request-65536: PASS - All responses successful; observed `load`.
+- Wafish full/response-1048576: PASS - All responses successful; observed `load`.
+- Wafish full/request-1048576: PASS - All responses successful; observed `load`.
 - log-meta/plain: PASS - All responses successful; observed `load`.
 - log-request/post-64kb: PASS - All responses successful; observed `load`.
 - log-response/response-64kb: PASS - All responses successful; observed `load`.

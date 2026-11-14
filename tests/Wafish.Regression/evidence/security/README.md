@@ -9,7 +9,7 @@ Base commit: `6ba871a`. Tests include the uncommitted working tree. No commit wa
 - `dotnet run --project tests/Wafish.Regression -c Release --no-build`: 64 passing checks. See regression.log.
 - `dotnet run --project tests/Wafish.Administration.Regression -c Release --no-build`: 19 passing checks. See administration.log.
 - `dotnet list Wafish.slnx package --vulnerable --include-transitive`: no reported package advisories. See dependency-audit.log.
-- `ANEIANG_REDIS_SERVER=<local redis-server> dotnet run --project tests/Wafish.Regression --no-build -- --redis`: three live checks pass.
+- `WAFISH_REDIS_SERVER=<local redis-server> dotnet run --project tests/Wafish.Regression --no-build -- --redis`: three live checks pass.
 - Production sample starts with an injected secret and rejects missing credentials. Logs contain no injected secret.
 
 Main checks cover authentication, byte limits, streaming, cache isolation, atomic configuration, and native encrypted storage.

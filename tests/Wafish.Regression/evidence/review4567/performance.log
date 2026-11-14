@@ -1,13 +1,13 @@
-[Aneiang full] concurrency-1: 1,583 RPS, P95 1.42 ms, errors 0.00%
-[Aneiang full] concurrency-16: 10,321 RPS, P95 2.52 ms, errors 0.00%
-[Aneiang full] concurrency-64: 15,140 RPS, P95 6.62 ms, errors 0.00%
-[Aneiang full] concurrency-128: 14,914 RPS, P95 13.65 ms, errors 0.00%
-[Aneiang full] response-1024: 12,308 RPS, P95 3.79 ms, errors 0.00%
-[Aneiang full] request-1024: 9,925 RPS, P95 4.92 ms, errors 0.00%
-[Aneiang full] response-65536: 5,651 RPS, P95 11.70 ms, errors 0.00%
-[Aneiang full] request-65536: 3,159 RPS, P95 16.78 ms, errors 0.00%
-[Aneiang full] response-1048576: 910 RPS, P95 58.26 ms, errors 0.00%
-[Aneiang full] request-1048576: 430 RPS, P95 257.64 ms, errors 0.00%
+[Wafish full] concurrency-1: 1,583 RPS, P95 1.42 ms, errors 0.00%
+[Wafish full] concurrency-16: 10,321 RPS, P95 2.52 ms, errors 0.00%
+[Wafish full] concurrency-64: 15,140 RPS, P95 6.62 ms, errors 0.00%
+[Wafish full] concurrency-128: 14,914 RPS, P95 13.65 ms, errors 0.00%
+[Wafish full] response-1024: 12,308 RPS, P95 3.79 ms, errors 0.00%
+[Wafish full] request-1024: 9,925 RPS, P95 4.92 ms, errors 0.00%
+[Wafish full] response-65536: 5,651 RPS, P95 11.70 ms, errors 0.00%
+[Wafish full] request-65536: 3,159 RPS, P95 16.78 ms, errors 0.00%
+[Wafish full] response-1048576: 910 RPS, P95 58.26 ms, errors 0.00%
+[Wafish full] request-1048576: 430 RPS, P95 257.64 ms, errors 0.00%
 [log-meta] plain: 10,227 RPS, P95 5.24 ms, errors 0.00%
 [log-request] post-64kb: 2,686 RPS, P95 22.69 ms, errors 0.00%
 [log-response] response-64kb: 4,464 RPS, P95 15.08 ms, errors 0.00%

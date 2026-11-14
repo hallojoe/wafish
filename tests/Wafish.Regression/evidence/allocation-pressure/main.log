@@ -143,7 +143,7 @@ info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
       Request finished HTTP/1.1 GET http://127.0.0.1:37015/console - 200 - text/html;+charset=utf-8 26.2939ms
 info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
-      Request starting HTTP/1.1 GET http://127.0.0.1:37015/aneiang/api/routes - - -
+      Request starting HTTP/1.1 GET http://127.0.0.1:37015/wafish/api/routes - - -
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
       Executing endpoint 'Wafish.Dashboard.Modules.Dashboard.Controllers.DashboardRouteController.GetRoutes (Wafish.Administration)'
 info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
@@ -157,7 +157,7 @@ info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
       Executed endpoint 'Wafish.Dashboard.Modules.Dashboard.Controllers.DashboardRouteController.GetRoutes (Wafish.Administration)'
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
-      Request finished HTTP/1.1 GET http://127.0.0.1:37015/aneiang/api/routes - 401 - application/json;+charset=utf-8 21.6194ms
+      Request finished HTTP/1.1 GET http://127.0.0.1:37015/wafish/api/routes - 401 - application/json;+charset=utf-8 21.6194ms
 info: Microsoft.Hosting.Lifetime[0]
       Application is shutting down...
 info: Wafish.Dashboard.Modules.Dashboard.Services.StartupWarmupService[0]
@@ -271,7 +271,7 @@ info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
       Request finished HTTP/1.1 GET http://127.0.0.1:46423/console - 200 - text/html;+charset=utf-8 9.8554ms
 info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
-      Request starting HTTP/1.1 GET http://127.0.0.1:46423/aneiang/api/routes - - -
+      Request starting HTTP/1.1 GET http://127.0.0.1:46423/wafish/api/routes - - -
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
       Executing endpoint 'Wafish.Dashboard.Modules.Dashboard.Controllers.DashboardRouteController.GetRoutes (Wafish.Administration)'
 info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
@@ -285,7 +285,7 @@ info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
       Executed endpoint 'Wafish.Dashboard.Modules.Dashboard.Controllers.DashboardRouteController.GetRoutes (Wafish.Administration)'
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
-      Request finished HTTP/1.1 GET http://127.0.0.1:46423/aneiang/api/routes - 401 - application/json;+charset=utf-8 3.7189ms
+      Request finished HTTP/1.1 GET http://127.0.0.1:46423/wafish/api/routes - 401 - application/json;+charset=utf-8 3.7189ms
 info: Microsoft.Hosting.Lifetime[0]
       Application is shutting down...
 info: Wafish.Dashboard.Modules.Dashboard.Services.StartupWarmupService[0]
@@ -405,7 +405,7 @@ info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
       Request finished HTTP/1.1 GET http://127.0.0.1:38613/console - 200 - text/html;+charset=utf-8 5.4713ms
 info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
-      Request starting HTTP/1.1 GET http://127.0.0.1:38613/aneiang/api/routes - - -
+      Request starting HTTP/1.1 GET http://127.0.0.1:38613/wafish/api/routes - - -
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
       Executing endpoint 'Wafish.Dashboard.Modules.Dashboard.Controllers.DashboardRouteController.GetRoutes (Wafish.Administration)'
 info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
@@ -419,7 +419,7 @@ info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
       Executed endpoint 'Wafish.Dashboard.Modules.Dashboard.Controllers.DashboardRouteController.GetRoutes (Wafish.Administration)'
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
-      Request finished HTTP/1.1 GET http://127.0.0.1:38613/aneiang/api/routes - 401 - application/json;+charset=utf-8 1.9315ms
+      Request finished HTTP/1.1 GET http://127.0.0.1:38613/wafish/api/routes - 401 - application/json;+charset=utf-8 1.9315ms
 info: Microsoft.Hosting.Lifetime[0]
       Application is shutting down...
 info: Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager[62]
@@ -531,7 +531,7 @@ info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
       Request finished HTTP/1.1 GET http://127.0.0.1:39201/console - 200 - text/html;+charset=utf-8 1.2323ms
 info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
-      Request starting HTTP/1.1 GET http://127.0.0.1:39201/aneiang/api/routes - - -
+      Request starting HTTP/1.1 GET http://127.0.0.1:39201/wafish/api/routes - - -
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
       Executing endpoint 'Wafish.Dashboard.Modules.Dashboard.Controllers.DashboardRouteController.GetRoutes (Wafish.Administration)'
 info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
@@ -545,7 +545,7 @@ info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
       Executed endpoint 'Wafish.Dashboard.Modules.Dashboard.Controllers.DashboardRouteController.GetRoutes (Wafish.Administration)'
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
-      Request finished HTTP/1.1 GET http://127.0.0.1:39201/aneiang/api/routes - 401 0 - 10.0580ms
+      Request finished HTTP/1.1 GET http://127.0.0.1:39201/wafish/api/routes - 401 0 - 10.0580ms
 info: Microsoft.Hosting.Lifetime[0]
       Application is shutting down...
 info: Wafish.Dashboard.Modules.Dashboard.Services.StartupWarmupService[0]
@@ -659,7 +659,7 @@ info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
       Request finished HTTP/1.1 GET http://127.0.0.1:46605/console - 200 - text/html;+charset=utf-8 1.9635ms
 info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
-      Request starting HTTP/1.1 GET http://127.0.0.1:46605/aneiang/api/routes - - -
+      Request starting HTTP/1.1 GET http://127.0.0.1:46605/wafish/api/routes - - -
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
       Executing endpoint 'Wafish.Dashboard.Modules.Dashboard.Controllers.DashboardRouteController.GetRoutes (Wafish.Administration)'
 info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
@@ -673,7 +673,7 @@ info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
       Executed endpoint 'Wafish.Dashboard.Modules.Dashboard.Controllers.DashboardRouteController.GetRoutes (Wafish.Administration)'
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
-      Request finished HTTP/1.1 GET http://127.0.0.1:46605/aneiang/api/routes - 401 0 - 2.2821ms
+      Request finished HTTP/1.1 GET http://127.0.0.1:46605/wafish/api/routes - 401 0 - 2.2821ms
 info: Microsoft.Hosting.Lifetime[0]
       Application is shutting down...
 info: Wafish.Dashboard.Modules.Dashboard.Services.StartupWarmupService[0]
@@ -793,7 +793,7 @@ info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
       Request finished HTTP/1.1 GET http://127.0.0.1:39389/console - 200 - text/html;+charset=utf-8 1.1003ms
 info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
-      Request starting HTTP/1.1 GET http://127.0.0.1:39389/aneiang/api/routes - - -
+      Request starting HTTP/1.1 GET http://127.0.0.1:39389/wafish/api/routes - - -
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
       Executing endpoint 'Wafish.Dashboard.Modules.Dashboard.Controllers.DashboardRouteController.GetRoutes (Wafish.Administration)'
 info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
@@ -807,7 +807,7 @@ info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
       Executed endpoint 'Wafish.Dashboard.Modules.Dashboard.Controllers.DashboardRouteController.GetRoutes (Wafish.Administration)'
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
-      Request finished HTTP/1.1 GET http://127.0.0.1:39389/aneiang/api/routes - 401 0 - 1.3911ms
+      Request finished HTTP/1.1 GET http://127.0.0.1:39389/wafish/api/routes - 401 0 - 1.3911ms
 info: Microsoft.Hosting.Lifetime[0]
       Application is shutting down...
 info: Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager[62]
@@ -919,7 +919,7 @@ info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
       Request finished HTTP/1.1 GET http://127.0.0.1:34339/console - 200 - text/html;+charset=utf-8 1.1866ms
 info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
-      Request starting HTTP/1.1 GET http://127.0.0.1:34339/aneiang/api/routes - - -
+      Request starting HTTP/1.1 GET http://127.0.0.1:34339/wafish/api/routes - - -
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
       Executing endpoint 'Wafish.Dashboard.Modules.Dashboard.Controllers.DashboardRouteController.GetRoutes (Wafish.Administration)'
 info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
@@ -933,7 +933,7 @@ info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
       Executed endpoint 'Wafish.Dashboard.Modules.Dashboard.Controllers.DashboardRouteController.GetRoutes (Wafish.Administration)'
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
-      Request finished HTTP/1.1 GET http://127.0.0.1:34339/aneiang/api/routes - 401 - application/json;+charset=utf-8 2.5964ms
+      Request finished HTTP/1.1 GET http://127.0.0.1:34339/wafish/api/routes - 401 - application/json;+charset=utf-8 2.5964ms
 info: Microsoft.Hosting.Lifetime[0]
       Application is shutting down...
 info: Wafish.Dashboard.Modules.Dashboard.Services.StartupWarmupService[0]
@@ -1047,7 +1047,7 @@ info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
       Request finished HTTP/1.1 GET http://127.0.0.1:35249/console - 200 - text/html;+charset=utf-8 1.9105ms
 info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
-      Request starting HTTP/1.1 GET http://127.0.0.1:35249/aneiang/api/routes - - -
+      Request starting HTTP/1.1 GET http://127.0.0.1:35249/wafish/api/routes - - -
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
       Executing endpoint 'Wafish.Dashboard.Modules.Dashboard.Controllers.DashboardRouteController.GetRoutes (Wafish.Administration)'
 info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
@@ -1061,7 +1061,7 @@ info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
       Executed endpoint 'Wafish.Dashboard.Modules.Dashboard.Controllers.DashboardRouteController.GetRoutes (Wafish.Administration)'
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
-      Request finished HTTP/1.1 GET http://127.0.0.1:35249/aneiang/api/routes - 401 - application/json;+charset=utf-8 2.5652ms
+      Request finished HTTP/1.1 GET http://127.0.0.1:35249/wafish/api/routes - 401 - application/json;+charset=utf-8 2.5652ms
 info: Microsoft.Hosting.Lifetime[0]
       Application is shutting down...
 info: Wafish.Dashboard.Modules.Dashboard.Services.StartupWarmupService[0]
@@ -1181,7 +1181,7 @@ info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
       Request finished HTTP/1.1 GET http://127.0.0.1:37421/console - 200 - text/html;+charset=utf-8 1.1265ms
 info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
-      Request starting HTTP/1.1 GET http://127.0.0.1:37421/aneiang/api/routes - - -
+      Request starting HTTP/1.1 GET http://127.0.0.1:37421/wafish/api/routes - - -
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
       Executing endpoint 'Wafish.Dashboard.Modules.Dashboard.Controllers.DashboardRouteController.GetRoutes (Wafish.Administration)'
 info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
@@ -1195,7 +1195,7 @@ info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
       Executed endpoint 'Wafish.Dashboard.Modules.Dashboard.Controllers.DashboardRouteController.GetRoutes (Wafish.Administration)'
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
-      Request finished HTTP/1.1 GET http://127.0.0.1:37421/aneiang/api/routes - 401 - application/json;+charset=utf-8 1.8376ms
+      Request finished HTTP/1.1 GET http://127.0.0.1:37421/wafish/api/routes - 401 - application/json;+charset=utf-8 1.8376ms
 info: Microsoft.Hosting.Lifetime[0]
       Application is shutting down...
 PASS: UI fixtures: all authentication modes isolate baseline, large, and plugin profiles
@@ -1535,7 +1535,7 @@ info: Microsoft.Hosting.Lifetime[0]
 info: Microsoft.Hosting.Lifetime[0]
       Content root path: /home/casko/code/wafish
 info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
-      Request starting HTTP/1.1 PUT http://127.0.0.1:36777/aneiang/api/config/routes/fixture-draft - application/json;+charset=utf-8 -
+      Request starting HTTP/1.1 PUT http://127.0.0.1:36777/wafish/api/config/routes/fixture-draft - application/json;+charset=utf-8 -
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
       Executing endpoint 'Wafish.Dashboard.Modules.GatewayConfig.Controllers.RouteConfigController.SaveRoute (Wafish.Administration)'
 info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
@@ -1557,7 +1557,7 @@ info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
       Executed endpoint 'Wafish.Dashboard.Modules.GatewayConfig.Controllers.RouteConfigController.SaveRoute (Wafish.Administration)'
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
-      Request finished HTTP/1.1 PUT http://127.0.0.1:36777/aneiang/api/config/routes/fixture-draft - 503 - application/problem+json;+charset=utf-8 225.9138ms
+      Request finished HTTP/1.1 PUT http://127.0.0.1:36777/wafish/api/config/routes/fixture-draft - 503 - application/problem+json;+charset=utf-8 225.9138ms
 info: Microsoft.Hosting.Lifetime[0]
       Application is shutting down...
 info: Wafish.Dashboard.Modules.GatewayConfig.Services.ConfigPersistenceService[0]
@@ -1667,7 +1667,7 @@ info: Microsoft.Hosting.Lifetime[0]
 info: Microsoft.Hosting.Lifetime[0]
       Content root path: /home/casko/code/wafish
 info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
-      Request starting HTTP/1.1 PUT http://127.0.0.1:38973/aneiang/api/config/routes/fixture-draft - application/json;+charset=utf-8 -
+      Request starting HTTP/1.1 PUT http://127.0.0.1:38973/wafish/api/config/routes/fixture-draft - application/json;+charset=utf-8 -
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
       Executing endpoint 'Wafish.Dashboard.Modules.GatewayConfig.Controllers.RouteConfigController.SaveRoute (Wafish.Administration)'
 info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
@@ -1685,7 +1685,7 @@ info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
       Executed endpoint 'Wafish.Dashboard.Modules.GatewayConfig.Controllers.RouteConfigController.SaveRoute (Wafish.Administration)'
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
-      Request finished HTTP/1.1 PUT http://127.0.0.1:38973/aneiang/api/config/routes/fixture-draft - 409 - application/problem+json;+charset=utf-8 725.5032ms
+      Request finished HTTP/1.1 PUT http://127.0.0.1:38973/wafish/api/config/routes/fixture-draft - 409 - application/problem+json;+charset=utf-8 725.5032ms
 info: Microsoft.Hosting.Lifetime[0]
       Application is shutting down...
 info: Wafish.Dashboard.Modules.GatewayConfig.Services.ConfigPersistenceService[0]
@@ -1793,7 +1793,7 @@ info: Microsoft.Hosting.Lifetime[0]
 info: Microsoft.Hosting.Lifetime[0]
       Content root path: /home/casko/code/wafish
 info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
-      Request starting HTTP/1.1 PUT http://127.0.0.1:35829/aneiang/api/config/routes/fixture-draft - application/json;+charset=utf-8 -
+      Request starting HTTP/1.1 PUT http://127.0.0.1:35829/wafish/api/config/routes/fixture-draft - application/json;+charset=utf-8 -
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
       Executing endpoint 'Wafish.Dashboard.Modules.GatewayConfig.Controllers.RouteConfigController.SaveRoute (Wafish.Administration)'
 info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
@@ -1821,7 +1821,7 @@ info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
       Executed endpoint 'Wafish.Dashboard.Modules.GatewayConfig.Controllers.RouteConfigController.SaveRoute (Wafish.Administration)'
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
-      Request finished HTTP/1.1 PUT http://127.0.0.1:35829/aneiang/api/config/routes/fixture-draft - 503 - application/problem+json;+charset=utf-8 1730.1520ms
+      Request finished HTTP/1.1 PUT http://127.0.0.1:35829/wafish/api/config/routes/fixture-draft - 503 - application/problem+json;+charset=utf-8 1730.1520ms
 info: Microsoft.Hosting.Lifetime[0]
       Application is shutting down...
 info: Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager[62]
@@ -1925,7 +1925,7 @@ info: Microsoft.Hosting.Lifetime[0]
 info: Microsoft.Hosting.Lifetime[0]
       Content root path: /home/casko/code/wafish
 info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
-      Request starting HTTP/1.1 PUT http://127.0.0.1:38817/aneiang/api/config/routes/fixture-draft - application/json;+charset=utf-8 -
+      Request starting HTTP/1.1 PUT http://127.0.0.1:38817/wafish/api/config/routes/fixture-draft - application/json;+charset=utf-8 -
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
       Executing endpoint 'Wafish.Dashboard.Modules.GatewayConfig.Controllers.RouteConfigController.SaveRoute (Wafish.Administration)'
 info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
@@ -1947,7 +1947,7 @@ info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
       Executed endpoint 'Wafish.Dashboard.Modules.GatewayConfig.Controllers.RouteConfigController.SaveRoute (Wafish.Administration)'
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
-      Request finished HTTP/1.1 PUT http://127.0.0.1:38817/aneiang/api/config/routes/fixture-draft - 500 - application/problem+json;+charset=utf-8 435.5553ms
+      Request finished HTTP/1.1 PUT http://127.0.0.1:38817/wafish/api/config/routes/fixture-draft - 500 - application/problem+json;+charset=utf-8 435.5553ms
 info: Microsoft.Hosting.Lifetime[0]
       Application is shutting down...
 info: Wafish.Dashboard.Modules.GatewayConfig.Services.ConfigPersistenceService[0]

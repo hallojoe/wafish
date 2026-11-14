@@ -21,7 +21,7 @@ dotnet build Wafish.slnx --nologo
 dotnet build Wafish.slnx -c Release --nologo
 dotnet run --project tests/Wafish.Regression --no-build
 dotnet run --project tests/Wafish.Administration.Regression --no-build
-dotnet publish samples/SampleGateway -c Release --no-build -o /tmp/aneiang-arch07-publish
+dotnet publish samples/SampleGateway -c Release --no-build -o /tmp/wafish-arch07-publish
 ```
 
 ## Coverage
