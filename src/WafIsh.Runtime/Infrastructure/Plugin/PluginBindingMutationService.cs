@@ -8,12 +8,14 @@ namespace WafIsh.Dashboard.Infrastructure.Plugin;
 public interface IPluginBindingMutationService
 {
     Task UpsertAsync(PluginBindingEntity candidate, CancellationToken cancellationToken = default);
+    Task ReconcileAsync(CancellationToken cancellationToken = default);
     Task<bool> DeleteAsync(string bindingId, CancellationToken cancellationToken = default);
 }
 
 public sealed class PluginBindingMutationService : IPluginBindingMutationService
 {
-    private static readonly SemaphoreSlim PublishGate = new(1, 1);
+    private SemaphoreSlim PublishGate => GatewayPublicationCoordinator.For(_snapshotPublisher).Gate;
+    private readonly WafIshProxyConfigProvider? _configProvider;
 
     private readonly IPluginConfigurationRepository _repository;
     private readonly IGatewayPluginManager _pluginManager;
@@ -28,8 +30,9 @@ public sealed class PluginBindingMutationService : IPluginBindingMutationService
         IDynamicYarpConfigService dynamicConfig,
         IGatewaySnapshotCompiler snapshotCompiler,
         IGatewaySnapshotPublisher snapshotPublisher,
-        IPluginRuntimeDomainManager runtimeDomains)
+        IPluginRuntimeDomainManager runtimeDomains, WafIshProxyConfigProvider? configProvider = null)
     {
+        _configProvider = configProvider;
         _repository = repository;
         _pluginManager = pluginManager;
         _dynamicConfig = dynamicConfig;
@@ -43,30 +46,32 @@ public sealed class PluginBindingMutationService : IPluginBindingMutationService
         await PublishGate.WaitAsync(cancellationToken);
         try
         {
-            var previous = await _repository.GetBindingAsync(candidate.Id, cancellationToken);
-            var bindings = (await _repository.GetBindingsAsync(cancellationToken))
+            var stored = await _repository.GetBindingsSnapshotAsync(cancellationToken);
+            var previous = stored.Bindings.FirstOrDefault(binding => binding.Id == candidate.Id);
+            var bindings = stored.Bindings
                 .Where(binding => binding.Id != candidate.Id)
                 .Append(candidate)
                 .ToArray();
             var snapshot = await CompileCandidateAsync(bindings, cancellationToken);
             await using var preparation = await PrepareRuntimeAsync(bindings, cancellationToken);
 
-            await _repository.UpsertBindingAsync(candidate, cancellationToken);
+            var committedRevision = await _repository.CommitBindingsAsync(stored.Revision, [candidate], [], cancellationToken);
             try
             {
-                await preparation.CommitAsync(cancellationToken);
+                await preparation.CommitAsync(CancellationToken.None);
                 _snapshotPublisher.Publish(snapshot);
+                GatewayPublicationCoordinator.For(_snapshotPublisher).Published(snapshot);
+                _configProvider?.Update(snapshot.Routes, snapshot.Clusters);
             }
             catch
             {
                 if (previous == null)
-                    await _repository.DeleteBindingAsync(candidate.Id, CancellationToken.None);
+                    await _repository.CommitBindingsAsync(committedRevision, [], [candidate.Id], CancellationToken.None);
                 else
-                    await _repository.UpsertBindingAsync(previous, CancellationToken.None);
+                    await _repository.CommitBindingsAsync(committedRevision, [previous], [], CancellationToken.None);
                 throw;
             }
 
-            _dynamicConfig.RefreshConfig();
         }
         finally
         {
@@ -79,31 +84,32 @@ public sealed class PluginBindingMutationService : IPluginBindingMutationService
         await PublishGate.WaitAsync(cancellationToken);
         try
         {
-            var existing = await _repository.GetBindingAsync(bindingId, cancellationToken);
+            var stored = await _repository.GetBindingsSnapshotAsync(cancellationToken);
+            var existing = stored.Bindings.FirstOrDefault(binding => binding.Id == bindingId);
             if (existing == null)
                 return false;
 
-            var bindings = (await _repository.GetBindingsAsync(cancellationToken))
+            var bindings = stored.Bindings
                 .Where(binding => binding.Id != bindingId)
                 .ToArray();
             var snapshot = await CompileCandidateAsync(bindings, cancellationToken);
             await using var preparation = await PrepareRuntimeAsync(bindings, cancellationToken);
 
-            if (!await _repository.DeleteBindingAsync(bindingId, cancellationToken))
-                return false;
+            var committedRevision = await _repository.CommitBindingsAsync(stored.Revision, [], [bindingId], cancellationToken);
 
             try
             {
-                await preparation.CommitAsync(cancellationToken);
+                await preparation.CommitAsync(CancellationToken.None);
                 _snapshotPublisher.Publish(snapshot);
+                GatewayPublicationCoordinator.For(_snapshotPublisher).Published(snapshot);
+                _configProvider?.Update(snapshot.Routes, snapshot.Clusters);
             }
             catch
             {
-                await _repository.UpsertBindingAsync(existing, CancellationToken.None);
+                await _repository.CommitBindingsAsync(committedRevision, [existing], [], CancellationToken.None);
                 throw;
             }
 
-            _dynamicConfig.RefreshConfig();
             return true;
         }
         finally
@@ -112,15 +118,35 @@ public sealed class PluginBindingMutationService : IPluginBindingMutationService
         }
     }
 
-    private Task<GatewaySnapshot> CompileCandidateAsync(
-        IReadOnlyList<PluginBindingEntity> bindings,
-        CancellationToken cancellationToken) =>
-        _snapshotCompiler.CompileAsync(
-            _dynamicConfig.GetRoutes(),
-            _dynamicConfig.GetClusters(),
-            _snapshotPublisher.Current.Version + 1,
-            cancellationToken,
-            bindings);
+    public async Task ReconcileAsync(CancellationToken cancellationToken = default)
+    {
+        await PublishGate.WaitAsync(cancellationToken);
+        try
+        {
+            var stored = await _repository.GetBindingsSnapshotAsync(cancellationToken);
+            var snapshot = await CompileCandidateAsync(stored.Bindings, cancellationToken);
+            await using var preparation = await PrepareRuntimeAsync(stored.Bindings.ToArray(), cancellationToken);
+            await preparation.CommitAsync(CancellationToken.None);
+            _snapshotPublisher.Publish(snapshot);
+            GatewayPublicationCoordinator.For(_snapshotPublisher).Published(snapshot);
+            _configProvider?.Update(snapshot.Routes, snapshot.Clusters);
+        }
+        finally { PublishGate.Release(); }
+    }
+
+    private async Task<GatewaySnapshot> CompileCandidateAsync(
+        IReadOnlyList<PluginBindingEntity> bindings, CancellationToken cancellationToken)
+    {
+        var stored = _dynamicConfig.GetDynamicConfig();
+        var destinations = stored?.Clusters.ToDictionary(c => c.Config.ClusterId, c => c.Config.Destinations);
+        var clusters = _dynamicConfig.GetClusters().Select(cluster => cluster with
+        {
+            Destinations = destinations?.GetValueOrDefault(cluster.ClusterId) ?? cluster.Destinations
+        }).ToArray();
+        var snapshot = await _snapshotCompiler.CompileAsync(_snapshotPublisher.Current.Routes, clusters,
+            _snapshotPublisher.Current.Version + 1, cancellationToken, bindings);
+        return GatewayPublicationCoordinator.For(_snapshotPublisher).PreserveDiscovery(snapshot);
+    }
 
     private async Task<PluginRuntimeDomainPreparation> PrepareRuntimeAsync(
         IReadOnlyCollection<PluginBindingEntity> bindings,

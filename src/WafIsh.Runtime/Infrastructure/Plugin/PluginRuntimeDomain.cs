@@ -32,7 +32,8 @@ public sealed class PluginRuntimeDomain : IAsyncDisposable
     private readonly TaskCompletionSource _drained = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private int _activeRequests;
     private int _retired;
-    private int _disposed;
+    private readonly object _disposeGate = new();
+    private Task? _disposeTask;
 
     internal PluginRuntimeDomain(
         IServiceProvider services,
@@ -88,18 +89,27 @@ public sealed class PluginRuntimeDomain : IAsyncDisposable
             _drained.TrySetResult();
     }
 
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
-        if (Interlocked.Exchange(ref _disposed, 1) != 0)
-            return;
+        lock (_disposeGate) return new ValueTask(_disposeTask ??= DisposeOwnedAsync());
+    }
 
-        if (Services is IAsyncDisposable asyncDisposable)
-            await asyncDisposable.DisposeAsync();
-        else if (Services is IDisposable disposable)
-            disposable.Dispose();
-
+    private async Task DisposeOwnedAsync()
+    {
+        await Task.Yield();
+        var failures = new List<Exception>();
+        try
+        {
+            if (Services is IAsyncDisposable asyncDisposable) await asyncDisposable.DisposeAsync();
+            else if (Services is IDisposable disposable) disposable.Dispose();
+        }
+        catch (Exception ex) { failures.Add(ex); }
         foreach (var load in _externalLoads.Reverse())
-            await load.DisposeAsync();
+        {
+            try { await load.DisposeAsync(); }
+            catch (Exception ex) { failures.Add(ex); }
+        }
+        if (failures.Count > 0) throw new AggregateException("Plugin domain disposal failed.", failures);
     }
 
     internal static PluginRuntimeDomain Empty => new(
@@ -156,7 +166,8 @@ public sealed class PluginRuntimeDomainPreparation : IAsyncDisposable
             throw new InvalidOperationException("The plugin runtime domain preparation was already committed.");
 
         _candidate = null;
-        await _owner.CommitAsync(candidate);
+        try { await _owner.CommitAsync(candidate); }
+        catch { await candidate.DisposeAsync(); throw; }
     }
 
     public async ValueTask DisposeAsync()
@@ -211,13 +222,19 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
 {
     private static readonly object PipelineContinuationKey = new();
     private static readonly string[] ProxyPluginOrder =
-        ["rate-limit", "rate-limit-redis", "circuit-breaker", "request-retry", "response-cache", "compression", "proxy-log", "traffic-metrics", "cluster-metrics"];
+        ["rate-limit", "rate-limit-redis", "request-retry", "response-cache", "compression", "proxy-log", "traffic-metrics", "cluster-metrics", "circuit-breaker"];
 
     private readonly IServiceProvider _rootServices;
     private readonly Dictionary<string, IGatewayPlugin> _firstPartyPlugins;
     private readonly ExternalGatewayPluginHost _externalHost;
     private readonly ILogger<PluginRuntimeDomainManager> _logger;
     private PluginRuntimeDomain _current = PluginRuntimeDomain.Empty;
+    private readonly object _lifecycleGate = new();
+    private readonly HashSet<Task> _retirements = [];
+    private readonly CancellationTokenSource _watchCancellation = new();
+    private Task _watchTask = Task.CompletedTask;
+    private Task? _shutdownTask;
+    private bool _stopping;
 
     private const int PostTransitionWatchMinimumRequests = 10;
     private const double PostTransitionWatchErrorRateThreshold = 0.05;
@@ -248,10 +265,12 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
         IReadOnlyCollection<string> enabledPluginIds,
         CancellationToken cancellationToken = default)
     {
+        lock (_lifecycleGate) ObjectDisposedException.ThrowIf(_stopping, this);
         var enabled = enabledPluginIds
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         var plugins = new Dictionary<string, IGatewayPlugin>(StringComparer.OrdinalIgnoreCase);
         var externalLoads = new List<IAsyncDisposable>();
+        ServiceProvider? pluginServices = null;
 
         try
         {
@@ -290,13 +309,16 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
             // otherwise, since plugins like RedisLuaRateLimitStore take ILogger<T> in their ctor.
             services.AddSingleton(_rootServices.GetRequiredService<ILoggerFactory>());
             services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
+            // YARP selection uses the host policies, including application-defined policies.
+            foreach (var policy in _rootServices.GetServices<global::Yarp.ReverseProxy.LoadBalancing.ILoadBalancingPolicy>())
+                services.AddSingleton(policy);
             foreach (var plugin in plugins.Values)
             {
                 services.AddSingleton<IGatewayPlugin>(plugin);
                 plugin.ConfigureServices(services);
             }
 
-            var pluginServices = services.BuildServiceProvider(new ServiceProviderOptions
+            pluginServices = services.BuildServiceProvider(new ServiceProviderOptions
             {
                 ValidateOnBuild = true,
                 ValidateScopes = true
@@ -314,8 +336,12 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
         }
         catch
         {
-            foreach (var load in externalLoads.AsEnumerable().Reverse())
-                await load.DisposeAsync();
+            // Candidate construction owns these resources until a preparation can take them.
+            try { if (pluginServices != null) await pluginServices.DisposeAsync(); }
+            finally
+            {
+                foreach (var load in externalLoads.AsEnumerable().Reverse()) await load.DisposeAsync();
+            }
             throw;
         }
     }
@@ -343,23 +369,58 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
 
     internal Task CommitAsync(PluginRuntimeDomain candidate)
     {
-        var previous = Interlocked.Exchange(ref _current, candidate);
-        _ = RetirePreviousAsync(previous);
-        StartPostTransitionWatch();
+        lock (_lifecycleGate)
+        {
+            ObjectDisposedException.ThrowIf(_stopping, this);
+            var previous = Interlocked.Exchange(ref _current, candidate);
+            TrackRetirement(previous);
+            StartPostTransitionWatch();
+        }
         return Task.CompletedTask;
     }
 
-    public ValueTask DisposeAsync() => Current.RetireAndDisposeAsync();
+    // Called under the lifecycle gate. Completed successful tasks do not retain old providers.
+    private void TrackRetirement(PluginRuntimeDomain domain)
+    {
+        var task = RetirePreviousAsync(domain);
+        _retirements.Add(task);
+        _ = task.ContinueWith(completed =>
+        {
+            lock (_lifecycleGate) _retirements.Remove(completed);
+        }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        lock (_lifecycleGate)
+        {
+            if (_shutdownTask != null) return new ValueTask(_shutdownTask);
+            _stopping = true;
+            TrackRetirement(Current);
+            _shutdownTask = ShutdownAsync(_retirements.ToArray(), _watchTask);
+            return new ValueTask(_shutdownTask);
+        }
+    }
+
+    private async Task ShutdownAsync(Task[] retirements, Task watch)
+    {
+        await Task.Yield();
+        try
+        {
+            await _watchCancellation.CancelAsync();
+            await Task.WhenAll(retirements.Append(watch));
+        }
+        finally { _watchCancellation.Dispose(); }
+    }
 
     private async Task RetirePreviousAsync(PluginRuntimeDomain previous)
     {
-        try
-        {
-            await previous.RetireAndDisposeAsync();
-        }
+        try { await previous.RetireAndDisposeAsync(); }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to dispose a retired plugin runtime domain.");
+            throw;
         }
     }
 
@@ -383,11 +444,11 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
             return;
         }
 
-        _ = Task.Run(async () =>
+        _watchTask = Task.Run(async () =>
         {
             try
             {
-                await Task.Delay(PostTransitionWatchWindow).ConfigureAwait(false);
+                await Task.Delay(PostTransitionWatchWindow, _watchCancellation.Token).ConfigureAwait(false);
                 var after = TrySnapshot(monitor);
                 if (after == null)
                     return;
@@ -469,11 +530,13 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
     {
         PluginRuntimeDomain domain;
         PluginRuntimeDomainLease lease;
-        do
+        lock (_lifecycleGate)
         {
+            ObjectDisposedException.ThrowIf(_stopping, this);
             domain = Current;
+            if (!domain.TryAcquire(out lease))
+                throw new ObjectDisposedException(nameof(PluginRuntimeDomain));
         }
-        while (!domain.TryAcquire(out lease));
 
         using (lease)
         {
@@ -574,9 +637,13 @@ public sealed class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IA
     }
 
     private sealed class PluginRuntimeServiceProvider(IServiceProvider plugin, IServiceProvider root) :
-        IServiceProvider, IServiceScopeFactory, IDisposable, IAsyncDisposable
+        IServiceProvider, IServiceScopeFactory, IServiceProviderIsService, IDisposable, IAsyncDisposable
     {
-        public object? GetService(Type serviceType) => plugin.GetService(serviceType) ?? root.GetService(serviceType);
+        public object? GetService(Type serviceType) => serviceType == typeof(IServiceProviderIsService)
+            ? this : plugin.GetService(serviceType) ?? root.GetService(serviceType);
+        public bool IsService(Type serviceType) => serviceType == typeof(IServiceProviderIsService) ||
+            plugin.GetRequiredService<IServiceProviderIsService>().IsService(serviceType) ||
+            root.GetRequiredService<IServiceProviderIsService>().IsService(serviceType);
         public IServiceScope CreateScope() => plugin.GetRequiredService<IServiceScopeFactory>().CreateScope();
         public void Dispose() => (plugin as IDisposable)?.Dispose();
         public ValueTask DisposeAsync() => plugin is IAsyncDisposable asyncDisposable

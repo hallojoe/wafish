@@ -100,6 +100,7 @@ internal class DynamicConfigPublisher : IDynamicConfigPublisher
             .GetResult();
 
 
+        gatewaySnapshot = GatewayPublicationCoordinator.For(_snapshotPublisher).PreserveDiscovery(gatewaySnapshot);
         var compiledRoutes = gatewaySnapshot.Routes
             .ToDictionary(x => x.RouteId ?? string.Empty, StringComparer.OrdinalIgnoreCase);
         foreach (var route in publishRoutes)
@@ -122,6 +123,7 @@ internal class DynamicConfigPublisher : IDynamicConfigPublisher
         return () =>
         {
             _snapshotPublisher.Publish(gatewaySnapshot);
+            GatewayPublicationCoordinator.For(_snapshotPublisher).Published(gatewaySnapshot);
             _configProvider.ApplyFromDynamic(publishRoutes, publishClusters, version);
         };
     }

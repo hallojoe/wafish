@@ -24,7 +24,8 @@ public sealed class PluginBindingsController : ControllerBase
     private readonly IRouteRepository _routeRepository;
     private readonly IClusterRepository _clusterRepository;
     private readonly IGatewaySnapshotCompiler _snapshotCompiler;
-    private static readonly SemaphoreSlim PublishGate = new(1, 1);
+    private SemaphoreSlim PublishGate => GatewayPublicationCoordinator.For(_snapshotPublisher).Gate;
+    private readonly WafIshProxyConfigProvider? _configProvider;
 
     private readonly IGatewaySnapshotPublisher _snapshotPublisher;
     private readonly IPluginRuntimeDomainManager _runtimeDomains;
@@ -39,8 +40,9 @@ public sealed class PluginBindingsController : ControllerBase
         IClusterRepository clusterRepository,
         IGatewaySnapshotCompiler snapshotCompiler,
         IGatewaySnapshotPublisher snapshotPublisher,
-        IPluginRuntimeDomainManager runtimeDomains)
+        IPluginRuntimeDomainManager runtimeDomains, WafIshProxyConfigProvider? configProvider = null)
     {
+        _configProvider = configProvider;
         _repository = repository;
         _pluginManager = pluginManager;
         _dynamicConfig = dynamicConfig;
@@ -202,34 +204,11 @@ public sealed class PluginBindingsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteBinding(string id, CancellationToken ct)
     {
-        await PublishGate.WaitAsync(ct);
-        try
-        {
-            var existing = await _repository.GetBindingAsync(id, ct);
-            if (existing == null)
-                return NotFound(new { code = 404, message = $"Plugin binding '{id}' was not found." });
-
-            var bindings = (await _repository.GetBindingsAsync(ct)).Where(x => x.Id != id).ToArray();
-            var (ok, error) = await CompilePrepareAndApplyAsync(
-                bindings,
-                applyAsync: async () =>
-                {
-                    if (!await _repository.DeleteBindingAsync(id, ct))
-                        return false;
-                    return true;
-                },
-                rollbackAsync: async () => await _repository.UpsertBindingAsync(existing, CancellationToken.None),
-                ct);
-            if (!ok)
-                return StatusCode(500, new { code = 500, message = error });
-
-            _dynamicConfig.RefreshConfig();
-            return Ok(new { code = 200, message = "Plugin binding deleted." });
-        }
-        finally
-        {
-            PublishGate.Release();
-        }
+        var mutations = new PluginBindingMutationService(_repository, _pluginManager, _dynamicConfig,
+            _snapshotCompiler, _snapshotPublisher, _runtimeDomains, _configProvider);
+        return await mutations.DeleteAsync(id, ct)
+            ? Ok(new { code = 200, message = "Plugin binding deleted." })
+            : NotFound(new { code = 404, message = $"Plugin binding '{id}' was not found." });
     }
 
     /// <summary>
@@ -273,10 +252,10 @@ public sealed class PluginBindingsController : ControllerBase
         try
         {
             var now = DateTime.UtcNow;
-            var existing = await _repository.GetBindingsAsync(ct);
+            var stored = await _repository.GetBindingsSnapshotAsync(ct);
+            var existing = stored.Bindings;
             var items = new List<BatchItemResult>(request.ScopeIds.Count);
             var toUpsert = new List<PluginBindingEntity>();
-            var previousForRollback = new List<PluginBindingEntity?>();
 
             foreach (var rawScopeId in request.ScopeIds)
             {
@@ -308,7 +287,6 @@ public sealed class PluginBindingsController : ControllerBase
                 PluginBindingEntity candidate;
                 if (match != null)
                 {
-                    previousForRollback.Add(CloneBinding(match));
                     candidate = CloneBinding(match);
                     candidate.PluginVersion = manifest.Version;
                     candidate.Scope = scope;
@@ -324,7 +302,6 @@ public sealed class PluginBindingsController : ControllerBase
                 }
                 else
                 {
-                    previousForRollback.Add(null);
                     candidate = new PluginBindingEntity
                     {
                         Id = Guid.NewGuid().ToString("N"),
@@ -357,30 +334,10 @@ public sealed class PluginBindingsController : ControllerBase
                 .Concat(toUpsert)
                 .ToArray();
 
-            var (ok, error) = await CompilePrepareAndApplyAsync(
-                mergedBindings,
-                applyAsync: async () =>
-                {
-                    foreach (var candidate in toUpsert)
-                        await _repository.UpsertBindingAsync(candidate, ct);
-                    return true;
-                },
-                rollbackAsync: async () =>
-                {
-                    for (var i = 0; i < toUpsert.Count; i++)
-                    {
-                        var prev = previousForRollback[i];
-                        if (prev == null)
-                            await _repository.DeleteBindingAsync(toUpsert[i].Id, CancellationToken.None);
-                        else
-                            await _repository.UpsertBindingAsync(prev, CancellationToken.None);
-                    }
-                },
-                ct);
+            var (ok, error) = await CompilePrepareAndApplyAsync(stored, mergedBindings, ct);
             if (!ok)
                 return StatusCode(500, new { code = 500, message = error });
 
-            _dynamicConfig.RefreshConfig();
             return Ok(BuildBatchResponse(items, "Batch create plugin bindings."));
         }
         finally
@@ -401,10 +358,10 @@ public sealed class PluginBindingsController : ControllerBase
         await PublishGate.WaitAsync(ct);
         try
         {
-            var existing = await _repository.GetBindingsAsync(ct);
+            var stored = await _repository.GetBindingsSnapshotAsync(ct);
+            var existing = stored.Bindings;
             var items = new List<BatchItemResult>(request.BindingIds.Count);
             var toUpsert = new List<PluginBindingEntity>();
-            var previousForRollback = new List<PluginBindingEntity>();
 
             foreach (var rawId in request.BindingIds)
             {
@@ -422,7 +379,6 @@ public sealed class PluginBindingsController : ControllerBase
                     continue;
                 }
 
-                previousForRollback.Add(CloneBinding(match));
                 var candidate = CloneBinding(match);
                 candidate.Enabled = request.Enabled;
                 candidate.ConfigVersion = match.ConfigVersion + 1;
@@ -439,24 +395,10 @@ public sealed class PluginBindingsController : ControllerBase
                 .Concat(toUpsert)
                 .ToArray();
 
-            var (ok, error) = await CompilePrepareAndApplyAsync(
-                mergedBindings,
-                applyAsync: async () =>
-                {
-                    foreach (var candidate in toUpsert)
-                        await _repository.UpsertBindingAsync(candidate, ct);
-                    return true;
-                },
-                rollbackAsync: async () =>
-                {
-                    foreach (var prev in previousForRollback)
-                        await _repository.UpsertBindingAsync(prev, CancellationToken.None);
-                },
-                ct);
+            var (ok, error) = await CompilePrepareAndApplyAsync(stored, mergedBindings, ct);
             if (!ok)
                 return StatusCode(500, new { code = 500, message = error });
 
-            _dynamicConfig.RefreshConfig();
             return Ok(BuildBatchResponse(items, "Batch set plugin bindings enabled."));
         }
         finally
@@ -477,7 +419,8 @@ public sealed class PluginBindingsController : ControllerBase
         await PublishGate.WaitAsync(ct);
         try
         {
-            var existing = await _repository.GetBindingsAsync(ct);
+            var stored = await _repository.GetBindingsSnapshotAsync(ct);
+            var existing = stored.Bindings;
             var targetIds = new HashSet<string>(request.BindingIds
                 .Where(i => !string.IsNullOrWhiteSpace(i))
                 .Select(i => i!.Trim()), StringComparer.Ordinal);
@@ -501,24 +444,10 @@ public sealed class PluginBindingsController : ControllerBase
 
             var mergedBindings = existing.Where(b => !targetIds.Contains(b.Id)).ToArray();
 
-            var (ok, error) = await CompilePrepareAndApplyAsync(
-                mergedBindings,
-                applyAsync: async () =>
-                {
-                    foreach (var b in deletedBindings)
-                        await _repository.DeleteBindingAsync(b.Id, ct);
-                    return true;
-                },
-                rollbackAsync: async () =>
-                {
-                    foreach (var b in deletedBindings)
-                        await _repository.UpsertBindingAsync(b, CancellationToken.None);
-                },
-                ct);
+            var (ok, error) = await CompilePrepareAndApplyAsync(stored, mergedBindings, ct);
             if (!ok)
                 return StatusCode(500, new { code = 500, message = error });
 
-            _dynamicConfig.RefreshConfig();
             return Ok(BuildBatchResponse(items, "Batch delete plugin bindings."));
         }
         finally
@@ -527,43 +456,34 @@ public sealed class PluginBindingsController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Shared atomic flow: compile snapshot once, prepare runtime domain once,
-    /// health check once; on success run <paramref name="applyAsync"/> (repo mutations)
-    /// then commit runtime + publish snapshot; on failure run <paramref name="rollbackAsync"/>.
-    /// Caller must hold <see cref="PublishGate"/>.
-    /// </summary>
+    /// <summary>Compile, prepare, atomically store, and activate while the caller holds the publication gate.</summary>
     private async Task<(bool ok, string? error)> CompilePrepareAndApplyAsync(
-        IReadOnlyList<PluginBindingEntity> candidateBindings,
-        Func<Task<bool>> applyAsync,
-        Func<Task> rollbackAsync,
-        CancellationToken ct)
+        PluginBindingsSnapshot stored, IReadOnlyList<PluginBindingEntity> candidateBindings, CancellationToken ct)
     {
-        var current = _snapshotPublisher.Current;
-        var snapshot = await _snapshotCompiler.CompileAsync(
-            _dynamicConfig.GetRoutes(), _dynamicConfig.GetClusters(), current.Version + 1, ct, candidateBindings);
-        var enabledPluginIds = GetEnabledPluginIds(candidateBindings);
-        await using var runtimePreparation = await _runtimeDomains.PrepareAsync(enabledPluginIds, ct);
+        var coordinator = GatewayPublicationCoordinator.For(_snapshotPublisher);
+        var raw = _dynamicConfig.GetDynamicConfig();
+        var clusters = _dynamicConfig.GetClusters().Select(cluster => cluster with { Destinations =
+            raw?.Clusters.FirstOrDefault(c => c.Config.ClusterId == cluster.ClusterId)?.Config.Destinations ?? cluster.Destinations }).ToArray();
+        var snapshot = coordinator.PreserveDiscovery(await _snapshotCompiler.CompileAsync(
+            _snapshotPublisher.Current.Routes, clusters, _snapshotPublisher.Current.Version + 1, ct, candidateBindings));
+        await using var runtimePreparation = await _runtimeDomains.PrepareAsync(GetEnabledPluginIds(candidateBindings.ToArray()), ct);
         var health = await runtimePreparation.CheckHealthAsync(ct);
         if (health.Status == PluginHealthStatus.Unhealthy)
             return (false, health.Message ?? "Candidate plugin runtime domain is unhealthy.");
-
-        var applied = false;
+        var deleted = stored.Bindings.Select(b => b.Id).Except(candidateBindings.Select(b => b.Id)).ToArray();
+        var inserted = candidateBindings.Select(b => b.Id).Except(stored.Bindings.Select(b => b.Id)).ToArray();
+        var revision = await _repository.CommitBindingsAsync(stored.Revision, candidateBindings, deleted, ct);
         try
         {
-            applied = await applyAsync();
-            if (!applied)
-                return (false, "Repository mutation reported failure.");
-            await runtimePreparation.CommitAsync(ct);
+            await runtimePreparation.CommitAsync(CancellationToken.None);
             _snapshotPublisher.Publish(snapshot);
+            coordinator.Published(snapshot);
+            _configProvider?.Update(snapshot.Routes, snapshot.Clusters);
             return (true, null);
         }
         catch
         {
-            if (applied)
-            {
-                try { await rollbackAsync(); } catch { /* best-effort rollback; original error will surface */ }
-            }
+            await _repository.CommitBindingsAsync(revision, stored.Bindings, inserted, CancellationToken.None);
             throw;
         }
     }
@@ -642,45 +562,9 @@ public sealed class PluginBindingsController : ControllerBase
         return cluster == null ? null : (cluster.ClusterUid, cluster.ClusterId);
     }
 
-    private async Task PersistAndPublishAsync(PluginBindingEntity candidate, CancellationToken ct)
-    {
-        await PublishGate.WaitAsync(ct);
-        try
-        {
-            var previous = await _repository.GetBindingAsync(candidate.Id, ct);
-            var bindings = (await _repository.GetBindingsAsync(ct)).Where(x => x.Id != candidate.Id).Append(candidate).ToArray();
-            var current = _snapshotPublisher.Current;
-            var routes = _dynamicConfig.GetRoutes();
-            var clusters = _dynamicConfig.GetClusters();
-            var snapshot = await _snapshotCompiler.CompileAsync(routes, clusters, current.Version + 1, ct, bindings);
-            var enabledPluginIds = GetEnabledPluginIds(bindings);
-            await using var runtimePreparation = await _runtimeDomains.PrepareAsync(enabledPluginIds, ct);
-            var health = await runtimePreparation.CheckHealthAsync(ct);
-            if (health.Status == PluginHealthStatus.Unhealthy)
-                throw new InvalidOperationException(health.Message ?? "Candidate plugin runtime domain is unhealthy.");
-
-            await _repository.UpsertBindingAsync(candidate, ct);
-            try
-            {
-                await runtimePreparation.CommitAsync(ct);
-                _snapshotPublisher.Publish(snapshot);
-            }
-            catch
-            {
-                if (previous == null)
-                    await _repository.DeleteBindingAsync(candidate.Id, CancellationToken.None);
-                else
-                    await _repository.UpsertBindingAsync(previous, CancellationToken.None);
-                throw;
-            }
-
-            _dynamicConfig.RefreshConfig();
-        }
-        finally
-        {
-            PublishGate.Release();
-        }
-    }
+    private Task PersistAndPublishAsync(PluginBindingEntity candidate, CancellationToken ct) =>
+        new PluginBindingMutationService(_repository, _pluginManager, _dynamicConfig,
+            _snapshotCompiler, _snapshotPublisher, _runtimeDomains, _configProvider).UpsertAsync(candidate, ct);
 
     private string[] GetEnabledPluginIds(IReadOnlyCollection<PluginBindingEntity> bindings)
     {

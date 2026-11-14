@@ -43,7 +43,7 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
         _snapshotCompiler = snapshotCompiler;
         _snapshotPublisher = snapshotPublisher;
         _logger = loggerFactory.CreateLogger<DynamicYarpConfigService>();
-        _semaphore = new SemaphoreSlim(1, 1);
+        _semaphore = GatewayPublicationCoordinator.For(snapshotPublisher).Gate;
         _state = new DynamicConfigState
         { LogFailure = (ex, operation) => _logger.LogError(ex, "Configuration update failed during {Operation}", operation) };
 
@@ -84,6 +84,7 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
     /// </summary>
     private async Task LoadDynamicConfigAsync()
     {
+        await _semaphore.WaitAsync();
         try
         {
             _state.Config = await _persister.LoadAsync();
@@ -100,6 +101,7 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
             _logger.LogError(ex, "Failed to load dynamic config on startup");
             throw;
         }
+        finally { _semaphore.Release(); }
     }
 
     /// <summary>
@@ -221,6 +223,20 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
     {
         _semaphore.Wait();
         try { _publisher.Publish(_state.Config, _state.Version); }
+        finally { _semaphore.Release(); }
+    }
+
+    /// <summary>Reload committed storage after an activation failure, then publish under exclusive ownership.</summary>
+    public async Task ReconcileAsync()
+    {
+        await _semaphore.WaitAsync();
+        try
+        {
+            var stored = await _persister.LoadAsync();
+            _publisher.Prepare(stored, stored.Version)();
+            _state.Config = stored;
+            _state.PersistedVersion = stored.Version;
+        }
         finally { _semaphore.Release(); }
     }
 
@@ -416,7 +432,6 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
 
             var items = new List<BatchItemResult>(routeIds.Count);
             var removedClusterIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var survivors = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var rawId in routeIds)
             {
@@ -444,15 +459,14 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
                 if (!string.IsNullOrWhiteSpace(clusterId))
                 {
                     removedClusterIds.Add(clusterId);
-                    survivors.UnionWith(config.Routes
-                        .Where(r => !string.IsNullOrWhiteSpace(r.Config.ClusterId))
-                        .Select(r => r.Config.ClusterId!));
                 }
             }
 
             // Optional: clean up clusters left orphaned by the deleted routes.
             if (removeOrphanedClusters && removedClusterIds.Count > 0)
             {
+                var survivors = config.Routes.Where(r => !string.IsNullOrWhiteSpace(r.Config.ClusterId))
+                    .Select(r => r.Config.ClusterId!).ToHashSet(StringComparer.OrdinalIgnoreCase);
                 var orphaned = removedClusterIds
                     .Where(cid => !survivors.Contains(cid))
                     .Select(cid => config.Clusters.FirstOrDefault(c =>
