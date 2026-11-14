@@ -18,6 +18,16 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
         _logger = logger;
     }
 
+    public override Task<CapabilitiesResponse> GetCapabilities(CapabilitiesRequest request, ServerCallContext context)
+    {
+        context.CancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(new CapabilitiesResponse
+        {
+            ProtocolVersion = 1,
+            Capabilities = { "instance-registration", "instance-destination-update", "expected-version", "mutation-outcomes" }
+        });
+    }
+
     public override async Task<RegisterServiceResponse> RegisterService(RegisterServiceRequest request, ServerCallContext context)
     {
         try

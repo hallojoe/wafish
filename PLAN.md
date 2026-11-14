@@ -46,6 +46,7 @@ The naming correction is complete; see [consumer migration](docs/naming-migratio
 ## Remaining work: ranked release scope
 
 Public-release implementation R01–R14 is active. Stop after its acceptance checks and release verification.
+R07 is complete: optional gRPC capability discovery with explicit legacy fallback.
 R05–R06 are complete: plugin ordering constraints and versioned host capability requirements.
 R04 is complete: independently runnable MinimalGateway sample with runtime and SQLite only.
 R03 is complete: atomic logical storage quotas, body-first cleanup, and health counters.

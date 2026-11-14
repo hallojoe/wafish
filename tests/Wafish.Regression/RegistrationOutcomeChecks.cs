@@ -14,6 +14,26 @@ internal static class RegistrationOutcomeChecks
 {
     public static async Task RunAsync(Func<string, Func<Task>, Task> run)
     {
+        await run("Registration capabilities: discovery, legacy fallback, authentication, and cancellation remain distinct", async () =>
+        {
+            using var handler = new ReplyHandler(); var rpc = new ReplyClient();
+            await using var provider = Provider(true, rpc, handler);
+            var client = provider.GetRequiredService<GatewayAutoRegistrationClient>();
+            Check((await client.GetCapabilitiesAsync()).ProtocolVersion == 1, "Capability response lost version.");
+            rpc.Failure = new RpcException(new Status(StatusCode.Unimplemented, "legacy"));
+            Check((await client.GetCapabilitiesAsync()).ProtocolVersion == 0, "Legacy fallback failed.");
+            rpc.Failure = null;
+            Check(await client.RegisterAsync(), "Legacy discovery changed registration.");
+            rpc.Failure = new RpcException(new Status(StatusCode.Unauthenticated, "auth"));
+            try { await client.GetCapabilitiesAsync(); throw new Exception("Authentication failure became legacy fallback."); }
+            catch (RpcException ex) when (ex.StatusCode == StatusCode.Unauthenticated) { }
+            using var cancellation = new CancellationTokenSource(); cancellation.Cancel();
+            try { await client.GetCapabilitiesAsync(cancellation.Token); throw new Exception("Cancellation ignored."); }
+            catch (OperationCanceledException) { }
+            var server = new GatewayRegistryGrpcService(null!, NullLogger<GatewayRegistryGrpcService>.Instance);
+            var result = await server.GetCapabilities(new(), new SecurityChecks.CallContext(new()));
+            Check(result.ProtocolVersion == 1 && result.Capabilities.Contains("expected-version"), "Server contract missing.");
+        });
         await run("Registration outcomes: HTTP and gRPC preserve application statuses and revisions", CheckApplicationAsync);
         await run("Registration outcomes: transport failures retain uncertainty and credential classification", CheckTransportAsync);
         await run("Registration outcomes: caller cancellation propagates and disabled operations stay local", CheckCancellationAsync);
@@ -241,6 +261,8 @@ internal static class RegistrationOutcomeChecks
             }
             return new(Run(), Task.FromResult(new Metadata()), () => Grpc.Core.Status.DefaultSuccess, () => new Metadata(), () => { });
         }
+        public override AsyncUnaryCall<CapabilitiesResponse> GetCapabilitiesAsync(CapabilitiesRequest request, CallOptions options)
+            => Reply(new CapabilitiesResponse { ProtocolVersion = 1 }, options);
         public override AsyncUnaryCall<RegisterServiceResponse> RegisterServiceAsync(RegisterServiceRequest request, CallOptions options)
         {
             var reply = new RegisterServiceResponse { Success = Success, Status = Status, Message = "fixture" };

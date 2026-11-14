@@ -60,3 +60,12 @@ Mutation outcomes use response `status` fields with optional stored and active r
 Application failures preserve gRPC `OK`; unexpected service failures return sanitized `Internal` errors.
 Old responses without revisions remain valid. Fixed fixtures verify unknown fields and optional zero or empty values.
 See [protocol mappings](../../docs/mutation-contracts.md#grpc-mapping) and [wire fixtures](../../tests/contracts/grpc/README.md).
+
+## Capability discovery
+
+`GetCapabilities` returns protocol version 1 and supported registration capability names.
+Clients can query `GatewayAutoRegistrationClient.GetCapabilitiesAsync` before selecting optional operations.
+An older server returning `UNIMPLEMENTED` produces an empty, version-zero result.
+Authentication, transport failures, and cancellation remain errors. Discovery uses the existing credentials and deadline.
+Registration does not require discovery. Existing clients and fixed wire field numbers remain compatible.
+Capability names are additive. Ignore unknown names; leases and draining are not advertised.

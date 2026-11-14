@@ -56,6 +56,24 @@ public partial class GatewayAutoRegistrationClient
         _grpcClient = grpcClient;
     }
 
+    /// <summary>Query optional gRPC capabilities. An empty version-zero response identifies a legacy server.</summary>
+    public async Task<CapabilitiesResponse> GetCapabilitiesAsync(CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        try
+        {
+            return await _grpcClient.GetCapabilitiesAsync(new CapabilitiesRequest(), BuildGrpcCallOptions(ct)).ConfigureAwait(false);
+        }
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.Unimplemented)
+        {
+            return new CapabilitiesResponse();
+        }
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled && ct.IsCancellationRequested)
+        {
+            throw new OperationCanceledException(ct);
+        }
+    }
+
     /// <summary>Register this service's route with the gateway.</summary>
     public async Task<bool> RegisterAsync(CancellationToken ct = default) => (await RegisterResultAsync(ct).ConfigureAwait(false)).Success;
 

@@ -34,7 +34,8 @@ Acceptance: Client and server tests agree on each failure outcome.
 
 ### FEAT-01: Add a capability handshake
 
-Status: TODO.
+Status: DONE. Completed: 2026-11-14.
+Verification: Release build and `--contracts` pass, including legacy fallback, authentication, cancellation, and fixed wire fixtures.
 
 Let clients query protocol version and supported registration capabilities.
 

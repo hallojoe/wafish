@@ -6,6 +6,8 @@ option csharp_namespace = "Wafish.GatewayRegistry";
 
 // Gateway Registry Service - handles service registration and heartbeat
 service GatewayRegistry {
+  // Optional discovery. Legacy servers return UNIMPLEMENTED.
+  rpc GetCapabilities (CapabilitiesRequest) returns (CapabilitiesResponse);
   // Register a service with the gateway
   rpc RegisterService (RegisterServiceRequest) returns (RegisterServiceResponse);
   
@@ -137,4 +139,10 @@ message UpdateDestinationsResponse {
   string status = 3;
   optional int64 persisted_version = 4;
   optional int64 active_version = 5;
+}
+
+message CapabilitiesRequest {}
+message CapabilitiesResponse {
+  uint32 protocol_version = 1;
+  repeated string capabilities = 2;
 }
