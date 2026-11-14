@@ -44,6 +44,7 @@ public sealed class GatewaySnapshotCompiler : IGatewaySnapshotCompiler
         ArgumentNullException.ThrowIfNull(clusters);
         ArgumentOutOfRangeException.ThrowIfNegative(version);
 
+        clusters = clusters.Select(c => c with { Destinations = c.Destinations?.Where(d => !DynamicYarpConfigService.IsDraining(d.Value)).ToDictionary(d => d.Key, d => d.Value) }).ToArray();
         var routeIds = routes.Select(x => x.RouteId).ToHashSet(StringComparer.Ordinal);
         var clusterIds = clusters.Select(x => x.ClusterId).ToHashSet(StringComparer.Ordinal);
         var routeUidMap = candidateRouteIds ?? (_routes is null

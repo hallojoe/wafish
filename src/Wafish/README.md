@@ -95,3 +95,10 @@ Changed payloads with the same key return a version conflict.
 Cancellation is accepted before persistence. Commit, activation, and receipt completion retain ownership afterward.
 Existing CRUD methods retain their contracts. Idempotency applies only to this new workflow.
 See [limits and examples](../../docs/configuration-changes.md).
+
+## Instance leases
+
+Instance registration supports expiring leases and graceful draining. Lease state persists with destination configuration.
+Configuration previews include active WAF exclusions. Legacy registration cannot replace leased ownership.
+
+See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.

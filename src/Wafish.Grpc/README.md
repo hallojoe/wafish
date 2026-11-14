@@ -68,4 +68,11 @@ Clients can query `GatewayAutoRegistrationClient.GetCapabilitiesAsync` before se
 An older server returning `UNIMPLEMENTED` produces an empty, version-zero result.
 Authentication, transport failures, and cancellation remain errors. Discovery uses the existing credentials and deadline.
 Registration does not require discovery. Existing clients and fixed wire field numbers remain compatible.
-Capability names are additive. Ignore unknown names; leases and draining are not advertised.
+Capability names are additive. Ignore unknown names. Opt-in leases require capability discovery.
+
+## Lease negotiation
+
+Optional fields carry lease credentials, expiry, renewal timing, grace, and drain status.
+New capability names are `instance-leases` and `instance-draining`. Existing wire numbers remain unchanged.
+
+See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.

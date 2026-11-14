@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -101,6 +102,8 @@ public static class Extensions
         builder.Services.AddHealthChecks()
             // Add a default liveness check to ensure app is responsive
             .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
+        if (builder.Configuration.GetValue<bool>("Sample:RegistrationReadiness"))
+            builder.Services.AddHealthChecks().AddCheck<RegistrationReadinessHealthCheck>("gateway-registration", tags: ["ready"]);
 
         return builder;
     }

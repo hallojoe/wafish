@@ -347,6 +347,10 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
             using var mutation = BeginMutation(cancellationToken);
             var config = mutation.Config;
 
+            if (source == "grpc" && config.Clusters.Any(c => c.Config.Destinations?.Values.Any(HasLease) == true &&
+                (clusters.Any(candidate => string.Equals(candidate.ClusterId, c.Config.ClusterId, StringComparison.OrdinalIgnoreCase)) ||
+                 config.Routes.Any(r => r.Config.ClusterId == c.Config.ClusterId && routes.Any(candidate => candidate.RouteId == r.Config.RouteId)))))
+                return new(false, "Leased registrations require instance ownership.");
             var clusterMap = config.Clusters.ToDictionary(
                 c => c.Config.ClusterId ?? string.Empty, c => c, StringComparer.OrdinalIgnoreCase);
 

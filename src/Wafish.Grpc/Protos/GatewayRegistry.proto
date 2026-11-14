@@ -32,6 +32,8 @@ message RegisterServiceRequest {
   repeated Destination destinations = 4;
   map<string, string> metadata = 5;   // Custom metadata
   LoadBalancingPolicy load_balancing = 6;
+  int32 lease_duration_seconds = 8; // Zero retains legacy registration.
+  string lease_token = 9; // Client-generated unpredictable credential; never persisted as plaintext.
   string instance_id = 7; // Stable instance identity for shared-cluster registration.
 }
 
@@ -61,12 +63,14 @@ message RegisterServiceResponse {
   string status = 6;
   optional int64 persisted_version = 7;
   optional int64 active_version = 8;
+  RegistrationLease lease = 9;
 }
 
 // Unregister service request
 message UnregisterServiceRequest {
   string service_id = 1;
   string instance_id = 2;
+  string lease_token = 3;
 }
 
 // Unregister service response
@@ -83,12 +87,17 @@ message HeartbeatRequest {
   string service_id = 1;
   optional string destination_id = 2; // Optional: specific destination
   string instance_id = 3;
+  string lease_token = 4;
+  bool drain = 5;
 }
 
 // Heartbeat response
 message HeartbeatResponse {
   bool success = 1;
   string message = 2;
+  RegistrationLease lease = 4;
+  optional int64 active_version = 5;
+  optional int64 persisted_version = 6;
   int64 next_heartbeat = 3;          // Unix timestamp for next expected heartbeat
 }
 
@@ -130,6 +139,7 @@ message UpdateDestinationsRequest {
   repeated Destination destinations = 2;
   string instance_id = 3;
   optional int64 expected_version = 4;
+  string lease_token = 5;
 }
 
 // Update destinations response
@@ -145,4 +155,12 @@ message CapabilitiesRequest {}
 message CapabilitiesResponse {
   uint32 protocol_version = 1;
   repeated string capabilities = 2;
+}
+
+// The opaque request token identifies the lease; only its hash is stored by the gateway.
+message RegistrationLease {
+  int64 expires_at = 1; // Unix milliseconds.
+  int32 renewal_seconds = 2;
+  int32 grace_seconds = 3;
+  bool draining = 4;
 }

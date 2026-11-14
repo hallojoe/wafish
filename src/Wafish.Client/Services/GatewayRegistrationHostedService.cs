@@ -134,6 +134,7 @@ internal sealed class GatewayRegistrationHostedService : IHostedService, IAsyncD
                 }
             }
         }
+        StartHeartbeatIfEnabled(ct);
     }
 
     public async Task StopAsync(CancellationToken ct)
@@ -148,6 +149,8 @@ internal sealed class GatewayRegistrationHostedService : IHostedService, IAsyncD
         _logger.LogInformation("Auto-unregistration starting...");
         try
         {
+            if (_options.DrainSeconds > 0 && await _client.DrainAsync(ct).ConfigureAwait(false))
+                await Task.Delay(TimeSpan.FromSeconds(Math.Min(300, _options.DrainSeconds)), _timeProvider, ct).ConfigureAwait(false);
             if (await _client.UnregisterAsync(ct).ConfigureAwait(false))
             {
                 _logger.LogInformation("Auto-unregistration complete");
@@ -192,6 +195,8 @@ internal sealed class GatewayRegistrationHostedService : IHostedService, IAsyncD
             intervalSeconds = MaxHeartbeatIntervalSeconds;
         }
 
+        if (_options.LeaseDurationSeconds > 0) intervalSeconds = Math.Min(intervalSeconds, Math.Max(5, _options.LeaseDurationSeconds / 3));
+        if (_client.LeaseRenewalSeconds is { } renewal) intervalSeconds = Math.Min(intervalSeconds, renewal);
         var interval = TimeSpan.FromSeconds(intervalSeconds);
 
         _heartbeatTask = RunHeartbeatsAsync(interval, _heartbeatLifetime.Token);

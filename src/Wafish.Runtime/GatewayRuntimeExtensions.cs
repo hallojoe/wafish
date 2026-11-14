@@ -139,8 +139,10 @@ public static class GatewayRuntimeExtensions
         services.AddSingleton<IPluginDashboardBuilder, PluginDashboardBuilder>();
         services.AddSingleton<PluginDashboardInitializer>();
         services.AddSingleton<IPluginRuntimeDomainManager, PluginRuntimeDomainManager>();
+        services.AddHostedService<RegistrationLeaseReaper>();
         services.AddSingleton<IPluginBindingMutationService, PluginBindingMutationService>();
         services.AddSingleton(provider => (PluginRuntimeDomainManager)provider.GetRequiredService<IPluginRuntimeDomainManager>());
+        services.AddSingleton<IPluginDrainDiagnostics>(provider => provider.GetRequiredService<PluginRuntimeDomainManager>());
         services.AddSingleton<IPluginActivationPreviewService>(provider => provider.GetRequiredService<PluginRuntimeDomainManager>());
         services.AddHostedService<PluginRuntimeDomainInitializer>();
         services.AddSingleton<IPluginActivationState>(provider => provider.GetRequiredService<GatewayPluginManager>());

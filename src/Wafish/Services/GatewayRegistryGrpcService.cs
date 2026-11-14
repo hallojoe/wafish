@@ -18,13 +18,16 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
         _logger = logger;
     }
 
+    private static RegistrationLease? MapLease(InstanceRegistrationLease? lease) => lease is null ? null : new()
+    { ExpiresAt = lease.ExpiresAt.ToUnixTimeMilliseconds(), RenewalSeconds = lease.RenewalSeconds, GraceSeconds = lease.GraceSeconds, Draining = lease.Draining };
+
     public override Task<CapabilitiesResponse> GetCapabilities(CapabilitiesRequest request, ServerCallContext context)
     {
         context.CancellationToken.ThrowIfCancellationRequested();
         return Task.FromResult(new CapabilitiesResponse
         {
             ProtocolVersion = 1,
-            Capabilities = { "instance-registration", "instance-destination-update", "expected-version", "mutation-outcomes" }
+            Capabilities = { "instance-registration", "instance-destination-update", "expected-version", "mutation-outcomes", "instance-leases", "instance-draining" }
         });
     }
 
@@ -73,12 +76,20 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
             RouteId = r.RouteName, ClusterId = clusterName, Order = r.Order,
             Match = new() { Path = r.MatchPath }
         }).ToList();
-        var result = string.IsNullOrWhiteSpace(request.InstanceId)
+        RegistrationLeaseResult? leased = null;
+        var serviceIdentity = GrpcGatewayRegistryMapper.BuildRouteName(request);
+        if (string.IsNullOrWhiteSpace(request.InstanceId) && (_dynamicConfigService.HasLeasedService(serviceIdentity) || request.LeaseDurationSeconds != 0))
+            return new() { Success = false, Status = "ValidationRejected", Message = "InstanceId and lease ownership are required for leased services." };
+        if (request.LeaseDurationSeconds != 0)
+            leased = await _dynamicConfigService.RegisterLeasedInstanceAsync(serviceIdentity, request.InstanceId, cluster, routes,
+                request.LeaseToken, request.LeaseDurationSeconds, context.CancellationToken);
+        var result = leased is not null ? leased.Outcome : string.IsNullOrWhiteSpace(request.InstanceId)
             ? await _dynamicConfigService.ImportBatchAsync([cluster], routes, "grpc", "grpc-client", null, context.CancellationToken)
             : await _dynamicConfigService.RegisterInstanceAsync(GrpcGatewayRegistryMapper.BuildRouteName(request), request.InstanceId, cluster, routes, context.CancellationToken);
         var response = new RegisterServiceResponse
         {
             Success = result.Success, Message = result.Message, Status = result.Status.ToString(),
+            Lease = MapLease(leased?.Lease),
             ClusterId = clusterName, RegisteredAt = result.Success ? DateTimeOffset.UtcNow.ToUnixTimeSeconds() : 0
         };
         if (result.PersistedVersion is { } stored)
@@ -107,7 +118,7 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
 
             if (!string.IsNullOrWhiteSpace(request.InstanceId))
             {
-                var removal = await _dynamicConfigService.UnregisterInstanceAsync(serviceId, request.InstanceId, context.CancellationToken);
+                var removal = await _dynamicConfigService.UnregisterLeasedInstanceAsync(serviceId, request.InstanceId, request.LeaseToken, context.CancellationToken);
                 var instanceResponse = new UnregisterServiceResponse
                 { Success = removal.Success, Message = removal.Message, Status = removal.Status.ToString() };
                 if (removal.PersistedVersion is { } instanceStored)
@@ -123,6 +134,8 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
                 return instanceResponse;
             }
 
+            if (_dynamicConfigService.HasLeasedService(serviceId))
+                return new() { Success = false, Status = "ValidationRejected", Message = "Leased services require an instance and its lease credential." };
             // Multi-path registration creates routes named "{serviceId}" (single path)
             // or "{serviceId}-path{N}" (one per path). Remove them all; TryRemoveRoute
             // already cleans up the cluster when the last referencing route is removed.
@@ -159,24 +172,35 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
         }
     }
 
-    public override Task<HeartbeatResponse> Heartbeat(HeartbeatRequest request, ServerCallContext context)
+    public override async Task<HeartbeatResponse> Heartbeat(HeartbeatRequest request, ServerCallContext context)
     {
         try
         {
             var serviceId = string.IsNullOrWhiteSpace(request.ServiceId) ? "grpc-service" : request.ServiceId;
 
+            if (!string.IsNullOrEmpty(request.LeaseToken) || _dynamicConfigService.IsLeasedInstance(serviceId, request.InstanceId))
+            {
+                var result = await _dynamicConfigService.RenewInstanceLeaseAsync(serviceId, request.InstanceId, request.LeaseToken, request.Drain, context.CancellationToken);
+                var response = new HeartbeatResponse { Success = result.Outcome.Success, Message = result.Outcome.Message, Lease = MapLease(result.Lease),
+                    NextHeartbeat = DateTimeOffset.UtcNow.AddSeconds(result.Lease?.RenewalSeconds ?? 30).ToUnixTimeSeconds() };
+                if (result.Outcome.ActiveVersion is { } active) response.ActiveVersion = active;
+                if (result.Outcome.PersistedVersion is { } stored) response.PersistedVersion = stored;
+                return response;
+            }
+            if (request.Drain || string.IsNullOrWhiteSpace(request.InstanceId) && _dynamicConfigService.HasLeasedService(serviceId))
+                return new() { Success = false, Message = "A leased instance is required." };
             // Resolve the route name: "{serviceId}" when present, otherwise any
             // "{serviceId}-path{N}" route created by multi-path registration.
             var routeName = ResolveHeartbeatRouteName(serviceId);
             var updated = routeName != null && (string.IsNullOrWhiteSpace(request.InstanceId) ||
                 _dynamicConfigService.IsInstanceRegistered(serviceId, request.InstanceId)) && _dynamicConfigService.UpdateHeartbeat(routeName);
 
-            return Task.FromResult(new HeartbeatResponse
+            return new HeartbeatResponse
             {
                 Success = updated,
                 Message = updated ? "heartbeat" : $"Route '{serviceId}' not found",
                 NextHeartbeat = DateTimeOffset.UtcNow.AddSeconds(30).ToUnixTimeSeconds()
-            });
+            };
         }
         catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested) { throw; }
         catch (Exception ex)
@@ -365,8 +389,8 @@ public class GatewayRegistryGrpcService : GatewayGrpc.GatewayRegistryBase
                 request.Destinations.Select(d => d.DestinationId).Distinct(StringComparer.Ordinal).Count() != request.Destinations.Count)
                 return new UpdateDestinationsResponse { Success = false, Status = "ValidationRejected", Message = "Destination IDs must be unique and addresses must be present." };
             var destinations = request.Destinations.ToDictionary(d => d.DestinationId, d => d.Address);
-            var result = await _dynamicConfigService.UpdateInstanceDestinationsAsync(
-                request.ServiceId, request.InstanceId, destinations, request.ExpectedVersion, context.CancellationToken);
+            var result = await _dynamicConfigService.UpdateLeasedInstanceDestinationsAsync(
+                request.ServiceId, request.InstanceId, destinations, request.ExpectedVersion, request.LeaseToken, context.CancellationToken);
 
             var response = new UpdateDestinationsResponse
             { Success = result.Success, Message = result.Message, Status = result.Status.ToString() };

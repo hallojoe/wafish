@@ -40,6 +40,7 @@ public static class WafishClientServiceCollectionExtensions
     {
         ConfigureClientInfrastructure(services, configureOptions);
         services.AddSingleton<GatewayAutoRegistrationClient>();
+        services.AddSingleton<IRegistrationStatusSource>(sp => sp.GetRequiredService<GatewayAutoRegistrationClient>());
         services.AddHostedService<GatewayRegistrationHostedService>();
         return services;
     }
@@ -52,6 +53,7 @@ public static class WafishClientServiceCollectionExtensions
     {
         ConfigureClientInfrastructure(services, null);
         services.AddSingleton<GatewayAutoRegistrationClient>();
+        services.AddSingleton<IRegistrationStatusSource>(sp => sp.GetRequiredService<GatewayAutoRegistrationClient>());
         return services;
     }
 

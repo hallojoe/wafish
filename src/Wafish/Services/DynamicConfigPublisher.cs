@@ -43,10 +43,10 @@ internal class DynamicConfigPublisher : IDynamicConfigPublisher
     public Task<Action> PrepareAsync(GatewayDynamicConfig config, long version, CancellationToken cancellationToken = default)
         => PrepareCoreAsync(config, version, true, cancellationToken);
 
-    internal Task<Action> PreparePreviewAsync(GatewayDynamicConfig config, long version, CancellationToken cancellationToken)
-        => PrepareCoreAsync(config, version, false, cancellationToken);
+    internal Task<Action> PreparePreviewAsync(GatewayDynamicConfig config, long version, CancellationToken cancellationToken, Action<GatewaySnapshot>? preview = null)
+        => PrepareCoreAsync(config, version, false, cancellationToken, preview);
 
-    private async Task<Action> PrepareCoreAsync(GatewayDynamicConfig config, long version, bool recordErrors, CancellationToken cancellationToken)
+    private async Task<Action> PrepareCoreAsync(GatewayDynamicConfig config, long version, bool recordErrors, CancellationToken cancellationToken, Action<GatewaySnapshot>? preview = null)
     {
         await PreValidateAsync(config.Routes, config.Clusters, recordErrors, cancellationToken).ConfigureAwait(false);
         var publishRoutes = new List<DynamicRouteConfig>(config.Routes.Count);
@@ -77,7 +77,10 @@ internal class DynamicConfigPublisher : IDynamicConfigPublisher
         foreach (var dynCluster in config.Clusters)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var nativeConfig = SanitizeCluster(dynCluster.Config);
+            var candidateCluster = dynCluster.Config;
+            if (candidateCluster.Destinations is { } destinations)
+                candidateCluster = candidateCluster with { Destinations = destinations.Where(d => !DynamicYarpConfigService.IsDraining(d.Value)).ToDictionary(d => d.Key, d => d.Value) };
+            var nativeConfig = SanitizeCluster(candidateCluster);
 
             // Merge the domain-model health check into the native config when the native side
             // does not already carry one.
@@ -137,6 +140,7 @@ internal class DynamicConfigPublisher : IDynamicConfigPublisher
         await PreValidateAsync(publishRoutes, publishClusters, recordErrors, cancellationToken).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
 
+        preview?.Invoke(gatewaySnapshot);
         return () =>
         {
             _snapshotPublisher.Publish(gatewaySnapshot);

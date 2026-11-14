@@ -78,7 +78,7 @@ public partial class GatewayAutoRegistrationClient
     public async Task<bool> RegisterAsync(CancellationToken ct = default) => (await RegisterResultAsync(ct).ConfigureAwait(false)).Success;
 
     /// <summary>Register with revision and retry information. Caller cancellation propagates.</summary>
-    public async Task<RegistrationResult> RegisterResultAsync(CancellationToken ct = default)
+    private async Task<RegistrationResult> RegisterCoreAsync(CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         if (!RegistrationOptionsResolver.IsEnabled(_options))
@@ -87,6 +87,9 @@ public partial class GatewayAutoRegistrationClient
             return new(false, RegistrationStatus.Disabled, "Auto-registration is disabled.");
         }
 
+        if (_options.LeaseDurationSeconds != 0 && (_options.LeaseDurationSeconds is < 15 or > 3600 || _options.UseGrpcRegistration != true
+            || string.IsNullOrWhiteSpace(_options.InstanceId) || _options.HeartbeatEnabled == false) || _options.DrainSeconds is < 0 or > 300)
+            return new(false, RegistrationStatus.ValidationRejected, "Leases require gRPC, InstanceId, heartbeats, and 15–3600 seconds. DrainSeconds must be 0–300.");
         var gatewayUrl = _options.GatewayUrl;
         var routeName = RegistrationOptionsResolver.GetRouteName(_options);
         var clusterName = RegistrationOptionsResolver.GetClusterName(_options);
@@ -190,7 +193,7 @@ public partial class GatewayAutoRegistrationClient
     }
 
     /// <summary>Unregister with revision and retry information. Caller cancellation propagates.</summary>
-    public async Task<RegistrationResult> UnregisterResultAsync(CancellationToken ct = default)
+    private async Task<RegistrationResult> UnregisterCoreAsync(CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         if (string.IsNullOrWhiteSpace(_options.GatewayUrl)) return new(false, RegistrationStatus.Disabled, "Gateway URL is not configured.");
@@ -200,7 +203,7 @@ public partial class GatewayAutoRegistrationClient
             if (_options.UseGrpcRegistration == true)
             {
                 var response = await _grpcClient.UnregisterServiceAsync(new UnregisterServiceRequest
-                    { ServiceId = routeName, InstanceId = _options.InstanceId ?? "" }, BuildGrpcCallOptions(ct)).ConfigureAwait(false);
+                    { ServiceId = routeName, InstanceId = _options.InstanceId ?? "", LeaseToken = _lease is null ? "" : _leaseToken }, BuildGrpcCallOptions(ct)).ConfigureAwait(false);
                 return RegistrationResult.Remote(response.Success, response.Message, response.Status,
                     response.HasPersistedVersion ? response.PersistedVersion : null, response.HasActiveVersion ? response.ActiveVersion : null);
             }
@@ -230,6 +233,8 @@ public partial class GatewayAutoRegistrationClient
             // Phase 2 contract: multi-path (one route per path, shared cluster),
             // multi-destination (all join the cluster for load balancing),
             // load balancing policy and metadata.
+            if (_options.LeaseDurationSeconds > 0 && !(await GetCapabilitiesAsync(ct).ConfigureAwait(false)).Capabilities.Contains("instance-leases"))
+                return new(false, RegistrationStatus.ValidationRejected, "The gateway does not support registration leases.");
             var paths = RegistrationOptionsResolver.GetMatchPaths(_options);
             var extraDestinations = RegistrationOptionsResolver.GetExtraDestinationAddresses(_options);
             var metadata = RegistrationOptionsResolver.GetMetadata(_options);
@@ -237,6 +242,8 @@ public partial class GatewayAutoRegistrationClient
             var request = new RegisterServiceRequest
             {
                 ServiceId = routeName,
+                LeaseDurationSeconds = _options.LeaseDurationSeconds,
+                LeaseToken = _options.LeaseDurationSeconds > 0 ? _leaseToken : "",
                         InstanceId = _options.InstanceId ?? "",
                 ServiceName = clusterName,
                 LoadBalancing = MapLoadBalancingPolicy(_options.LoadBalancingPolicy)
@@ -262,6 +269,9 @@ public partial class GatewayAutoRegistrationClient
 
             var callOptions = BuildGrpcCallOptions(ct);
             var response = await _grpcClient.RegisterServiceAsync(request, callOptions).ConfigureAwait(false);
+            if (response.Success && _options.LeaseDurationSeconds > 0 && response.Lease is null)
+                return new(false, RegistrationStatus.ValidationRejected, "The gateway omitted the negotiated lease.");
+            if (response.Success) Volatile.Write(ref _lease, response.Lease?.Clone());
             if (response.Success && response.HasActiveVersion)
             {
                 Interlocked.Exchange(ref _registrationVersion, response.ActiveVersion);
@@ -485,7 +495,7 @@ public partial class GatewayAutoRegistrationClient
     /// Send a heartbeat to the gateway to keep the registration alive.
     /// Gateway uses heartbeat to detect stale registrations.
     /// </summary>
-    public async Task<bool> HeartbeatAsync(CancellationToken ct = default)
+    private async Task<bool> HeartbeatCoreAsync(CancellationToken ct = default)
     {
         var gatewayUrl = _options.GatewayUrl;
         var routeName = RegistrationOptionsResolver.GetRouteName(_options);
@@ -506,9 +516,16 @@ public partial class GatewayAutoRegistrationClient
                     var grpcResponse = await _grpcClient.HeartbeatAsync(new HeartbeatRequest
                     {
                         ServiceId = routeName,
-                        InstanceId = _options.InstanceId ?? ""
+                        InstanceId = _options.InstanceId ?? "",
+                        LeaseToken = _lease is null ? "" : _leaseToken
                     }, callOptions).ConfigureAwait(false);
 
+                    if (grpcResponse.Success && _options.LeaseDurationSeconds > 0 && grpcResponse.Lease is null) return false;
+                    if (grpcResponse.Success)
+                    {
+                        Volatile.Write(ref _lease, grpcResponse.Lease?.Clone());
+                        if (grpcResponse.HasActiveVersion) Interlocked.Exchange(ref _registrationVersion, grpcResponse.ActiveVersion);
+                    }
                     return grpcResponse.Success;
                 }
                 catch (RpcException ex)
@@ -597,7 +614,7 @@ public partial class GatewayAutoRegistrationClient
         try
         {
             var request = new UpdateDestinationsRequest { ServiceId = RegistrationOptionsResolver.GetRouteName(_options),
-                InstanceId = _options.InstanceId ?? "", ExpectedVersion = Interlocked.Read(ref _registrationVersion) };
+                InstanceId = _options.InstanceId ?? "", LeaseToken = _lease is null ? "" : _leaseToken, ExpectedVersion = Interlocked.Read(ref _registrationVersion) };
             for (int i = 0; i < addresses.Count; i++)
             {
                 if (string.IsNullOrWhiteSpace(addresses[i]))

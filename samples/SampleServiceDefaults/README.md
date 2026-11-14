@@ -40,7 +40,7 @@ Sample services use consistent diagnostics without repeating their instrumentati
 ## Start here
 
 Source project: [SampleServiceDefaults.csproj](SampleServiceDefaults.csproj).
-This project has no direct solution project references. Package and framework references remain in its project file.
+Direct project reference: [Wafish.Client](../../src/Wafish.Client/README.md).
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
 
@@ -69,3 +69,10 @@ Metrics remain enabled for health requests.
 The regression `--sample-contracts` group verifies custom probe paths and exporter-free telemetry behavior.
 
 The metrics pipeline includes `Wafish.Plugin.Metrics` route and cluster instruments when their bindings are enabled.
+
+## Registration readiness
+
+Set `Sample:RegistrationReadiness=true` to require local client registration for `/health`.
+The option defaults to false. `/alive` remains independent. Health probes make no registration calls.
+
+See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.

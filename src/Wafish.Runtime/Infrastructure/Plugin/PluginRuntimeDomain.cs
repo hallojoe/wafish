@@ -51,6 +51,8 @@ public sealed class PluginRuntimeDomain : IAsyncDisposable
         DashboardBuilder = dashboardBuilder ?? new PluginDashboardBuilder();
     }
 
+    internal long Generation { get; set; }
+    internal int ActiveRequests => Math.Max(0, Volatile.Read(ref _activeRequests));
     public IServiceProvider Services { get; }
     public IReadOnlyDictionary<string, IGatewayPlugin> Plugins { get; }
     public RequestDelegate Middleware { get; }
@@ -275,6 +277,7 @@ public sealed partial class PluginRuntimeDomainManager : IPluginRuntimeDomainMan
         ILogger<PluginRuntimeDomainManager> logger)
     {
         _rootServices = rootServices;
+        _drainClock = rootServices.GetService<TimeProvider>() ?? TimeProvider.System;
         _firstPartyPlugins = rootServices.GetServices<IGatewayPlugin>()
             .ToDictionary(x => x.PluginId, StringComparer.OrdinalIgnoreCase);
         _externalHost = externalHost;
@@ -422,6 +425,7 @@ public sealed partial class PluginRuntimeDomainManager : IPluginRuntimeDomainMan
         lock (_lifecycleGate)
         {
             ObjectDisposedException.ThrowIf(_stopping, this);
+            candidate.Generation = ++_generation;
             var previous = Interlocked.Exchange(ref _current, candidate);
             TrackRetirement(previous);
             StartPostTransitionWatch();
@@ -432,6 +436,7 @@ public sealed partial class PluginRuntimeDomainManager : IPluginRuntimeDomainMan
     // Called under the lifecycle gate. Completed successful tasks do not retain old providers.
     private void TrackRetirement(PluginRuntimeDomain domain)
     {
+        _draining[domain] = DrainClock.GetTimestamp();
         var task = RetirePreviousAsync(domain);
         _retirements.Add(task);
         _ = task.ContinueWith(completed =>
@@ -473,9 +478,10 @@ public sealed partial class PluginRuntimeDomainManager : IPluginRuntimeDomainMan
 
     private async Task RetirePreviousAsync(PluginRuntimeDomain previous)
     {
-        try { await previous.RetireAndDisposeAsync(); }
+        try { await previous.RetireAndDisposeAsync(); CompleteDrain(previous, false); }
         catch (Exception ex)
         {
+            CompleteDrain(previous, true);
             _logger.LogError(ex, "Failed to dispose a retired plugin runtime domain.");
             throw;
         }

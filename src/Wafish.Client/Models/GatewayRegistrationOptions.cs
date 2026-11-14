@@ -23,6 +23,11 @@ public class GatewayRegistrationOptions
     /// <summary>Stable instance identifier for shared-cluster registration. Requires gRPC.</summary>
     public string? InstanceId { get; set; }
 
+    /// <summary>Opt-in lease duration, 15–3600 seconds. Zero preserves legacy registration.</summary>
+    public int LeaseDurationSeconds { get; set; }
+    /// <summary>Optional graceful shutdown delay after a successful drain, 0–300 seconds.</summary>
+    public int DrainSeconds { get; set; }
+
     /// <summary>Route name (default: entry assembly name).</summary>
     public string? RouteName { get; set; }
 

@@ -13,8 +13,12 @@ public partial class DynamicYarpConfigService
         ClusterConfig cluster, IReadOnlyList<RouteConfig> routes)
         => RegisterInstanceAsync(serviceId, instanceId, cluster, routes, CancellationToken.None);
 
-    public async Task<RouteOperationResult> RegisterInstanceAsync(string serviceId, string instanceId,
+    public Task<RouteOperationResult> RegisterInstanceAsync(string serviceId, string instanceId,
         ClusterConfig cluster, IReadOnlyList<RouteConfig> routes, CancellationToken cancellationToken)
+        => RegisterInstanceCoreAsync(serviceId, instanceId, cluster, routes, null, cancellationToken);
+
+    private async Task<RouteOperationResult> RegisterInstanceCoreAsync(string serviceId, string instanceId,
+        ClusterConfig cluster, IReadOnlyList<RouteConfig> routes, LeaseRegistration? lease, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(serviceId) || instanceId.Length is < 1 or > 128 ||
             instanceId.Any(c => !char.IsAsciiLetterOrDigit(c) && c is not '-' and not '_' and not '.'))
@@ -38,6 +42,12 @@ public partial class DynamicYarpConfigService
                 return new(false, "A registered service cannot move clusters while instances remain registered.");
             }
 
+            var priorLease = existing?.Config.Destinations?.Values.FirstOrDefault(d => OwnedBy(d.Metadata, serviceId, instanceId) && HasLease(d));
+            if (priorLease is not null && !LeaseExpired(priorLease) && !LeaseMatches(priorLease, lease?.Token))
+                return new(false, "The current instance lease credential is required.");
+            if (priorLease is not null && !LeaseExpired(priorLease) && IsDraining(priorLease))
+                return new(false, "The instance is draining. Unregister it before replacement.");
+            var leaseMetadata = lease is null ? null : CreateLeaseMetadata(lease);
             var destinations = existing?.Config.Destinations?.ToDictionary(d => d.Key, d => d.Value, StringComparer.OrdinalIgnoreCase) ?? new(StringComparer.OrdinalIgnoreCase);
             foreach (var key in destinations.Where(d => OwnedBy(d.Value.Metadata, serviceId, instanceId)).Select(d => d.Key).ToArray())
             {
@@ -55,7 +65,7 @@ public partial class DynamicYarpConfigService
             foreach (var pair in cluster.Destinations ?? new Dictionary<string, DestinationConfig>())
             {
                 destinations[instanceId.ToLowerInvariant() + ":" + pair.Key] = pair.Value with
-                { Metadata = new Dictionary<string, string> { [RegistrationServiceKey] = serviceId, [RegistrationInstanceKey] = instanceId } };
+                { Metadata = WithOwner(leaseMetadata, serviceId, instanceId) };
             }
 
             if (destinations.Count == 0)
@@ -95,7 +105,8 @@ public partial class DynamicYarpConfigService
                 config.Routes.Add(new DynamicRouteConfig
                 {
                     Config = route with { Metadata = new Dictionary<string, string> { [RegistrationServiceKey] = serviceId } },
-                    Source = "grpc", CreatedBy = serviceId
+                    Source = "grpc", CreatedBy = serviceId,
+                    RouteUid = oldRoutes.FirstOrDefault(r => r.Config.RouteId == route.RouteId)?.RouteUid ?? Guid.NewGuid().ToString("N")
                 });
             }
 
@@ -109,13 +120,21 @@ public partial class DynamicYarpConfigService
     public Task<RouteOperationResult> UnregisterInstanceAsync(string serviceId, string instanceId)
         => UnregisterInstanceAsync(serviceId, instanceId, CancellationToken.None);
 
-    public async Task<RouteOperationResult> UnregisterInstanceAsync(string serviceId, string instanceId, CancellationToken cancellationToken)
+    public Task<RouteOperationResult> UnregisterInstanceAsync(string serviceId, string instanceId, CancellationToken cancellationToken)
+        => UnregisterInstanceCoreAsync(serviceId, instanceId, null, cancellationToken);
+
+    public Task<RouteOperationResult> UnregisterLeasedInstanceAsync(string serviceId, string instanceId, string leaseToken, CancellationToken cancellationToken = default)
+        => UnregisterInstanceCoreAsync(serviceId, instanceId, leaseToken, cancellationToken);
+
+    private async Task<RouteOperationResult> UnregisterInstanceCoreAsync(string serviceId, string instanceId, string? leaseToken, CancellationToken cancellationToken)
     {
         await _semaphore.WaitAsync(cancellationToken);
         try
         {
             using var mutation = BeginMutation(cancellationToken);
             var config = mutation.Config;
+            if (config.Clusters.SelectMany(c => c.Config.Destinations?.Values ?? []).Any(d => OwnedBy(d.Metadata, serviceId, instanceId) && HasLease(d) && !LeaseMatches(d, leaseToken)))
+                return new(false, "The current instance lease credential is required.");
             foreach (var cluster in config.Clusters.Where(c => OwnedBy(c.Config.Metadata, serviceId)).ToArray())
             {
                 var remaining = cluster.Config.Destinations?.Where(d => !OwnedBy(d.Value.Metadata, serviceId, instanceId))
@@ -147,8 +166,16 @@ public partial class DynamicYarpConfigService
         IReadOnlyDictionary<string, string> addresses, long expectedVersion)
         => UpdateInstanceDestinationsAsync(serviceId, instanceId, addresses, expectedVersion, CancellationToken.None);
 
-    public async Task<RouteOperationResult> UpdateInstanceDestinationsAsync(string serviceId, string instanceId,
+    public Task<RouteOperationResult> UpdateInstanceDestinationsAsync(string serviceId, string instanceId,
         IReadOnlyDictionary<string, string> addresses, long expectedVersion, CancellationToken cancellationToken)
+        => UpdateInstanceCoreAsync(serviceId, instanceId, addresses, expectedVersion, null, cancellationToken);
+
+    public Task<RouteOperationResult> UpdateLeasedInstanceDestinationsAsync(string serviceId, string instanceId,
+        IReadOnlyDictionary<string, string> addresses, long expectedVersion, string leaseToken, CancellationToken cancellationToken = default)
+        => UpdateInstanceCoreAsync(serviceId, instanceId, addresses, expectedVersion, leaseToken, cancellationToken);
+
+    private async Task<RouteOperationResult> UpdateInstanceCoreAsync(string serviceId, string instanceId,
+        IReadOnlyDictionary<string, string> addresses, long expectedVersion, string? leaseToken, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(instanceId) || addresses.Count == 0 ||
             addresses.Any(p => string.IsNullOrWhiteSpace(p.Key) || !Uri.TryCreate(p.Value, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https")))
@@ -172,6 +199,9 @@ public partial class DynamicYarpConfigService
                 return new(false, "The instance is not registered for this service.");
             }
 
+            var owned = cluster.Config.Destinations.Values.First(d => OwnedBy(d.Metadata, serviceId, instanceId));
+            if (HasLease(owned) && (!LeaseMatches(owned, leaseToken) || LeaseExpired(owned) || IsDraining(owned)))
+                return new(false, "A current, active instance lease is required.");
             var destinations = cluster.Config.Destinations.Where(d => !OwnedBy(d.Value.Metadata, serviceId, instanceId))
                 .ToDictionary(d => d.Key, d => d.Value, StringComparer.OrdinalIgnoreCase);
             foreach (var (key, address) in addresses)
@@ -183,7 +213,7 @@ public partial class DynamicYarpConfigService
                 }
 
                 destinations[destinationId] = new DestinationConfig { Address = address,
-                    Metadata = new Dictionary<string, string> { [RegistrationServiceKey] = serviceId, [RegistrationInstanceKey] = instanceId } };
+                    Metadata = WithOwner(owned.Metadata, serviceId, instanceId) };
             }
             cluster.Config = cluster.Config with { Destinations = destinations };
             return await mutation.CommitAsync("UpdateInstanceDestinations", serviceId);

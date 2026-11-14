@@ -109,3 +109,10 @@ A null health result means the plugin has no health probe. Readiness does not gu
 Health probes must be read-only and honor cancellation. Constructors and configuration callbacks must not start resources.
 Preview waits for cooperative cancellation before releasing candidate ownership.
 Input is limited to 1,000 distinct plugin IDs.
+
+## Drain progress and lease cleanup
+
+`IPluginDrainDiagnostics` reports held generations, retirement age, and safe disposal failures.
+A five-second reaper removes expired leased destinations without removing healthy or legacy peers.
+
+See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.

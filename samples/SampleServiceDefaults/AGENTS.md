@@ -45,3 +45,6 @@ Record implementation evidence when completing a plan item.
 
 Filter exact configured health paths. Do not suppress normal API paths below a health prefix.
 Run `--sample-contracts` after instrumentation or exporter configuration changes.
+
+Preserve the [R19–R28 contracts](../../docs/need-seven-features.md) when changing registration or operational controls.
+Run the `--group need-seven` regression checks for these contracts.

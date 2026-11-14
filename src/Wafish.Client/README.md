@@ -70,3 +70,10 @@ Registration makes at most five startup attempts. Each failed attempt waits befo
 Waits use equal jitter between half the backoff ceiling and that ceiling: 2, 4, 8, and 16 seconds.
 An injected `Random` and `TimeProvider` support deterministic tests. Production uses `Random.Shared`.
 Cancellation removes the pending wait and prevents another startup attempt.
+
+## Leases and readiness
+
+Set `LeaseDurationSeconds` to 15–3,600 for negotiated gRPC leases. Set `DrainSeconds` for bounded shutdown draining.
+`IRegistrationStatusSource` exposes local registration readiness without network calls.
+
+See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.

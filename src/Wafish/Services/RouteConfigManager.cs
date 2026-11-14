@@ -57,6 +57,10 @@ internal class RouteConfigManager : ConfigManagerBase, IRouteConfigManager
     {
         return await ExecuteWithLockAsync("AddOrUpdateRoute", request.RouteName, config =>
         {
+            if (config.Clusters.Any(c => c.Config.Destinations?.Values.Any(DynamicYarpConfigService.HasLease) == true &&
+                (string.Equals(c.Config.ClusterId, request.ClusterName, StringComparison.OrdinalIgnoreCase) ||
+                 config.Routes.Any(r => r.Config.ClusterId == c.Config.ClusterId && string.Equals(r.Config.RouteId, request.RouteName, StringComparison.OrdinalIgnoreCase)))))
+                return Task.FromResult(new RouteOperationResult(false, "Leased registrations require instance ownership."));
             var routeConfig = new RouteConfig
             {
                 RouteId = request.RouteName,
@@ -256,6 +260,8 @@ internal class RouteConfigManager : ConfigManagerBase, IRouteConfigManager
             }
 
             var clusterId = dynRoute.Config.ClusterId;
+            if (config.Clusters.Any(c => c.Config.ClusterId == clusterId && c.Config.Destinations?.Values.Any(DynamicYarpConfigService.HasLease) == true))
+                return Task.FromResult(new RouteOperationResult(false, "Leased registrations require instance ownership."));
 
             // IP isolation: only remove the matching destination
             if (!string.IsNullOrWhiteSpace(clientIp) && clusterId != null)
