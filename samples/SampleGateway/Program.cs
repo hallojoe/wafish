@@ -1,4 +1,5 @@
 using Wafish.ReactUi;
+using SampleGateway;
 using Wafish.Administration;
 using Wafish.Extensions;
 using Wafish.Runtime;
@@ -98,8 +99,6 @@ try
         Console.WriteLine($"  Endpoint:           {ep.EndpointName} → {ep.IpAddress}:{ep.Port} ({ep.Role})");
     }
 
-    Console.WriteLine("  Dashboard:          /console");
-    Console.WriteLine("  Login:              /console");
     Console.WriteLine("  Credentials:        supplied through host configuration");
     Console.WriteLine("  Health:             /health, /ready, /live");
     Console.WriteLine("  Logger:             Serilog");
@@ -108,37 +107,27 @@ try
         : "  gRPC:               HTTP/2 enabled");
     Console.WriteLine("======================================================");
 
-    // Auto-launch browser in Development (only when not already opened by IDE).
-    // Wait for ApplicationStarted so Kestrel has actually bound the ports.
-    if (app.Environment.IsDevelopment()
-        && Environment.GetEnvironmentVariable("ASPNETCORE_AUTO_BROWSER") != "0")
+    app.Lifetime.ApplicationStarted.Register(() =>
     {
-        var dashboardEndpoint = depOptions.ResolvedEndpoints
-            .FirstOrDefault(e => string.Equals(e.Role, "Dashboard", StringComparison.OrdinalIgnoreCase))
-            ?? depOptions.ResolvedEndpoints.FirstOrDefault();
-        if (dashboardEndpoint != null)
+        var prefix = app.Services.GetRequiredService<IOptions<ReactUiOptions>>().Value.RoutePrefix;
+        var dashboardUrl = OperatorUrl.Resolve(app.Urls, depOptions.ResolvedEndpoints, prefix);
+        if (dashboardUrl is null) return;
+        Console.WriteLine($"  Dashboard:          {dashboardUrl}");
+        if (app.Environment.IsDevelopment()
+            && !app.Configuration.GetValue<bool>("Sample:Orchestrated")
+            && Environment.GetEnvironmentVariable("ASPNETCORE_AUTO_BROWSER") != "0")
         {
-            var dashUrl = $"http://localhost:{dashboardEndpoint.Port}/console";
-            var lifetime = app.Services.GetRequiredService<Microsoft.Extensions.Hosting.IHostApplicationLifetime>();
-            lifetime.ApplicationStarted.Register(() =>
+            try
             {
-                try
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
                 {
-                    Log.Information("Opening browser at {Url}", dashUrl);
-                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                    {
-                        FileName = dashUrl,
-                        UseShellExecute = true
-                    });
-                }
-                catch (Exception ex)
-                {
-                    Log.Warning(ex, "Failed to auto-open browser at {Url}", dashUrl);
-                }
-            });
-            Console.WriteLine($"  Browser:            will open {dashUrl} after Kestrel ready ...");
+                    FileName = dashboardUrl,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception error) { Log.Warning(error, "Failed to open browser at {Url}", dashboardUrl); }
         }
-    }
+    });
 
     Log.Information("Gateway started successfully (waiting for Kestrel to bind ports...)");
     await app.RunAsync();

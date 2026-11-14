@@ -25,24 +25,24 @@ Trust the development certificate through your platform's normal certificate set
 
 ## Credentials
 
-The AppHost generates `control-plane-password` and persists it in its user-secrets store.
+The AppHost generates `<TopologyId>-control-plane-password` and persists it in its user-secrets store.
 The gateway and registration clients receive it as a secret environment value.
 The username is `admin`. The local topology uses shared Basic authentication.
 Reveal the secret parameter in the Aspire dashboard when logging in.
 The AppHost never embeds the credential in process arguments or committed settings.
 
-Override the generated parameter through `Parameters:control-plane-password` in the AppHost's secret provider.
-For automation, inject `Parameters__control-plane-password` through the process environment.
+Override the generated parameter through `Parameters:<TopologyId>-control-plane-password` in the AppHost's secret provider.
+For automation, inject `Parameters__<TopologyId>-control-plane-password` through the process environment.
 Do not commit it or paste it into command arguments.
 
 ## Data and lifetime
 
-SQLite stays local. The primary database is `Wafish.AppHost/.data/gateway.db`.
-`GatewayDataDirectory` can specify another absolute directory.
+SQLite stays local. The primary database is `Wafish.AppHost/.data/default/gateway.db`.
+`GatewayDataDirectory` selects the base directory. Each topology uses its own child directory.
 The directory is ignored by Git and survives normal AppHost shutdown.
 An optional second gateway uses `gateway-secondary.db` in the same directory.
 Never run two AppHosts against the same gateway database simultaneously.
-Use distinct `GatewayDataDirectory` values for isolated runs.
+Use distinct `TopologyId` values for isolated runs.
 
 Stable `Gateway:Registration:InstanceId` values own each instance's destinations.
 Restart replaces that instance's addresses. Shutdown removes only its destinations.
@@ -130,3 +130,26 @@ Do not use `--force` for normal shutdown.
 
 Verified with Aspire CLI 13.6.4 and AppHost/hosting packages 13.6.5.
 See [verification evidence](../tests/Wafish.Regression/evidence/aspire/README.md).
+
+## Topology identity and restart checks
+
+`TopologyId` defaults to `default`. It starts with a lowercase letter and accepts lowercase letters, digits, and hyphens.
+Its maximum length is forty characters.
+Database directories, generated parameter names, Redis volumes, and SonarQube volumes include this identifier.
+A directory lock rejects simultaneous use of the same topology data directory.
+Normal shutdown releases the lock and preserves persisted state.
+
+```bash
+aspire start --apphost Wafish.AppHost/Wafish.AppHost.csproj --non-interactive -- --TopologyId=team-a
+```
+
+`--UseLegacyTopologyState=true` preserves the previous database path, parameter names, and volume names.
+This compatibility option requires `TopologyId=default`.
+Use it when reopening existing state. Startup never renames, migrates, or deletes existing volumes.
+Without this option, existing legacy state stays untouched and the new default topology starts separately.
+Aspire CLI `--isolated` also isolates its user-secrets store; use a stable normal session for credential persistence checks.
+
+Run `python scripts/check-topology.py` when the target AppHost is stopped.
+The check owns a temporary topology and verifies gateway, backend, and AppHost restarts.
+It checks persisted route identity, both registered backends, and unchanged generated credentials.
+It removes only its generated test parameter and temporary local directory.

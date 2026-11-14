@@ -45,3 +45,7 @@ For documentation-only changes, check links and Mermaid rendering instead of sta
 Update the README when behavior or scope changes.
 Keep future work in PLAN.md until its acceptance checks pass.
 Record implementation evidence when completing a plan item.
+
+Keep topology identifiers in database paths, generated parameter names, and optional volume names.
+Preserve explicit legacy compatibility and the exclusive directory lease.
+Run `scripts/check-topology.py` only when this AppHost is stopped. It owns its temporary topology.

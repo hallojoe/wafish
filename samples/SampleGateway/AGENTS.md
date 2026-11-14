@@ -44,3 +44,6 @@ For documentation-only changes, check links and Mermaid rendering instead of sta
 Update the README when behavior or scope changes.
 Keep future work in PLAN.md until its acceptance checks pass.
 Record implementation evidence when completing a plan item.
+
+Run `scripts/check-sample-https.py` for the standalone HTTPS recipe.
+Run it with `--image` for the non-root container smoke check. Keep asset verification enabled in container builds.

@@ -103,12 +103,13 @@ The workflow uploads coverage but never uploads the scanner working directory.
 
 ## Data and shutdown
 
-Aspire generates `sonar-db-password` and persists it in the AppHost user-secrets store.
+Aspire generates `<TopologyId>-sonar-db-password` and persists it in the AppHost user-secrets store.
 Retain this secret while retaining the PostgreSQL volume.
 Changing the parameter does not change the password inside an existing database.
 
-The named volumes are `wafish-sonar-postgres-data`, `wafish-sonarqube-data`,
-`wafish-sonarqube-extensions`, and `wafish-sonarqube-logs`.
+The named volumes are `wafish-<TopologyId>-sonar-postgres-data`, `wafish-<TopologyId>-sonarqube-data`,
+`wafish-<TopologyId>-sonarqube-extensions`, and `wafish-<TopologyId>-sonarqube-logs`.
+`UseLegacyTopologyState=true` retains the previous names without the topology identifier.
 They are separate from Besitos volumes and survive normal shutdown.
 Do not run multiple Wafish SonarQube instances against these volumes.
 

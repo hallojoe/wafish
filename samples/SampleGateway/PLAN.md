@@ -1,14 +1,16 @@
 # SampleGateway: proposed work
 
 Reviewed against source on 2026-11-14.
-All items below are TODO proposals, not implemented capabilities or scheduled commitments.
+Completed items include verification evidence. Remaining items are proposals.
 The [root execution plan](../../PLAN.md) remains the historical and cross-project record.
 
 ## Improvements not yet implemented
 
 ### IMP-01: Add a container smoke check
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [sample deployment](../../tests/Wafish.Regression/evidence/sample-deployment/README.md).
 
 Start the published image with temporary storage and injected credentials.
 
@@ -16,7 +18,9 @@ Acceptance: The non-root container serves readiness and authenticated administra
 
 ### IMP-02: Add a reproducible local HTTPS recipe
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [sample deployment](../../tests/Wafish.Regression/evidence/sample-deployment/README.md).
 
 Document certificates, trusted proxies, and secure-cookie behavior for a standalone host.
 
@@ -39,7 +43,9 @@ See [solution priorities and dependencies](../../DOTNET_REVIEW.md).
 
 ### IMP-03: Build operator URLs from effective configuration
 
-Status: TODO. Priority: P2. Type: sample mismatch.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [sample deployment](../../tests/Wafish.Regression/evidence/sample-deployment/README.md). Priority: P2. Type: sample mismatch.
 
 Evidence: [Program.cs](Program.cs), startup output and browser launch.
 

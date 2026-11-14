@@ -45,3 +45,10 @@ Use the [Aspire guide](../../docs/aspire.md) for the complete local topology.
 Use the [security guide](../../docs/security.md) before standalone access.
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+
+## Standalone HTTPS and container checks
+
+See the [HTTPS recipe](../../docs/sample-https.md) for certificate, authentication, proxy, and cookie checks.
+Startup prints the effective HTTPS authority and configured React UI prefix after Kestrel binds.
+Wildcard listeners produce localhost links. HTTP/2-only gRPC endpoints are excluded from browser links.
+Orchestrated hosts never open a browser automatically.

@@ -1,0 +1,7 @@
+8/8 Wafish.AppHost/AppHost.cs missing []
+6/8 Wafish.AppHost/SonarQubeHealthCheck.cs missing [13, 28]
+5/6 Wafish.AppHost/SonarQubeResources.cs missing [35]
+18/18 Wafish.AppHost/TopologyState.cs missing []
+14/14 samples/SampleGateway/OperatorUrl.cs missing []
+7/9 samples/SampleGateway/Program.cs missing [124, 128]
+TOTAL 58/63 = 92.06%

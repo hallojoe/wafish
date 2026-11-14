@@ -6,13 +6,13 @@ namespace Wafish.AppHost;
 
 internal static class SonarQubeResources
 {
-    public static IResourceBuilder<ContainerResource> AddSonarQube(this IDistributedApplicationBuilder builder)
+    public static IResourceBuilder<ContainerResource> AddSonarQube(this IDistributedApplicationBuilder builder, TopologyState topology)
     {
-        var password = builder.AddParameter("sonar-db-password",
+        var password = builder.AddParameter(topology.Parameter("sonar-db-password"),
             new GenerateParameterDefault { MinLength = 32 }, secret: true, persist: true);
         var postgres = builder.AddPostgres("sonar-postgres", password: password)
             .WithImageTag("18.1")
-            .WithDataVolume("wafish-sonar-postgres-data");
+            .WithDataVolume(topology.Volume("sonar-postgres-data"));
         var database = postgres.AddDatabase("sonar-db", "sonar");
         var endpoint = postgres.GetEndpoint("tcp");
 
@@ -22,9 +22,9 @@ internal static class SonarQubeResources
                 $"jdbc:postgresql://{endpoint.Property(EndpointProperty.Host)}:{endpoint.Property(EndpointProperty.Port)}/{database.Resource.DatabaseName}"))
             .WithEnvironment("SONAR_JDBC_USERNAME", postgres.Resource.UserNameReference)
             .WithEnvironment("SONAR_JDBC_PASSWORD", password)
-            .WithVolume("wafish-sonarqube-data", "/opt/sonarqube/data")
-            .WithVolume("wafish-sonarqube-extensions", "/opt/sonarqube/extensions")
-            .WithVolume("wafish-sonarqube-logs", "/opt/sonarqube/logs")
+            .WithVolume(topology.Volume("sonarqube-data"), "/opt/sonarqube/data")
+            .WithVolume(topology.Volume("sonarqube-extensions"), "/opt/sonarqube/extensions")
+            .WithVolume(topology.Volume("sonarqube-logs"), "/opt/sonarqube/logs")
             .WaitFor(database)
             .WithHealthCheck("sonarqube-ready");
 
@@ -32,7 +32,7 @@ internal static class SonarQubeResources
         builder.Services.AddHealthChecks().Add(new HealthCheckRegistration("sonarqube-ready",
             services => new SonarQubeHealthCheck(
                 services.GetRequiredService<IHttpClientFactory>(),
-                sonar.GetEndpoint("http")),
+                async cancellationToken => await sonar.GetEndpoint("http").GetValueAsync(cancellationToken)),
             failureStatus: HealthStatus.Unhealthy, tags: null, timeout: TimeSpan.FromSeconds(5)));
         return sonar;
     }

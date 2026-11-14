@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "suite": "main",
+  "cases": [
+    {
+      "name": "Sample deployment: topology identifiers isolate state, credentials, volumes, and restart locks",
+      "group": "sample-deployment",
+      "durationMs": 65.2597,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Sample deployment: Sonar readiness accepts only UP and bounds malformed or unavailable replies",
+      "group": "sample-deployment",
+      "durationMs": 163.7403,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Sample deployment: operator links follow bound HTTPS endpoints and custom UI prefixes",
+      "group": "sample-deployment",
+      "durationMs": 144.8708,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    }
+  ]
+}

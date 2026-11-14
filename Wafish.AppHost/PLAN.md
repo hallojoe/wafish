@@ -1,14 +1,16 @@
 # Wafish.AppHost: proposed work
 
 Reviewed against source on 2026-11-14.
-All items below are TODO proposals, not implemented capabilities or scheduled commitments.
+Completed items include verification evidence. Remaining items are proposals.
 The [root execution plan](../PLAN.md) remains the historical and cross-project record.
 
 ## Improvements not yet implemented
 
 ### IMP-01: Add topology restart checks
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [sample deployment](../tests/Wafish.Regression/evidence/sample-deployment/README.md).
 
 Verify persisted configuration, credentials, and backend registration after controlled restarts.
 
@@ -16,7 +18,9 @@ Acceptance: Restart checks retain state and recover both backend instances.
 
 ### IMP-02: Add permanent SonarQube health tests
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [sample deployment](../tests/Wafish.Regression/evidence/sample-deployment/README.md).
 
 Exercise startup, UP, malformed, timeout, and unavailable status responses.
 
@@ -39,7 +43,9 @@ See [solution priorities and dependencies](../DOTNET_REVIEW.md).
 
 ### IMP-03: Isolate persistent resources across local topologies
 
-Status: TODO. Priority: P2. Type: development isolation risk.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [sample deployment](../tests/Wafish.Regression/evidence/sample-deployment/README.md). Priority: P2. Type: development isolation risk.
 
 Evidence: [SonarQubeResources.cs](SonarQubeResources.cs) uses fixed named volumes.
 [AppHost.cs](AppHost.cs) provides a configurable gateway data directory.

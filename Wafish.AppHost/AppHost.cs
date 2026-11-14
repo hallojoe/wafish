@@ -3,16 +3,16 @@ using Aspire.Hosting.ApplicationModel;
 using Wafish.AppHost;
 
 var builder = DistributedApplication.CreateBuilder(args);
+var topology = TopologyState.Read(builder.Configuration, builder.AppHostDirectory);
+using var topologyLease = topology.Acquire();
 if (builder.Configuration.GetValue<bool>("EnableSonarQube"))
 {
-    builder.AddSonarQube();
+    builder.AddSonarQube(topology);
 }
 
-var password = builder.AddParameter("control-plane-password",
+var password = builder.AddParameter(topology.Parameter("control-plane-password"),
     new GenerateParameterDefault { MinLength = 32 }, secret: true, persist: true);
-var dataDirectory = Path.GetFullPath(builder.Configuration["GatewayDataDirectory"] ??
-    Path.Combine(builder.AppHostDirectory, ".data"));
-Directory.CreateDirectory(dataDirectory);
+var dataDirectory = topology.DataDirectory;
 
 // Direct loopback HTTP avoids HTTP/1 and h2c negotiation on one listener.
 // Production administration still requires HTTPS outside direct loopback access.
@@ -76,7 +76,9 @@ if (builder.Configuration.GetValue<bool>("EnableSecondGateway"))
 // The default topology needs no container runtime. Opt in with EnableRedis=true.
 if (builder.Configuration.GetValue<bool>("EnableRedis"))
 {
-    var redis = builder.AddRedis("rate-limit").WithDataVolume();
+    var redis = builder.AddRedis("rate-limit");
+    if (topology.Legacy) redis.WithDataVolume();
+    else redis.WithDataVolume(topology.Volume("rate-limit-data"));
     gateway.WithEnvironment("Gateway__RateLimit__Redis__ConnectionString", redis.Resource.ConnectionStringExpression)
         .WaitFor(redis);
     secondGateway?.WithEnvironment("Gateway__RateLimit__Redis__ConnectionString", redis.Resource.ConnectionStringExpression).WaitFor(redis);

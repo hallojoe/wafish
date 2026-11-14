@@ -48,6 +48,7 @@ await registry.DefineGroupAsync("fault-schedules", FaultScheduleChecks.RunAsync)
 await registry.DefineGroupAsync("protocol-properties", ProtocolPropertyChecks.RunAsync);
 await registry.DefineGroupAsync("benchmarks", BenchmarkReliabilityChecks.RunAsync);
 await registry.DefineGroupAsync("allocation-pressure", AllocationPressureChecks.RunAsync);
+await registry.DefineGroupAsync("sample-deployment", SampleDeploymentChecks.RunAsync);
 await registry.DefineGroupAsync("ui-fixtures", UiFixtureChecks.RunAsync);
 await registry.DefineGroupAsync("async-policy", AsyncConfigurationChecks.RunAsync);
 await registry.DefineGroupAsync("async-policy", RetryTimingChecks.RunAsync);

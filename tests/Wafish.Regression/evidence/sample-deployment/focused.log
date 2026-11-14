@@ -1,0 +1,8 @@
+dotnet-coverage v18.12.0.0 [linux-x64 - .NET 10.0.14]
+
+SessionId: 7c60098d-ecc3-415c-adca-79c9e23df932
+PASS: Sample deployment: topology identifiers isolate state, credentials, volumes, and restart locks
+PASS: Sample deployment: Sonar readiness accepts only UP and bounds malformed or unavailable replies
+PASS: Sample deployment: operator links follow bound HTTPS endpoints and custom UI prefixes
+All regression checks passed.
+Code coverage results: /tmp/wafish-priority12-focused.xml.

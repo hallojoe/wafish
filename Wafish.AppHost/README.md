@@ -54,3 +54,11 @@ See [topology options](../docs/aspire.md) and [SonarQube analysis](../docs/sonar
 The default topology needs no container runtime. Redis and SonarQube require one.
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+
+## Isolated persistent state
+
+`TopologyId` selects separate database directories, generated credentials, and optional container volumes.
+The default identifier is `default`. Use `UseLegacyTopologyState=true` to reopen previous state.
+The compatibility option requires the default identifier and never deletes existing volumes.
+Run `python scripts/check-topology.py` for controlled restart verification.
+SonarQube readiness accepts only an exact `UP` status. Invalid, unavailable, and timed-out responses remain unhealthy.

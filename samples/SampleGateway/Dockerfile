@@ -7,6 +7,7 @@ RUN npm run build
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
+COPY --from=frontend /usr/local/bin/node /usr/local/bin/node
 COPY . .
 COPY --from=frontend /wwwroot src/Wafish.ReactUi/wwwroot
 RUN dotnet publish samples/SampleGateway/SampleGateway.csproj -c Release -o /app/publish /p:UseAppHost=false /p:SkipReactBuild=true

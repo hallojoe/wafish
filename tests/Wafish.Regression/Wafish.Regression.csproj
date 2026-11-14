@@ -7,6 +7,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../../Wafish.AppHost/TopologyState.cs" Link="Samples/TopologyState.cs" />
+    <Compile Include="../../Wafish.AppHost/SonarQubeHealthCheck.cs" Link="Samples/SonarQubeHealthCheck.cs" />
+    <Compile Include="../../samples/SampleGateway/OperatorUrl.cs" Link="Samples/OperatorUrl.cs" />
     <Compile Include="../Wafish.Performance/Shared/*.cs" Link="Performance/%(Filename)%(Extension)" />
     <Compile Include="../Shared/RegressionReport.cs" Link="RegressionReport.cs" />
     <Compile Include="../Shared/RegressionCaseRegistry.cs" Link="RegressionCaseRegistry.cs" />
