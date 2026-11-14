@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
@@ -47,6 +49,8 @@ public sealed class RedisLuaRateLimitStore(ILogger<RedisLuaRateLimitStore> logge
                 "TOKENBUCKET" => [limit, windowSeconds, Math.Max(0, burstBalance)],
                 _ => throw new ArgumentException("Unsupported Redis rate-limit algorithm.")
             };
+            var policy = FormattableString.Invariant($"{name}:{limit}:{windowSeconds}:{Math.Max(0, burstBalance)}");
+            key += ":v2:" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(policy)));
             var script = name switch { "SLIDINGWINDOW" => SlidingWindowScript, "TOKENBUCKET" => TokenBucketScript, _ => FixedWindowScript };
             var reply = (RedisResult[]?)await multiplexer.GetDatabase().ScriptEvaluateAsync(script, [(RedisKey)key], values).WaitAsync(cancellationToken);
             if (reply is not { Length: 3 }) return DistributedRateLimitResult.Unavailable(limit);

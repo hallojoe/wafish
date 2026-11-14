@@ -49,6 +49,9 @@ public interface ICircuitStateStore
         string? clusterUid = null,
         CircuitBreakerConfig? config = null);
 
+    /// <summary>Own the selected destination attempt until completion or cancellation.</summary>
+    CircuitAttempt? TryAcquireAttempt(string clusterId, string destinationId, CircuitBreakerConfig config);
+
     /// <summary>Record a completed destination attempt for rolling failure-ratio evaluation.</summary>
     void RecordOutcome(
         string clusterId,
@@ -62,4 +65,12 @@ public interface ICircuitStateStore
 
     /// <summary>Remove stale closed circuits that haven't been accessed recently.</summary>
     void CleanupStale(TimeSpan threshold);
+}
+
+/// <summary>Completes at most once. Disposal releases an unfinished probe without recording an outcome.</summary>
+public sealed class CircuitAttempt(Action<bool?> finish) : IDisposable
+{
+    private Action<bool?>? _finish = finish;
+    public void Complete(bool failed) => Interlocked.Exchange(ref _finish, null)?.Invoke(failed);
+    public void Dispose() => Interlocked.Exchange(ref _finish, null)?.Invoke(null);
 }

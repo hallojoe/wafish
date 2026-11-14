@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -6,7 +7,7 @@ using WafIsh.Plugins;
 using WafIsh.Infrastructure.State;
 using WafIsh.Infrastructure.Resilience;
 using System.Buffers;
-using System.Text.Json;
+using Microsoft.AspNetCore.Http.Features;
 using WafIsh.Plugin.Retry;
 using WafIsh.Services;
 using Microsoft.IO;
@@ -21,17 +22,12 @@ namespace WafIsh.Plugin.Retry;
 /// Retries 502/503/504 responses with exponential backoff + jitter.
 /// Supports cross-destination retry and circuit-breaker awareness.
 /// 
-/// Memory optimization (v2.4): Uses RecyclableMemoryStream for request/response
-/// body buffering in retry loop — eliminates LOH fragmentation from repeated
-/// MemoryStream allocations. Also fixes ArrayPool.Rent + .ToArray() contradiction
-/// by storing the pooled buffer directly with a length marker.
+/// Replay requires a complete bounded request body. Response transmission ends retry eligibility.
 /// </summary>
 public sealed class RequestRetryMiddleware : GatewayMiddlewareBase
 {
     private readonly ILogger<RequestRetryMiddleware> _logger;
     private readonly GatewayPluginExecutionPlanProvider _executionPlans;
-    private readonly IDynamicYarpConfigService? _yarpConfig;
-    private readonly RecyclableMemoryStreamManager _memoryStreamManager;
     private readonly ICircuitStateStore _circuitStore;
     private readonly IDestinationCandidateCoordinator _destinationCoordinator;
 
@@ -53,11 +49,9 @@ public sealed class RequestRetryMiddleware : GatewayMiddlewareBase
         : base(next, dashOptions, pluginManager, yarpConfig)
     {
         _logger = logger;
-        _memoryStreamManager = memoryStreamManager;
         _circuitStore = circuitStore;
         _destinationCoordinator = destinationCoordinator;
         _executionPlans = executionPlans;
-        _yarpConfig = yarpConfig;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -90,229 +84,115 @@ public sealed class RequestRetryMiddleware : GatewayMiddlewareBase
             return;
         }
 
-        // Read and buffer the request body only when one is present.
-        byte[]? requestBodyBuffer = null;
-        var requestBodyLength = 0;
-        if (context.Request.ContentLength is > 0)
+        var originalRequestBody = context.Request.Body;
+        var originalLength = context.Request.ContentLength;
+        var originalPosition = originalRequestBody.CanSeek ? originalRequestBody.Position : (long?)null;
+        var canHaveBody = context.Features.Get<IHttpRequestBodyDetectionFeature>()?.CanHaveBody
+            ?? (originalLength is > 0 || originalLength is null && originalRequestBody != Stream.Null);
+        if (retryConfig.MaxRetries == 0 || context.Response.HasStarted ||
+            canHaveBody && (originalLength is null || originalLength > MaxRetryBodySizeBytes))
         {
-            context.Request.EnableBuffering();
-            var requestBodyResult = await ReadRequestBodyPooledAsync(context.Request);
-            requestBodyBuffer = requestBodyResult.Buffer;
-            requestBodyLength = requestBodyResult.Length;
+            await Next(context);
+            return;
         }
 
-        int attempt = 0;
-        int? lastStatusCode = null;
-        Stream? activeOriginalResponseBody = null;
-
+        byte[]? requestBuffer = null;
+        var attempt = 0;
+        var originalAborted = context.RequestAborted;
+        var originalFeature = context.Features.Get<IHttpResponseBodyFeature>()!;
+        var originalHeaders = context.Response.Headers.ToArray();
+        context.Response.OnStarting(() =>
+        {
+            if (attempt > 0) context.Response.Headers["X-Retry-Count"] = attempt.ToString();
+            return Task.CompletedTask;
+        });
         try
         {
-            while (attempt <= retryConfig.MaxRetries)
+            var length = (int)(originalLength ?? 0);
+            if (length > 0)
             {
-                if (proxyFeature is not null)
+                requestBuffer = ArrayPool<byte>.Shared.Rent(length);
+                using var preparationTimeout = CancellationTokenSource.CreateLinkedTokenSource(originalAborted);
+                preparationTimeout.CancelAfter(TimeSpan.FromSeconds(retryConfig.TimeoutSeconds));
+                var read = 0;
+                while (read < length)
                 {
-                    var candidates = await _destinationCoordinator.ApplyAsync(
-                        context,
-                        excludeAttempted: attempt > 0 && retryConfig.UseDifferentDestination,
-                        context.RequestAborted);
-                    if (candidates.Count == 0)
-                    {
-                        _logger.LogDebug("No healthy, closed, untried destination is available for retry");
-                        break;
-                    }
+                    var count = await originalRequestBody.ReadAsync(requestBuffer.AsMemory(read, length - read), preparationTimeout.Token);
+                    if (count == 0) throw new BadHttpRequestException("Incomplete request body", StatusCodes.Status400BadRequest);
+                    read += count;
                 }
+            }
 
-                // Restore request body from pooled buffer for each retry attempt
-                if (requestBodyBuffer != null)
+            while (true)
+            {
+                originalAborted.ThrowIfCancellationRequested();
+                var candidates = await _destinationCoordinator.ApplyAsync(context,
+                    attempt > 0 && retryConfig.UseDifferentDestination, originalAborted);
+                if (candidates.Count == 0)
                 {
-                    context.Request.Body = new MemoryStream(requestBodyBuffer, 0, requestBodyLength, writable: false);
-                    context.Request.ContentLength = requestBodyLength;
+                    context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+                    return;
                 }
-
-                var originalResponseBody = context.Response.Body;
-                activeOriginalResponseBody = originalResponseBody;
-                using var responseStream = _memoryStreamManager.GetStream("RequestRetry-ResponseBody");
-                context.Response.Body = responseStream;
-
-                Exception? attemptException = null;
-                using var attemptTimeout = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted);
-                attemptTimeout.CancelAfter(TimeSpan.FromSeconds(Math.Clamp(retryConfig.TimeoutSeconds, 1, 300)));
-                var originalRequestAborted = context.RequestAborted;
-                context.RequestAborted = attemptTimeout.Token;
+                using var replay = requestBuffer is null ? null : new MemoryStream(requestBuffer, 0, length, writable: false);
+                if (replay != null) context.Request.Body = replay;
+                using var response = new RetryResponseBody(context, originalFeature,
+                    status => attempt < retryConfig.MaxRetries && retryConfig.StatusCodes.Contains(status));
+                context.Features.Set<IHttpResponseBodyFeature>(response);
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(originalAborted);
+                timeout.CancelAfter(TimeSpan.FromSeconds(retryConfig.TimeoutSeconds));
+                context.RequestAborted = timeout.Token;
+                Exception? failure = null;
                 try
                 {
                     await Next(context);
+                    await response.FinishAsync(timeout.Token);
                 }
-                catch (Exception ex) when (retryConfig.RetryOnExceptions &&
-                                           attempt < retryConfig.MaxRetries &&
-                                           !originalRequestAborted.IsCancellationRequested)
+                catch (Exception ex) when (retryConfig.RetryOnExceptions && attempt < retryConfig.MaxRetries &&
+                    !originalAborted.IsCancellationRequested && !response.Committed && !context.Response.HasStarted)
                 {
-                    attemptException = ex;
+                    failure = ex;
                 }
                 finally
                 {
-                    context.RequestAborted = originalRequestAborted;
+                    context.RequestAborted = originalAborted;
+                    context.Features.Set(originalFeature);
                 }
 
-                responseStream.Seek(0, SeekOrigin.Begin);
+                var destination = proxyFeature?.ProxiedDestination;
+                _destinationCoordinator.MarkAttempted(context, destination);
 
-                lastStatusCode = attemptException is null ? context.Response.StatusCode : null;
-                var attemptedDestination = proxyFeature?.ProxiedDestination;
-                _destinationCoordinator.MarkAttempted(context, attemptedDestination);
-                if (attemptedDestination is not null && !string.IsNullOrEmpty(clusterId) &&
-                    _executionPlans.Current.CircuitBreakerByCluster.TryGetValue(clusterId, out var circuitConfig) &&
-                    circuitConfig.Enabled)
+
+                if (attempt >= retryConfig.MaxRetries || response.Committed || context.Response.HasStarted ||
+                    failure == null && !retryConfig.StatusCodes.Contains(context.Response.StatusCode))
                 {
-                    _circuitStore.RecordOutcome(
-                        clusterId,
-                        attemptedDestination.DestinationId,
-                        attemptException is not null || retryConfig.StatusCodes.Contains(context.Response.StatusCode),
-                        config: circuitConfig);
+                    if (attempt > 0 && !context.Response.HasStarted)
+                        context.Response.Headers["X-Retry-Count"] = attempt.ToString();
+                    await response.CommitAsync(originalAborted);
+                    return;
                 }
-
-                var shouldRetry = attempt < retryConfig.MaxRetries &&
-                                  (attemptException is not null || retryConfig.StatusCodes.Contains(context.Response.StatusCode));
-                if (shouldRetry)
-                {
-                    attempt++;
-                    var baseDelay = retryConfig.BackoffBaseMs * (1 << (attempt - 1));
-                    var jitter = retryConfig.JitterMs > 0 ? Random.Shared.Next(retryConfig.JitterMs) : 0;
-                    var delayMs = baseDelay + jitter;
-
-                    _logger.LogWarning(
-                        "Retry {Attempt}/{MaxRetries} for {Method} {Path} (status {StatusCode}, delay {Delay}ms)",
-                        attempt, retryConfig.MaxRetries, context.Request.Method, context.Request.Path,
-                        context.Response.StatusCode, delayMs);
-
-                    context.Response.Body = originalResponseBody;
-                    activeOriginalResponseBody = null;
-                    context.Response.StatusCode = 200;
-                    context.Response.Headers.Clear();
-
-                    if (retryConfig.UseDifferentDestination)
-                    {
-                        if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Debug))
-                        {
-                            _logger.LogDebug(
-                                "Cross-destination retry requested for {Method} {Path}; shared destination health is left unchanged",
-                                context.Request.Method, context.Request.Path);
-                        }
-                    }
-
-                    try
-                    {
-                        await Task.Delay(delayMs, context.RequestAborted);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Debug))
-                        {
-                            _logger.LogDebug("Retry cancelled by client disconnect for {Method} {Path}",
-                                context.Request.Method, context.Request.Path);
-                        }
-                        break;
-                    }
-                    continue;
-                }
-
-                responseStream.Seek(0, SeekOrigin.Begin);
-                await responseStream.CopyToAsync(originalResponseBody, context.RequestAborted);
-                context.Response.Body = originalResponseBody;
-                activeOriginalResponseBody = null;
-
-                if (attempt > 0)
-                {
-                    if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
-                    {
-                        _logger.LogInformation(
-                            "Request succeeded on attempt {Attempt} for {Method} {Path} (status {StatusCode})",
-                            attempt + 1, context.Request.Method, context.Request.Path, context.Response.StatusCode);
-                    }
-                }
-
-                break;
+                attempt++;
+                context.Response.StatusCode = StatusCodes.Status200OK;
+                context.Response.Headers.Clear();
+                foreach (var header in originalHeaders) context.Response.Headers[header.Key] = header.Value;
+                var delay = (long)retryConfig.BackoffBaseMs * (1 << (attempt - 1)) +
+                    (retryConfig.JitterMs > 0 ? Random.Shared.Next(retryConfig.JitterMs) : 0);
+                _logger.LogDebug("Retry attempt {Attempt} for route {Route}", attempt, routeConfig.RouteId);
+                await Task.Delay(TimeSpan.FromMilliseconds(Math.Min(delay, 300000)),
+                    context.RequestServices?.GetService<TimeProvider>() ?? TimeProvider.System, originalAborted);
             }
         }
         finally
         {
-            if (activeOriginalResponseBody != null)
-                context.Response.Body = activeOriginalResponseBody;
-
-            // Return the ArrayPool buffer to the pool (BUG-3 fix)
-            if (requestBodyBuffer != null)
-                ArrayPool<byte>.Shared.Return(requestBodyBuffer);
-        }
-
-        if (attempt > 0)
-        {
-            context.Response.Headers["X-Retry-Count"] = attempt.ToString();
+            context.Request.Body = originalRequestBody;
+            context.Request.ContentLength = originalLength;
+            context.RequestAborted = originalAborted;
+            context.Features.Set(originalFeature);
+            if (originalPosition.HasValue) originalRequestBody.Position = originalPosition.Value;
+            if (requestBuffer != null) ArrayPool<byte>.Shared.Return(requestBuffer, clearArray: true);
         }
     }
 
-    /// <summary>Maximum request body size for retry buffering. Prevents OOM from large uploads.</summary>
-    private const int MaxRetryBodySizeBytes = 1024 * 1024; // 1MB hard limit
-
-
-    /// <summary>
-    /// Read request body into a pooled buffer, returning the buffer and length directly.
-    /// Memory optimization (v2.4): No .ToArray() — stores pooled buffer + length marker.
-    /// The buffer is NOT returned to the pool during retry; it's reused for each attempt.
-    /// It will be GC'd naturally after the retry loop completes (acceptable trade-off for correctness).
-    /// </summary>
-    private async Task<RequestBodyBuffer> ReadRequestBodyPooledAsync(HttpRequest request)
-    {
-        if (request.ContentLength is null or 0)
-            return default;
-
-        // Hard size limit — prevents OOM on multi-GB uploads
-        if (request.ContentLength > MaxRetryBodySizeBytes)
-        {
-            if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Debug))
-            {
-                _logger.LogDebug("Request body ({Size} bytes) exceeds retry buffer limit ({Limit} bytes), skipping retry",
-                    request.ContentLength, MaxRetryBodySizeBytes);
-            }
-            return default;
-        }
-
-        request.Body.Position = 0;
-        var pool = ArrayPool<byte>.Shared;
-        var buffer = pool.Rent((int)request.ContentLength);
-        try
-        {
-            int read = 0;
-            int bytesRead;
-            while ((bytesRead = await request.Body.ReadAsync(buffer.AsMemory(read, (int)request.ContentLength - read))) > 0)
-            {
-                read += bytesRead;
-                if (read > MaxRetryBodySizeBytes) break;
-            }
-            // Reset position for downstream middleware
-            request.Body.Position = 0;
-            return new RequestBodyBuffer(buffer, read);
-        }
-        catch
-        {
-            // On error, return buffer to pool
-            pool.Return(buffer);
-            throw;
-        }
-    }
-
-    /// <summary>
-    /// Lightweight struct to carry pooled buffer + length (avoids async out parameter limitation).
-    /// </summary>
-    private readonly struct RequestBodyBuffer
-    {
-        public readonly byte[]? Buffer;
-        public readonly int Length;
-
-        public RequestBodyBuffer(byte[]? buffer, int length)
-        {
-            Buffer = buffer;
-            Length = length;
-        }
-    }
+    public const int MaxRetryBodySizeBytes = 1024 * 1024;
 
     private bool TryParseRetryConfig(string routeId, out ParsedRetryConfig config)
     {

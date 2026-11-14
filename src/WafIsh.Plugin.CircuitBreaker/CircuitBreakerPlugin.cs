@@ -22,7 +22,23 @@ public class CircuitBreakerPlugin : IGatewayPlugin
 
     public void ConfigureServices(IServiceCollection services, object? pluginOptions = null) { }
     public void ConfigureMiddleware(IApplicationBuilder app) { }
-    public void ConfigureProxyPipeline(IReverseProxyApplicationBuilder proxyPipeline) => proxyPipeline.UseMiddleware<CircuitBreakerMiddleware>();
+    public void ConfigureProxyPipeline(IReverseProxyApplicationBuilder proxyPipeline)
+    {
+        proxyPipeline.Use(async (context, next) =>
+        {
+            var feature = context.Features.Get<Yarp.ReverseProxy.Model.IReverseProxyFeature>();
+            var plans = context.RequestServices.GetRequiredService<WafIsh.Services.GatewayPluginExecutionPlanProvider>();
+            if (feature != null && plans.Current.CircuitBreakerByCluster.TryGetValue(feature.Cluster.Config.ClusterId, out var config) && config.Enabled)
+            {
+                var store = context.RequestServices.GetRequiredService<WafIsh.Infrastructure.State.ICircuitStateStore>();
+                feature.AvailableDestinations = feature.AvailableDestinations
+                    .Where(d => !store.IsCircuitOpen(feature.Cluster.Config.ClusterId, d.DestinationId)).ToArray();
+            }
+            await next();
+        });
+        proxyPipeline.UseLoadBalancing();
+        proxyPipeline.UseMiddleware<CircuitBreakerMiddleware>();
+    }
 
     public void ConfigureDashboard(IPluginDashboardBuilder builder) { }
 

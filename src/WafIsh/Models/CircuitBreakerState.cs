@@ -4,6 +4,8 @@ public enum CircuitStatus { Closed, Open, HalfOpen }
 
 public class CircuitState
 {
+    public int ActiveAttempts { get; set; }
+    public long Generation { get; set; }
     /// <summary>Per-circuit lock object for protecting all state transitions under concurrency.</summary>
     public readonly object SyncRoot = new();
     public string ClusterUid { get; set; } = string.Empty;
@@ -22,7 +24,7 @@ public class CircuitState
     public double FailureRatio { get; set; } = 0.5;
     public int MinimumThroughput { get; set; } = 10;
     public TimeSpan SamplingDuration { get; set; } = TimeSpan.FromSeconds(30);
-    public DateTime LastAccessedAt { get; set; } = DateTime.Now;
+    public DateTime LastAccessedAt { get; set; } = DateTime.UtcNow;
 
     public CircuitState(CircuitBreakerConfig? config = null)
     {

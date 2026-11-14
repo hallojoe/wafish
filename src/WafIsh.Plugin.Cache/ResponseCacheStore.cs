@@ -7,8 +7,11 @@ public sealed class ResponseCacheBudgetOptions
 }
 
 /// <summary>One budget covers stored entries, pending captures, and entries still being served after eviction.</summary>
-public sealed class ResponseCacheStore(IOptions<ResponseCacheBudgetOptions> options)
+public sealed class ResponseCacheStore(IOptions<ResponseCacheBudgetOptions> options, TimeProvider timeProvider)
 {
+    public ResponseCacheStore(IOptions<ResponseCacheBudgetOptions> options) : this(options, TimeProvider.System) { }
+    internal DateTimeOffset UtcNow => timeProvider.GetUtcNow();
+    internal TimeSpan Age(Entry entry) => timeProvider.GetElapsedTime(entry.StoredTimestamp);
     internal const int HeaderAllowance = 64 * 1024;
     private const int EntryOverhead = 1024;
     private readonly object _sync = new();
@@ -49,10 +52,10 @@ public sealed class ResponseCacheStore(IOptions<ResponseCacheBudgetOptions> opti
         lock (_sync)
         {
             if (!_entries.TryGetValue(key, out var entry)) return null;
-            var now = DateTimeOffset.UtcNow;
-            if (entry.Expires <= now) { Remove(key); return null; }
-            if ((maxAge is { } age && entry.InitialAge + (now - entry.StoredAt) > age) ||
-                (minFresh is { } fresh && entry.Expires - now < fresh)) return null;
+            var elapsed = Age(entry);
+            if (elapsed >= entry.Lifetime) { Remove(key); return null; }
+            if ((maxAge is { } age && entry.InitialAge + elapsed > age) ||
+                (minFresh is { } fresh && entry.Lifetime - elapsed < fresh)) return null;
             _lru.Remove(entry.Node!); _lru.AddLast(entry.Node!);
             entry.Readers++;
             return new ReadLease(this, entry);
@@ -66,7 +69,7 @@ public sealed class ResponseCacheStore(IOptions<ResponseCacheBudgetOptions> opti
         {
             if (generation != _generation || capture.Buffer == null) return false;
             Remove(key);
-            var entry = new Entry(capture.Buffer, length, status, headers, capture.Charge, lifetime, initialAge);
+            var entry = new Entry(capture.Buffer, length, status, headers, capture.Charge, lifetime, initialAge, timeProvider);
             capture.Transfer();
             entry.Node = _lru.AddLast(key);
             _entries[key] = entry;
@@ -87,15 +90,17 @@ public sealed class ResponseCacheStore(IOptions<ResponseCacheBudgetOptions> opti
     }
 
     internal sealed class Entry(byte[] body, int length, int status, Dictionary<string, string> headers,
-        long charge, TimeSpan lifetime, TimeSpan initialAge)
+        long charge, TimeSpan lifetime, TimeSpan initialAge, TimeProvider clock)
     {
         public byte[] Body { get; } = body;
         public int Length { get; } = length;
         public int Status { get; } = status;
         public IReadOnlyDictionary<string, string> Headers { get; } = headers;
         public long Charge { get; } = charge;
-        public DateTimeOffset StoredAt { get; } = DateTimeOffset.UtcNow;
-        public DateTimeOffset Expires { get; } = DateTimeOffset.UtcNow + lifetime;
+        public DateTimeOffset StoredAt { get; } = clock.GetUtcNow();
+        public long StoredTimestamp { get; } = clock.GetTimestamp();
+        public TimeSpan Lifetime { get; } = lifetime;
+        public DateTimeOffset Expires { get; } = clock.GetUtcNow() + lifetime;
         public TimeSpan InitialAge { get; } = initialAge;
         public LinkedListNode<string>? Node { get; set; }
         public int Readers { get; set; }

@@ -47,7 +47,7 @@ public sealed class DestinationCandidateCoordinator(
             }
 
             if (circuitConfig is not { Enabled: true } ||
-                circuitStateStore.TryAcquire(clusterId, destination.DestinationId, config: circuitConfig))
+                !circuitStateStore.IsCircuitOpen(clusterId, destination.DestinationId))
             {
                 candidates.Add(destination);
             }

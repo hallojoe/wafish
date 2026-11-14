@@ -13,6 +13,34 @@ namespace WafIsh.Dashboard.Infrastructure.State;
 public sealed class InMemoryCircuitStateStore : ICircuitStateStore
 {
     private readonly ConcurrentDictionary<string, CircuitState> _circuits = new();
+    private readonly TimeProvider _time;
+    private readonly System.Runtime.CompilerServices.ConditionalWeakTable<CircuitState, Timing> _timing = new();
+    public InMemoryCircuitStateStore() : this(TimeProvider.System) { }
+    public InMemoryCircuitStateStore(TimeProvider timeProvider) => _time = timeProvider;
+    private sealed class Timing
+    {
+        public DateTime OpenedAt, AccessedAt;
+        public long Opened, Accessed;
+        public Queue<long> Samples { get; } = new();
+    }
+    private TimeSpan OpenElapsed(CircuitState state)
+    {
+        var timing = _timing.GetOrCreateValue(state);
+        return timing.OpenedAt == state.OpenedAt && timing.OpenedAt != default
+            ? _time.GetElapsedTime(timing.Opened) : _time.GetUtcNow().UtcDateTime - state.OpenedAt.ToUniversalTime();
+    }
+    private void Touch(CircuitState state)
+    {
+        var timing = _timing.GetOrCreateValue(state);
+        state.LastAccessedAt = timing.AccessedAt = _time.GetUtcNow().UtcDateTime;
+        timing.Accessed = _time.GetTimestamp();
+    }
+    private void Open(CircuitState state)
+    {
+        var timing = _timing.GetOrCreateValue(state);
+        state.OpenedAt = timing.OpenedAt = _time.GetUtcNow().UtcDateTime;
+        timing.Opened = _time.GetTimestamp();
+    }
     private readonly object _stateLock = new();
 
     public int Count => _circuits.Count;
@@ -48,11 +76,9 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
     {
         foreach (var kv in _circuits)
         {
-            lock (_stateLock)
+            lock (kv.Value.SyncRoot)
             {
-                kv.Value.Status = CircuitStatus.Closed;
-                kv.Value.ConsecutiveFailures = 0;
-                kv.Value.HalfOpenRequests = 0;
+                ResetClosed(kv.Value);
             }
         }
     }
@@ -91,7 +117,7 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
         if (!_circuits.TryGetValue(key, out var state)) return false;
         lock (state.SyncRoot)
         {
-            return state.Status == CircuitStatus.Open && DateTime.Now - state.OpenedAt < state.RecoveryTimeout;
+            return state.Status == CircuitStatus.Open && OpenElapsed(state) < state.RecoveryTimeout;
         }
     }
 
@@ -110,10 +136,11 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
             state.ClusterKeySnapshot = clusterId;
             state.DestinationUid = ResolveDestinationUid(destinationId);
             state.DestinationKeySnapshot = destinationId;
-            state.LastAccessedAt = DateTime.Now;
+            Touch(state);
             if (state.Status == CircuitStatus.Open)
             {
-                if (DateTime.Now - state.OpenedAt < state.RecoveryTimeout) return false;
+                if (OpenElapsed(state) < state.RecoveryTimeout) return false;
+                state.Generation++;
                 state.Status = CircuitStatus.HalfOpen;
                 state.HalfOpenRequests = 0;
             }
@@ -125,6 +152,33 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
             }
 
             return true;
+        }
+    }
+
+    public CircuitAttempt? TryAcquireAttempt(string clusterId, string destinationId, CircuitBreakerConfig config)
+    {
+        var key = BuildCircuitKey(null, clusterId, destinationId);
+        lock (_stateLock)
+        {
+            if (!_circuits.ContainsKey(key) && _circuits.Count >= 10_000) return null;
+            var state = _circuits.GetOrAdd(key, _ => new CircuitState());
+            lock (state.SyncRoot)
+            {
+                if (!TryAcquire(clusterId, destinationId, config: config)) return null;
+                state.ActiveAttempts++;
+                var generation = state.Generation;
+                var probe = state.Status == CircuitStatus.HalfOpen;
+                return new CircuitAttempt(failed =>
+                {
+                    lock (state.SyncRoot)
+                    {
+                        state.ActiveAttempts--;
+                        if (generation != state.Generation || !_circuits.TryGetValue(key, out var current) || !ReferenceEquals(current, state)) return;
+                        if (failed.HasValue) RecordOutcome(clusterId, destinationId, failed.Value, config: config);
+                        else if (probe) state.HalfOpenRequests = Math.Max(0, state.HalfOpenRequests - 1);
+                    }
+                });
+            }
         }
     }
 
@@ -140,14 +194,15 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
         lock (state.SyncRoot)
         {
             if (config != null) state.ApplyConfig(config);
-            var now = DateTime.Now;
-            state.LastAccessedAt = now;
+            var now = _time.GetUtcNow().UtcDateTime;
+            Touch(state);
             if (state.Status == CircuitStatus.HalfOpen)
             {
                 if (failed)
                 {
+                    state.Generation++;
                     state.Status = CircuitStatus.Open;
-                    state.OpenedAt = now;
+                    Open(state);
                     state.HalfOpenRequests = 0;
                 }
                 else
@@ -160,29 +215,34 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
             if (state.Status != CircuitStatus.Closed) return;
             state.Samples.Enqueue((now, failed));
             if (failed) state.SampleFailures++;
-            var cutoff = now - state.SamplingDuration;
-            while (state.Samples.TryPeek(out var sample) && sample.Timestamp < cutoff)
+            var samples = _timing.GetOrCreateValue(state).Samples;
+            samples.Enqueue(_time.GetTimestamp());
+            while (state.Samples.TryPeek(out var sample) && samples.TryPeek(out var timestamp) && _time.GetElapsedTime(timestamp) > state.SamplingDuration)
             {
                 state.Samples.Dequeue();
+                samples.Dequeue();
                 if (sample.Failed) state.SampleFailures--;
             }
             state.ConsecutiveFailures = state.SampleFailures;
             if (state.Samples.Count >= state.MinimumThroughput &&
                 (double)state.SampleFailures / state.Samples.Count >= state.FailureRatio)
             {
+                state.Generation++;
                 state.Status = CircuitStatus.Open;
-                state.OpenedAt = now;
+                Open(state);
             }
         }
     }
 
-    private static void ResetClosed(CircuitState state)
+    private void ResetClosed(CircuitState state)
     {
+        state.Generation++;
         state.Status = CircuitStatus.Closed;
         state.ConsecutiveFailures = 0;
         state.HalfOpenRequests = 0;
         state.SampleFailures = 0;
         state.Samples.Clear();
+        _timing.GetOrCreateValue(state).Samples.Clear();
     }
 
     public IReadOnlyList<CircuitStateInfo> GetAllStateInfos()
@@ -208,19 +268,13 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
 
     public void CleanupStale(TimeSpan threshold)
     {
-        var now = DateTime.Now;
-        var keysToRemove = new List<string>();
-        foreach (var kv in _circuits)
-        {
-            if (kv.Value.Status == CircuitStatus.Closed &&
-                now - kv.Value.LastAccessedAt > threshold)
-            {
-                keysToRemove.Add(kv.Key);
-            }
-        }
-
-        foreach (var key in keysToRemove)
-            _circuits.TryRemove(key, out _);
+        var now = _time.GetUtcNow().UtcDateTime;
+        lock (_stateLock)
+            foreach (var pair in _circuits)
+                lock (pair.Value.SyncRoot)
+                    if (pair.Value.ActiveAttempts == 0 && pair.Value.Status == CircuitStatus.Closed && (_timing.TryGetValue(pair.Value, out var timing) && timing.AccessedAt == pair.Value.LastAccessedAt
+                        ? _time.GetElapsedTime(timing.Accessed) : now - pair.Value.LastAccessedAt.ToUniversalTime()) > threshold)
+                        _circuits.TryRemove(pair.Key, out _);
     }
 
     /// <summary>Acquires the internal lock for state mutations. Use sparingly.</summary>

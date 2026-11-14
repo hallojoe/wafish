@@ -28,8 +28,16 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
     private const int MaxLimiterCount = 2000;
     private static readonly TimeSpan DefaultCleanupInterval = TimeSpan.FromMinutes(5);
     private static readonly TimeSpan StaleLimiterThreshold = TimeSpan.FromMinutes(5);
-    private long _lastCleanupTicks = DateTime.Now.Ticks;
+    private readonly TimeProvider _time;
+    private long _lastCleanupTicks;
 
+    public RateLimitMiddleware(RequestDelegate next, ILogger<RateLimitMiddleware> logger,
+        IOptions<GatewayMiddlewareOptions> dashOptions, IGatewayPluginManager pluginManager,
+        IRateLimiterStore limiterStore, GatewayPluginExecutionPlanProvider executionPlans,
+        IDynamicYarpConfigService? yarpConfig = null)
+        : this(next, logger, dashOptions, pluginManager, limiterStore, executionPlans, TimeProvider.System, yarpConfig) { }
+
+    [Microsoft.Extensions.DependencyInjection.ActivatorUtilitiesConstructor]
     public RateLimitMiddleware(
         RequestDelegate next,
         ILogger<RateLimitMiddleware> logger,
@@ -37,9 +45,12 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
         IGatewayPluginManager pluginManager,
         IRateLimiterStore limiterStore,
         GatewayPluginExecutionPlanProvider executionPlans,
+        TimeProvider timeProvider,
         IDynamicYarpConfigService? yarpConfig = null)
         : base(next, dashOptions, pluginManager, yarpConfig)
     {
+        _time = timeProvider;
+        _lastCleanupTicks = _time.GetTimestamp();
         _logger = logger;
         _executionPlans = executionPlans;
         _limiterStore = limiterStore;
@@ -64,18 +75,18 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
         var routeKey = routeId;
         var routeScopeId = routeUid;
 
-        var partitionValue = GetPartitionValue(context, config.PartitionKey);
+        var partitionValue = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+            System.Text.Encoding.UTF8.GetBytes(GetPartitionValue(context, config.PartitionKey, routeUid.Length > 0 ? routeUid : routeId))));
 
         var configFingerprint = $"{config.Algorithm}:{config.PermitLimit}:{config.Window}:{config.QueueLimit}:{config.SegmentsPerWindow}:{config.TokenLimit}:{config.TokensPerPeriod}:{config.ReplenishmentPeriod}";
         var limiterKey = string.IsNullOrEmpty(routeScopeId)
             ? $"global:{partitionValue}:{configFingerprint}"
             : $"{routeScopeId}:{partitionValue}:{configFingerprint}";
 
-        var limiter = GetOrCreateLimiter(limiterKey, config);
+        TryCleanup();
+        using var lease = await _limiterStore.AcquireAsync(limiterKey, () => CreateLimiter(limiterKey, config), context.RequestAborted);
 
-        using var lease = await limiter.AcquireAsync(1, context.RequestAborted);
-
-        if (!lease.IsAcquired)
+        if (lease == null || !lease.IsAcquired)
         {
             var clientIp = GetClientIp(context) ?? "unknown";
             _logger.LogWarning(
@@ -129,15 +140,6 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
         return true;
     }
 
-    private RateLimiter GetOrCreateLimiter(string key, RouteRateLimitConfig config)
-    {
-        TryCleanup();
-
-        var entry = _limiterStore.GetOrAdd(key, () => CreateLimiter(key, config));
-        entry.LastAccessedAt = DateTime.Now;
-        return entry.Limiter;
-    }
-
     private static RateLimiter CreateLimiter(string key, RouteRateLimitConfig config)
     {
         var window = ParseTimeSpan(config.Window);
@@ -184,20 +186,20 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
     private void TryCleanup()
     {
         var lastTicks = Interlocked.Read(ref _lastCleanupTicks);
-        if (DateTime.Now.Ticks - lastTicks < DefaultCleanupInterval.Ticks)
+        if (_time.GetElapsedTime(lastTicks) < DefaultCleanupInterval)
             return;
 
-        Interlocked.Exchange(ref _lastCleanupTicks, DateTime.Now.Ticks);
+        Interlocked.Exchange(ref _lastCleanupTicks, _time.GetTimestamp());
         _limiterStore.Cleanup(StaleLimiterThreshold, MaxLimiterCount);
     }
 
-    private static string GetPartitionValue(HttpContext context, string partitionKey)
+    private static string GetPartitionValue(HttpContext context, string partitionKey, string routeId)
     {
         return partitionKey.ToLowerInvariant() switch
         {
             "ipaddress" => GetClientIp(context) ?? "unknown",
             "userid" => context.User?.Identity?.Name ?? "anonymous",
-            "route" => context.Request.Path.Value ?? "/",
+            "route" => routeId,
             "global" => "gateway-global",
             _ => GetClientIp(context) ?? "unknown"
         };

@@ -91,9 +91,9 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
             if (_output == null)
             {
                 if (!CanCompress(context, config)) await SelectAsync(false, cancellationToken);
+                else if (context.Response.ContentLength == null && config.MinResponseSize > 64 * 1024) await SelectAsync(false, cancellationToken);
                 else if (context.Response.ContentLength != null || (long)_count + buffer.Length >= config.MinResponseSize)
                     await SelectAsync(true, cancellationToken);
-                else if (config.MinResponseSize > 64 * 1024) await SelectAsync(false, cancellationToken);
                 else
                 {
                     _prefix ??= new byte[Math.Max(1, config.MinResponseSize)];

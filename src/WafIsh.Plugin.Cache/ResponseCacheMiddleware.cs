@@ -50,7 +50,7 @@ public sealed class ResponseCacheMiddleware(RequestDelegate next, ResponseCacheS
                 context.Response.StatusCode = entry.Status;
                 foreach (var header in entry.Headers) context.Response.Headers[header.Key] = header.Value;
                 context.Response.ContentLength = entry.Length;
-                context.Response.Headers.Age = Math.Max(0, (long)(entry.InitialAge + (DateTimeOffset.UtcNow - entry.StoredAt)).TotalSeconds).ToString(CultureInfo.InvariantCulture);
+                context.Response.Headers.Age = Math.Max(0, (long)(entry.InitialAge + cache.Age(entry)).TotalSeconds).ToString(CultureInfo.InvariantCulture);
                 if (request.Method != "HEAD") await context.Response.Body.WriteAsync(entry.Body.AsMemory(0, entry.Length), context.RequestAborted);
                 return;
             }
@@ -73,7 +73,7 @@ public sealed class ResponseCacheMiddleware(RequestDelegate next, ResponseCacheS
                 control is not { Public: true, Private: false, NoStore: false, NoCache: false }) return;
             var vary = context.Response.Headers.Vary.ToString().Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             if (vary.Any(h => h == "*" || ExcludedKeyHeaders.Contains(h))) return;
-            var now = DateTimeOffset.UtcNow;
+            var now = cache.UtcNow;
             var responseHeaders = context.Response.Headers;
             var age = TimeSpan.Zero;
             if (responseHeaders.ContainsKey("Age"))

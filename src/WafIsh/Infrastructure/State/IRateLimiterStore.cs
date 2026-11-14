@@ -8,16 +8,15 @@ namespace WafIsh.Infrastructure.State;
 /// </summary>
 public interface IRateLimiterStore
 {
-    /// <summary>Get or create a rate limiter wrapper for the given key.</summary>
-    RateLimiterEntry GetOrAdd(string key, Func<RateLimiter> factory);
+    /// <summary>Reserve a partition until the returned lease is disposed. Null means partition capacity is exhausted.</summary>
+    ValueTask<RateLimitLease?> AcquireAsync(string key, Func<RateLimiter> factory, CancellationToken cancellationToken = default);
 
     /// <summary>Current number of limiters.</summary>
     int Count { get; }
 
     /// <summary>
-    /// Evict stale entries (not accessed within <paramref name="staleThreshold"/>),
-    /// then if count still exceeds <paramref name="maxCount"/>, evict oldest half.
-    /// Disposes evicted limiters.
+    /// Evict stale, fully idle entries only. Active and queued leases retain their partitions.
+    /// The maxCount argument remains for compatibility; admission enforces the store capacity.
     /// </summary>
     void Cleanup(TimeSpan staleThreshold, int maxCount);
 }

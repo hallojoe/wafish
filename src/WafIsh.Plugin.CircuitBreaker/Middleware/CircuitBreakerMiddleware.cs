@@ -7,15 +7,13 @@ using WafIsh.Infrastructure.State;
 using WafIsh.Infrastructure.Resilience;
 using Yarp.ReverseProxy.Model;
 using WafIsh.Services;
-using WafIsh.Storage;
-using WafIsh.Models;
 
 namespace WafIsh.Plugin.CircuitBreaker;
 
 /// <summary>
 /// Per-destination circuit breaker middleware.
 /// Reads configuration from cluster-level CircuitBreakerConfig.
-/// Tracks consecutive failures and opens the circuit when threshold is reached.
+/// Tracks rolling failure ratios and owns selected destination probes.
 /// States: Closed → Open → HalfOpen → Closed.
 /// 
 /// Circuit state is managed via <see cref="ICircuitStateStore"/> (Singleton),
@@ -23,15 +21,12 @@ namespace WafIsh.Plugin.CircuitBreaker;
 /// </summary>
 public sealed class CircuitBreakerMiddleware : GatewayMiddlewareBase
 {
-    private const int MaxCircuitCount = 10_000;
 
-    private readonly ILogger<CircuitBreakerMiddleware> _logger;
+    private long _lastCleanup = Environment.TickCount64;
     private readonly GatewayPluginExecutionPlanProvider _executionPlans;
     private readonly ICircuitStateStore _circuitStore;
     private readonly IDestinationCandidateCoordinator _destinationCoordinator;
 
-    private static readonly TimeSpan _cleanupThreshold = TimeSpan.FromHours(3);
-    private long _lastCleanupTicks = DateTime.Now.Ticks;
 
     public CircuitBreakerMiddleware(
         RequestDelegate next,
@@ -44,7 +39,6 @@ public sealed class CircuitBreakerMiddleware : GatewayMiddlewareBase
         IDestinationCandidateCoordinator destinationCoordinator)
         : base(next, dashOptions, pluginManager, yarpConfig)
     {
-        _logger = logger;
         _executionPlans = executionPlans;
         _circuitStore = circuitStore;
         _destinationCoordinator = destinationCoordinator;
@@ -52,211 +46,33 @@ public sealed class CircuitBreakerMiddleware : GatewayMiddlewareBase
 
     public async Task InvokeAsync(HttpContext context)
     {
-        if (IsDashboardRequest(context))
+        var feature = context.Features.Get<IReverseProxyFeature>();
+        var clusterId = feature?.Cluster.Config.ClusterId;
+        if (IsDashboardRequest(context) || clusterId == null ||
+            !_executionPlans.Current.CircuitBreakerByCluster.TryGetValue(clusterId, out var config) || !config.Enabled)
         {
             await Next(context);
             return;
         }
-
-        var proxyFeature = context.Features.Get<IReverseProxyFeature>();
-        var clusterId = proxyFeature?.Cluster?.Config?.ClusterId;
-
-        if (string.IsNullOrWhiteSpace(clusterId) ||
-            !TryGetBindingConfig(clusterId, out var clusterUid, out var cbConfig))
-        {
-            await Next(context);
-            return;
-        }
-
-        var candidates = await _destinationCoordinator.ApplyAsync(context, excludeAttempted: false, context.RequestAborted);
-        if (candidates.Count == 0)
+        var now = Environment.TickCount64;
+        var last = Interlocked.Read(ref _lastCleanup);
+        if (now - last > 10_800_000 && Interlocked.CompareExchange(ref _lastCleanup, now, last) == last)
+            _circuitStore.CleanupStale(TimeSpan.FromHours(3));
+        var destination = feature!.AvailableDestinations.Count == 1 ? feature.AvailableDestinations[0] : null;
+        using var attempt = destination == null ? null : _circuitStore.TryAcquireAttempt(clusterId, destination.DestinationId, config);
+        if (attempt == null)
         {
             context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-            await context.Response.WriteAsJsonAsync(new
-            {
-                error = "ServiceUnavailable",
-                message = $"No healthy destination with a closed circuit is available for cluster '{clusterId}'."
-            }, cancellationToken: context.RequestAborted);
             return;
         }
-
-        var destinationId = proxyFeature?.ProxiedDestination?.DestinationId;
-        var circuitKey = CircuitKeyHelper.BuildCircuitKey(clusterId, clusterUid, destinationId);
-
-        if (_circuitStore.Count >= MaxCircuitCount && !_circuitStore.ContainsKey(circuitKey))
-        {
-            _logger.LogWarning("Circuit count limit reached ({Max}), skipping new circuit for {CircuitKey}",
-                MaxCircuitCount, circuitKey);
-            await Next(context);
-            return;
-        }
-
-        var state = _circuitStore.GetOrAdd(circuitKey, _ => new CircuitState(cbConfig));
-        state.ApplyConfig(cbConfig);
-        state.ClusterUid = clusterUid ?? StableUid.FromKey("cluster", clusterId);
-        state.ClusterKeySnapshot = clusterId;
-        state.DestinationUid = CircuitKeyHelper.ResolveDestinationUid(destinationId);
-        state.DestinationKeySnapshot = destinationId ?? "any";
-        // F3 fix: LastAccessedAt is now only written inside the lock in UpdateCircuitState (finally block).
-        // The previous unprotected write here raced with the locked write.
-
-        TryCleanupStaleCircuits();
-
-        // All state transitions are protected by a per-circuit lock to prevent race conditions.
-        // We determine the action to take inside the lock, then execute it outside the lock.
-        CircuitAction action;
-        lock (state.SyncRoot)
-        {
-            if (state.Status == CircuitStatus.Open)
-            {
-                if (DateTime.Now < state.OpenedAt + state.RecoveryTimeout)
-                {
-                    _logger.LogWarning(
-                        "Circuit OPEN for {CircuitKey} (recovery at {RecoveryAt})",
-                        circuitKey, state.OpenedAt + state.RecoveryTimeout);
-                    action = CircuitAction.RejectOpen;
-                }
-                else
-                {
-                    state.Status = CircuitStatus.HalfOpen;
-                    state.HalfOpenRequests = 0;
-                    if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
-                    {
-                        _logger.LogInformation("Circuit HALF-OPEN for {CircuitKey}", circuitKey);
-                    }
-                    action = CircuitAction.Proceed;
-                }
-            }
-            else if (state.Status == CircuitStatus.HalfOpen)
-            {
-                if (state.HalfOpenRequests >= state.MaxHalfOpenAttempts)
-                {
-                    action = CircuitAction.RejectHalfOpen;
-                }
-                else
-                {
-                    state.HalfOpenRequests++;
-                    action = CircuitAction.Proceed;
-                }
-            }
-            else
-            {
-                action = CircuitAction.Proceed;
-            }
-        }
-
-        if (action == CircuitAction.RejectOpen)
-        {
-            context.Response.StatusCode = 503;
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsJsonAsync(new
-            {
-                error = "ServiceUnavailable",
-                message = $"Circuit breaker open for cluster '{clusterId}'. Retry later."
-            }, cancellationToken: context.RequestAborted);
-            return;
-        }
-
-        if (action == CircuitAction.RejectHalfOpen)
-        {
-            context.Response.StatusCode = 503;
-            context.Response.ContentType = "application/json";
-            context.Response.Headers.RetryAfter = "5";
-            await context.Response.WriteAsJsonAsync(new
-            {
-                error = "ServiceUnavailable",
-                message = $"Circuit breaker half-open for cluster '{clusterId}'."
-            }, cancellationToken: context.RequestAborted);
-            return;
-        }
-
         try
         {
             await Next(context);
+            if (!context.RequestAborted.IsCancellationRequested)
+                attempt.Complete(config.FailureStatusCodes.Contains(context.Response.StatusCode) || context.Response.StatusCode >= 500);
         }
-        finally
-        {
-            var actualDestination = proxyFeature?.ProxiedDestination;
-            if (actualDestination is not null)
-            {
-                _destinationCoordinator.MarkAttempted(context, actualDestination);
-                var failed = cbConfig.FailureStatusCodes.Contains(context.Response.StatusCode) || context.Response.StatusCode >= 500;
-                _circuitStore.RecordOutcome(clusterId, actualDestination.DestinationId, failed, clusterUid, cbConfig);
-            }
-            else
-            {
-                UpdateCircuitState(state, circuitKey, context.Response.StatusCode, cbConfig);
-            }
-        }
-    }
-
-    private bool TryGetBindingConfig(
-        string clusterId,
-        out string? clusterUid,
-        out CircuitBreakerConfig config)
-    {
-        clusterUid = null;
-        config = null!;
-
-        if (!_executionPlans.Current.CircuitBreakerByCluster.TryGetValue(clusterId, out var resolved) || !resolved.Enabled)
-            return false;
-
-        config = resolved;
-        return true;
-    }
-
-    private void UpdateCircuitState(CircuitState state, string circuitKey, int statusCode, CircuitBreakerConfig cbConfig)
-    {
-        var isFailure = cbConfig.FailureStatusCodes.Contains(statusCode) || statusCode >= 500;
-
-        lock (state.SyncRoot)
-        {
-            state.LastAccessedAt = DateTime.Now;
-
-            if (isFailure)
-            {
-                state.ConsecutiveFailures++;
-
-                if (state.Status == CircuitStatus.HalfOpen)
-                {
-                    state.Status = CircuitStatus.Open;
-                    state.OpenedAt = DateTime.Now;
-                    _logger.LogWarning("Circuit HALF-OPEN probe FAILED for {CircuitKey}, back to OPEN", circuitKey);
-                }
-                else if (state.ConsecutiveFailures >= state.FailureThreshold)
-                {
-                    state.Status = CircuitStatus.Open;
-                    state.OpenedAt = DateTime.Now;
-                    _logger.LogWarning("Circuit OPENED for {CircuitKey} after {Failures} failures", circuitKey, state.ConsecutiveFailures);
-                }
-            }
-            else
-            {
-                if (state.Status == CircuitStatus.HalfOpen)
-                {
-                    state.Status = CircuitStatus.Closed;
-                    state.ConsecutiveFailures = 0;
-                    if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
-                    {
-                        _logger.LogInformation("Circuit CLOSED for {CircuitKey}", circuitKey);
-                    }
-                }
-                else
-                {
-                    state.ConsecutiveFailures = 0;
-                }
-            }
-        }
-    }
-
-    private void TryCleanupStaleCircuits()
-    {
-        var now = DateTime.Now;
-        var lastTicks = Interlocked.Read(ref _lastCleanupTicks);
-        if (now - new DateTime(lastTicks, DateTimeKind.Local) < _cleanupThreshold)
-            return;
-
-        Interlocked.Exchange(ref _lastCleanupTicks, now.Ticks);
-        _circuitStore.CleanupStale(_cleanupThreshold);
+        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested) { throw; }
+        catch { attempt.Complete(true); throw; }
+        finally { _destinationCoordinator.MarkAttempted(context, feature.ProxiedDestination); }
     }
 }
