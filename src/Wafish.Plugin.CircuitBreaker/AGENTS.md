@@ -44,3 +44,5 @@ For documentation-only changes, check links and Mermaid rendering instead of sta
 Update the README when behavior or scope changes.
 Keep future work in PLAN.md until its acceptance checks pass.
 Record implementation evidence when completing a plan item.
+
+Sample recovery jitter once per opening. Run `--group need-six` for bounded monotonic recovery deadlines.

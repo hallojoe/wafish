@@ -14,13 +14,20 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
 {
     private readonly ConcurrentDictionary<string, CircuitState> _circuits = new();
     private readonly TimeProvider _time;
+    private readonly Random _random;
     private readonly System.Runtime.CompilerServices.ConditionalWeakTable<CircuitState, Timing> _timing = new();
     public InMemoryCircuitStateStore() : this(TimeProvider.System) { }
-    public InMemoryCircuitStateStore(TimeProvider timeProvider) => _time = timeProvider;
+    public InMemoryCircuitStateStore(TimeProvider timeProvider) : this(timeProvider, Random.Shared) { }
+    public InMemoryCircuitStateStore(TimeProvider timeProvider, Random random)
+    {
+        _time = timeProvider;
+        _random = random;
+    }
     private sealed class Timing
     {
         public DateTime OpenedAt, AccessedAt;
         public long Opened, Accessed;
+        public TimeSpan RecoveryDelay;
         public Queue<long> Samples { get; } = new();
     }
     private TimeSpan OpenElapsed(CircuitState state)
@@ -28,6 +35,12 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
         var timing = _timing.GetOrCreateValue(state);
         return timing.OpenedAt == state.OpenedAt && timing.OpenedAt != default
             ? _time.GetElapsedTime(timing.Opened) : _time.GetUtcNow().UtcDateTime - state.OpenedAt.ToUniversalTime();
+    }
+    private TimeSpan RecoveryDelay(CircuitState state)
+    {
+        var timing = _timing.GetOrCreateValue(state);
+        return timing.OpenedAt == state.OpenedAt && timing.OpenedAt != default
+            ? timing.RecoveryDelay : state.RecoveryTimeout;
     }
     private void Touch(CircuitState state)
     {
@@ -40,6 +53,9 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
         var timing = _timing.GetOrCreateValue(state);
         state.OpenedAt = timing.OpenedAt = _time.GetUtcNow().UtcDateTime;
         timing.Opened = _time.GetTimestamp();
+        double jitter;
+        lock (_random) jitter = state.RecoveryJitterSeconds == 0 ? 0 : _random.NextDouble() * state.RecoveryJitterSeconds;
+        timing.RecoveryDelay = state.RecoveryTimeout + TimeSpan.FromSeconds(jitter);
     }
     private readonly object _stateLock = new();
 
@@ -126,7 +142,7 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
 
         lock (state.SyncRoot)
         {
-            return state.Status == CircuitStatus.Open && OpenElapsed(state) < state.RecoveryTimeout;
+            return state.Status == CircuitStatus.Open && OpenElapsed(state) < RecoveryDelay(state);
         }
     }
 
@@ -152,7 +168,7 @@ public sealed class InMemoryCircuitStateStore : ICircuitStateStore
             Touch(state);
             if (state.Status == CircuitStatus.Open)
             {
-                if (OpenElapsed(state) < state.RecoveryTimeout)
+                if (OpenElapsed(state) < RecoveryDelay(state))
                 {
                     return false;
                 }

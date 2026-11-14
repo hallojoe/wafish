@@ -32,7 +32,9 @@ Acceptance: The configured probe limit is never exceeded.
 
 ### FEAT-01: Add configurable recovery jitter
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: Release regression build and `--group need-six`; deterministic jitter and probe-limit checks pass.
 
 Spread recovery probes across replicas after a shared outage.
 

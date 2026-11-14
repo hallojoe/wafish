@@ -14,6 +14,9 @@ public class CircuitBreakerConfig
     /// <summary>Seconds before attempting recovery. Default: 30.</summary>
     public int RecoveryTimeoutSeconds { get; set; } = 30;
 
+    /// <summary>Maximum extra recovery delay in seconds. Range: 0–300. Default: 0.</summary>
+    public int RecoveryJitterSeconds { get; set; }
+
     /// <summary>Max requests allowed in half-open state. Default: 1.</summary>
     public int HalfOpenMaxAttempts { get; set; } = 1;
 

@@ -16,6 +16,7 @@ public class CircuitState
     public int ConsecutiveFailures { get; set; }
     public int FailureThreshold { get; set; }
     public TimeSpan RecoveryTimeout { get; set; }
+    public int RecoveryJitterSeconds { get; set; }
     public int MaxHalfOpenAttempts { get; set; }
     public DateTime OpenedAt { get; set; }
     public int HalfOpenRequests { get; set; }
@@ -35,6 +36,7 @@ public class CircuitState
     {
         FailureThreshold = config.FailureThreshold > 0 ? config.FailureThreshold : 5;
         RecoveryTimeout = TimeSpan.FromSeconds(config.RecoveryTimeoutSeconds > 0 ? config.RecoveryTimeoutSeconds : 30);
+        RecoveryJitterSeconds = Math.Clamp(config.RecoveryJitterSeconds, 0, 300);
         MaxHalfOpenAttempts = config.HalfOpenMaxAttempts > 0 ? config.HalfOpenMaxAttempts : 1;
         FailureRatio = config.FailureRatio is > 0 and <= 1 ? config.FailureRatio : 0.5;
         MinimumThroughput = config.MinimumThroughput > 0 ? config.MinimumThroughput : 10;

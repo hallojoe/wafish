@@ -66,3 +66,10 @@ Controlled-time tests cover recovery without wall-clock delays.
 Contention checks admit exactly four probes from each wave of 128 competing requests.
 Cancelled probes release capacity without recording success or failure.
 See [lifetime stress evidence](../../tests/Wafish.Regression/evidence/lifetime-stress/README.md).
+
+## Recovery jitter
+
+`recoveryJitterSeconds` adds a random delay from zero to the configured maximum.
+The default is zero. The maximum is 300 seconds.
+Each opening samples once. Polling and configuration changes cannot extend an existing recovery deadline.
+A failed recovery probe starts a new delay. Probe limits still apply.
