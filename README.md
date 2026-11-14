@@ -23,7 +23,7 @@ Plugin Architecture · Dashboard · Dynamic Routing · WAF · Service Discovery 
 
 **Wafish** is a production-ready API gateway built on [Microsoft YARP](https://microsoft.github.io/reverse-proxy/) 2.3.0. It ships with everything you'd otherwise build yourself: a **plugin architecture** (11 built-in plugins), a visual **management dashboard**, WAF, AI assistant, multi-provider **service discovery**, notifications, health & circuit-breaker monitoring, and **one-line client auto-registration**.
 
-[📖 Documentation](https://yarp.aneiang.com/docs/index.html#overview) · [🚀 Live Demo](https://yarp-test.aneiang.com/aneiang) (credentials supplied by the demo operator)
+[Documentation](#documentation) · [Quick Start](#quick-start)
 
 ---
 
@@ -44,32 +44,43 @@ Plugin Architecture · Dashboard · Dynamic Routing · WAF · Service Discovery 
 
 ## Architecture
 
+```mermaid
+flowchart LR
+    clients["Proxy clients"]
+    operators["Operators"]
+    services["Backend services"]
+    registries["Service registries"]
+
+    subgraph gateway["Wafish Gateway"]
+        ui["React dashboard"]
+        admin["Administration API"]
+        registration["REST / gRPC registration"]
+        config["Configuration and snapshots"]
+        discovery["Service discovery"]
+        pipeline["Runtime plugin pipeline"]
+        proxy["YARP reverse proxy"]
+        storage[("SQLite storage")]
+
+        ui --> admin
+        admin --> config
+        registration --> config
+        discovery --> config
+        config <--> storage
+        config -.->|Active routes and destinations| proxy
+        config -.->|Plugin bindings| pipeline
+        pipeline --> proxy
+    end
+
+    operators --> ui
+    clients --> pipeline
+    services -->|Wafish.Client| registration
+    registries --> discovery
+    proxy --> services
 ```
-                   +-----------------------------------------------------------+
-                   |                 Wafish Gateway (YARP 2.3.0)          |
- +-------------+   |   +------------------+  +-------------------------------+  |
- |  5+ clients  |   |   |  Web Dashboard   |  |  Management API + gRPC host   |  |
- |  (browsers/   |   |   |  Routes/Plugins  |  |  Client auto-registration     |  |
- |   apps)       |-->|   |  WAF / AI / 2FA  |  |                               |  |
- +-------------+   |   +--------+----------+  +--------------+----------------+  |
-                   |            +------------------------------------------------+ |
-                   |            |                                                  |
-                   |   +--------v---------+                                    | |
-                   |   |  Plugin Pipeline(11 built-in plugins)                     | |
-                   |   |  WAF → RateLimit → Retry → CircuitBreaker →            | |
-                   |   |  Compression → Cache → Metrics → ProxyLog              | |
-                   |   +--------+---------+                                    | |
-                   |            +------------------------------------------------+ |
-                   |            |                                                  |
-                   |   +--------v---------+   +-------------------------------+  |
-                   |   |  YARP Reverse Proxy | → | Target services / clusters |  |
-                   |   |  (dynamic routes)  |   |  (via Service Discovery)    |  |
-                   |   +--------+---------+   +-------------------------------+  |
-                   |            |
-                   |   +--------v--------+
-                   |   |  Storage: SQLite (optional encryption) |
-                   +-----------------------------------------------------------+
-```
+
+The host selects runtime, administration, UI, and storage components.
+Plugins provide WAF, rate limits, retry, circuit breaking, caching, compression, metrics, and request logs.
+See [package boundaries and hosting APIs](docs/architecture.md).
 
 ---
 
@@ -159,7 +170,7 @@ app.MapWafishReactUi();
 app.Run();
 ```
 
-> Full step-by-step guide: [Quick Start](https://yarp.aneiang.com/docs/index.html#quickstart)
+> See the [sample gateway](samples/SampleGateway/README.md) and [HTTPS setup](docs/sample-https.md).
 
 ---
 
@@ -191,17 +202,17 @@ Install the .NET 10 SDK to build this repository. Use the .NET 10 ASP.NET Core r
 
 | Area | What you get | Detail |
 |:-----|:-------------|:-------|
-| **Routing** | Dynamic clusters & routes, drag-sort priority, dual form/JSON editor, import/export, snapshot & rollback, audit log | [:link:](https://yarp.aneiang.com/docs/index.html#dynamic-routing) |
-| **Authentication** | `None` / `DefaultJwt` / `CustomJwt` / `ApiKey` / custom delegate; TOTP **2FA** | [:link:](https://yarp.aneiang.com/docs/index.html#authentication) |
-| **Security** | WAF: IP allow/deny, SQLi / XSS / path-traversal detection, request limits, security headers | [:link:](https://yarp.aneiang.com/docs/index.html#waf-firewall) |
-| **Observability** | Request logs (TraceID pairing, sanitization, sampling), real-time WebSocket stream | [:link:](https://yarp.aneiang.com/docs/index.html#request-logs) |
-| **Monitoring** | Request / latency / status metrics (P50/P90/P99), health checks, circuit-breaker panel | [:link:](https://yarp.aneiang.com/docs/index.html#health-check) |
-| **Notification** | Webhook channels (DingTalk / HTTP), event rules with cooldown, delivery history | [:link:](https://yarp.aneiang.com/docs/index.html#notifications) |
-| **AI Assistant** | Chat-based management, 40 tools, read/write permission split, streaming, multi-provider | [:link:](https://yarp.aneiang.com/docs/index.html#ai-assistant) |
-| **IP Isolation** | Route requests to a specific developer's instance by client IP for collaborative debugging | [:link:](https://yarp.aneiang.com/docs/index.html#ip-isolation) |
-| **Client SDK** | Auto-register / unregister, heartbeat recovery, `GetServicesAsync` / `UpdateDestinationsAsync` | [:link:](https://yarp.aneiang.com/docs/index.html#client-registration) |
-| **Extensibility** | `IGatewayPlugin` contract, plugin-center management, hot-reconfigured bindings | [:link:](https://yarp.aneiang.com/docs/index.html#plugin-system) |
-| **Config safety** | Auto-snapshot, rollback, `GET /api/config/apply-errors`, optional encrypted SQLite storage | [:link:](https://yarp.aneiang.com/docs/index.html#config-history) |
+| **Routing** | Dynamic clusters & routes, drag-sort priority, dual form/JSON editor, import/export, snapshot & rollback, audit log | [Guide](src/Wafish/README.md) |
+| **Authentication** | `None` / `DefaultJwt` / `CustomJwt` / `ApiKey` / custom delegate; TOTP **2FA** | [Guide](docs/security.md) |
+| **Security** | WAF: IP allow/deny, SQLi / XSS / path-traversal detection, request limits, security headers | [Guide](src/Wafish.Plugin.Waf/README.md) |
+| **Observability** | Request logs (TraceID pairing, sanitization, sampling), real-time WebSocket stream | [Guide](src/Wafish.Plugin.ProxyLog/README.md) |
+| **Monitoring** | Request / latency / status metrics (P50/P90/P99), health checks, circuit-breaker panel | [Guide](src/Wafish.Plugin.Metrics/README.md) |
+| **Notification** | Webhook channels (DingTalk / HTTP), event rules with cooldown, delivery history | [Guide](src/Wafish.Administration/README.md) |
+| **AI Assistant** | Chat-based management, 40 tools, read/write permission split, streaming, multi-provider | [Guide](src/Wafish.Administration/README.md) |
+| **IP Isolation** | Route requests to a specific developer's instance by client IP for collaborative debugging | [Guide](src/Wafish/README.md) |
+| **Client SDK** | Auto-register / unregister, heartbeat recovery, `GetServicesAsync` / `UpdateDestinationsAsync` | [Guide](src/Wafish.Client/README.md) |
+| **Extensibility** | `IGatewayPlugin` contract, plugin-center management, hot-reconfigured bindings | [Guide](src/Wafish.Plugin.Abstractions/README.md) |
+| **Config safety** | Auto-snapshot, rollback, `GET /api/config/apply-errors`, optional encrypted SQLite storage | [Guide](docs/architecture.md#configuration-transactions-arch-06-and-arch-07) |
 
 ---
 
@@ -242,18 +253,16 @@ Config: `Mode` (default `Static`), `Endpoint`, `ServiceName`, `Namespace` (`defa
 
 ## Documentation
 
-Full documentation lives at **[yarp.aneiang.com](https://yarp.aneiang.com)**.
+Documentation is maintained in this repository.
 
-- **Getting Started** — [Overview](https://yarp.aneiang.com/docs/index.html#overview) · [Quick Start](https://yarp.aneiang.com/docs/index.html#quickstart)
-- **Gateway Core** — [Authentication](https://yarp.aneiang.com/docs/index.html#authentication) · [Dynamic Routing](https://yarp.aneiang.com/docs/index.html#dynamic-routing) · [IP Isolation](https://yarp.aneiang.com/docs/index.html#ip-isolation) · [Configuration Reference](https://yarp.aneiang.com/docs/index.html#configuration)
-- **Dashboard** — [Dashboard Overview](https://yarp.aneiang.com/docs/index.html#dashboard-overview) · [Config History](https://yarp.aneiang.com/docs/index.html#config-history)
-- **Security** — [WAF Firewall](https://yarp.aneiang.com/docs/index.html#waf-firewall) · [Policy Management](https://yarp.aneiang.com/docs/index.html#policy-management)
-- **Monitoring** — [Health Check](https://yarp.aneiang.com/docs/index.html#health-check) · [Circuit Breaker](https://yarp.aneiang.com/docs/index.html#circuit-breaker) · [Rate Limiting](https://yarp.aneiang.com/docs/index.html#rate-limiting) · [Request Logs](https://yarp.aneiang.com/docs/index.html#request-logs) · [Request Retry](https://yarp.aneiang.com/docs/index.html#request-retry) · [Notifications](https://yarp.aneiang.com/docs/index.html#notifications)
-- **Plugins & Pipeline** — [Plugin System](https://yarp.aneiang.com/docs/index.html#plugin-system) · [Middleware Pipeline](https://yarp.aneiang.com/docs/index.html#middleware-pipeline)
-- **Client SDK** — [Client Registration](https://yarp.aneiang.com/docs/index.html#client-registration)
-- **AI Assistant** — [AI Assistant](https://yarp.aneiang.com/docs/index.html#ai-assistant)
-- **Advanced** — [Deployment Modes](https://yarp.aneiang.com/docs/index.html#deployment-modes) · [Custom Auth](https://yarp.aneiang.com/docs/index.html#custom-auth) · [Production Config](https://yarp.aneiang.com/docs/index.html#production-config)
-- **Storage** — [SQLite Storage](https://yarp.aneiang.com/docs/index.html#storage-sqlite)
+- **Getting started** — [Sample gateway](samples/SampleGateway/README.md) · [HTTPS setup](docs/sample-https.md) · [Aspire topology](docs/aspire.md)
+- **Architecture** — [Package boundaries](docs/architecture.md) · [Project guide](docs/projects.md)
+- **Dashboard** — [React workspace](docs/react-ui.md)
+- **Security** — [Authentication and deployment](docs/security.md) · [WAF](src/Wafish.Plugin.Waf/README.md)
+- **Plugins** — [Plugin contracts](src/Wafish.Plugin.Abstractions/README.md) · [Lifecycle](docs/plugin-lifecycle-contract.md)
+- **Client SDK** — [Registration](src/Wafish.Client/README.md) · [Mutation outcomes](docs/mutation-contracts.md)
+- **Storage** — [SQLite](src/Wafish.Storage.Sqlite/README.md) · [Offline inspection](tools/Wafish.Storage.Tool/README.md)
+- **Development** — [SonarQube](docs/sonarqube.md) · [Regression checks](tests/Wafish.Regression/README.md)
 
 ---
 
@@ -303,14 +312,6 @@ The administration UI and API labels use English.
 ## License
 
 [MIT](LICENSE)
-
----
-
-<div align="center">
-
-If this project helps you, [⭐ Star it](https://github.com/aneiang/Wafish) to support development
-
-</div>
 
 ## Changelog
 
