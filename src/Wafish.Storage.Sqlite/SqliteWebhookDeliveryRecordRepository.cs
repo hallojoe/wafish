@@ -98,7 +98,7 @@ public sealed class SqliteWebhookDeliveryRecordRepository : IWebhookDeliveryReco
             ORDER BY Id DESC
             LIMIT @limit
             """;
-        cmd.Parameters.AddWithValue("@limit", Math.Clamp(limit, 1, 1000));
+        cmd.Parameters.AddWithValue("@limit", RepositoryQueryLimits.Limit(limit));
 
         var result = new List<WebhookDeliveryRecord>();
         await using var reader = await cmd.ExecuteReaderAsync(ct);

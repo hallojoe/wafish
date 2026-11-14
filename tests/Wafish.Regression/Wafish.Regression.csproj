@@ -12,6 +12,7 @@
     <None Update="fixtures/storage/*.db" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="../../tools/Wafish.Storage.Tool/Wafish.Storage.Tool.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../../src/Wafish.ReactUi/Wafish.ReactUi.csproj" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.Data.Sqlite.Core" />

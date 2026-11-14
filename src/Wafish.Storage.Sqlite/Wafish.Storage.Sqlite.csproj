@@ -11,6 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Wafish.Regression" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 

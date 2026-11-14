@@ -44,7 +44,7 @@ public sealed class DashboardLogQueryService : IDashboardLogQueryService
         var snapshot = _logStore.GetRecent(_options.LogBufferCapacity);
         var total = snapshot.BufferSize;
         snapshot.Entries = snapshot.Entries
-            .Skip((page - 1) * pageSize)
+            .Skip((int)Math.Min(int.MaxValue, ((long)page - 1) * pageSize))
             .Take(pageSize)
             .ToList();
         snapshot.Page = page;
@@ -63,6 +63,8 @@ public sealed class DashboardLogQueryService : IDashboardLogQueryService
     /// <inheritdoc />
     public async Task<ProxyLogSearchResult> GetHistoryLogsAsync(ProxyLogSearchRequest request, CancellationToken ct = default)
     {
+        request.Page = Math.Max(1, request.Page);
+        request.PageSize = Math.Clamp(request.PageSize, 1, 200);
         if (!_options.LogPersistenceEnabled)
         {
             return new ProxyLogSearchResult { Items = new(), TotalCount = 0, Page = request.Page, PageSize = request.PageSize, HasMore = false };

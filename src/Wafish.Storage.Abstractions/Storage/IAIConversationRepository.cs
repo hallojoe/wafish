@@ -8,10 +8,10 @@ public interface IAIConversationRepository
     /// <summary>Save a single conversation message.</summary>
     Task SaveMessageAsync(AIConversationEntry entry, CancellationToken ct = default);
 
-    /// <summary>Get recent messages for a session, ordered chronologically.</summary>
+    /// <summary>Return the most recent 1–500 messages for a session, ordered by insertion ID ascending.</summary>
     Task<IReadOnlyList<AIConversationEntry>> GetSessionMessagesAsync(string sessionId, int maxCount = 20, CancellationToken ct = default);
 
-    /// <summary>List all sessions with their last activity time.</summary>
+    /// <summary>Return 1–500 sessions by last activity descending, then session ID descending.</summary>
     Task<IReadOnlyList<AISessionSummary>> ListSessionsAsync(int maxCount = 50, CancellationToken ct = default);
 
     /// <summary>Delete a session and all its messages.</summary>

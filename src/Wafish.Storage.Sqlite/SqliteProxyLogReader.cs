@@ -1,4 +1,5 @@
 using Wafish.Storage.Entities;
+using Wafish.Storage;
 using Microsoft.Data.Sqlite;
 
 namespace Wafish.Storage.Sqlite;
@@ -54,15 +55,25 @@ internal sealed class SqliteProxyLogReader
         await using var conn = await _connections.CreateConnectionAsync(ct);
         await conn.OpenAsync(ct);
 
+        await using var transaction = conn.BeginTransaction(deferred: true);
+        pageSize = RepositoryQueryLimits.Limit(pageSize);
+        RepositoryQueryLimits.ValidateFilter(routeId, nameof(routeId));
+        RepositoryQueryLimits.ValidateFilter(clusterId, nameof(clusterId));
+        RepositoryQueryLimits.ValidateFilter(level, nameof(level));
+        RepositoryQueryLimits.ValidateFilter(keyword, nameof(keyword));
+        RepositoryQueryLimits.ValidateFilter(eventType, nameof(eventType));
+
         var where = BuildWhereClause(routeId, clusterId, level, statusCodeMin, statusCodeMax, startTime, endTime, keyword, eventType);
 
         await using var countCmd = conn.CreateCommand();
+        countCmd.Transaction = transaction;
         countCmd.CommandText = $"SELECT COUNT(*) FROM proxy_logs_meta WHERE {where}";
         AddSearchParams(countCmd, routeId, clusterId, level, statusCodeMin, statusCodeMax, startTime, endTime, keyword, eventType);
         var totalCount = Convert.ToInt32(await countCmd.ExecuteScalarAsync(ct));
 
-        var offset = (page - 1) * pageSize;
+        var offset = RepositoryQueryLimits.Offset(page, pageSize);
         await using var dataCmd = conn.CreateCommand();
+        dataCmd.Transaction = transaction;
         dataCmd.CommandText = $"SELECT * FROM proxy_logs_meta WHERE {where} ORDER BY julianday(Timestamp) DESC, Id DESC LIMIT @lim OFFSET @off";
         dataCmd.Parameters.AddWithValue("@lim", pageSize);
         dataCmd.Parameters.AddWithValue("@off", offset);
@@ -77,6 +88,7 @@ internal sealed class SqliteProxyLogReader
             }
         }
 
+        await transaction.CommitAsync(ct);
         return (items, totalCount);
     }
 

@@ -69,3 +69,9 @@ Injected `TimeProvider` controls batch flush, retry delays, cleanup scheduling, 
 Captured event timestamps use UTC. The drain timer is joined before its cancellation source is disposed.
 
 Verification: [review evidence](../../tests/Wafish.Regression/evidence/review141516/README.md).
+
+## Drain fault verification
+
+Regression checks cover storage retry exhaustion, transient recovery, cancellation, and shutdown draining.
+Persisted and discarded counts account for all submitted records after shutdown.
+See [lifetime and accounting evidence](../../tests/Wafish.Regression/evidence/lifetime-stress/README.md).

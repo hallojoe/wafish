@@ -45,7 +45,7 @@ public class SqliteAIConversationRepository : IAIConversationRepository
             LIMIT @limit
             """;
         cmd.Parameters.AddWithValue("@sid", sessionId);
-        cmd.Parameters.AddWithValue("@limit", maxCount);
+        cmd.Parameters.AddWithValue("@limit", RepositoryQueryLimits.Limit(maxCount));
 
         var results = new List<AIConversationEntry>();
         await using var reader = await cmd.ExecuteReaderAsync(ct);
@@ -75,10 +75,10 @@ public class SqliteAIConversationRepository : IAIConversationRepository
             SELECT session_id, COUNT(*) as cnt, MAX(created_at) as last_at
             FROM ai_conversations
             GROUP BY session_id
-            ORDER BY last_at DESC
+            ORDER BY last_at DESC, session_id DESC
             LIMIT @limit
             """;
-        cmd.Parameters.AddWithValue("@limit", maxCount);
+        cmd.Parameters.AddWithValue("@limit", RepositoryQueryLimits.Limit(maxCount));
 
         var results = new List<AISessionSummary>();
         await using var reader = await cmd.ExecuteReaderAsync(ct);

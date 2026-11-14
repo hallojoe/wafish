@@ -57,8 +57,8 @@ public sealed class SqliteConfigHistoryRepository : IConfigHistoryRepository
         await using var conn = await _connections.CreateConnectionAsync(ct);
         await conn.OpenAsync(ct);
         await using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT * FROM yarp_config_history ORDER BY created_at DESC LIMIT @limit";
-        cmd.Parameters.AddWithValue("@limit", limit);
+        cmd.CommandText = "SELECT * FROM yarp_config_history ORDER BY created_at DESC, version_id DESC LIMIT @limit";
+        cmd.Parameters.AddWithValue("@limit", RepositoryQueryLimits.Limit(limit));
         var list = new List<ConfigHistoryEntity>();
         await using var reader = await cmd.ExecuteReaderAsync(ct);
         while (await reader.ReadAsync(ct))
@@ -110,7 +110,7 @@ public sealed class SqliteConfigHistoryRepository : IConfigHistoryRepository
         await using var cmd = conn.CreateCommand();
         cmd.CommandText = """
             DELETE FROM yarp_config_history
-            WHERE version_id NOT IN (SELECT version_id FROM yarp_config_history ORDER BY created_at DESC LIMIT @keep)
+            WHERE version_id NOT IN (SELECT version_id FROM yarp_config_history ORDER BY created_at DESC, version_id DESC LIMIT @keep)
             """;
         cmd.Parameters.AddWithValue("@keep", keepCount);
         await cmd.ExecuteNonQueryAsync(ct);

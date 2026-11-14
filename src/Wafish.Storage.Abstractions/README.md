@@ -49,3 +49,24 @@ Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in
 `CommitBindingsAsync` applies upserts and deletions atomically against that revision.
 Stale revisions throw `BindingRevisionConflictException`. Unsupported providers fail explicitly.
 Revisions increase monotonically; one batch can advance the revision more than once.
+
+## Query bounds and ordering
+
+Requested history and log limits clamp to 1–500. Empty datasets still return empty collections.
+Proxy-log pages use 64-bit offsets. Page numbers below one select the first page.
+Proxy-log string filters are limited to 1,024 characters. Longer filters throw `ArgumentException`.
+The administration history endpoint retains its 200-row limit and returns HTTP 400 for oversized filters.
+
+Proxy logs sort by timestamp descending, then numeric ID descending. Counts and rows share a read transaction.
+Configuration history uses creation time descending, then version ID descending.
+Audit history uses timestamp descending, then audit ID descending.
+AI sessions use last activity descending, then session ID descending.
+Message history selects recent insertion IDs and returns them in ascending order.
+Delivery history uses insertion ID descending. Analysis uses insertion ID, with severity first where requested.
+
+Stable datasets have no duplicate or skipped rows across pages. Concurrent writes can shift later offset-based pages.
+Retention operations retain their existing limits and behavior. Repeated reads now use deterministic tie breakers.
+Consumers requesting zero, negative, or oversized read limits must account for normalization.
+
+The provider-neutral suite accepts an isolated fixture factory and uses repository interfaces only.
+See [contract checks](../../tests/Wafish.Regression/StorageConformanceChecks.cs) and [verification](../../tests/Wafish.Regression/evidence/storage-reliability/README.md).

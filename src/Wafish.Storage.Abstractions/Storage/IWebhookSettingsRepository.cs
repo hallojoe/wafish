@@ -72,7 +72,7 @@ public interface IWebhookDeliveryRecordRepository
     /// <summary>Append a delivery record and prune the table down to <paramref name="maxRecords"/> rows.</summary>
     Task AddAsync(WebhookDeliveryRecord record, int maxRecords = 200, CancellationToken ct = default);
 
-    /// <summary>Return the most recent delivery records, newest first.</summary>
+    /// <summary>Return 1–500 delivery records by insertion ID descending.</summary>
     Task<List<WebhookDeliveryRecord>> GetRecentAsync(int limit = 200, CancellationToken ct = default);
 
     /// <summary>Delete all delivery records.</summary>

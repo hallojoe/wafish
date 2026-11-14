@@ -60,8 +60,15 @@ public class DashboardLogController : Controller
 
         request.PageSize = Math.Clamp(request.PageSize, 1, 200);
         request.Page = Math.Max(1, request.Page);
-        var result = await _logQuery.GetHistoryLogsAsync(request, ct);
-        return Json(new { code = 200, data = result });
+        try
+        {
+            var result = await _logQuery.GetHistoryLogsAsync(request, ct);
+            return Json(new { code = 200, data = result });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { code = 400, message = ex.Message });
+        }
     }
 
     /// <summary>Single log detail (full body/headers) from SQLite.</summary>

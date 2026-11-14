@@ -1,14 +1,16 @@
 # Wafish.Storage.Sqlite: proposed work
 
 Reviewed against source on 2026-11-14.
-All items below are TODO proposals, not implemented capabilities or scheduled commitments.
+Statuses distinguish completed work from remaining proposals.
 The [root execution plan](../../PLAN.md) remains the historical and cross-project record.
 
 ## Improvements not yet implemented
 
 ### IMP-01: Test interrupted migrations and recovery
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [storage reliability evidence](../../tests/Wafish.Regression/evidence/storage-reliability/README.md).
 
 Inject failures around migration commit, reopening, and WAL recovery.
 
@@ -16,7 +18,9 @@ Acceptance: Reopening either completes safely or reports a clear migration failu
 
 ### IMP-02: Bound large log queries
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [storage reliability evidence](../../tests/Wafish.Regression/evidence/storage-reliability/README.md).
 
 Measure and limit allocations for large filters and pagination requests.
 
@@ -26,7 +30,9 @@ Acceptance: Stress checks keep memory and execution time within documented limit
 
 ### FEAT-01: Add offline migration inspection
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [storage reliability evidence](../../tests/Wafish.Regression/evidence/storage-reliability/README.md).
 
 Provide a command that reports pending migrations without changing the database.
 
@@ -60,7 +66,9 @@ Cover midnight, offsets, daylight-saving changes, and migrated rows.
 
 ### IMP-04: Reduce full snapshot rewrite cost
 
-Status: TODO. Priority: P2. Type: performance hypothesis.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [allocation pressure](../../tests/Wafish.Regression/evidence/allocation-pressure/README.md). Priority: P2. Type: performance hypothesis.
 
 Evidence: [SqliteConfigurationSnapshotRepository.cs](SqliteConfigurationSnapshotRepository.cs), `SaveAsync`.
 
@@ -73,7 +81,9 @@ Rollback, stable identities, and binding renames retain their existing guarantee
 
 ### FEAT-02: Verify backup restoration
 
-Status: TODO. Priority: P2. Type: feature.
+Status: DONE. Owner: Codex. Completed: 2026-11-14. Priority: P2. Type: feature.
+
+Verification: [storage reliability evidence](../../tests/Wafish.Regression/evidence/storage-reliability/README.md).
 
 Evidence: [SqliteConnectionFactory.cs](SqliteConnectionFactory.cs) and [encrypted storage fixtures](../../tests/Wafish.Regression/fixtures/storage/README.md).
 

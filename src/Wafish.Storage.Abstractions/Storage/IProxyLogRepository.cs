@@ -29,7 +29,10 @@ public interface IProxyLogRepository
 
     /// <summary>
     /// Query historical log metadata with pagination and filtering.
-    /// Only reads from the lightweight meta table — no large fields loaded.
+    /// Only reads metadata. Page numbers below one use page one; page sizes clamp to 1–500.
+    /// Sort by timestamp descending, then numeric ID descending. Count and rows share one read snapshot.
+    /// Stable datasets have no skipped or duplicate rows across pages. Concurrent writes can shift later pages.
+    /// String filters above 1,024 characters throw ArgumentException. Offsets use 64-bit arithmetic.
     /// </summary>
     Task<(List<ProxyLogMetaEntity> Items, int TotalCount)> SearchAsync(
         int page, int pageSize,

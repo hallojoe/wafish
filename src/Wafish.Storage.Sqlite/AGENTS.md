@@ -13,6 +13,8 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Keep backup sources unchanged. Explicitly await cancellable migrations on private verification copies before deleting them.
+
 - Write invariant UTC timestamps. Preserve invalid legacy text during normalization migrations.
 
 - Compare proxy log timestamps as UTC instants with the indexed `julianday(Timestamp)` expression.
@@ -49,3 +51,5 @@ For documentation-only changes, check links and Mermaid rendering instead of sta
 Update the README when behavior or scope changes.
 Keep future work in PLAN.md until its acceptance checks pass.
 Record implementation evidence when completing a plan item.
+
+Compare every persisted field during differential writes. Keep deletion, insertion, binding renames, and version changes transactional.

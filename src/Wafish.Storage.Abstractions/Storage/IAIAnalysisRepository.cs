@@ -8,10 +8,10 @@ public interface IAIAnalysisRepository
     /// <summary>Save an analysis result.</summary>
     Task SaveAnalysisAsync(AIAnalysisEntry entry, CancellationToken ct = default);
 
-    /// <summary>Get recent analysis results, newest first.</summary>
+    /// <summary>Return 1–500 analysis results by insertion ID descending.</summary>
     Task<IReadOnlyList<AIAnalysisEntry>> GetRecentAsync(int maxCount = 20, string? analysisType = null, CancellationToken ct = default);
 
-    /// <summary>Get analysis results with severity >= the specified level.</summary>
+    /// <summary>Return 1–500 results with the minimum severity, ordered by severity descending, then insertion ID descending.</summary>
     Task<IReadOnlyList<AIAnalysisEntry>> GetBySeverityAsync(int minSeverity, int maxCount = 20, CancellationToken ct = default);
 
     /// <summary>Delete analysis results older than the specified time.</summary>

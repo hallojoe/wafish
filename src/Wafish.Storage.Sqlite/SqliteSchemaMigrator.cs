@@ -15,6 +15,7 @@ public sealed class SqliteSchemaMigrator : IHostedService
 {
     private readonly SqliteConnectionFactory _connections;
     private readonly ILogger<SqliteSchemaMigrator> _logger;
+    private readonly IReadOnlyList<ISchemaMigration> _migrations;
 
     /// <summary>
     /// Ordered list of all known migrations. Add new migration types here.
@@ -59,10 +60,18 @@ public sealed class SqliteSchemaMigrator : IHostedService
         ["20260707_003_proxy_logs_meta_ensure_all_columns"] = "004_uid_snapshot_columns",
     };
 
+    internal static IReadOnlyList<string> MigrationIds => AllMigrations.OrderBy(m => m.Version).Select(m => m.Id).ToArray();
+    internal static string NormalizeMigrationId(string id) => LegacyIdMap.GetValueOrDefault(id, id);
+
     public SqliteSchemaMigrator(SqliteConnectionFactory connections, ILogger<SqliteSchemaMigrator> logger)
+        : this(connections, logger, AllMigrations) { }
+
+    internal SqliteSchemaMigrator(SqliteConnectionFactory connections, ILogger<SqliteSchemaMigrator> logger,
+        IReadOnlyList<ISchemaMigration> migrations)
     {
         _connections = connections;
         _logger = logger;
+        _migrations = migrations;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -89,7 +98,7 @@ public sealed class SqliteSchemaMigrator : IHostedService
         await EnsureMigrationTableAsync(conn, cancellationToken);
         await MarkLegacyMigrationsAsync(conn, cancellationToken);
 
-        foreach (var migration in AllMigrations.OrderBy(m => m.Version))
+        foreach (var migration in _migrations.OrderBy(m => m.Version))
         {
             if (await IsMigrationAppliedAsync(conn, migration.Id, cancellationToken))
             {
@@ -114,13 +123,14 @@ public sealed class SqliteSchemaMigrator : IHostedService
             {
                 await migration.UpAsync(conn, transaction, ct);
                 await MarkMigrationAppliedAsync(conn, transaction, migration.Id, migration.Description, cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
                 await transaction.CommitAsync(cancellationToken);
                 if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
                 {
                     _logger.LogInformation("SQLite migration completed: {MigrationId}", migration.Id);
                 }
             }
-            catch (OperationCanceledException) when (migration is Migration006_DataBackfill)
+            catch (OperationCanceledException) when (migration is Migration006_DataBackfill && !cancellationToken.IsCancellationRequested)
             {
                 // Backfill time-out is non-fatal — commit what was done so far
                 try { await transaction.CommitAsync(CancellationToken.None); } catch { }

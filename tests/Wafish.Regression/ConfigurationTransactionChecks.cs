@@ -49,7 +49,7 @@ internal static class ConfigurationTransactionChecks
             Assert(config.GetClusters().Single().Destinations!.Count == 2, "Restart duplicated a destination.");
             Assert(config.GetClusters().Single().Destinations!["one:destination"].Address.EndsWith(":12346/"), "Restart did not update the port.");
             var before = config.GetDynamicConfig()!.Version;
-            await host.Sql("CREATE TRIGGER reject_instance BEFORE INSERT ON yarp_destinations BEGIN SELECT RAISE(ABORT, 'injected instance failure'); END;");
+            await host.Sql("CREATE TRIGGER reject_instance BEFORE UPDATE ON configuration_version BEGIN SELECT RAISE(ABORT, 'injected instance failure'); END;");
             Failed(await config.UnregisterInstanceAsync("service", "one"), ConfigurationUpdateStatus.StorageFailed, before, before);
             Assert(config.IsInstanceRegistered("service", "one"), "Failed removal changed active state.");
             await host.Sql("DROP TRIGGER reject_instance;");
@@ -70,7 +70,7 @@ internal static class ConfigurationTransactionChecks
             var active = config.GetDynamicConfig()!.Version;
             var audit = host.App.Services.GetRequiredService<IConfigChangeAuditLog>();
             var successes = audit.GetRecent(1000).Count(a => a.Success);
-            await host.Sql("CREATE TRIGGER reject_destination BEFORE INSERT ON yarp_destinations BEGIN SELECT RAISE(ABORT, 'injected write failure'); END;");
+            await host.Sql("CREATE TRIGGER reject_destination BEFORE UPDATE ON configuration_version BEGIN SELECT RAISE(ABORT, 'injected write failure'); END;");
             Failed(await config.TryAddClusterConfig(Cluster("two")), ConfigurationUpdateStatus.StorageFailed, active, active);
             var batch = await config.BatchSetRoutesEnabledAsync(["one"], false);
             Assert(batch.Succeeded == 0 && batch.Status == ConfigurationUpdateStatus.StorageFailed, "Batch reported uncommitted success.");

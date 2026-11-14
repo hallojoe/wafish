@@ -13,6 +13,8 @@ Proposals do not authorize implementation outside the current user request.
 
 ## Boundaries and invariants
 
+- Keep history read limits and stable ordering aligned with RepositoryQueryLimits and the provider-neutral conformance suite.
+
 - Keep SQL and native database dependencies out of this project.
 - Preserve expected-version checks in the configuration snapshot contract.
 - Keep stable UIDs separate from editable route and cluster names.

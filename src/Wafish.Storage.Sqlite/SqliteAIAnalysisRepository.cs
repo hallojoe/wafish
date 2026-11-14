@@ -54,7 +54,7 @@ public class SqliteAIAnalysisRepository : IAIAnalysisRepository
                 FROM ai_analysis ORDER BY id DESC LIMIT @limit
                 """;
         }
-        cmd.Parameters.AddWithValue("@limit", maxCount);
+        cmd.Parameters.AddWithValue("@limit", RepositoryQueryLimits.Limit(maxCount));
 
         var results = new List<AIAnalysisEntry>();
         await using var reader = await cmd.ExecuteReaderAsync(ct);
@@ -76,7 +76,7 @@ public class SqliteAIAnalysisRepository : IAIAnalysisRepository
             ORDER BY severity DESC, id DESC LIMIT @limit
             """;
         cmd.Parameters.AddWithValue("@sev", minSeverity);
-        cmd.Parameters.AddWithValue("@limit", maxCount);
+        cmd.Parameters.AddWithValue("@limit", RepositoryQueryLimits.Limit(maxCount));
 
         var results = new List<AIAnalysisEntry>();
         await using var reader = await cmd.ExecuteReaderAsync(ct);

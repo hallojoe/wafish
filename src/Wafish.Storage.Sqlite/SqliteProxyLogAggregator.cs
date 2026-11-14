@@ -129,11 +129,11 @@ internal sealed class SqliteProxyLogAggregator
             FROM proxy_logs_meta
             WHERE julianday(Timestamp) >= julianday(@from) {eventFilter}
             GROUP BY RouteId
-            ORDER BY error_count DESC
+            ORDER BY error_count DESC, RouteId ASC
             LIMIT @lim
             """;
         cmd.Parameters.AddWithValue("@from", StorageTimestamp.Format(startTime));
-        cmd.Parameters.AddWithValue("@lim", count);
+        cmd.Parameters.AddWithValue("@lim", RepositoryQueryLimits.Limit(count));
 
         var result = new List<ProxyLogRouteIssue>();
         await using var reader = await cmd.ExecuteReaderAsync(ct);

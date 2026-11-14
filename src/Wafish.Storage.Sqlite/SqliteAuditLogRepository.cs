@@ -45,8 +45,8 @@ public sealed class SqliteAuditLogRepository : IAuditLogRepository
         await using var conn = await _connections.CreateConnectionAsync(ct);
         await conn.OpenAsync(ct);
         await using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT * FROM config_audit_logs ORDER BY timestamp DESC LIMIT @limit";
-        cmd.Parameters.AddWithValue("@limit", limit);
+        cmd.CommandText = "SELECT * FROM config_audit_logs ORDER BY timestamp DESC, id DESC LIMIT @limit";
+        cmd.Parameters.AddWithValue("@limit", RepositoryQueryLimits.Limit(limit));
         var list = new List<AuditLogEntity>();
         await using var reader = await cmd.ExecuteReaderAsync(ct);
         while (await reader.ReadAsync(ct))
@@ -63,9 +63,9 @@ public sealed class SqliteAuditLogRepository : IAuditLogRepository
         await using var conn = await _connections.CreateConnectionAsync(ct);
         await conn.OpenAsync(ct);
         await using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT * FROM config_audit_logs WHERE target = @target ORDER BY timestamp DESC LIMIT @limit";
+        cmd.CommandText = "SELECT * FROM config_audit_logs WHERE target = @target ORDER BY timestamp DESC, id DESC LIMIT @limit";
         cmd.Parameters.AddWithValue("@target", target);
-        cmd.Parameters.AddWithValue("@limit", limit);
+        cmd.Parameters.AddWithValue("@limit", RepositoryQueryLimits.Limit(limit));
         var list = new List<AuditLogEntity>();
         await using var reader = await cmd.ExecuteReaderAsync(ct);
         while (await reader.ReadAsync(ct))
@@ -111,7 +111,7 @@ public sealed class SqliteAuditLogRepository : IAuditLogRepository
         await using var cmd = conn.CreateCommand();
         cmd.CommandText = """
             DELETE FROM config_audit_logs
-            WHERE id NOT IN (SELECT id FROM config_audit_logs ORDER BY timestamp DESC LIMIT @keep)
+            WHERE id NOT IN (SELECT id FROM config_audit_logs ORDER BY timestamp DESC, id DESC LIMIT @keep)
             """;
         cmd.Parameters.AddWithValue("@keep", keepCount);
         await cmd.ExecuteNonQueryAsync(ct);

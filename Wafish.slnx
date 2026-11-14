@@ -41,5 +41,8 @@
     <Project Path="tests/Wafish.Performance/NativeYarp/NativeYarp.csproj" />
     <Project Path="tests/Wafish.Performance/Runner/Runner.csproj" />
   </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/Wafish.Storage.Tool/Wafish.Storage.Tool.csproj" />
+  </Folder>
   <Project Path="Wafish.AppHost/Wafish.AppHost.csproj" />
 </Solution>

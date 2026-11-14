@@ -65,3 +65,8 @@ Arrows show main dependencies or labeled runtime relationships, not every projec
 | `NativeYarp` | This executable provides the bare YARP baseline for gateway performance comparisons. | [README](../tests/Wafish.Performance/NativeYarp/README.md) · [AGENTS](../tests/Wafish.Performance/NativeYarp/AGENTS.md) · [PLAN](../tests/Wafish.Performance/NativeYarp/PLAN.md) |
 | `Runner` | This executable drives repeatable load scenarios and writes performance comparison reports. | [README](../tests/Wafish.Performance/Runner/README.md) · [AGENTS](../tests/Wafish.Performance/Runner/AGENTS.md) · [PLAN](../tests/Wafish.Performance/Runner/PLAN.md) |
 | `Wafish.AppHost` | This Aspire AppHost runs the local sample topology and optional development infrastructure. | [README](../Wafish.AppHost/README.md) · [AGENTS](../Wafish.AppHost/AGENTS.md) · [PLAN](../Wafish.AppHost/PLAN.md) |
+
+## Offline tools
+
+[Wafish.Storage.Tool](../tools/Wafish.Storage.Tool/README.md) inspects and verifies standalone backups through private copies.
+It belongs to the solution and is exercised by the main regression runner.

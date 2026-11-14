@@ -1,0 +1,11 @@
+PASS: Storage conformance: atomic rollback, null values, stable identities, and stale writers
+PASS: Storage conformance: stable log pages, bounded limits, overflow, filters, and cancellation
+PASS: Storage conformance: bounded histories and deterministic ordering on timestamp ties
+PASS: SQLite recovery: failed migration body, ledger write, and caller cancellation roll back before reopening
+PASS: SQLite recovery: process interruption preserves committed WAL and replays only the unfinished migration
+SQLite query budget: 206848 allocated bytes; 108.1 ms; 50,000 rows.
+PASS: SQLite logs: 50,000-row filtered queries remain bounded in memory and execution time
+PASS: SQLite backup: plaintext inspection and restore verification preserve source bytes
+PASS: SQLite backup: encrypted inspection and restore verification preserve source bytes
+PASS: SQLite backup: truncated, foreign, future-schema, and invalid-JSON backups fail without modifying their source
+PASS: SQLite backup command: missing arguments return a safe usage error

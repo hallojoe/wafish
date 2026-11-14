@@ -20,7 +20,10 @@ Acceptance: Compressed test payloads cannot exceed the configured capture alloca
 
 ### IMP-02: Test persistence faults during draining
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [lifetime stress evidence](../../tests/Wafish.Regression/evidence/lifetime-stress/README.md).
+Release build, 187 main cases, and 34 administration cases pass. Changed source coverage is 89.69%.
 
 Inject storage failures while queued records remain at shutdown.
 

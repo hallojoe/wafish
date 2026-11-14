@@ -8,7 +8,9 @@ The [root execution plan](../../PLAN.md) remains the historical and cross-projec
 
 ### IMP-01: Create provider conformance tests
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [storage reliability evidence](../../tests/Wafish.Regression/evidence/storage-reliability/README.md).
 
 Exercise rollback, ordering, cancellation, null handling, and identity preservation through the interfaces.
 
@@ -16,7 +18,9 @@ Acceptance: Every provider can run the same contract suite.
 
 ### IMP-02: Define pagination guarantees
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [storage reliability evidence](../../tests/Wafish.Regression/evidence/storage-reliability/README.md).
 
 Specify stable ordering and limits for repository methods returning history or logs.
 

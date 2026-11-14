@@ -44,7 +44,20 @@ if (args is ["--dashboard-routes"])
     return 0;
 }
 
+if (args is ["--migration-crash", var database, var ready])
+{
+    await StorageReliabilityChecks.CrashWorkerAsync(database, ready);
+    return 0;
+}
+
 var failures = new List<string>();
+if (args is ["--storage-reliability"])
+{
+    await StorageReliabilityChecks.RunAsync(RunAsync);
+    foreach (var failure in failures) Console.Error.WriteLine(failure);
+    return failures.Count == 0 ? 0 : 1;
+}
+
 if (args is ["--review-release"])
 {
     await ReviewReleaseChecks.RunAsync(RunAsync);
@@ -105,6 +118,7 @@ await ReviewLifecycleChecks.RunAsync(RunAsync);
 await ReviewSecurityChecks.RunAsync(RunAsync);
 await RetryStreamingChecks.RunAsync(RunAsync);
 await ConfigurationTransactionChecks.RunAsync(RunAsync);
+await StorageReliabilityChecks.RunAsync(RunAsync);
 await StorageRepositoryChecks.RunAsync(RunAsync);
 await SonarRegressionChecks.RunAsync(RunAsync);
 await SecurityChecks.RunAsync(RunAsync);

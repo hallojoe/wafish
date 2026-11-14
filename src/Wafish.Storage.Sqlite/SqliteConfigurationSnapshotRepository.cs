@@ -1,14 +1,20 @@
 using Microsoft.Data.Sqlite;
+using Wafish.Storage;
 namespace Wafish.Storage.Sqlite;
 
 /// <summary>Commits the complete configuration in one SQLite transaction.</summary>
-public sealed class SqliteConfigurationSnapshotRepository(SqliteConnectionFactory connections)
+public sealed partial class SqliteConfigurationSnapshotRepository(SqliteConnectionFactory connections)
     : IConfigurationSnapshotRepository
 {
     public async Task<ConfigurationSnapshot> LoadAsync(CancellationToken ct = default)
     {
         await using var conn = await connections.CreateConnectionAsync(ct);
         await conn.OpenAsync(ct);
+        return await ReadSnapshotAsync(conn, ct);
+    }
+
+    internal static async Task<ConfigurationSnapshot> ReadSnapshotAsync(SqliteConnection conn, CancellationToken ct)
+    {
         await using var tx = conn.BeginTransaction(deferred: true);
         var version = await ReadVersion(conn, tx, ct);
         var routes = await Read(conn, tx, "yarp_routes", SqliteRouteRepository.Map, ct);
@@ -33,21 +39,35 @@ public sealed class SqliteConfigurationSnapshotRepository(SqliteConnectionFactor
         {
             throw new ArgumentException("The next configuration version must increase by one.", nameof(snapshot));
         }
+        var previousRoutes = await Read(conn, tx, "yarp_routes", SqliteRouteRepository.Map, ct);
+        var previousClusters = await Read(conn, tx, "yarp_clusters", SqliteClusterRepository.MapCluster, ct);
+        var previousDestinations = await Read(conn, tx, "yarp_destinations", SqliteClusterRepository.MapDestination, ct);
+        var routes = snapshot.Routes.ToDictionary(route => route.RouteId, StringComparer.Ordinal);
+        var clusters = snapshot.Clusters.ToDictionary(cluster => cluster.ClusterId, StringComparer.Ordinal);
+        var destinations = snapshot.Destinations.ToDictionary(destination => (destination.ClusterId, destination.DestinationId));
+        var retainedRoutes = previousRoutes.Where(old => routes.TryGetValue(old.RouteId, out var next) && Equal(old, next))
+            .Select(route => route.RouteId).ToHashSet(StringComparer.Ordinal);
+        var retainedClusters = previousClusters.Where(old => clusters.TryGetValue(old.ClusterId, out var next) && Equal(old, next))
+            .Select(cluster => cluster.ClusterId).ToHashSet(StringComparer.Ordinal);
+        var retainedDestinations = previousDestinations.Where(old => retainedClusters.Contains(old.ClusterId)
+            && destinations.TryGetValue((old.ClusterId, old.DestinationId), out var next) && Equal(old, next))
+            .Select(destination => (destination.ClusterId, destination.DestinationId)).ToHashSet();
         // Capture legacy binding identities before rows are replaced or renamed.
         await BindIdentities(conn, tx, ct);
-        // Bindings use stable UIDs and have no cascading relationship with these rows.
-        await using (var clear = conn.CreateCommand())
-        {
-            clear.Transaction = tx;
-            clear.CommandText = "DELETE FROM yarp_routes; DELETE FROM yarp_destinations; DELETE FROM yarp_clusters;";
-            await clear.ExecuteNonQueryAsync(ct);
-        }
-        foreach (var cluster in snapshot.Clusters)
+        // Delete changed identities before inserts so key swaps remain atomic.
+        // Reinsert destinations of changed clusters because cluster deletion can cascade.
+        foreach (var old in previousRoutes.Where(route => !retainedRoutes.Contains(route.RouteId)))
+            await DeleteAsync(conn, tx, "DELETE FROM yarp_routes WHERE route_id = @id", old.RouteId, null, ct);
+        foreach (var old in previousDestinations.Where(destination => !retainedDestinations.Contains((destination.ClusterId, destination.DestinationId))))
+            await DeleteAsync(conn, tx, "DELETE FROM yarp_destinations WHERE destination_id = @id AND cluster_id = @cluster", old.DestinationId, old.ClusterId, ct);
+        foreach (var old in previousClusters.Where(cluster => !retainedClusters.Contains(cluster.ClusterId)))
+            await DeleteAsync(conn, tx, "DELETE FROM yarp_clusters WHERE cluster_id = @id", old.ClusterId, null, ct);
+        foreach (var cluster in snapshot.Clusters.Where(cluster => !retainedClusters.Contains(cluster.ClusterId)))
         {
             await SqliteClusterRepository.SaveOneAsync(conn, tx, cluster, ct);
         }
 
-        foreach (var route in snapshot.Routes)
+        foreach (var route in snapshot.Routes.Where(route => !retainedRoutes.Contains(route.RouteId)))
         {
             await using var cmd = conn.CreateCommand();
             cmd.Transaction = tx;
@@ -55,7 +75,7 @@ public sealed class SqliteConfigurationSnapshotRepository(SqliteConnectionFactor
             SqliteRouteRepository.AddParams(cmd, route);
             await cmd.ExecuteNonQueryAsync(ct);
         }
-        foreach (var destination in snapshot.Destinations)
+        foreach (var destination in snapshot.Destinations.Where(destination => !retainedDestinations.Contains((destination.ClusterId, destination.DestinationId))))
         {
             await using var cmd = conn.CreateCommand();
             cmd.Transaction = tx;
