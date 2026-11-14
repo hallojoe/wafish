@@ -37,9 +37,9 @@ def main():
     root = Path(__file__).resolve().parent.parent
     out = root / 'artifacts/dependency-audit'
     out.mkdir(parents=True, exist_ok=True)
-    restore = subprocess.run(['dotnet', 'restore', 'WafIsh.slnx', '--force', '-p:AuditPipeline=true'], cwd=root, text=True, capture_output=True)
+    restore = subprocess.run(['dotnet', 'restore', 'Wafish.slnx', '--force', '-p:AuditPipeline=true'], cwd=root, text=True, capture_output=True)
     (out / 'restore.log').write_text(restore.stdout + restore.stderr)
-    result = subprocess.run(['dotnet', 'package', 'list', '--project', 'WafIsh.slnx', '--vulnerable', '--include-transitive', '--format', 'json', '--no-restore'], cwd=root, text=True, capture_output=True)
+    result = subprocess.run(['dotnet', 'package', 'list', '--project', 'Wafish.slnx', '--vulnerable', '--include-transitive', '--format', 'json', '--no-restore'], cwd=root, text=True, capture_output=True)
     (out / 'packages.json').write_text(result.stdout)
     (out / 'packages.stderr.log').write_text(result.stderr)
     passed = restore.returncode == 0 and result.returncode == 0 and clean_report(result.stdout)

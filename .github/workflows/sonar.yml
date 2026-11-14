@@ -24,9 +24,9 @@ jobs:
         with:
           node-version: '24'
           cache: npm
-          cache-dependency-path: src/WafIsh.ReactUi/ClientApp/package-lock.json
+          cache-dependency-path: src/Wafish.ReactUi/ClientApp/package-lock.json
       - name: Install browser test dependencies
-        working-directory: src/WafIsh.ReactUi/ClientApp
+        working-directory: src/Wafish.ReactUi/ClientApp
         run: npm ci && npx playwright install --with-deps chromium
       - name: Analyze and enforce the quality gate
         env:
@@ -40,4 +40,4 @@ jobs:
           name: sonar-coverage
           path: |
             artifacts/sonar/coverage.xml
-            src/WafIsh.ReactUi/ClientApp/coverage/lcov.info
+            src/Wafish.ReactUi/ClientApp/coverage/lcov.info

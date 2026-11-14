@@ -1,4 +1,4 @@
-# WafIsh deferred ideas
+# Wafish deferred ideas
 
 Created: 2026-11-13. Last updated: 2026-11-13.
 

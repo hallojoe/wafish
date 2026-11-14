@@ -39,7 +39,7 @@ The sample demonstrates how the separate packages fit together in one working ho
 ## Start here
 
 Source project: [SampleGateway.csproj](SampleGateway.csproj).
-Direct project references: [WafIsh](../../src/WafIsh/README.md), [WafIsh.Storage.Sqlite](../../src/WafIsh.Storage.Sqlite/README.md), [SampleServiceDefaults](../SampleServiceDefaults/README.md), [WafIsh.ReactUi](../../src/WafIsh.ReactUi/README.md).
+Direct project references: [Wafish](../../src/Wafish/README.md), [Wafish.Storage.Sqlite](../../src/Wafish.Storage.Sqlite/README.md), [SampleServiceDefaults](../SampleServiceDefaults/README.md), [Wafish.ReactUi](../../src/Wafish.ReactUi/README.md).
 
 Use the [Aspire guide](../../docs/aspire.md) for the complete local topology.
 Use the [security guide](../../docs/security.md) before standalone access.

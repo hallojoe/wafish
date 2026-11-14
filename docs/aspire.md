@@ -8,11 +8,11 @@ The optional [SonarQube setup](sonarqube.md) also requires Docker or Podman.
 Start the sample:
 
 ```bash
-aspire start --apphost WafIsh.AppHost/WafIsh.AppHost.csproj --non-interactive
-aspire wait gateway --apphost WafIsh.AppHost/WafIsh.AppHost.csproj
-aspire wait backend-one --apphost WafIsh.AppHost/WafIsh.AppHost.csproj
-aspire wait backend-two --apphost WafIsh.AppHost/WafIsh.AppHost.csproj
-aspire describe --apphost WafIsh.AppHost/WafIsh.AppHost.csproj
+aspire start --apphost Wafish.AppHost/Wafish.AppHost.csproj --non-interactive
+aspire wait gateway --apphost Wafish.AppHost/Wafish.AppHost.csproj
+aspire wait backend-one --apphost Wafish.AppHost/Wafish.AppHost.csproj
+aspire wait backend-two --apphost Wafish.AppHost/Wafish.AppHost.csproj
+aspire describe --apphost Wafish.AppHost/Wafish.AppHost.csproj
 ```
 
 Use the reported gateway HTTP URL. Do not assume fixed service ports.
@@ -37,7 +37,7 @@ Do not commit it or paste it into command arguments.
 
 ## Data and lifetime
 
-SQLite stays local. The primary database is `WafIsh.AppHost/.data/gateway.db`.
+SQLite stays local. The primary database is `Wafish.AppHost/.data/gateway.db`.
 `GatewayDataDirectory` can specify another absolute directory.
 The directory is ignored by Git and survives normal AppHost shutdown.
 An optional second gateway uses `gateway-secondary.db` in the same directory.
@@ -58,7 +58,7 @@ Untrusted TLS certificates are rejected if HTTPS registration is selected.
 ## Optional Redis and multiple gateways
 
 ```bash
-aspire start --apphost WafIsh.AppHost/WafIsh.AppHost.csproj --non-interactive -- --EnableRedis=true --EnableSecondGateway=true
+aspire start --apphost Wafish.AppHost/Wafish.AppHost.csproj --non-interactive -- --EnableRedis=true --EnableSecondGateway=true
 ```
 
 For Podman, prefix the start command with `ASPIRE_CONTAINER_RUNTIME=podman`.
@@ -87,10 +87,10 @@ The same trace connects the gateway and destination.
 Query redaction remains enabled. AI message capture is disabled.
 
 ```bash
-aspire otel traces gateway --apphost WafIsh.AppHost/WafIsh.AppHost.csproj
-aspire otel logs gateway --apphost WafIsh.AppHost/WafIsh.AppHost.csproj
-aspire resource backend-one restart --apphost WafIsh.AppHost/WafIsh.AppHost.csproj
-aspire wait backend-one --apphost WafIsh.AppHost/WafIsh.AppHost.csproj
+aspire otel traces gateway --apphost Wafish.AppHost/Wafish.AppHost.csproj
+aspire otel logs gateway --apphost Wafish.AppHost/Wafish.AppHost.csproj
+aspire resource backend-one restart --apphost Wafish.AppHost/Wafish.AppHost.csproj
+aspire wait backend-one --apphost Wafish.AppHost/Wafish.AppHost.csproj
 ```
 
 The Aspire dashboard controls processes and shows telemetry.
@@ -102,7 +102,7 @@ Neither dashboard replaces the other.
 Use the reported gateway URL in external mode:
 
 ```bash
-dotnet run --project tests/WafIsh.Performance/Runner -c Release -- \
+dotnet run --project tests/Wafish.Performance/Runner -c Release -- \
   --external-url http://localhost:PORT --path /api/local-service/instance \
   --duration 10 --warmup 3 --concurrency 16 --repetitions 3
 ```
@@ -115,7 +115,7 @@ Without `--external-url`, the existing process-managed benchmark modes remain av
 ## Shutdown and troubleshooting
 
 ```bash
-aspire stop --apphost WafIsh.AppHost/WafIsh.AppHost.csproj --non-interactive
+aspire stop --apphost Wafish.AppHost/Wafish.AppHost.csproj --non-interactive
 ```
 
 Normal shutdown preserves local SQLite data and the optional Redis volume.
@@ -129,4 +129,4 @@ Do not use `--force` for normal shutdown.
 - Certificate failures: fix platform trust; do not disable validation.
 
 Verified with Aspire CLI 13.6.4 and AppHost/hosting packages 13.6.5.
-See [verification evidence](../tests/WafIsh.Regression/evidence/aspire/README.md).
+See [verification evidence](../tests/Wafish.Regression/evidence/aspire/README.md).

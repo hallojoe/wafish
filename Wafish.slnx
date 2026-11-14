@@ -1,0 +1,45 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/samples/">
+    <Project Path="samples/SampleGateway/SampleGateway.csproj" />
+    <Project Path="samples/SampleLocalService/SampleLocalService.csproj" />
+    <Project Path="samples/SampleServiceDefaults/SampleServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Wafish.Administration/Wafish.Administration.csproj" />
+    <Project Path="src/Wafish.Client/Wafish.Client.csproj" />
+    <Project Path="src/Wafish.Grpc/Wafish.Grpc.csproj" />
+    <Project Path="src/Wafish.Plugin.Abstractions/Wafish.Plugin.Abstractions.csproj" />
+    <Project Path="src/Wafish.Plugin.Cache/Wafish.Plugin.Cache.csproj" />
+    <Project Path="src/Wafish.Plugin.CircuitBreaker/Wafish.Plugin.CircuitBreaker.csproj" />
+    <Project Path="src/Wafish.Plugin.Compression/Wafish.Plugin.Compression.csproj" />
+    <Project Path="src/Wafish.Plugin.Metrics/Wafish.Plugin.Metrics.csproj" />
+    <Project Path="src/Wafish.Plugin.ProxyLog/Wafish.Plugin.ProxyLog.csproj" />
+    <Project Path="src/Wafish.Plugin.RateLimit.Redis/Wafish.Plugin.RateLimit.Redis.csproj" />
+    <Project Path="src/Wafish.Plugin.RateLimit/Wafish.Plugin.RateLimit.csproj" />
+    <Project Path="src/Wafish.Plugin.Retry/Wafish.Plugin.Retry.csproj" />
+    <Project Path="src/Wafish.Plugin.ServiceDiscovery/Wafish.Plugin.ServiceDiscovery.csproj" />
+    <Project Path="src/Wafish.Plugin.Waf/Wafish.Plugin.Waf.csproj" />
+    <Project Path="src/Wafish.ReactUi/Wafish.ReactUi.csproj" />
+    <Project Path="src/Wafish.Runtime/Wafish.Runtime.csproj" />
+    <Project Path="src/Wafish.Storage.Abstractions/Wafish.Storage.Abstractions.csproj" />
+    <Project Path="src/Wafish.Storage.Sqlite/Wafish.Storage.Sqlite.csproj" />
+    <Project Path="src/Wafish/Wafish.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Wafish.Administration.Regression/Wafish.Administration.Regression.csproj" />
+    <Project Path="tests/Wafish.ReactUi.Host/Wafish.ReactUi.Host.csproj" />
+    <Project Path="tests/Wafish.Regression/Wafish.Regression.csproj" />
+  </Folder>
+  <Folder Name="/tests/Wafish.Performance/">
+    <Project Path="tests/Wafish.Performance/Backend/Backend.csproj" />
+    <Project Path="tests/Wafish.Performance/EnhancedYarp/EnhancedYarp.csproj" />
+    <Project Path="tests/Wafish.Performance/NativeYarp/NativeYarp.csproj" />
+    <Project Path="tests/Wafish.Performance/Runner/Runner.csproj" />
+  </Folder>
+  <Project Path="Wafish.AppHost/Wafish.AppHost.csproj" />
+</Solution>

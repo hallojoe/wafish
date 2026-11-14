@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Wafish\Wafish.csproj" />
+    <ProjectReference Include="..\..\..\src\Wafish.Administration\Wafish.Administration.csproj" />
+    <ProjectReference Include="..\..\..\src\Wafish.Storage.Sqlite\Wafish.Storage.Sqlite.csproj" />
+  </ItemGroup>
+</Project>

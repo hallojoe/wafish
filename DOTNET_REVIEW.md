@@ -6,7 +6,7 @@ See [execution records and implementation evidence](PLAN.md#execution-record).
 
 ## Scope and evidence
 
-This review covers all 30 .NET projects in [WafIsh.slnx](WafIsh.slnx).
+This review covers all 30 .NET projects in [Wafish.slnx](Wafish.slnx).
 It covers libraries, samples, Aspire orchestration, regression applications, and performance tools.
 The ReactUi review covers .NET hosting and asset packaging.
 React component design and TypeScript behavior are outside this review.
@@ -47,12 +47,12 @@ Priorities describe recommended order. They do not create release commitments.
 | Area | Finding | Detailed work |
 |---|---|---|
 | Configuration | Independent writers can consume a prepared snapshot version before activation. | [NET-IMP-01](#net-imp-01-coordinate-snapshot-commit-and-publication) |
-| Retry | Requests can retry without replayable bodies. Responses use unbounded buffering. | [Retry IMP-03 and IMP-04](src/WafIsh.Plugin.Retry/PLAN.md#imp-03-disable-retries-when-request-replay-is-unavailable) |
-| Resource limits | Decoded log bodies and new limiter keys need immediate limits. | [ProxyLog plan](src/WafIsh.Plugin.ProxyLog/PLAN.md), [RateLimit plan](src/WafIsh.Plugin.RateLimit/PLAN.md) |
-| Administration | Credential checks lack dedicated attempt limits. | [Administration plan](src/WafIsh.Administration/PLAN.md) |
-| Policy behavior | Circuit probes, Redis policy changes, and invalid CIDR input have unsafe paths. | [CircuitBreaker plan](src/WafIsh.Plugin.CircuitBreaker/PLAN.md), [Redis plan](src/WafIsh.Plugin.RateLimit.Redis/PLAN.md), [Waf plan](src/WafIsh.Plugin.Waf/PLAN.md) |
-| Data accuracy | Time comparisons can include old records. Batch deletion can retain orphaned clusters. | [SQLite plan](src/WafIsh.Storage.Sqlite/PLAN.md), [Core plan](src/WafIsh/PLAN.md) |
-| Verification | Benchmark labels can differ from active policies. Managed failures can return success. | [EnhancedYarp plan](tests/WafIsh.Performance/EnhancedYarp/PLAN.md), [Runner plan](tests/WafIsh.Performance/Runner/PLAN.md) |
+| Retry | Requests can retry without replayable bodies. Responses use unbounded buffering. | [Retry IMP-03 and IMP-04](src/Wafish.Plugin.Retry/PLAN.md#imp-03-disable-retries-when-request-replay-is-unavailable) |
+| Resource limits | Decoded log bodies and new limiter keys need immediate limits. | [ProxyLog plan](src/Wafish.Plugin.ProxyLog/PLAN.md), [RateLimit plan](src/Wafish.Plugin.RateLimit/PLAN.md) |
+| Administration | Credential checks lack dedicated attempt limits. | [Administration plan](src/Wafish.Administration/PLAN.md) |
+| Policy behavior | Circuit probes, Redis policy changes, and invalid CIDR input have unsafe paths. | [CircuitBreaker plan](src/Wafish.Plugin.CircuitBreaker/PLAN.md), [Redis plan](src/Wafish.Plugin.RateLimit.Redis/PLAN.md), [Waf plan](src/Wafish.Plugin.Waf/PLAN.md) |
+| Data accuracy | Time comparisons can include old records. Batch deletion can retain orphaned clusters. | [SQLite plan](src/Wafish.Storage.Sqlite/PLAN.md), [Core plan](src/Wafish/PLAN.md) |
+| Verification | Benchmark labels can differ from active policies. Managed failures can return success. | [EnhancedYarp plan](tests/Wafish.Performance/EnhancedYarp/PLAN.md), [Runner plan](tests/Wafish.Performance/Runner/PLAN.md) |
 
 Project plans contain additional findings, evidence, feature ideas, and acceptance criteria.
 
@@ -63,15 +63,15 @@ Project plans contain additional findings, evidence, feature ideas, and acceptan
 Status: DONE. Priority: P1. Type: consistency gap.
 
 
-Implemented 2026-11-14. [Verification and recovery contracts](tests/WafIsh.Regression/evidence/review4567/README.md).
+Implemented 2026-11-14. [Verification and recovery contracts](tests/Wafish.Regression/evidence/review4567/README.md).
 
 Evidence:
 
-- [DynamicConfigPublisher.cs](src/WafIsh/Services/DynamicConfigPublisher.cs) chooses a candidate version during preparation.
-- [ConfigurationMutation.cs](src/WafIsh/Services/ConfigurationMutation.cs) stores the candidate before activation.
-- [PluginBindingMutationService.cs](src/WafIsh.Runtime/Infrastructure/Plugin/PluginBindingMutationService.cs) uses a separate publication gate.
-- [ServiceDiscoveryRefreshService.cs](src/WafIsh.Plugin.ServiceDiscovery/ServiceDiscoveryRefreshService.cs) uses its own publication lock.
-- [GatewaySnapshotPublisher](src/WafIsh/Services/GatewaySnapshotCompiler.cs) rejects stale versions through compare-and-exchange.
+- [DynamicConfigPublisher.cs](src/Wafish/Services/DynamicConfigPublisher.cs) chooses a candidate version during preparation.
+- [ConfigurationMutation.cs](src/Wafish/Services/ConfigurationMutation.cs) stores the candidate before activation.
+- [PluginBindingMutationService.cs](src/Wafish.Runtime/Infrastructure/Plugin/PluginBindingMutationService.cs) uses a separate publication gate.
+- [ServiceDiscoveryRefreshService.cs](src/Wafish.Plugin.ServiceDiscovery/ServiceDiscoveryRefreshService.cs) uses its own publication lock.
+- [GatewaySnapshotPublisher](src/Wafish/Services/GatewaySnapshotCompiler.cs) rejects stale versions through compare-and-exchange.
 
 The stale-version guard is correct, but independent preparation can create competing candidates.
 A discovery refresh can publish while a configuration mutation awaits storage.
@@ -87,8 +87,8 @@ Do not remove the stale-version guard.
 Keep stored configuration revisions distinct from runtime snapshot generations.
 Prevent compensation from overwriting a newer successful operation.
 
-Owners: WafIsh, Runtime, ServiceDiscovery, Storage.Abstractions, and Storage.Sqlite.
-The [atomic binding contract](src/WafIsh.Storage.Abstractions/PLAN.md#imp-03-add-an-atomic-binding-batch-contract) supports this work.
+Owners: Wafish, Runtime, ServiceDiscovery, Storage.Abstractions, and Storage.Sqlite.
+The [atomic binding contract](src/Wafish.Storage.Abstractions/PLAN.md#imp-03-add-an-atomic-binding-batch-contract) supports this work.
 
 Acceptance: Deterministic barriers interleave route changes, binding updates, and discovery refreshes.
 Every successful change remains represented in the final active snapshot.
@@ -100,7 +100,7 @@ Actual activation failures remain explicit and recoverable.
 
 Status: DONE. Owner: Codex. Completed: 2026-11-14. Priority: P2. Type: release quality.
 
-Implemented under review items 14–16. [Verification and limitations](tests/WafIsh.Regression/evidence/review141516/README.md).
+Implemented under review items 14–16. [Verification and limitations](tests/Wafish.Regression/evidence/review141516/README.md).
 The original finding and acceptance criteria follow.
 User-approved baseline decision: treat packages as first releases and use reviewed API snapshots until publication.
 
@@ -129,14 +129,14 @@ Approved breaking changes include migration notes and an explicit baseline decis
 Status: IN PROGRESS. Priority: P1. Type: availability.
 
 Request replay, response capture, decoded logging, partition admission, and combined streaming checks are complete.
-See [review items 1–3 evidence](tests/WafIsh.Regression/evidence/review123/README.md).
-Queued-record loss accounting is complete. [Review items 8–10 evidence](tests/WafIsh.Regression/evidence/review8910/README.md).
+See [review items 1–3 evidence](tests/Wafish.Regression/evidence/review123/README.md).
+Queued-record loss accounting is complete. [Review items 8–10 evidence](tests/Wafish.Regression/evidence/review8910/README.md).
 Heartbeat shutdown ownership is complete under item 7. Retired-domain ownership is complete under item 12.
-See [review items 11–13 evidence](tests/WafIsh.Regression/evidence/review111213/README.md).
+See [review items 11–13 evidence](tests/Wafish.Regression/evidence/review111213/README.md).
 Broader deadline policy and asynchronous configuration preparation remain separate proposals.
 
-Evidence: [Retry](src/WafIsh.Plugin.Retry/PLAN.md), [ProxyLog](src/WafIsh.Plugin.ProxyLog/PLAN.md), and [RateLimit](src/WafIsh.Plugin.RateLimit/PLAN.md) expose different limit gaps.
-[Client](src/WafIsh.Client/PLAN.md) and [Runtime](src/WafIsh.Runtime/PLAN.md) also need explicit background-task ownership.
+Evidence: [Retry](src/Wafish.Plugin.Retry/PLAN.md), [ProxyLog](src/Wafish.Plugin.ProxyLog/PLAN.md), and [RateLimit](src/Wafish.Plugin.RateLimit/PLAN.md) expose different limit gaps.
+[Client](src/Wafish.Client/PLAN.md) and [Runtime](src/Wafish.Runtime/PLAN.md) also need explicit background-task ownership.
 
 Define common rules for request replay, response capture, decoded data, queued records, and partition counts.
 Specify maximum retained bytes and behavior when each limit is reached.
@@ -159,7 +159,7 @@ Loss counters account for every discarded queued record.
 
 Status: DONE. Owner: Codex. Completed: 2026-11-14. Priority: P2. Type: verification coverage.
 
-Implemented under review items 14–16. [Verification and limitations](tests/WafIsh.Regression/evidence/review141516/README.md).
+Implemented under review items 14–16. [Verification and limitations](tests/Wafish.Regression/evidence/review141516/README.md).
 The original finding and acceptance criteria follow.
 
 Evidence: [Directory.Packages.props](Directory.Packages.props) centralizes dependencies.
@@ -190,13 +190,13 @@ CI artifacts identify the failing .NET scenario without requiring local reproduc
 
 Status: DONE. Owner: Codex. Completed: 2026-11-14. Priority: P2. Type: data consistency and testability.
 
-Implemented under review items 14–16. [Verification and limitations](tests/WafIsh.Regression/evidence/review141516/README.md).
+Implemented under review items 14–16. [Verification and limitations](tests/Wafish.Regression/evidence/review141516/README.md).
 The original finding and acceptance criteria follow.
 
 Proxy log UTC comparisons and migration 020 are complete under review item 9.
 The wider clock and stored-time standardization is complete under review item 16.
-Evidence: [SQLite plan](src/WafIsh.Storage.Sqlite/PLAN.md).
-[Core configuration](src/WafIsh/Services/ConfigurationMutation.cs) uses UTC timestamps, while other records use local time.
+Evidence: [SQLite plan](src/Wafish.Storage.Sqlite/PLAN.md).
+[Core configuration](src/Wafish/Services/ConfigurationMutation.cs) uses UTC timestamps, while other records use local time.
 
 Define one UTC storage representation and one comparison rule.
 Plan migration for existing text timestamps and offsets.
@@ -225,7 +225,7 @@ Include an expected revision, normalized diff, validation results, and audit act
 Report stored and active revisions separately.
 Preserve existing authorization and secret-redaction rules.
 
-Owners: WafIsh, Storage.Abstractions, Storage.Sqlite, Runtime, Administration, and Client.
+Owners: Wafish, Storage.Abstractions, Storage.Sqlite, Runtime, Administration, and Client.
 Dependencies: NET-IMP-01, atomic binding storage, and the core configuration preview.
 
 Acceptance: A rejected change set modifies no configuration or binding records.
@@ -236,8 +236,8 @@ An accepted change set publishes a consistent configuration and records one corr
 
 Status: TODO. Priority: P2. Type: feature.
 
-Evidence: [gRPC plan](src/WafIsh.Grpc/PLAN.md) records destination ownership gaps.
-The [client plan](src/WafIsh.Client/PLAN.md) records heartbeat and shutdown lifecycle gaps.
+Evidence: [gRPC plan](src/Wafish.Grpc/PLAN.md) records destination ownership gaps.
+The [client plan](src/Wafish.Client/PLAN.md) records heartbeat and shutdown lifecycle gaps.
 The current heartbeat model does not define an expiring lease for each registered instance.
 
 Negotiate a lease identifier, expiry, refresh interval, and grace period during registration.
@@ -246,7 +246,7 @@ Expire crashed instances without removing healthy peers.
 Allow graceful draining before planned removal.
 Define compatibility behavior for clients without lease support.
 
-Owners: Grpc, Client, WafIsh, Runtime, Storage.Abstractions, and Storage.Sqlite.
+Owners: Grpc, Client, Wafish, Runtime, Storage.Abstractions, and Storage.Sqlite.
 Dependencies: Instance-owned destination updates and NET-IMP-01.
 
 Acceptance: A crashed instance disappears after the configured grace period.
@@ -258,7 +258,7 @@ Graceful drain allows active requests to finish within a bounded deadline.
 
 Status: TODO. Priority: P2. Type: feature.
 
-Evidence: [Runtime](src/WafIsh.Runtime/PLAN.md), [Metrics](src/WafIsh.Plugin.Metrics/PLAN.md), and [ProxyLog](src/WafIsh.Plugin.ProxyLog/PLAN.md) expose separate diagnostic concerns.
+Evidence: [Runtime](src/Wafish.Runtime/PLAN.md), [Metrics](src/Wafish.Plugin.Metrics/PLAN.md), and [ProxyLog](src/Wafish.Plugin.ProxyLog/PLAN.md) expose separate diagnostic concerns.
 
 Export one bounded support bundle through an authorized administration operation.
 Include build identity, active and stored revisions, plugin order, health, drain state, and queue-loss counters.
@@ -291,36 +291,36 @@ New source-review sections extend those plans without marking earlier proposals 
 
 | Project | Project-specific plan and main follow-up |
 |---|---|
-| WafIsh | [Batch deletion, asynchronous preparation, configuration preview](src/WafIsh/PLAN.md) |
-| WafIsh.Runtime | [Limiter ownership, plugin shutdown, drain diagnostics](src/WafIsh.Runtime/PLAN.md) |
-| WafIsh.Administration | [Authentication limits, notification loss, operation permissions](src/WafIsh.Administration/PLAN.md) |
-| WafIsh.Client | [Heartbeat lifecycle and structured outcomes](src/WafIsh.Client/PLAN.md) |
-| WafIsh.Grpc | [Destination ownership and lease negotiation](src/WafIsh.Grpc/PLAN.md) |
-| WafIsh.Storage.Abstractions | [Atomic binding batches and provider backup contracts](src/WafIsh.Storage.Abstractions/PLAN.md) |
-| WafIsh.Storage.Sqlite | [Timestamp comparisons, snapshot costs, backup verification](src/WafIsh.Storage.Sqlite/PLAN.md) |
-| WafIsh.Plugin.Abstractions | [Statistic contracts and pipeline ordering](src/WafIsh.Plugin.Abstractions/PLAN.md) |
-| WafIsh.Plugin.Cache | [Configuration accuracy, retained buffers, concurrent fills](src/WafIsh.Plugin.Cache/PLAN.md) |
-| WafIsh.Plugin.CircuitBreaker | [Probe permit ownership and maintenance windows](src/WafIsh.Plugin.CircuitBreaker/PLAN.md) |
-| WafIsh.Plugin.Compression | [Threshold consistency and algorithm policy](src/WafIsh.Plugin.Compression/PLAN.md) |
-| WafIsh.Plugin.Metrics | [Exception accounting, bounded identities, latency histograms](src/WafIsh.Plugin.Metrics/PLAN.md) |
-| WafIsh.Plugin.ProxyLog | [Decoded limits, shutdown loss, disk quotas](src/WafIsh.Plugin.ProxyLog/PLAN.md) |
-| WafIsh.Plugin.RateLimit | [Partition admission limits and request costs](src/WafIsh.Plugin.RateLimit/PLAN.md) |
-| WafIsh.Plugin.RateLimit.Redis | [Algorithm key isolation, failed connections, multiple quotas](src/WafIsh.Plugin.RateLimit.Redis/PLAN.md) |
-| WafIsh.Plugin.Retry | [Replay safety, bounded responses, retry deadlines](src/WafIsh.Plugin.Retry/PLAN.md) |
-| WafIsh.Plugin.ServiceDiscovery | [Stable identities, error reporting, stale endpoint limits](src/WafIsh.Plugin.ServiceDiscovery/PLAN.md) |
-| WafIsh.Plugin.Waf | [CIDR validation, log redaction, scoped exclusions](src/WafIsh.Plugin.Waf/PLAN.md) |
-| WafIsh.ReactUi | [.NET PathBase handling, build inputs, asset versions](src/WafIsh.ReactUi/PLAN.md) |
-| WafIsh.AppHost | [Isolated Sonar volumes and discovery demonstrations](WafIsh.AppHost/PLAN.md) |
+| Wafish | [Batch deletion, asynchronous preparation, configuration preview](src/Wafish/PLAN.md) |
+| Wafish.Runtime | [Limiter ownership, plugin shutdown, drain diagnostics](src/Wafish.Runtime/PLAN.md) |
+| Wafish.Administration | [Authentication limits, notification loss, operation permissions](src/Wafish.Administration/PLAN.md) |
+| Wafish.Client | [Heartbeat lifecycle and structured outcomes](src/Wafish.Client/PLAN.md) |
+| Wafish.Grpc | [Destination ownership and lease negotiation](src/Wafish.Grpc/PLAN.md) |
+| Wafish.Storage.Abstractions | [Atomic binding batches and provider backup contracts](src/Wafish.Storage.Abstractions/PLAN.md) |
+| Wafish.Storage.Sqlite | [Timestamp comparisons, snapshot costs, backup verification](src/Wafish.Storage.Sqlite/PLAN.md) |
+| Wafish.Plugin.Abstractions | [Statistic contracts and pipeline ordering](src/Wafish.Plugin.Abstractions/PLAN.md) |
+| Wafish.Plugin.Cache | [Configuration accuracy, retained buffers, concurrent fills](src/Wafish.Plugin.Cache/PLAN.md) |
+| Wafish.Plugin.CircuitBreaker | [Probe permit ownership and maintenance windows](src/Wafish.Plugin.CircuitBreaker/PLAN.md) |
+| Wafish.Plugin.Compression | [Threshold consistency and algorithm policy](src/Wafish.Plugin.Compression/PLAN.md) |
+| Wafish.Plugin.Metrics | [Exception accounting, bounded identities, latency histograms](src/Wafish.Plugin.Metrics/PLAN.md) |
+| Wafish.Plugin.ProxyLog | [Decoded limits, shutdown loss, disk quotas](src/Wafish.Plugin.ProxyLog/PLAN.md) |
+| Wafish.Plugin.RateLimit | [Partition admission limits and request costs](src/Wafish.Plugin.RateLimit/PLAN.md) |
+| Wafish.Plugin.RateLimit.Redis | [Algorithm key isolation, failed connections, multiple quotas](src/Wafish.Plugin.RateLimit.Redis/PLAN.md) |
+| Wafish.Plugin.Retry | [Replay safety, bounded responses, retry deadlines](src/Wafish.Plugin.Retry/PLAN.md) |
+| Wafish.Plugin.ServiceDiscovery | [Stable identities, error reporting, stale endpoint limits](src/Wafish.Plugin.ServiceDiscovery/PLAN.md) |
+| Wafish.Plugin.Waf | [CIDR validation, log redaction, scoped exclusions](src/Wafish.Plugin.Waf/PLAN.md) |
+| Wafish.ReactUi | [.NET PathBase handling, build inputs, asset versions](src/Wafish.ReactUi/PLAN.md) |
+| Wafish.AppHost | [Isolated Sonar volumes and discovery demonstrations](Wafish.AppHost/PLAN.md) |
 | SampleGateway | [Configured public URLs and a minimal runtime profile](samples/SampleGateway/PLAN.md) |
 | SampleLocalService | [Consistent instance identity and bounded streaming](samples/SampleLocalService/PLAN.md) |
 | SampleServiceDefaults | [Probe trace filters and registration readiness](samples/SampleServiceDefaults/PLAN.md) |
-| WafIsh.Regression | [Real-server streaming and reproducible fault schedules](tests/WafIsh.Regression/PLAN.md) |
-| WafIsh.Administration.Regression | [HTTPS cookie flows and authorization matrices](tests/WafIsh.Administration.Regression/PLAN.md) |
-| WafIsh.ReactUi.Host | [Deployment-prefix fixtures and controlled failure profiles](tests/WafIsh.ReactUi.Host/PLAN.md) |
-| Performance Backend | [Cancellation, bounded inputs, deterministic upstream faults](tests/WafIsh.Performance/Backend/PLAN.md) |
-| Performance NativeYarp | [Workload preflight and multiple-destination baselines](tests/WafIsh.Performance/NativeYarp/PLAN.md) |
-| Performance EnhancedYarp | [Effective policy validation and benchmark manifests](tests/WafIsh.Performance/EnhancedYarp/PLAN.md) |
-| Performance Runner | [Failure exit codes, body deadlines, scheduled arrival rates](tests/WafIsh.Performance/Runner/PLAN.md) |
+| Wafish.Regression | [Real-server streaming and reproducible fault schedules](tests/Wafish.Regression/PLAN.md) |
+| Wafish.Administration.Regression | [HTTPS cookie flows and authorization matrices](tests/Wafish.Administration.Regression/PLAN.md) |
+| Wafish.ReactUi.Host | [Deployment-prefix fixtures and controlled failure profiles](tests/Wafish.ReactUi.Host/PLAN.md) |
+| Performance Backend | [Cancellation, bounded inputs, deterministic upstream faults](tests/Wafish.Performance/Backend/PLAN.md) |
+| Performance NativeYarp | [Workload preflight and multiple-destination baselines](tests/Wafish.Performance/NativeYarp/PLAN.md) |
+| Performance EnhancedYarp | [Effective policy validation and benchmark manifests](tests/Wafish.Performance/EnhancedYarp/PLAN.md) |
+| Performance Runner | [Failure exit codes, body deadlines, scheduled arrival rates](tests/Wafish.Performance/Runner/PLAN.md) |
 
 ## Completion rule
 

@@ -1,4 +1,4 @@
-# WafIsh improvement plan
+# Wafish improvement plan
 
 Created: 2026-11-13. Last updated: 2026-11-14.
 
@@ -71,7 +71,7 @@ Source inspection on 2026-11-13 identified these conditions:
 
 | Finding | Evidence location or behavior | Tasks |
 |---|---|---|
-| Registration disablement does not cover gRPC mapping. | `MapWafIshGrpc` maps the registration service unconditionally. | PRE-02, SEC-01 |
+| Registration disablement does not cover gRPC mapping. | `MapWafishGrpc` maps the registration service unconditionally. | PRE-02, SEC-01 |
 | Startup validation skips disabled registration. | `GatewayControlPlaneSecurityValidator` returns before checking authentication. | PRE-02, SEC-03 |
 | Authentication fallback reads the wrong dashboard location. | `AddGatewayApiAuth` reads credentials outside `Gateway:Dashboard:Auth`. | PRE-02, SEC-02 |
 | Empty dashboard API keys fall through to authorization success. | `DashboardAuthorizationService.IsAuthorizedAsync` returns true. | PRE-02, SEC-02 |
@@ -107,7 +107,7 @@ Dependencies listed below identify additional ordering within or across phases.
 
 Status: DONE. Dependencies: none. Owner: Codex. Completed: 2026-11-13.
 
-Evidence: [baseline and reproduction results](tests/WafIsh.Regression/evidence/README.md).
+Evidence: [baseline and reproduction results](tests/Wafish.Regression/evidence/README.md).
 
 Build the solution and run the existing regression executable.
 Record SDK versions, framework targets, commands, results, and the tested commit.
@@ -146,7 +146,7 @@ Acceptance: Users cannot receive each other's responses. Eligible public respons
 Status: DONE. Dependencies: none. Owner: Codex. Completed: 2026-11-13.
 
 Evidence: Debug and Release solution builds passed with zero warnings. All 42 regression checks pass.
-See [verification details](tests/WafIsh.Regression/evidence/README.md).
+See [verification details](tests/Wafish.Regression/evidence/README.md).
 
 Target .NET 10 across all projects. Update SDK selection, Docker images, SQLite packages, and developer tooling.
 Update supported-framework documentation. Preserve historical results as historical evidence.
@@ -184,7 +184,7 @@ Acceptance: Runtime startup loads configuration and resolves required services w
 
 Status: DONE. Dependencies: ARCH-01, ARCH-02. Owner: Codex. Completed: 2026-11-14.
 
-Evidence: [ARCH-03 verification](tests/WafIsh.Regression/evidence/arch03/README.md).
+Evidence: [ARCH-03 verification](tests/Wafish.Regression/evidence/arch03/README.md).
 All 102 HTTP contracts are preserved. Both regression executables and published browser checks pass.
 Administration runs without the dashboard assembly, Razor services, pages, or static assets.
 
@@ -221,7 +221,7 @@ Acceptance: Disabled features create no listeners or background activity. Enable
 
 Status: DONE. Dependencies: ARCH-02, ARCH-03. Owner: Codex. Completed: 2026-11-14.
 
-Evidence: [architecture verification](tests/WafIsh.Regression/evidence/arch04-09/README.md).
+Evidence: [architecture verification](tests/Wafish.Regression/evidence/arch04-09/README.md).
 
 Validate a candidate configuration without mutating active state.
 Persist related changes transactionally before publishing the candidate.
@@ -234,7 +234,7 @@ Acceptance: Failed writes leave stored and active configuration unchanged. Succe
 
 Status: DONE. Dependencies: ARCH-06. Owner: Codex. Completed: 2026-11-14.
 
-Evidence: [architecture verification](tests/WafIsh.Regression/evidence/arch04-09/README.md).
+Evidence: [architecture verification](tests/Wafish.Regression/evidence/arch04-09/README.md).
 
 Distinguish validation rejection, version conflict, storage failure, and activation failure in operation results.
 Report persisted and active versions when activation fails after a successful commit.
@@ -246,7 +246,7 @@ Acceptance: Clients cannot mistake an unsaved or unapplied change for a fully su
 
 Status: DONE. Dependencies: PRE-01, ARCH-04, ARCH-06. Owner: Codex. Completed: 2026-11-14.
 
-Evidence: [architecture verification](tests/WafIsh.Regression/evidence/arch04-09/README.md).
+Evidence: [architecture verification](tests/Wafish.Regression/evidence/arch04-09/README.md).
 
 Fix confirmed plugin activation, request-draining, and plugin-state persistence failures.
 Preserve active plugin domains when replacement initialization fails.
@@ -258,7 +258,7 @@ Acceptance: Reproduced baseline failures pass without weakening the regression a
 
 Status: DONE. Dependencies: ARCH-02, ARCH-03, ARCH-04, ARCH-05, ARCH-07, ARCH-08. Owner: Codex. Completed: 2026-11-14.
 
-Evidence: [architecture verification](tests/WafIsh.Regression/evidence/arch04-09/README.md).
+Evidence: [architecture verification](tests/Wafish.Regression/evidence/arch04-09/README.md).
 
 Update samples, package references, registration methods, and configuration examples.
 Document changed public APIs, configuration options, operation results, and storage interfaces.
@@ -277,7 +277,7 @@ Exports, snapshots, imports, comparisons, and rollback include activation state.
 Existing database rows default to enabled because earlier versions did not persist activation.
 
 Acceptance: Rename/restart and snapshot/import/rollback checks preserve disabled routes and native configuration.
-Evidence: [UI integration verification](tests/WafIsh.Regression/evidence/ui/README.md).
+Evidence: [UI integration verification](tests/Wafish.Regression/evidence/ui/README.md).
 
 ## Phase 2: security fixes
 
@@ -285,7 +285,7 @@ Evidence: [UI integration verification](tests/WafIsh.Regression/evidence/ui/READ
 
 Status: DONE. Owner: Codex. Completed: 2026-11-14. Dependencies: phase 1 gate.
 
-Evidence: [security verification](tests/WafIsh.Regression/evidence/security/README.md).
+Evidence: [security verification](tests/Wafish.Regression/evidence/security/README.md).
 
 Apply the administration policy across REST, gRPC, dashboard APIs, and realtime endpoints.
 Cover endpoint mapping, request handling, and configuration changes.
@@ -296,7 +296,7 @@ Acceptance: Missing and invalid credentials fail on every protected transport. V
 
 Status: DONE. Owner: Codex. Completed: 2026-11-14. Dependencies: SEC-01.
 
-Evidence: [security verification](tests/WafIsh.Regression/evidence/security/README.md).
+Evidence: [security verification](tests/Wafish.Regression/evidence/security/README.md).
 
 Reject unsupported modes, empty credentials, and unintended authentication-method fallback.
 Make configuration precedence explicit. Restrict URL tokens to exact endpoints that require them.
@@ -307,7 +307,7 @@ Acceptance: Invalid configuration fails clearly. A credential for another mode c
 
 Status: DONE. Owner: Codex. Completed: 2026-11-14. Dependencies: SEC-01, SEC-02.
 
-Evidence: [security verification](tests/WafIsh.Regression/evidence/security/README.md).
+Evidence: [security verification](tests/Wafish.Regression/evidence/security/README.md).
 
 Require authentication by default. Allow anonymous development access only through an explicit loopback restriction.
 Require HTTPS for remote administration. Apply policy to all enabled administration listeners.
@@ -319,7 +319,7 @@ Acceptance: Unsafe configurations are rejected. Documented loopback development 
 
 Status: DONE. Owner: Codex. Completed: 2026-11-14. Dependencies: SEC-03.
 
-Evidence: [security verification](tests/WafIsh.Regression/evidence/security/README.md).
+Evidence: [security verification](tests/Wafish.Regression/evidence/security/README.md).
 
 Remove production reliance on sample credentials and secret-bearing startup output.
 Verify listener bindings, endpoint roles, and forwarded-header trust.
@@ -331,7 +331,7 @@ Acceptance: Production examples contain no working demo credentials. Spoofed for
 
 Status: DONE. Owner: Codex. Completed: 2026-11-14. Dependencies: ARCH-05, SEC-03.
 
-Evidence: [security verification](tests/WafIsh.Regression/evidence/security/README.md).
+Evidence: [security verification](tests/Wafish.Regression/evidence/security/README.md).
 
 Default MCP to loopback binding. Authenticate requests and validate origins.
 Apply the parent host's security policy to the separate MCP server.
@@ -343,7 +343,7 @@ Acceptance: Unauthorized requests and untrusted browser origins fail. Allowed cl
 
 Status: DONE. Owner: Codex. Completed: 2026-11-14. Dependencies: PRE-03.
 
-Evidence: [security verification](tests/WafIsh.Regression/evidence/security/README.md).
+Evidence: [security verification](tests/Wafish.Regression/evidence/security/README.md).
 
 Handle cache directives, Vary, host separation, query variation, and GET/HEAD semantics.
 Invalidate affected entries when route configuration changes.
@@ -355,7 +355,7 @@ Acceptance: Private responses remain isolated. Public cached responses preserve 
 
 Status: DONE. Owner: Codex. Completed: 2026-11-14. Dependencies: SEC-06.
 
-Evidence: [security verification](tests/WafIsh.Regression/evidence/security/README.md).
+Evidence: [security verification](tests/Wafish.Regression/evidence/security/README.md).
 
 Stop response capture at its byte limit and continue streaming without losing captured bytes.
 Add a dedicated total cache budget with entry accounting and eviction.
@@ -367,7 +367,7 @@ Acceptance: Large and concurrent responses respect configured memory budgets wit
 
 Status: DONE. Owner: Codex. Completed: 2026-11-14. Dependencies: SEC-06, SEC-07.
 
-Evidence: [security verification](tests/WafIsh.Regression/evidence/security/README.md).
+Evidence: [security verification](tests/Wafish.Regression/evidence/security/README.md).
 
 Replace full-response compression buffering with streaming or bounded processing.
 Preserve encoding negotiation, Vary, range handling, bodyless responses, and cancellation.
@@ -378,7 +378,7 @@ Acceptance: Large responses stream correctly. Compressed and uncompressed cache 
 
 Status: DONE. Owner: Codex. Completed: 2026-11-14. Dependencies: phase 1 gate.
 
-Evidence: [security verification](tests/WafIsh.Regression/evidence/security/README.md).
+Evidence: [security verification](tests/Wafish.Regression/evidence/security/README.md).
 
 Inspect bodies without Content-Length. Count bytes and handle short reads until the inspection boundary.
 Enforce body limits and define overflow behavior explicitly.
@@ -390,7 +390,7 @@ Acceptance: Chunked requests cannot bypass limits or required inspection. Valid 
 
 Status: DONE. Owner: Codex. Completed: 2026-11-14. Dependencies: PRE-01.
 
-Evidence: [security verification](tests/WafIsh.Regression/evidence/security/README.md).
+Evidence: [security verification](tests/Wafish.Regression/evidence/security/README.md).
 
 Current evidence: the .NET 10 package audit reports no known package vulnerabilities.
 The initial encrypted-storage review loaded SQLCipher 4.5.2 with SQLite 3.39.2.
@@ -406,7 +406,7 @@ Acceptance: Dependency checks pass or identify an explicit release blocker. Encr
 
 Status: DONE. Owner: Codex. Completed: 2026-11-14. Dependencies: phase 1 gate.
 
-Evidence: [security verification](tests/WafIsh.Regression/evidence/security/README.md).
+Evidence: [security verification](tests/Wafish.Regression/evidence/security/README.md).
 
 Make rate-limit failure behavior explicit and configurable.
 Document whether each policy permits or rejects requests when Redis becomes unavailable.
@@ -435,7 +435,7 @@ Administration regression checks cover reload, permissions, corruption, failed w
 
 Status: DONE. Owner: Codex. Completed: 2026-11-14. Dependencies: SEC-10.
 
-Evidence: [native storage replacement](tests/WafIsh.Regression/evidence/sec14/README.md).
+Evidence: [native storage replacement](tests/Wafish.Regression/evidence/sec14/README.md).
 
 Replace the deprecated SQLCipher bundle with maintained SQLite3MC binaries.
 Keep plaintext databases unchanged. Select SQLCipher 4 compatibility for existing password-protected file connections.
@@ -450,7 +450,7 @@ No retired native library remains in deployment artifacts. Configuration default
 
 ### ASP-01 Add the development AppHost
 
-Status: DONE. Owner: Codex. Completed: 2026-11-14. Evidence: [Aspire verification](tests/WafIsh.Regression/evidence/aspire/README.md). Dependencies: phase 2 gate.
+Status: DONE. Owner: Codex. Completed: 2026-11-14. Evidence: [Aspire verification](tests/Wafish.Regression/evidence/aspire/README.md). Dependencies: phase 2 gate.
 
 Create one AppHost for the sample gateway and two backend instances.
 Keep orchestration dependencies in sample and test hosts.
@@ -460,7 +460,7 @@ Acceptance: One documented command starts the sample topology without modifying 
 
 ### ASP-02 Wire explicit endpoints
 
-Status: DONE. Owner: Codex. Completed: 2026-11-14. Evidence: [Aspire verification](tests/WafIsh.Regression/evidence/aspire/README.md). Dependencies: ASP-01.
+Status: DONE. Owner: Codex. Completed: 2026-11-14. Evidence: [Aspire verification](tests/Wafish.Regression/evidence/aspire/README.md). Dependencies: ASP-01.
 
 Replace fixed sample addresses with Aspire endpoint references.
 Configure HTTP and gRPC independently. Preserve required HTTP/2 behavior.
@@ -470,7 +470,7 @@ Acceptance: Services communicate through resolved endpoints without fixed-port a
 
 ### ASP-03 Configure authenticated registration
 
-Status: DONE. Owner: Codex. Completed: 2026-11-14. Evidence: [Aspire verification](tests/WafIsh.Regression/evidence/aspire/README.md). Dependencies: ASP-02.
+Status: DONE. Owner: Codex. Completed: 2026-11-14. Evidence: [Aspire verification](tests/Wafish.Regression/evidence/aspire/README.md). Dependencies: ASP-02.
 
 Enable registration explicitly for the sample topology and inject credentials securely.
 Give each backend a distinct destination identity within the intended shared cluster.
@@ -479,7 +479,7 @@ Acceptance: Both backends register correctly. Invalid credentials fail. Restart 
 
 ### ASP-04 Add health checks and telemetry
 
-Status: DONE. Owner: Codex. Completed: 2026-11-14. Evidence: [Aspire verification](tests/WafIsh.Regression/evidence/aspire/README.md). Dependencies: ASP-03.
+Status: DONE. Owner: Codex. Completed: 2026-11-14. Evidence: [Aspire verification](tests/Wafish.Regression/evidence/aspire/README.md). Dependencies: ASP-03.
 
 Configure readiness, startup dependencies, logs, metrics, and correlated request traces.
 Keep gateway readiness independent of backends that must register after startup.
@@ -489,7 +489,7 @@ Acceptance: Startup has no dependency cycle. Telemetry identifies the gateway an
 
 ### ASP-05 Add optional Redis
 
-Status: DONE. Owner: Codex. Completed: 2026-11-14. Evidence: [Aspire verification](tests/WafIsh.Regression/evidence/aspire/README.md). Dependencies: ASP-01, SEC-11.
+Status: DONE. Owner: Codex. Completed: 2026-11-14. Evidence: [Aspire verification](tests/Wafish.Regression/evidence/aspire/README.md). Dependencies: ASP-01, SEC-11.
 
 Add a Redis resource for distributed rate-limit scenarios.
 Pass its connection information into the plugin's actual configuration path.
@@ -499,7 +499,7 @@ Acceptance: Redis scenarios use the managed resource. The basic sample runs with
 
 ### ASP-06 Verify topology recovery
 
-Status: DONE. Owner: Codex. Completed: 2026-11-14. Evidence: [Aspire verification](tests/WafIsh.Regression/evidence/aspire/README.md). Dependencies: ASP-03, ASP-04, ASP-05.
+Status: DONE. Owner: Codex. Completed: 2026-11-14. Evidence: [Aspire verification](tests/Wafish.Regression/evidence/aspire/README.md). Dependencies: ASP-03, ASP-04, ASP-05.
 
 Test load balancing, registration, shutdown, restart, backend failure, and Redis failure.
 Verify shared rate limits with multiple gateway instances using isolated configuration stores when required.
@@ -508,7 +508,7 @@ Acceptance: Both backends receive traffic. Recovery restores routing and the con
 
 ### ASP-07 Add external-endpoint test execution
 
-Status: DONE. Owner: Codex. Completed: 2026-11-14. Evidence: [Aspire verification](tests/WafIsh.Regression/evidence/aspire/README.md). Dependencies: ASP-02, ASP-04.
+Status: DONE. Owner: Codex. Completed: 2026-11-14. Evidence: [Aspire verification](tests/Wafish.Regression/evidence/aspire/README.md). Dependencies: ASP-02, ASP-04.
 
 Add a performance-runner mode that accepts externally managed endpoints.
 In this mode, the runner must not start or terminate service processes.
@@ -518,7 +518,7 @@ Acceptance: Both runner modes work. External mode leaves AppHost-managed service
 
 ### ASP-08 Document local operation
 
-Status: DONE. Owner: Codex. Completed: 2026-11-14. Evidence: [Aspire verification](tests/WafIsh.Regression/evidence/aspire/README.md). Dependencies: ASP-06, ASP-07.
+Status: DONE. Owner: Codex. Completed: 2026-11-14. Evidence: [Aspire verification](tests/Wafish.Regression/evidence/aspire/README.md). Dependencies: ASP-06, ASP-07.
 
 Document startup, shutdown, endpoints, credentials, troubleshooting, and persistent-data handling.
 Explain the roles of the Aspire dashboard and gateway administration UI.
@@ -583,7 +583,7 @@ Acceptance: The approved replacement can be implemented without unresolved produ
 
 Status: DONE. Owner: Codex. Completed: 2026-11-14. Dependencies: UI-04.
 
-Evidence: [UI verification](tests/WafIsh.Regression/evidence/ui/README.md).
+Evidence: [UI verification](tests/Wafish.Regression/evidence/ui/README.md).
 
 Child tasks: UI-05.1 package and shell; UI-05.2 authentication; UI-05.3 configuration; UI-05.4 plugins; UI-05.5 observation; UI-05.6 history; UI-05.7 settings and integrations.
 
@@ -596,7 +596,7 @@ Acceptance: Approved screens and workflows work without direct gateway-runtime d
 
 Status: DONE. Owner: Codex. Completed: 2026-11-14. Dependencies: UI-05.
 
-Evidence: [UI verification](tests/WafIsh.Regression/evidence/ui/README.md).
+Evidence: [UI verification](tests/Wafish.Regression/evidence/ui/README.md).
 
 Test authentication, configuration editing, validation, plugins, history, logs, and realtime updates.
 Include authorization failures, version conflicts, storage failures, and activation failures.
@@ -607,7 +607,7 @@ Acceptance: Browser checks cover successful operations and actionable failure st
 
 Status: DONE. Owner: Codex. Completed: 2026-11-14. Dependencies: UI-05.
 
-Evidence: [UI verification](tests/WafIsh.Regression/evidence/ui/README.md).
+Evidence: [UI verification](tests/Wafish.Regression/evidence/ui/README.md).
 
 Verify keyboard access, focus behavior, responsive layouts, and English localization.
 Check the selected design against its recorded accessibility requirements.
@@ -618,7 +618,7 @@ Acceptance: Approved accessibility and localization checks pass. Remaining limit
 
 Status: DONE. Owner: Codex. Completed: 2026-11-14. Dependencies: UI-05, UI-06, UI-07.
 
-Evidence: [Razor removal verification](tests/WafIsh.Regression/evidence/ui08/README.md).
+Evidence: [Razor removal verification](tests/Wafish.Regression/evidence/ui08/README.md).
 
 User decision: remove the old Razor UI completely unless it serves a required purpose.
 The presentation package has no remaining purpose. Shared administration services remain necessary for React.
@@ -653,16 +653,16 @@ Original phase completion remains historical evidence. These tasks address addit
 | REV-15 | DONE | Codex | Live Redis, strict dependency auditing, JSON results, and retained CI artifacts are configured and checked locally. |
 | REV-16 | DONE | Codex | UTC migration, controlled policy clocks, and bounded metric identity retention pass. |
 
-Completed 2026-11-14. [Verification and compatibility evidence](tests/WafIsh.Regression/evidence/review123/README.md).
+Completed 2026-11-14. [Verification and compatibility evidence](tests/Wafish.Regression/evidence/review123/README.md).
 Base commit `bc1b617`; implementation remains uncommitted.
 
-Items 4–7 completed 2026-11-14. [Verification and compatibility evidence](tests/WafIsh.Regression/evidence/review4567/README.md).
+Items 4–7 completed 2026-11-14. [Verification and compatibility evidence](tests/Wafish.Regression/evidence/review4567/README.md).
 
-Items 8–10 completed 2026-11-14. [Verification and compatibility evidence](tests/WafIsh.Regression/evidence/review8910/README.md).
+Items 8–10 completed 2026-11-14. [Verification and compatibility evidence](tests/Wafish.Regression/evidence/review8910/README.md).
 
-Items 11–13 completed 2026-11-14. [Verification and compatibility evidence](tests/WafIsh.Regression/evidence/review111213/README.md).
+Items 11–13 completed 2026-11-14. [Verification and compatibility evidence](tests/Wafish.Regression/evidence/review111213/README.md).
 
-Items 14–16 completed 2026-11-14. [Verification and compatibility evidence](tests/WafIsh.Regression/evidence/review141516/README.md).
+Items 14–16 completed 2026-11-14. [Verification and compatibility evidence](tests/Wafish.Regression/evidence/review141516/README.md).
 Linux validation is complete. Windows and macOS execution is configured in CI and awaits hosted runs.
 User decision: treat packages as first releases. Reviewed API snapshots establish compatibility until publication.
 
@@ -670,11 +670,11 @@ User decision: treat packages as first releases. Reviewed API snapshots establis
 
 | Date | Task | Owner | Status | Evidence and next action |
 |---|---|---|---|---|
-| 2026-11-14 | REV-14 through REV-16 | Codex | DONE | Release build, 169 standard regression checks, live Redis, 20 browser checks, and three isolated consumers pass. [Evidence](tests/WafIsh.Regression/evidence/review141516/README.md). |
-| 2026-11-14 | REV-11 through REV-13 | Codex | DONE | Release build, 163 regression executions, 20 browser checks, and package checks pass. Changed C# coverage: 93.85%. [Evidence](tests/WafIsh.Regression/evidence/review111213/README.md). |
-| 2026-11-14 | REV-08 through REV-10 | Codex | DONE | Release build and 157 regression executions pass. Changed source coverage: 86.67%. [Evidence](tests/WafIsh.Regression/evidence/review8910/README.md). |
-| 2026-11-14 | REV-04 through REV-07 | Codex | DONE | Release build; 151 regression checks and 23 managed scenarios pass. Changed source coverage: 89.71%. [Evidence](tests/WafIsh.Regression/evidence/review4567/README.md). |
-| 2026-11-14 | REV-01 through REV-03 | Codex | DONE | Release solution build; 110 main and 24 administration checks pass. Changed source coverage: 91.64%. [Evidence](tests/WafIsh.Regression/evidence/review123/README.md). |
+| 2026-11-14 | REV-14 through REV-16 | Codex | DONE | Release build, 169 standard regression checks, live Redis, 20 browser checks, and three isolated consumers pass. [Evidence](tests/Wafish.Regression/evidence/review141516/README.md). |
+| 2026-11-14 | REV-11 through REV-13 | Codex | DONE | Release build, 163 regression executions, 20 browser checks, and package checks pass. Changed C# coverage: 93.85%. [Evidence](tests/Wafish.Regression/evidence/review111213/README.md). |
+| 2026-11-14 | REV-08 through REV-10 | Codex | DONE | Release build and 157 regression executions pass. Changed source coverage: 86.67%. [Evidence](tests/Wafish.Regression/evidence/review8910/README.md). |
+| 2026-11-14 | REV-04 through REV-07 | Codex | DONE | Release build; 151 regression checks and 23 managed scenarios pass. Changed source coverage: 89.71%. [Evidence](tests/Wafish.Regression/evidence/review4567/README.md). |
+| 2026-11-14 | REV-01 through REV-03 | Codex | DONE | Release solution build; 110 main and 24 administration checks pass. Changed source coverage: 91.64%. [Evidence](tests/Wafish.Regression/evidence/review123/README.md). |
 | 2026-11-14 | SEC-14 | Codex | DONE | Maintained SQLite3MC 2.7.0 / SQLite 3.54.1; legacy plaintext and SQLCipher compatibility verified. 68 regression, 20 administration, and 17 browser checks pass. Published encryption and backups verified. |
 | 2026-11-14 | UI-08 | Codex | DONE | Removed Razor project, pages, assets, wrappers, and fallback. All 87 API contracts remain; 64 regression, 19 administration, nine frontend, and 17 browser checks pass. Published sample and ProxyOnly isolation verified. |
 | 2026-11-14 | ASP-01 through ASP-08 | Codex | DONE | Dynamic endpoints, authenticated multi-instance registration, telemetry, Redis outage/recovery, and both runner modes verified. |
@@ -689,7 +689,7 @@ User decision: treat packages as first releases. Reviewed API snapshots establis
 
 All phase acceptance checks are complete. SEC-14 resolves the native database blocker.
 Live AI-provider and notification delivery checks still require deployment-specific credentials.
-See [UI evidence](tests/WafIsh.Regression/evidence/ui/README.md) for final verification and external integration limits.
+See [UI evidence](tests/Wafish.Regression/evidence/ui/README.md) for final verification and external integration limits.
 
 For each completed task, add an evidence record with these fields:
 

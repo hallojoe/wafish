@@ -6,23 +6,23 @@ Administration APIs retain the `/aneiang` prefix. The former Razor pages and ass
 
 ## Host registration
 
-Reference `WafIsh.ReactUi` and your selected storage package.
+Reference `Wafish.ReactUi` and your selected storage package.
 The React package depends on administration, without referencing the Razor dashboard package.
 
 ```csharp
-using WafIsh.Administration;
-using WafIsh.ReactUi;
-using WafIsh.Runtime;
+using Wafish.Administration;
+using Wafish.ReactUi;
+using Wafish.Runtime;
 
-builder.Services.AddWafIshStorage();
-builder.Services.AddWafIshRuntime();
-builder.Services.AddWafIshReactUi();
+builder.Services.AddWafishStorage();
+builder.Services.AddWafishRuntime();
+builder.Services.AddWafishReactUi();
 
 var app = builder.Build();
-app.UseWafIshRuntime();
-app.MapWafIshAdministration();
-app.MapWafIshReactUi();
-app.MapWafIshProxy();
+app.UseWafishRuntime();
+app.MapWafishAdministration();
+app.MapWafishReactUi();
+app.MapWafishProxy();
 app.Run();
 ```
 
@@ -41,8 +41,8 @@ Compiled assets are embedded in the .NET assembly. Production does not need a No
 The sample Dockerfile builds frontend assets in a separate Node.js stage.
 
 ```bash
-dotnet build WafIsh.slnx -c Release
-cd src/WafIsh.ReactUi/ClientApp
+dotnet build Wafish.slnx -c Release
+cd src/Wafish.ReactUi/ClientApp
 npm ci
 npm run dev
 ```
@@ -93,7 +93,7 @@ Unreadable or invalid existing state rejects login. Failed saves return an error
 
 ## Verification and limits
 
-See [UI evidence](../tests/WafIsh.Regression/evidence/ui/README.md) for commands and results.
+See [UI evidence](../tests/Wafish.Regression/evidence/ui/README.md) for commands and results.
 Automated accessibility checks supplement keyboard, focus, responsive, and localization checks.
 They do not replace testing with every assistive technology.
 External AI-provider and notification delivery require deployment-specific credentials and endpoints.

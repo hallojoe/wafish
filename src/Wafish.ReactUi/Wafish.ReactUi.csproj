@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <DefaultItemExcludes>$(DefaultItemExcludes);ClientApp/node_modules/**;ClientApp/test-results/**;ClientApp/playwright-report/**</DefaultItemExcludes>
+    <Description>Optional React administration UI for Wafish.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../Wafish.Administration/Wafish.Administration.csproj" />
+    <FrontendSource Include="ClientApp/src/**/*;ClientApp/index.html;ClientApp/vite.config.ts;ClientApp/tsconfig*.json;ClientApp/package.json;ClientApp/package-lock.json;ClientApp/public/**/*;ClientApp/scripts/**/*" />
+  </ItemGroup>
+  <Target Name="InstallFrontendDependencies" BeforeTargets="BuildFrontend" Inputs="ClientApp/package.json;ClientApp/package-lock.json" Outputs="ClientApp/node_modules/.package-lock.json" Condition="'$(DesignTimeBuild)' != 'true' And '$(SkipReactBuild)' != 'true'">
+    <Exec Command="npm ci --no-fund" WorkingDirectory="ClientApp" />
+  </Target>
+  <Target Name="TrackFrontendInputs">
+    <MakeDir Directories="$(IntermediateOutputPath)" />
+    <WriteLinesToFile File="$(IntermediateOutputPath)frontend.inputs" Lines="@(FrontendSource->'%(FullPath)')" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ItemGroup><FileWrites Include="$(IntermediateOutputPath)frontend.inputs" /></ItemGroup>
+  </Target>
+  <Target Name="BuildFrontend" DependsOnTargets="TrackFrontendInputs" BeforeTargets="PrepareForBuild" Inputs="$(MSBuildProjectFullPath);@(FrontendSource);$(IntermediateOutputPath)frontend.inputs" Outputs="wwwroot/index.html;wwwroot/.vite/manifest.json" Condition="'$(DesignTimeBuild)' != 'true' And '$(SkipReactBuild)' != 'true'">
+    <Exec Command="npm run build" WorkingDirectory="ClientApp" />
+  </Target>
+  <Target Name="ValidateFrontendAssets" BeforeTargets="GenerateNuspec" Condition="'$(DesignTimeBuild)' != 'true'">
+    <Exec Command="node scripts/verify-assets.mjs ../wwwroot" WorkingDirectory="ClientApp" />
+  </Target>
+  <Target Name="EmbedFrontend" BeforeTargets="AssignTargetPaths" DependsOnTargets="BuildFrontend;ValidateFrontendAssets">
+    <ItemGroup>
+      <FrontendAsset Include="wwwroot/**/*" />
+      <EmbeddedResource Include="@(FrontendAsset)" LogicalName="ReactUi/%(FrontendAsset.RecursiveDir)%(FrontendAsset.Filename)%(FrontendAsset.Extension)" />
+    </ItemGroup>
+  </Target>
+</Project>

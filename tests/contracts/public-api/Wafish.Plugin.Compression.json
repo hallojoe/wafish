@@ -1,0 +1,22 @@
+[
+  "Base: global::Wafish.Plugin.Compression.CompressionMiddleware : object",
+  "Base: global::Wafish.Plugin.Compression.CompressionPlugin : object",
+  "Interface: global::Wafish.Plugin.Compression.CompressionPlugin : global::Wafish.Plugins.IGatewayPlugin",
+  "Method: public global::System.Threading.Tasks.Task global::Wafish.Plugin.Compression.CompressionMiddleware.InvokeAsync(global::Microsoft.AspNetCore.Http.HttpContext context)",
+  "Method: public global::Wafish.Plugin.Compression.CompressionMiddleware.CompressionMiddleware(global::Microsoft.AspNetCore.Http.RequestDelegate next, global::Wafish.Services.GatewayPluginExecutionPlanProvider plans)",
+  "Method: public global::Wafish.Plugin.Compression.CompressionPlugin.CompressionPlugin()",
+  "Method: public global::Wafish.Plugins.PluginManifest global::Wafish.Plugin.Compression.CompressionPlugin.Manifest.get",
+  "Method: public string global::Wafish.Plugin.Compression.CompressionPlugin.DisplayName.get",
+  "Method: public string global::Wafish.Plugin.Compression.CompressionPlugin.PluginId.get",
+  "Method: public string global::Wafish.Plugin.Compression.CompressionPlugin.Version.get",
+  "Method: public void global::Wafish.Plugin.Compression.CompressionPlugin.ConfigureDashboard(global::Wafish.Plugins.IPluginDashboardBuilder builder)",
+  "Method: public void global::Wafish.Plugin.Compression.CompressionPlugin.ConfigureMiddleware(global::Microsoft.AspNetCore.Builder.IApplicationBuilder app)",
+  "Method: public void global::Wafish.Plugin.Compression.CompressionPlugin.ConfigureProxyPipeline(global::Microsoft.AspNetCore.Builder.IReverseProxyApplicationBuilder proxyPipeline)",
+  "Method: public void global::Wafish.Plugin.Compression.CompressionPlugin.ConfigureServices(global::Microsoft.Extensions.DependencyInjection.IServiceCollection services, object? pluginOptions = null)",
+  "NamedType: global::Wafish.Plugin.Compression.CompressionMiddleware",
+  "NamedType: global::Wafish.Plugin.Compression.CompressionPlugin",
+  "Property: public global::Wafish.Plugins.PluginManifest global::Wafish.Plugin.Compression.CompressionPlugin.Manifest",
+  "Property: public string global::Wafish.Plugin.Compression.CompressionPlugin.DisplayName",
+  "Property: public string global::Wafish.Plugin.Compression.CompressionPlugin.PluginId",
+  "Property: public string global::Wafish.Plugin.Compression.CompressionPlugin.Version"
+]

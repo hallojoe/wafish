@@ -7,10 +7,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\src\WafIsh\WafIsh.csproj" />
-		<ProjectReference Include="..\..\src\WafIsh.Storage.Sqlite\WafIsh.Storage.Sqlite.csproj" />
+		<ProjectReference Include="..\..\src\Wafish\Wafish.csproj" />
+		<ProjectReference Include="..\..\src\Wafish.Storage.Sqlite\Wafish.Storage.Sqlite.csproj" />
 		<ProjectReference Include="..\SampleServiceDefaults\SampleServiceDefaults.csproj" />
-		<ProjectReference Include="..\..\src\WafIsh.ReactUi\WafIsh.ReactUi.csproj" />
+		<ProjectReference Include="..\..\src\Wafish.ReactUi\Wafish.ReactUi.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -56,19 +56,19 @@ try
     }
 
     // Gateway: one-liner — auto-loads ReverseProxy routes/clusters + dynamic config
-    builder.Services.AddWafIsh(enableRegistration: builder.Configuration.GetValue<bool>("Gateway:Registration:Enabled"));
+    builder.Services.AddWafish(enableRegistration: builder.Configuration.GetValue<bool>("Gateway:Registration:Enabled"));
 
     // Storage backend: host app is responsible for choosing the storage implementation
-    builder.Services.AddWafIshStorage();
+    builder.Services.AddWafishStorage();
 
     // React administration uses the configured authentication policy.
-    builder.Services.AddWafIshReactUi();
+    builder.Services.AddWafishReactUi();
     // Explicitly include the sample AI tools and configuration UI. MCP remains unregistered.
-    builder.Services.AddWafIshAI();
+    builder.Services.AddWafishAI();
 
     // Multi-port / split / proxy-only deployment support (optional, backward compatible)
     // Wires up deployment options, endpoint role resolver, validators, hot-reload, etc.
-    builder.Services.AddWafIshAdministrationDeployment();
+    builder.Services.AddWafishAdministrationDeployment();
 
     // Optional: enable gRPC endpoint auth (shares Dashboard credentials by default)
     // builder.Services.AddGatewayApiAuth();
@@ -79,12 +79,12 @@ try
 
     // Register gateway middleware and proxy routing (mode-aware).
     // Deployment-aware routing and health-check middleware are mounted automatically when deployment services are registered.
-    app.UseWafIshGateway(configureAdministration: _ =>
+    app.UseWafishGateway(configureAdministration: _ =>
     {
-        app.MapWafIshAdministration();
-        app.MapWafIshReactUi();
+        app.MapWafishAdministration();
+        app.MapWafishReactUi();
     });
-    app.MapWafIshGrpc(); // gRPC GatewayRegistry service (HTTP/2)
+    app.MapWafishGrpc(); // gRPC GatewayRegistry service (HTTP/2)
 
     // Log startup summary
     var depOptions = app.Services.GetRequiredService<IOptions<DeploymentOptions>>().Value;

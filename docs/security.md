@@ -61,7 +61,7 @@ API keys are header-only. URL JWT tokens are restricted to the exact traffic and
 Dashboard login cookies always use `Secure` and `HttpOnly`.
 Use HTTPS for browser access outside localhost.
 
-`UseWafIshGateway()` applies the host's configured CORS policies.
+`UseWafishGateway()` applies the host's configured CORS policies.
 It does not grant access to every origin by default.
 For cross-origin clients, register an explicit policy before building the host:
 
@@ -170,7 +170,7 @@ The replacement exceeds the SQLite versions listed for the reviewed vulnerabilit
 See the [SQLite advisory table](https://sqlite.org/cves.html) and [maintainer release notes](https://github.com/utelle/SQLite3MultipleCiphers-NuGet/blob/main/CHANGELOG.md).
 
 The native dependency release blocker is resolved after compatibility and published-container verification.
-See [SEC-14 evidence](../tests/WafIsh.Regression/evidence/sec14/README.md).
+See [SEC-14 evidence](../tests/Wafish.Regression/evidence/sec14/README.md).
 This does not replace deployment-specific configuration and external integration checks.
 
 ### Encryption is optional
@@ -289,11 +289,11 @@ Plugin errors exclude cancellations. Native statistics include cancellation stat
 SQLite migration 020 adds a UTC expression index without rewriting existing proxy log timestamp text.
 New log timestamps use UTC. Time ranges now compare instants rather than timestamp strings.
 
-See [verification and limitations](../tests/WafIsh.Regression/evidence/review8910/README.md).
+See [verification and limitations](../tests/Wafish.Regression/evidence/review8910/README.md).
 
 ## Consumer changes for review items 11–13
 
-React UI configuration now includes the host's `PathBase`. Configure it before routing and WafIsh middleware.
+React UI configuration now includes the host's `PathBase`. Configure it before routing and Wafish middleware.
 Retired plugin domains remain owned until their request leases finish and disposal completes.
 Shutdown rejects late activation and reports disposal failures. Long requests can delay shutdown.
 Cache settings `varyByQuery` and `varyHeaders` are deprecated and ignored; conservative isolation remains effective.
@@ -301,7 +301,7 @@ Unknown-length compression bypasses thresholds above 65,536 bytes, independent o
 Known-length responses continue using the full configured threshold.
 Frontend builds and package checks require a complete Vite asset manifest and its referenced files.
 
-See [verification and remaining limits](../tests/WafIsh.Regression/evidence/review111213/README.md).
+See [verification and remaining limits](../tests/Wafish.Regression/evidence/review111213/README.md).
 
 ## Review items 14–16 compatibility
 

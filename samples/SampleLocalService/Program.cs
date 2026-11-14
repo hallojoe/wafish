@@ -19,10 +19,10 @@ else
 }
 // Client: one-liner — auto-register on startup, auto-unregister on shutdown
 // Minimal config: just GatewayUrl in code or appsettings.json
-builder.Services.AddWafIshClient();
+builder.Services.AddWafishClient();
 
 // Or with code override (higher priority than config file):
-// builder.Services.AddWafIshClient(options =>
+// builder.Services.AddWafishClient(options =>
 // {
 //     options.GatewayUrl = "http://192.168.1.100:5000";
 //     options.MatchPath = "/api/my-service/{**catch-all}";

@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Description>Gateway runtime and plugin lifecycle independent of the administration UI.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Wafish.Regression" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="..\Wafish\Wafish.csproj" />
+    <ProjectReference Include="..\Wafish.Plugin.Abstractions\Wafish.Plugin.Abstractions.csproj" />
+    <ProjectReference Include="..\Wafish.Storage.Abstractions\Wafish.Storage.Abstractions.csproj" />
+    <ProjectReference Include="..\Wafish.Plugin.Waf\Wafish.Plugin.Waf.csproj" />
+    <ProjectReference Include="..\Wafish.Plugin.Retry\Wafish.Plugin.Retry.csproj" />
+    <ProjectReference Include="..\Wafish.Plugin.CircuitBreaker\Wafish.Plugin.CircuitBreaker.csproj" />
+    <ProjectReference Include="..\Wafish.Plugin.RateLimit\Wafish.Plugin.RateLimit.csproj" />
+    <ProjectReference Include="..\Wafish.Plugin.RateLimit.Redis\Wafish.Plugin.RateLimit.Redis.csproj" />
+    <ProjectReference Include="..\Wafish.Plugin.ProxyLog\Wafish.Plugin.ProxyLog.csproj" />
+    <ProjectReference Include="..\Wafish.Plugin.Cache\Wafish.Plugin.Cache.csproj" />
+    <ProjectReference Include="..\Wafish.Plugin.Compression\Wafish.Plugin.Compression.csproj" />
+    <ProjectReference Include="..\Wafish.Plugin.ServiceDiscovery\Wafish.Plugin.ServiceDiscovery.csproj" />
+    <ProjectReference Include="..\Wafish.Plugin.Metrics\Wafish.Plugin.Metrics.csproj" />
+  </ItemGroup>
+</Project>

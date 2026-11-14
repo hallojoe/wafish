@@ -27,7 +27,7 @@ The sample makes registration, load distribution, and trace propagation visible 
 
 ## What it does
 
-- Register through WafIsh.Client and send lifecycle heartbeats.
+- Register through Wafish.Client and send lifecycle heartbeats.
 - Expose ping, echo, POST echo, and instance identity endpoints.
 - Apply shared telemetry and development health endpoints.
 
@@ -39,8 +39,8 @@ The sample makes registration, load distribution, and trace propagation visible 
 ## Start here
 
 Source project: [SampleLocalService.csproj](SampleLocalService.csproj).
-Direct project references: [WafIsh.Client](../../src/WafIsh.Client/README.md), [SampleServiceDefaults](../SampleServiceDefaults/README.md).
+Direct project references: [Wafish.Client](../../src/Wafish.Client/README.md), [SampleServiceDefaults](../SampleServiceDefaults/README.md).
 
-The instance endpoint is `/api/local-service/instance`. Start both instances through the [AppHost](../../WafIsh.AppHost/README.md).
+The instance endpoint is `/api/local-service/instance`. Start both instances through the [AppHost](../../Wafish.AppHost/README.md).
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).

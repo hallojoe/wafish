@@ -52,7 +52,7 @@ For the current container build, use [the sample Dockerfile](../Dockerfile).
 ```text
 deploy/docker-compose.split.yml
 deploy/systemd/wafish.service
-deploy/windows/Install-WafIshService.ps1
+deploy/windows/Install-WafishService.ps1
 ```
 
 Docker Compose:
@@ -72,7 +72,7 @@ sudo systemctl enable --now wafish
 Windows service, from administrator PowerShell:
 
 ```powershell
-.\deploy\windows\Install-WafIshService.ps1 -AppDirectory C:\Services\WafIsh
+.\deploy\windows\Install-WafishService.ps1 -AppDirectory C:\Services\Wafish
 ```
 
 ## Use environment variables with Docker or Kubernetes

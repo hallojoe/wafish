@@ -370,16 +370,16 @@ website/
 .vscodecsdt/Runners/
 
 # Local Aspire state and persistent sample configuration
-WafIsh.AppHost/.data/
+Wafish.AppHost/.data/
 .aspire/
 .sonarqube/
 
 # React frontend build products
 **/node_modules/
-src/WafIsh.ReactUi/wwwroot/
-src/WafIsh.ReactUi/ClientApp/coverage/
+src/Wafish.ReactUi/wwwroot/
+src/Wafish.ReactUi/ClientApp/coverage/
 **/playwright-report/
 **/test-results/
 
 # Retain curated verification evidence.
-!tests/WafIsh.Regression/evidence/**/*.log
+!tests/Wafish.Regression/evidence/**/*.log

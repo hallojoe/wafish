@@ -23,12 +23,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-      - run: dotnet build WafIsh.slnx -c Release
-      - run: dotnet run --project tests/WafIsh.Regression -c Release --no-build -- --storage
+      - run: dotnet build Wafish.slnx -c Release
+      - run: dotnet run --project tests/Wafish.Regression -c Release --no-build -- --storage
         env:
           WAFISH_TEST_REPORT: artifacts/test-results/storage.json
       - run: python scripts/verify-packages.py
-      - run: python tests/WafIsh.PackageChecks/check-negative.py
+      - run: python tests/Wafish.PackageChecks/check-negative.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -67,29 +67,29 @@ jobs:
         with:
           node-version: '24'
           cache: npm
-          cache-dependency-path: src/WafIsh.ReactUi/ClientApp/package-lock.json
-      - run: dotnet build WafIsh.slnx -c Release
-      - run: dotnet run --project tests/WafIsh.Regression -c Release --no-build
+          cache-dependency-path: src/Wafish.ReactUi/ClientApp/package-lock.json
+      - run: dotnet build Wafish.slnx -c Release
+      - run: dotnet run --project tests/Wafish.Regression -c Release --no-build
         env:
           WAFISH_TEST_REPORT: artifacts/test-results/main.json
-      - run: dotnet run --project tests/WafIsh.Administration.Regression -c Release --no-build
+      - run: dotnet run --project tests/Wafish.Administration.Regression -c Release --no-build
         env:
           WAFISH_TEST_REPORT: artifacts/test-results/administration.json
       - name: Install isolated Redis test executable
         run: sudo apt-get update && sudo apt-get install -y redis-server
       - name: Verify live Redis policies, outage, and recovery
-        run: dotnet run --project tests/WafIsh.Regression -c Release --no-build -- --redis
+        run: dotnet run --project tests/Wafish.Regression -c Release --no-build -- --redis
         env:
           ANEIANG_REDIS_SERVER: /usr/bin/redis-server
           WAFISH_TEST_REPORT: artifacts/test-results/redis.json
       - run: npm run lint && npm run test:coverage && npm audit
-        working-directory: src/WafIsh.ReactUi/ClientApp
-      - run: node --test --experimental-test-coverage src/WafIsh.ReactUi/ClientApp/scripts/verify-assets.test.mjs
-      - run: python3 tests/WafIsh.Regression/evidence/review111213/check-frontend-build.py
+        working-directory: src/Wafish.ReactUi/ClientApp
+      - run: node --test --experimental-test-coverage src/Wafish.ReactUi/ClientApp/scripts/verify-assets.test.mjs
+      - run: python3 tests/Wafish.Regression/evidence/review111213/check-frontend-build.py
       - run: npx playwright install --with-deps chromium
-        working-directory: src/WafIsh.ReactUi/ClientApp
+        working-directory: src/Wafish.ReactUi/ClientApp
       - run: npm run test:e2e
-        working-directory: src/WafIsh.ReactUi/ClientApp
+        working-directory: src/Wafish.ReactUi/ClientApp
         env:
           UI_TEST_NO_BUILD: 'true'
       - uses: actions/upload-artifact@v4
@@ -98,6 +98,6 @@ jobs:
           name: regression-results
           path: |
             artifacts/test-results
-            src/WafIsh.ReactUi/ClientApp/test-results
+            src/Wafish.ReactUi/ClientApp/test-results
           retention-days: 14
           if-no-files-found: error

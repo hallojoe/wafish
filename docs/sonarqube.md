@@ -21,9 +21,9 @@ See [SonarSource host requirements](https://docs.sonarsource.com/sonarqube-commu
 Run from the repository root:
 
 ```bash
-aspire start --apphost WafIsh.AppHost/WafIsh.AppHost.csproj --non-interactive -- --EnableSonarQube=true
-aspire wait sonarqube --apphost WafIsh.AppHost/WafIsh.AppHost.csproj --non-interactive
-aspire describe --apphost WafIsh.AppHost/WafIsh.AppHost.csproj --non-interactive
+aspire start --apphost Wafish.AppHost/Wafish.AppHost.csproj --non-interactive -- --EnableSonarQube=true
+aspire wait sonarqube --apphost Wafish.AppHost/Wafish.AppHost.csproj --non-interactive
+aspire describe --apphost Wafish.AppHost/Wafish.AppHost.csproj --non-interactive
 ```
 
 For Podman, prefix the start command with `ASPIRE_CONTAINER_RUNTIME=podman`.
@@ -60,13 +60,13 @@ Failures stop the script. A failed quality gate or a 300-second gate timeout ret
 After a failed build or test, fix the failure and rerun the complete script.
 
 The .NET report is `artifacts/sonar/coverage.xml`.
-The frontend report is `src/WafIsh.ReactUi/ClientApp/coverage/lcov.info`.
+The frontend report is `src/Wafish.ReactUi/ClientApp/coverage/lcov.info`.
 Generated frontend assets and test harnesses are excluded from source analysis.
 Source TypeScript remains eligible for analysis.
 
 Frontend tests enforce these minimums for the shared API client:
 90% statements, lines, and functions; 80% branches.
-Run `npm --prefix src/WafIsh.ReactUi/ClientApp run test:coverage` to check them locally.
+Run `npm --prefix src/Wafish.ReactUi/ClientApp run test:coverage` to check them locally.
 Other frontend files remain in the report, including uncovered files.
 
 Two CSS rules are excluded only for `src/components/ui/shadcn.css`.
@@ -110,10 +110,10 @@ Changing the parameter does not change the password inside an existing database.
 The named volumes are `wafish-sonar-postgres-data`, `wafish-sonarqube-data`,
 `wafish-sonarqube-extensions`, and `wafish-sonarqube-logs`.
 They are separate from Besitos volumes and survive normal shutdown.
-Do not run multiple WafIsh SonarQube instances against these volumes.
+Do not run multiple Wafish SonarQube instances against these volumes.
 
 ```bash
-aspire stop --apphost WafIsh.AppHost/WafIsh.AppHost.csproj --non-interactive
+aspire stop --apphost Wafish.AppHost/Wafish.AppHost.csproj --non-interactive
 ```
 
 Do not use `--force` for normal shutdown.

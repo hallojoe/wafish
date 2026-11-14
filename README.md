@@ -1,17 +1,17 @@
 <div align="center">
-<img src="cover-en.png" alt="WafIsh — The reverse proxy & API gateway for .NET" width="100%"/>
+<img src="cover-en.png" alt="Wafish — The reverse proxy & API gateway for .NET" width="100%"/>
 
 <br/>
 
-<img src="logo.png" alt="WafIsh" width="240" style="border-radius: 15px;"/>
+<img src="logo.png" alt="Wafish" width="240" style="border-radius: 15px;"/>
 
-**WafIsh — Full-featured API Gateway powered by YARP**
+**Wafish — Full-featured API Gateway powered by YARP**
 
 Plugin Architecture · Dashboard · Dynamic Routing · WAF · Service Discovery · AI Assistant · 2FA · IP Isolation
 
-[![NuGet](https://img.shields.io/nuget/v/WafIsh.svg)](https://www.nuget.org/packages/WafIsh)
-[![NuGet](https://img.shields.io/nuget/v/WafIsh.ReactUi.svg)](https://www.nuget.org/packages/WafIsh.ReactUi)
-[![NuGet](https://img.shields.io/nuget/v/WafIsh.Client.svg)](https://www.nuget.org/packages/WafIsh.Client)
+[![NuGet](https://img.shields.io/nuget/v/Wafish.svg)](https://www.nuget.org/packages/Wafish)
+[![NuGet](https://img.shields.io/nuget/v/Wafish.ReactUi.svg)](https://www.nuget.org/packages/Wafish.ReactUi)
+[![NuGet](https://img.shields.io/nuget/v/Wafish.Client.svg)](https://www.nuget.org/packages/Wafish.Client)
 [![YARP](https://img.shields.io/badge/YARP-2.3.0-blue.svg)](https://github.com/microsoft/reverse-proxy)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -21,15 +21,15 @@ Plugin Architecture · Dashboard · Dynamic Routing · WAF · Service Discovery 
 
 ---
 
-**WafIsh** is a production-ready API gateway built on [Microsoft YARP](https://microsoft.github.io/reverse-proxy/) 2.3.0. It ships with everything you'd otherwise build yourself: a **plugin architecture** (11 built-in plugins), a visual **management dashboard**, WAF, AI assistant, multi-provider **service discovery**, notifications, health & circuit-breaker monitoring, and **one-line client auto-registration**.
+**Wafish** is a production-ready API gateway built on [Microsoft YARP](https://microsoft.github.io/reverse-proxy/) 2.3.0. It ships with everything you'd otherwise build yourself: a **plugin architecture** (11 built-in plugins), a visual **management dashboard**, WAF, AI assistant, multi-provider **service discovery**, notifications, health & circuit-breaker monitoring, and **one-line client auto-registration**.
 
 [📖 Documentation](https://yarp.aneiang.com/docs/index.html#overview) · [🚀 Live Demo](https://yarp-test.aneiang.com/aneiang) (credentials supplied by the demo operator)
 
 ---
 
-## WafIsh vs. Bare YARP
+## Wafish vs. Bare YARP
 
-| Need | Bare YARP | WafIsh |
+| Need | Bare YARP | Wafish |
 |:-----|:----------|:-------------|
 | Management UI | Build your own | ✅ Included |
 | Edit config at runtime | Reload file only | ✅ CRUD + form/JSON editor + rollback + audit |
@@ -46,7 +46,7 @@ Plugin Architecture · Dashboard · Dynamic Routing · WAF · Service Discovery 
 
 ```
                    +-----------------------------------------------------------+
-                   |                 WafIsh Gateway (YARP 2.3.0)          |
+                   |                 Wafish Gateway (YARP 2.3.0)          |
  +-------------+   |   +------------------+  +-------------------------------+  |
  |  5+ clients  |   |   |  Web Dashboard   |  |  Management API + gRPC host   |  |
  |  (browsers/   |   |   |  Routes/Plugins  |  |  Client auto-registration     |  |
@@ -95,28 +95,28 @@ Use the [SonarQube guide](docs/sonarqube.md) for local analysis, .NET coverage, 
 ### Minimal
 
 ```bash
-dotnet add package WafIsh
-dotnet add package WafIsh.ReactUi
-dotnet add package WafIsh.Storage.Sqlite
+dotnet add package Wafish
+dotnet add package Wafish.ReactUi
+dotnet add package Wafish.Storage.Sqlite
 ```
 
 ```csharp
 // Program.cs — Gateway
-using WafIsh.Extensions;
-using WafIsh.Runtime;
-using WafIsh.Administration;
-using WafIsh.ReactUi;
-using WafIsh.Storage.Sqlite;
+using Wafish.Extensions;
+using Wafish.Runtime;
+using Wafish.Administration;
+using Wafish.ReactUi;
+using Wafish.Storage.Sqlite;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddWafIsh();
-builder.Services.AddWafIshStorage();
-builder.Services.AddWafIshReactUi();
+builder.Services.AddWafish();
+builder.Services.AddWafishStorage();
+builder.Services.AddWafishReactUi();
 
 var app = builder.Build();
-app.UseWafIshGateway();   // includes MapReverseProxy
-app.MapWafIshAdministration();
-app.MapWafIshReactUi();
+app.UseWafishGateway();   // includes MapReverseProxy
+app.MapWafishAdministration();
+app.MapWafishReactUi();
 app.Run();
 ```
 
@@ -125,11 +125,11 @@ Dashboard: `http://localhost:5000/console`
 **Microservice** — auto-registers on startup, no extra code:
 
 ```bash
-dotnet add package WafIsh.Client
+dotnet add package Wafish.Client
 ```
 
 ```csharp
-builder.Services.AddWafIshClient();
+builder.Services.AddWafishClient();
 ```
 
 ```json
@@ -139,23 +139,23 @@ builder.Services.AddWafIshClient();
 ### Recommended (multi-port + gRPC + hot reload)
 
 ```csharp
-using WafIsh.Extensions;
-using WafIsh.Runtime;
-using WafIsh.Administration;
-using WafIsh.ReactUi;
-using WafIsh.Storage.Sqlite;
+using Wafish.Extensions;
+using Wafish.Runtime;
+using Wafish.Administration;
+using Wafish.ReactUi;
+using Wafish.Storage.Sqlite;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.UseYarpKestrelAutoConfig();           // multi-port / gRPC support
-builder.Services.AddWafIsh();
-builder.Services.AddWafIshStorage();
-builder.Services.AddWafIshReactUi();
-builder.Services.AddWafIshAdministrationDeployment();  // deployment modes + health endpoints
+builder.Services.AddWafish();
+builder.Services.AddWafishStorage();
+builder.Services.AddWafishReactUi();
+builder.Services.AddWafishAdministrationDeployment();  // deployment modes + health endpoints
 
 var app = builder.Build();
-app.UseWafIshGateway();
-app.MapWafIshAdministration();
-app.MapWafIshReactUi();
+app.UseWafishGateway();
+app.MapWafishAdministration();
+app.MapWafishReactUi();
 app.Run();
 ```
 
@@ -169,16 +169,16 @@ See the [solution project guide](docs/projects.md) for project READMEs, Mermaid 
 
 | Package | Purpose | YARP |
 |:--------|:--------|:---:|
-| **WafIsh** | Gateway core: dynamic routing, IP isolation, API auth, plugin execution | ✅ |
-| **WafIsh.Runtime** | Runtime startup, plugin lifecycle, state, and proxy middleware | via core |
-| **WafIsh.Administration** | Administration APIs, authentication, realtime services, and AI services | via runtime |
-| **WafIsh.ReactUi** | React administration workspace | via administration |
-| **WafIsh.Client** | One-line auto-registration (no YARP dependency) | ❌ |
-| **WafIsh.Storage.Sqlite** | SQLite storage with optional SQLCipher-compatible encryption | via storage |
-| **WafIsh.Storage.Abstractions** | Storage interfaces & entities | ❌ |
-| **WafIsh.Grpc** | gRPC registration protocol | ❌ |
-| **WafIsh.Plugin.Abstractions** | Plugin contract (`IGatewayPlugin`) | ❌ |
-| **WafIsh.Plugin.\*** | 11 first-party plugins, pulled in individually | via core |
+| **Wafish** | Gateway core: dynamic routing, IP isolation, API auth, plugin execution | ✅ |
+| **Wafish.Runtime** | Runtime startup, plugin lifecycle, state, and proxy middleware | via core |
+| **Wafish.Administration** | Administration APIs, authentication, realtime services, and AI services | via runtime |
+| **Wafish.ReactUi** | React administration workspace | via administration |
+| **Wafish.Client** | One-line auto-registration (no YARP dependency) | ❌ |
+| **Wafish.Storage.Sqlite** | SQLite storage with optional SQLCipher-compatible encryption | via storage |
+| **Wafish.Storage.Abstractions** | Storage interfaces & entities | ❌ |
+| **Wafish.Grpc** | gRPC registration protocol | ❌ |
+| **Wafish.Plugin.Abstractions** | Plugin contract (`IGatewayPlugin`) | ❌ |
+| **Wafish.Plugin.\*** | 11 first-party plugins, pulled in individually | via core |
 
 **.NET 10.0**.
 
@@ -276,13 +276,13 @@ Report bugs and feature requests via GitHub Issues. All first-party packages are
 
 | Package | NuGet |
 |:--------|:-----:|
-| **WafIsh** | [![NuGet](https://img.shields.io/nuget/v/WafIsh.svg)](https://www.nuget.org/packages/WafIsh) |
-| **WafIsh.ReactUi** | [![NuGet](https://img.shields.io/nuget/v/WafIsh.ReactUi.svg)](https://www.nuget.org/packages/WafIsh.ReactUi) |
-| **WafIsh.Client** | [![NuGet](https://img.shields.io/nuget/v/WafIsh.Client.svg)](https://www.nuget.org/packages/WafIsh.Client) |
-| **WafIsh.Storage.Abstractions** | [![NuGet](https://img.shields.io/nuget/v/WafIsh.Storage.Abstractions.svg)](https://www.nuget.org/packages/WafIsh.Storage.Abstractions) |
-| **WafIsh.Storage.Sqlite** | [![NuGet](https://img.shields.io/nuget/v/WafIsh.Storage.Sqlite.svg)](https://www.nuget.org/packages/WafIsh.Storage.Sqlite) |
-| **WafIsh.Grpc** | [![NuGet](https://img.shields.io/nuget/v/WafIsh.Grpc.svg)](https://www.nuget.org/packages/WafIsh.Grpc) |
-| **WafIsh.Plugin.Abstractions** | [![NuGet](https://img.shields.io/nuget/v/WafIsh.Plugin.Abstractions.svg)](https://www.nuget.org/packages/WafIsh.Plugin.Abstractions) |
+| **Wafish** | [![NuGet](https://img.shields.io/nuget/v/Wafish.svg)](https://www.nuget.org/packages/Wafish) |
+| **Wafish.ReactUi** | [![NuGet](https://img.shields.io/nuget/v/Wafish.ReactUi.svg)](https://www.nuget.org/packages/Wafish.ReactUi) |
+| **Wafish.Client** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Client.svg)](https://www.nuget.org/packages/Wafish.Client) |
+| **Wafish.Storage.Abstractions** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Storage.Abstractions.svg)](https://www.nuget.org/packages/Wafish.Storage.Abstractions) |
+| **Wafish.Storage.Sqlite** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Storage.Sqlite.svg)](https://www.nuget.org/packages/Wafish.Storage.Sqlite) |
+| **Wafish.Grpc** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Grpc.svg)](https://www.nuget.org/packages/Wafish.Grpc) |
+| **Wafish.Plugin.Abstractions** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Plugin.Abstractions.svg)](https://www.nuget.org/packages/Wafish.Plugin.Abstractions) |
 
 **.NET 10.0** · **YARP 2.3.0**
 
@@ -290,10 +290,10 @@ Report bugs and feature requests via GitHub Issues. All first-party packages are
 
 ## Build
 
-Open `WafIsh.slnx` or build from the repository root:
+Open `Wafish.slnx` or build from the repository root:
 
 ```bash
-dotnet build WafIsh.slnx -c Release
+dotnet build Wafish.slnx -c Release
 ```
 
 NuGet versions are defined in `Directory.Packages.props` for source, sample, test, and AppHost projects.
@@ -308,7 +308,7 @@ The administration UI and API labels use English.
 
 <div align="center">
 
-If this project helps you, [⭐ Star it](https://github.com/aneiang/WafIsh) to support development
+If this project helps you, [⭐ Star it](https://github.com/aneiang/Wafish) to support development
 
 </div>
 
@@ -322,7 +322,7 @@ If this project helps you, [⭐ Star it](https://github.com/aneiang/WafIsh) to s
 - Deprecated ineffective cache switches and made compression fallback independent of write chunk size.
 - Fixed notification queue cleanup when shutdown precedes background execution.
 - Verified 163 .NET regressions, 20 browser checks, and 93.85% changed C# source coverage.
-- [Verification and compatibility evidence](tests/WafIsh.Regression/evidence/review111213/README.md).
+- [Verification and compatibility evidence](tests/Wafish.Regression/evidence/review111213/README.md).
 
 ### 2026-11-14 — Review items 8–10
 
@@ -331,7 +331,7 @@ If this project helps you, [⭐ Star it](https://github.com/aneiang/WafIsh) to s
 - Corrected indexed SQLite UTC comparisons and batch orphan-cluster cleanup.
 - Recorded failed and cancelled metric attempts once, with explicit retry semantics.
 - Verified 157 regression executions and 86.67% changed production-line coverage.
-- [Verification and compatibility evidence](tests/WafIsh.Regression/evidence/review8910/README.md).
+- [Verification and compatibility evidence](tests/Wafish.Regression/evidence/review8910/README.md).
 
 ### 2026-11-14 — Complete review items 1–3
 
@@ -341,7 +341,7 @@ If this project helps you, [⭐ Star it](https://github.com/aneiang/WafIsh) to s
 - Bound decoded log capture and local limiter admission. Preserve active limiter leases during cleanup.
 - Add live Kestrel/YARP streaming, plugin-combination, and cancellation regressions.
 - Release build, 110 main checks, and 24 administration checks pass. Changed source coverage is 91.64%.
-- See [verification evidence](tests/WafIsh.Regression/evidence/review123/README.md) and [consumer migration notes](docs/security.md#consumer-changes-for-review-fixes).
+- See [verification evidence](tests/Wafish.Regression/evidence/review123/README.md) and [consumer migration notes](docs/security.md#consumer-changes-for-review-fixes).
 
 ### 2026-11-14 — Replace the outdated native database component
 
@@ -359,7 +359,7 @@ If this project helps you, [⭐ Star it](https://github.com/aneiang/WafIsh) to s
 - Keep React at `/console` with the existing administration APIs and authentication.
 - Update sample and performance hosts, package publishing, and migration instructions.
 - Preserve all 87 non-page controller contracts.
-- Verify React-only publishing and deployment isolation. See [removal evidence](tests/WafIsh.Regression/evidence/ui08/README.md).
+- Verify React-only publishing and deployment isolation. See [removal evidence](tests/Wafish.Regression/evidence/ui08/README.md).
 
 
 ### 2026-11-14 — React administration workspace
@@ -373,7 +373,7 @@ If this project helps you, [⭐ Star it](https://github.com/aneiang/WafIsh) to s
 - Preserve disabled routes across restart, export, import, rollback, and rename.
 - Repair Razor JSON workers and load fallback assets during Aspire development.
 - Embed production assets. Add a Node.js container build stage and continuous verification workflow.
-- See [hosting instructions](docs/react-ui.md) and [verification evidence](tests/WafIsh.Regression/evidence/ui/README.md).
+- See [hosting instructions](docs/react-ui.md) and [verification evidence](tests/Wafish.Regression/evidence/ui/README.md).
 
 ### 2026-11-14 — Aspire development topology
 
@@ -382,7 +382,7 @@ If this project helps you, [⭐ Star it](https://github.com/aneiang/WafIsh) to s
 - Verify load balancing, process restart, optional Redis, shared limits across two gateways, and outage recovery.
 - Add external-endpoint performance-runner mode. Preserve the existing managed mode.
 - Remove unconditional registration-client TLS certificate acceptance.
-- Document [operation and recovery](docs/aspire.md) with [verification evidence](tests/WafIsh.Regression/evidence/aspire/README.md).
+- Document [operation and recovery](docs/aspire.md) with [verification evidence](tests/Wafish.Regression/evidence/aspire/README.md).
 
 
 Track pending work and acceptance checks in [PLAN.md](PLAN.md).
@@ -406,7 +406,7 @@ Earlier release history remains in [CHANGELOG.md](CHANGELOG.md).
 - Add structured outcomes and HTTP error codes. Show actionable errors in the existing dashboard.
 - Make gRPC multi-route registration and deregistration atomic.
 - Verify restart recovery, concurrent readers, write failures, renamed bindings, and plugin lifecycle behavior.
-- Publish [migration instructions](docs/architecture.md#configuration-transactions-arch-06-and-arch-07) and [verification evidence](tests/WafIsh.Regression/evidence/arch04-09/README.md).
+- Publish [migration instructions](docs/architecture.md#configuration-transactions-arch-06-and-arch-07) and [verification evidence](tests/Wafish.Regression/evidence/arch04-09/README.md).
 
 ### 2026-11-14 — Runtime pipeline and optional features
 
@@ -418,7 +418,7 @@ Earlier release history remains in [CHANGELOG.md](CHANGELOG.md).
 
 ### 2026-11-14 — Administration and presentation separation
 
-- Added `WafIsh.Administration` for administration APIs, authentication, history, realtime hubs, models, and services.
+- Added `Wafish.Administration` for administration APIs, authentication, history, realtime hubs, models, and services.
 - Added administration registration and endpoint mapping without Razor services or dashboard assets.
 - Kept the existing dashboard entry points as presentation wrappers over administration services.
 - Separated login rendering and database settings APIs while preserving all 102 controller method/path contracts.
@@ -439,7 +439,7 @@ Earlier release history remains in [CHANGELOG.md](CHANGELOG.md).
 - Shared caching bypasses authenticated requests and excludes private or cookie-setting responses.
 - Added security regression checks and preserved baseline evidence.
 - Restored legacy plugin-state import and corrected logging setup in runtime test fixtures.
-- Extracted runtime services into WafIsh.Runtime. Proxy startup no longer requires dashboard registration.
+- Extracted runtime services into Wafish.Runtime. Proxy startup no longer requires dashboard registration.
 - Fixed response-header callback ordering in the extracted proxy pipeline.
 - Verified Debug and Release builds, 42 regression checks, and published dashboard startup with encrypted storage.
 
@@ -460,4 +460,4 @@ Isolated consumers verify runtime, administration, React assets, and encrypted S
 CI runs live Redis checks and strict dependency audits, with retained JSON test reports.
 UTC migration and injected clocks support consistent storage and controlled policy timing.
 Metric stores retire obsolete identities and bound retained series.
-See [verification and platform limits](tests/WafIsh.Regression/evidence/review141516/README.md).
+See [verification and platform limits](tests/Wafish.Regression/evidence/review141516/README.md).

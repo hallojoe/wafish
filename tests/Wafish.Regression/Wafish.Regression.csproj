@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../Shared/RegressionReport.cs" Link="RegressionReport.cs" />
+    <None Update="contracts/*.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="fixtures/storage/*.db" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Wafish.ReactUi/Wafish.ReactUi.csproj" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.Data.Sqlite.Core" />
+    <ProjectReference Include="..\..\src\Wafish\Wafish.csproj" />
+    <ProjectReference Include="..\..\src\Wafish.Administration\Wafish.Administration.csproj" />
+    <ProjectReference Include="..\..\src\Wafish.Storage.Sqlite\Wafish.Storage.Sqlite.csproj" />
+  </ItemGroup>
+</Project>

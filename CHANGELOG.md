@@ -2,8 +2,8 @@
 
 ## [Unreleased]
 
-- Rename projects, packages, namespaces, and extension methods to WafIsh.
-- Use `WafIsh.slnx` and central package versions in `Directory.Packages.props`.
+- Rename projects, packages, namespaces, and extension methods to Wafish.
+- Use `Wafish.slnx` and central package versions in `Directory.Packages.props`.
 - Use English documentation, UI labels, alerts, and AI prompts.
 - Remove duplicate Chinese resources and root PowerShell and batch scripts.
 
@@ -28,12 +28,12 @@ Feedback was collected through GitHub Issues until 2026-09-04, with a stable rel
   `PluginDashboardInitializer` collects menus and widgets at startup.
   `_DashboardLayout.cshtml` renders the plugin group dynamically, including `data-plugin-requires`, localized labels, and server fallback titles.
   Remove hardcoded plugin menu entries.
-- Add `WafIsh.Plugin.Compression`, a route-scoped proxy pipeline plugin.
+- Add `Wafish.Plugin.Compression`, a route-scoped proxy pipeline plugin.
   Enable Gzip/Brotli according to allowed MIME types and minimum response size.
   Support Optimal, Fastest, and NoCompression levels.
   Set Content-Encoding and Vary correctly, and remove Content-Length.
   Add the `/compression` management page and binding controls.
-- Add `WafIsh.Plugin.RateLimit.Redis` with atomic Lua scripts for FixedWindow, SlidingWindow, and TokenBucket algorithms.
+- Add `Wafish.Plugin.RateLimit.Redis` with atomic Lua scripts for FixedWindow, SlidingWindow, and TokenBucket algorithms.
   Apply accurate global limits across gateway instances.
   Return Retry-After and X-RateLimit-* headers with 429 responses.
   Load StackExchange.Redis optionally through reflection; allow requests through when the host has no Redis reference.
@@ -69,7 +69,7 @@ Feedback was collected through GitHub Issues until 2026-09-04, with a stable rel
   Wildcards now participate in all-interface detection and LAN IP resolution like `0.0.0.0` and `::1`.
 - Match expanded and empty cluster/route row `colspan` values to their table headers.
 
-### gRPC registration: WafIsh.Grpc and WafIsh.Client
+### gRPC registration: Wafish.Grpc and Wafish.Client
 
 - Extend `GatewayRegistrationOptions` with `MatchPaths`, `LoadBalancingPolicy`, `ExtraDestinationAddresses`, and `Metadata`.
   Multiple paths create routes sharing one cluster.
@@ -230,7 +230,7 @@ Flexible ports and deployment modes, health checks, configuration reload, TOTP, 
 - Add an indigo/purple/blue brand panel, glass icons, and decorative circles.
 - Animate 24 rising bubbles with six random colors, horizontal motion, and scaling.
 - Add a gradient login button with a shadow and hover motion.
-- Display `v2.3.0 · MIT License · © 2026 WafIsh` below login.
+- Display `v2.3.0 · MIT License · © 2026 Wafish` below login.
 - Group navigation into Dashboard, Gateway Management, Monitoring, Security, and System Management.
 - Expand the current group automatically and collapse other groups.
 - Add a three-color brand icon, glow, subtitle, gradient avatar, and pulsing online indicator.
@@ -266,7 +266,7 @@ Flexible ports and deployment modes, health checks, configuration reload, TOTP, 
 ### Added files
 
 ```text
-src/WafIsh.Dashboard/
+src/Wafish.Dashboard/
 ├── Infrastructure/
 │   ├── Deployment/
 │   │   ├── DeploymentOptions.cs        # Options and five modes
@@ -303,12 +303,12 @@ samples/SampleGateway/appsettings.examples/
 
 ```csharp
 // Enable deployment in Program.cs.
-builder.Services.AddWafIshDeployment(builder.Configuration);
+builder.Services.AddWafishDeployment(builder.Configuration);
 
-// Add middleware before UseWafIshDashboard.
+// Add middleware before UseWafishDashboard.
 app.UseMiddleware<EndpointRouterMiddleware>();
 app.UseMiddleware<HealthCheckMiddleware>();
-app.UseWafIshDashboard();
+app.UseWafishDashboard();
 ```
 
 ```json
@@ -408,7 +408,7 @@ Expand the README with technology, middleware, plugins, policies, and performanc
 - Resolve addresses from Kestrel:EndPoints, Urls, then ASPNETCORE_URLS; detect all-interface listeners through KestrelAutoConfigService.
 - Support bearer tokens, Basic authentication, and API keys.
 - Infer RouteName from the entry assembly, default MatchPath to `/{**catch-all}`, and infer DestinationAddress through RegistrationOptionsResolver.
-- Add `WafIsh.Grpc` and GatewayRegistry.proto with RegisterService, UnregisterService, and Heartbeat contracts.
+- Add `Wafish.Grpc` and GatewayRegistry.proto with RegisterService, UnregisterService, and Heartbeat contracts.
 - Mark gRPC route sources and support idempotent replacement in GatewayRegistryService.
 
 ### Storage architecture
@@ -420,7 +420,7 @@ Expand the README with technology, middleware, plugins, policies, and performanc
 - Add eight focused SQLite implementations, each owning its tables.
 - Create tables lazily through EnsureInitializedAsync with a lock and `_initialized` flag, avoiding startup blocking.
 - Change six consumers to inject only one or two required interfaces.
-- Register repositories and the connection factory centrally through `StorageServiceCollectionExtensions.AddWafIshStorage()`.
+- Register repositories and the connection factory centrally through `StorageServiceCollectionExtensions.AddWafishStorage()`.
 
 ### Events, caches, and warmup
 
@@ -469,7 +469,7 @@ Expand the README with technology, middleware, plugins, policies, and performanc
 ## [2.3.0.10] - 2026-05-24
 
 - Add audit logs with operation type, target, actor, before/after JSON, and timestamps.
-- Add `WafIsh.Client` for one-line automatic microservice registration.
+- Add `Wafish.Client` for one-line automatic microservice registration.
 - Improve rollback reliability, log-page interaction, code structure, and documentation; remove compiler warnings.
 
 ## [2.3.0.9] - 2026-05-19

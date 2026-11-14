@@ -1,15 +1,15 @@
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Data.Sqlite;
-using WafIsh.Runtime;
-using WafIsh.Storage.Sqlite;
-using WafIsh.Storage;
-using WafIsh.Services;
+using Wafish.Runtime;
+using Wafish.Storage.Sqlite;
+using Wafish.Storage;
+using Wafish.Services;
 #if ADMIN || UI
-using WafIsh.Administration;
+using Wafish.Administration;
 #endif
 #if UI
-using WafIsh.ReactUi;
+using Wafish.ReactUi;
 #endif
 
 var directory = Path.Combine(Path.GetTempPath(), "wafish-consumer-" + Guid.NewGuid().ToString("N"));
@@ -23,28 +23,28 @@ try
         ["Gateway:Storage:Sqlite:ConnectionString"] = new SqliteConnectionStringBuilder { DataSource = Path.Combine(directory, "gateway.db"), Password = password }.ToString(),
         ["Gateway:Dashboard:Auth:AuthMode"] = "ApiKey", ["Gateway:Dashboard:Auth:ApiKey"] = password,
         ["Gateway:Dashboard:RoutePrefix"] = "manage" });
-    builder.Services.AddWafIshStorage().AddWafIshRuntime();
+    builder.Services.AddWafishStorage().AddWafishRuntime();
 #if UI
-    builder.Services.AddWafIshReactUi();
+    builder.Services.AddWafishReactUi();
 #elif ADMIN
-    builder.Services.AddWafIshAdministration();
+    builder.Services.AddWafishAdministration();
 #endif
     await using var app = builder.Build();
     app.Urls.Add("http://127.0.0.1:0");
-    app.UseWafIshRuntime();
-    app.MapWafIshProxy();
+    app.UseWafishRuntime();
+    app.MapWafishProxy();
 #if ADMIN || UI
-    app.MapWafIshAdministration();
+    app.MapWafishAdministration();
 #endif
 #if UI
-    app.MapWafIshReactUi();
+    app.MapWafishReactUi();
 #endif
     await app.StartAsync();
     try
     {
         var config = app.Services.GetRequiredService<IDynamicYarpConfigService>();
         if (config.GetRoutes().Count != 0) throw new Exception("Unexpected routes");
-        var plugins = app.Services.GetRequiredService<WafIsh.Plugins.IGatewayPluginManager>();
+        var plugins = app.Services.GetRequiredService<Wafish.Plugins.IGatewayPluginManager>();
         if (!plugins.GetAllManifests().Any(m => m.Id == "response-cache")) throw new Exception("Plugin composition failed");
         var factory = app.Services.GetRequiredService<SqliteConnectionFactory>();
         await using var connection = factory.CreateConnection(); await connection.OpenAsync();
@@ -79,7 +79,7 @@ try
         using var allowed = await client.GetAsync("/manage/api/routes");
         if (!allowed.IsSuccessStatusCode) throw new Exception("Administration API unavailable: " + allowed.StatusCode);
 #else
-        if (AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name is "WafIsh.Administration" or "WafIsh.ReactUi")) throw new Exception("Runtime loaded presentation packages");
+        if (AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name is "Wafish.Administration" or "Wafish.ReactUi")) throw new Exception("Runtime loaded presentation packages");
 #endif
         Console.WriteLine("PASS: isolated package host, plugin composition, native encryption, and selected endpoints");
     }

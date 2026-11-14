@@ -5,13 +5,13 @@ Use React Router, TanStack Query, React Hook Form, Zod, and Lucide icons.
 Decision recorded in [ui-design.md](ui-design.md).
 
 All delivery tasks are complete as of 2026-11-14. Owner: Codex.
-Evidence: [workflow, accessibility, and packaging checks](../tests/WafIsh.Regression/evidence/ui/README.md).
+Evidence: [workflow, accessibility, and packaging checks](../tests/Wafish.Regression/evidence/ui/README.md).
 
 ## Delivery tasks
 
 | Task | Implementation | Acceptance |
 |---|---|---|
-| UI-05.1 | Optional WafIsh.ReactUi package; compiled frontend assets; responsive workspace navigation; light/dark theme | Loads without Razor; deep links work; navigation fits desktop and mobile |
+| UI-05.1 | Optional Wafish.ReactUi package; compiled frontend assets; responsive workspace navigation; light/dark theme | Loads without Razor; deep links work; navigation fits desktop and mobile |
 | UI-05.2 | Mode-aware login; cookie JWT; memory-only API credentials; two-factor controls; logout | Protected API failures return to login; no secret persists in browser storage |
 | UI-05.3 | Routes and clusters; common-field editors; advanced JSON; validation; rename; enable; delete; batch actions; import/export; presets | Preserve native configuration fields and drafts after failed saves |
 | UI-05.4 | Plugin inventory, activation, bindings, schema-guided configuration, resource lifecycle | Bindings and lifecycle actions use administration APIs |

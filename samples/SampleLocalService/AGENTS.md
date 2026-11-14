@@ -31,7 +31,7 @@ Run these commands from the repository root after relevant code changes:
 
 ```bash
 dotnet build samples/SampleLocalService/SampleLocalService.csproj -c Release
-dotnet run --project tests/WafIsh.Regression -c Release
+dotnet run --project tests/Wafish.Regression -c Release
 ```
 
 The regression projects are executable runners. A nonzero exit code means verification failed.

@@ -6,11 +6,11 @@ Decision date: 2026-11-13. Related tasks: ARCH-01 through ARCH-09.
 
 | Package | Responsibility | Dependencies |
 |---|---|---|
-| WafIsh | Configuration, snapshots, registration protocols, and core contracts | Storage and plugin abstractions; client and gRPC contracts |
-| WafIsh.Runtime | Runtime startup, plugin lifecycle, state, proxy middleware, and request logging | Core and plugin implementations |
-| WafIsh.Administration | Administration APIs, authentication, history, telemetry queries, shared translations, and AI/MCP services | Runtime and storage abstractions |
-| WafIsh.ReactUi | React workspace, navigation, localization, and embedded frontend assets | Administration |
-| WafIsh.Storage.Sqlite | SQLite repositories and transactional persistence | Storage abstractions |
+| Wafish | Configuration, snapshots, registration protocols, and core contracts | Storage and plugin abstractions; client and gRPC contracts |
+| Wafish.Runtime | Runtime startup, plugin lifecycle, state, proxy middleware, and request logging | Core and plugin implementations |
+| Wafish.Administration | Administration APIs, authentication, history, telemetry queries, shared translations, and AI/MCP services | Runtime and storage abstractions |
+| Wafish.ReactUi | React workspace, navigation, localization, and embedded frontend assets | Administration |
+| Wafish.Storage.Sqlite | SQLite repositories and transactional persistence | Storage abstractions |
 
 Existing core models and plugin abstractions provide shared contracts. Do not duplicate these types in the UI.
 Package dependencies must not point from runtime to administration or presentation.
@@ -18,15 +18,15 @@ Existing namespaces may remain during assembly extraction. Namespace names do no
 
 ## Hosting APIs
 
-- `AddWafIshRuntime` registers runtime services without administration controllers or views.
-- `UseWafIshRuntime` installs runtime middleware.
-- `MapWafIshProxy` maps the proxy pipeline and optional host customization.
-- `AddWafIshAdministration` registers administration services and API controllers.
-- `MapWafIshAdministration` maps administration endpoints and realtime hubs.
-- `AddWafIshReactUi` registers React presentation over administration services.
-- `MapWafIshReactUi` maps the workspace and embedded assets.
-- `AddWafIshAI` enables AI chat and analysis.
-- `AddWafIshMcp` registers the separate MCP host. Neither method enables the other feature.
+- `AddWafishRuntime` registers runtime services without administration controllers or views.
+- `UseWafishRuntime` installs runtime middleware.
+- `MapWafishProxy` maps the proxy pipeline and optional host customization.
+- `AddWafishAdministration` registers administration services and API controllers.
+- `MapWafishAdministration` maps administration endpoints and realtime hubs.
+- `AddWafishReactUi` registers React presentation over administration services.
+- `MapWafishReactUi` maps the workspace and embedded assets.
+- `AddWafishAI` enables AI chat and analysis.
+- `AddWafishMcp` registers the separate MCP host. Neither method enables the other feature.
 
 The host selects storage and registers it once. Registration endpoints are disabled by default in the runtime entry point.
 Hosts use explicit runtime, administration, and React composition. The old Razor wrappers are removed.
@@ -63,7 +63,7 @@ Start the full sample and verify authentication, administration APIs, React page
 
 Completed: 2026-11-14.
 
-Administration controllers, authentication, configuration history, realtime hubs, models, and services now live in `WafIsh.Administration`.
+Administration controllers, authentication, configuration history, realtime hubs, models, and services now live in `Wafish.Administration`.
 Shared translations moved with administration because APIs also return localized messages.
 Resource names remain unchanged. UI-08 subsequently removes the Razor presentation package.
 
@@ -74,18 +74,18 @@ The extraction preserved 102 controller contracts. After UI-08, all 87 non-page 
 
 ### Host administration without Razor
 
-Reference `WafIsh.Administration` and your storage implementation. The dashboard package is unnecessary.
+Reference `Wafish.Administration` and your storage implementation. The dashboard package is unnecessary.
 
 ```csharp
-using WafIsh.Administration;
-using WafIsh.Storage.Sqlite;
+using Wafish.Administration;
+using Wafish.Storage.Sqlite;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddWafIshStorage();
-builder.Services.AddWafIshAdministration();
+builder.Services.AddWafishStorage();
+builder.Services.AddWafishAdministration();
 
 var app = builder.Build();
-app.MapWafIshAdministration();
+app.MapWafishAdministration();
 app.Run();
 ```
 
@@ -97,21 +97,21 @@ Storage configuration remains under `Gateway:Storage`.
 This host serves administration APIs and realtime hubs. It has no Razor engine, login page, or dashboard assets.
 POST login remains available for configured JWT modes. GET login returns 405 without the presentation package.
 
-To forward proxy traffic in the same host, use `UseWafIshGateway()` before mapping administration.
-Their namespace is `WafIsh.Runtime`. Keep host authentication and authorization middleware in the required order.
+To forward proxy traffic in the same host, use `UseWafishGateway()` before mapping administration.
+Their namespace is `Wafish.Runtime`. Keep host authentication and authorization middleware in the required order.
 
 ### Replace the removed Razor UI
 
-`AddWafIshDashboard()` and `UseWafIshDashboard()` are removed.
+`AddWafishDashboard()` and `UseWafishDashboard()` are removed.
 Replace them using the [React hosting example](react-ui.md#host-registration).
-Replace `AddWafIshDeployment()` with `AddWafIshAdministrationDeployment()`.
-`UseWafIshGateway` owns deployment middleware, compression, plugin activation, and proxy mapping.
+Replace `AddWafishDeployment()` with `AddWafishAdministrationDeployment()`.
+`UseWafishGateway` owns deployment middleware, compression, plugin activation, and proxy mapping.
 Map administration APIs and the React UI explicitly after gateway middleware.
 No Razor view engine, page controller, static asset handler, or compatibility UI remains.
 
 ### Consumer migration
 
-- Upgrade administration and runtime packages. Replace the dashboard package reference with `WafIsh.ReactUi`.
+- Upgrade administration and runtime packages. Replace the dashboard package reference with `Wafish.ReactUi`.
 - Existing CLR namespaces and JSON names remain unchanged.
 - Public types moved between assemblies. Rebuild consumers and plugins that reference these types.
 - Code that depended on assembly-qualified names must use the new owning assembly.
@@ -123,7 +123,7 @@ AI and MCP require explicit service registration. Configuration alone cannot act
 The sample explicitly registers AI. MCP remains unregistered until its security checks pass.
 Persistence ordering changes remain under ARCH-06 and ARCH-07.
 
-See [ARCH-03 verification](../tests/WafIsh.Regression/evidence/arch03/README.md).
+See [ARCH-03 verification](../tests/Wafish.Regression/evidence/arch03/README.md).
 PLAN.md records the remaining target boundaries.
 
 ## Configuration transactions: ARCH-06 and ARCH-07
@@ -172,14 +172,14 @@ Multi-path registration commits the cluster and all routes in one transaction.
 ### Proxy-only host
 
 ```csharp
-using WafIsh.Runtime;
-using WafIsh.Storage.Sqlite;
+using Wafish.Runtime;
+using Wafish.Storage.Sqlite;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddWafIshStorage();
-builder.Services.AddWafIshRuntime();
+builder.Services.AddWafishStorage();
+builder.Services.AddWafishRuntime();
 var app = builder.Build();
-app.UseWafIshGateway();
+app.UseWafishGateway();
 app.Run();
 ```
 
@@ -205,7 +205,7 @@ This applies to `ImportBatchAsync` and `ReplaceAllConfig`.
 
 ## Optional React presentation
 
-`WafIsh.ReactUi` contains the modern administration workspace.
+`Wafish.ReactUi` contains the modern administration workspace.
 It references administration services without referencing the Razor package.
 Its embedded assets support standalone hosts and container publishing.
 See [registration, development, authentication, and migration](react-ui.md).

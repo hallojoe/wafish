@@ -1,0 +1,12 @@
+[
+  "Base: global::Wafish.ReactUi.ReactUiExtensions : object",
+  "Base: global::Wafish.ReactUi.ReactUiOptions : object",
+  "Method: public global::Wafish.ReactUi.ReactUiOptions.ReactUiOptions()",
+  "Method: public static global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder global::Wafish.ReactUi.ReactUiExtensions.MapWafishReactUi(global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints)",
+  "Method: public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection global::Wafish.ReactUi.ReactUiExtensions.AddWafishReactUi(global::Microsoft.Extensions.DependencyInjection.IServiceCollection services, global::System.Action\u003Cglobal::Wafish.ReactUi.ReactUiOptions\u003E? configure = null)",
+  "Method: public string global::Wafish.ReactUi.ReactUiOptions.RoutePrefix.get",
+  "Method: public void global::Wafish.ReactUi.ReactUiOptions.RoutePrefix.set",
+  "NamedType: global::Wafish.ReactUi.ReactUiExtensions",
+  "NamedType: global::Wafish.ReactUi.ReactUiOptions",
+  "Property: public string global::Wafish.ReactUi.ReactUiOptions.RoutePrefix"
+]

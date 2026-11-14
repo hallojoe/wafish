@@ -1,14 +1,14 @@
 FROM node:24-bookworm-slim AS frontend
 WORKDIR /ui
-COPY src/WafIsh.ReactUi/ClientApp/package*.json ./
+COPY src/Wafish.ReactUi/ClientApp/package*.json ./
 RUN npm ci --no-fund
-COPY src/WafIsh.ReactUi/ClientApp/ ./
+COPY src/Wafish.ReactUi/ClientApp/ ./
 RUN npm run build
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY . .
-COPY --from=frontend /wwwroot src/WafIsh.ReactUi/wwwroot
+COPY --from=frontend /wwwroot src/Wafish.ReactUi/wwwroot
 RUN dotnet publish samples/SampleGateway/SampleGateway.csproj -c Release -o /app/publish /p:UseAppHost=false /p:SkipReactBuild=true
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
