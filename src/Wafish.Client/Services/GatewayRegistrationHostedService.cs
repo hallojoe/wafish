@@ -12,6 +12,7 @@ namespace Wafish.Services;
 internal sealed class GatewayRegistrationHostedService : IHostedService, IAsyncDisposable
 {
     private readonly TimeProvider _timeProvider;
+    private readonly Random _random;
     private readonly GatewayAutoRegistrationClient _client;
     private readonly Grpc.Net.Client.GrpcChannel _grpcChannel;
     private readonly ILogger<GatewayRegistrationHostedService> _logger;
@@ -44,13 +45,20 @@ internal sealed class GatewayRegistrationHostedService : IHostedService, IAsyncD
         GatewayAutoRegistrationClient client,
         Grpc.Net.Client.GrpcChannel grpcChannel,
         ILogger<GatewayRegistrationHostedService> logger,
-        IOptions<GatewayRegistrationOptions> options, TimeProvider? timeProvider = null)
+        IOptions<GatewayRegistrationOptions> options, TimeProvider? timeProvider = null, Random? random = null)
     {
         _timeProvider = timeProvider ?? TimeProvider.System;
+        _random = random ?? Random.Shared;
         _client = client;
         _grpcChannel = grpcChannel;
         _logger = logger;
         _options = options.Value;
+    }
+
+    internal static TimeSpan RetryDelay(int attempt, Random random)
+    {
+        var maximum = RetryDelays[Math.Clamp(attempt, 0, RetryDelays.Length - 1)];
+        return TimeSpan.FromMilliseconds(maximum.TotalMilliseconds * (0.5 + random.NextDouble() * 0.5));
     }
 
     public async Task StartAsync(CancellationToken ct)
@@ -86,7 +94,7 @@ internal sealed class GatewayRegistrationHostedService : IHostedService, IAsyncD
                 // Non-exception failure (e.g. gateway returned error), still retry
                 if (attempt < MaxRetries - 1)
                 {
-                    var delay = RetryDelays[Math.Min(attempt, RetryDelays.Length - 1)];
+                    var delay = RetryDelay(attempt, _random);
                     if (_logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
                     {
                         _logger.LogInformation(
@@ -105,7 +113,7 @@ internal sealed class GatewayRegistrationHostedService : IHostedService, IAsyncD
             {
                 if (attempt < MaxRetries - 1)
                 {
-                    var delay = RetryDelays[Math.Min(attempt, RetryDelays.Length - 1)];
+                    var delay = RetryDelay(attempt, _random);
                     _logger.LogWarning(ex,
                         "Registration attempt {Attempt}/{MaxRetries} failed, retrying in {Delay}s...",
                         attempt + 1, MaxRetries, delay.TotalSeconds);

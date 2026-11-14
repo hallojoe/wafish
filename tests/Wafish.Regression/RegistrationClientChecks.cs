@@ -11,6 +11,27 @@ internal static class RegistrationClientChecks
 {
     public static async Task RunAsync(Func<string, Func<Task>, Task> run)
     {
+        await run("Registration: startup jitter waits cancel without another registration", async () =>
+        {
+            var clock = new ReviewReleaseChecks.ManualTime();
+            using var handler = new CaptureHandler { Status = HttpStatusCode.ServiceUnavailable };
+            var services = new ServiceCollection().AddLogging();
+            services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+            services.AddSingleton<TimeProvider>(clock);
+            services.AddSingleton<Random>(new HalfRandom());
+            services.AddWafishClient(o => { o.GatewayUrl = "http://gateway.test"; o.RouteName = "cancel";
+                o.DestinationAddress = "http://localhost:9000/"; o.AutoResolveIp = false; });
+            services.AddSingleton<IHttpClientFactory>(new ClientFactory(handler));
+            await using var provider = services.BuildServiceProvider();
+            var hosted = provider.GetServices<IHostedService>().Single(s => s.GetType().Name == "GatewayRegistrationHostedService");
+            using var cancellation = new CancellationTokenSource();
+            var start = hosted.StartAsync(cancellation.Token);
+            Check(handler.Calls.Count == 1 && !start.IsCompleted, "Initial failure did not wait.");
+            cancellation.Cancel();
+            await start.WaitAsync(TimeSpan.FromSeconds(5));
+            clock.Advance(TimeSpan.FromDays(1));
+            Check(handler.Calls.Count == 1 && clock.TimerCount == 0, "Cancelled wait retained a timer or retried.");
+        });
         await run("Registration: gRPC preserves paths, instance identity, destinations, and credentials", async () =>
         {
             using var logs = new CaptureLogs();
@@ -114,6 +135,7 @@ internal static class RegistrationClientChecks
         var services = new ServiceCollection().AddLogging();
         services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
         services.AddSingleton<TimeProvider>(clock);
+        services.AddSingleton<Random>(new HalfRandom());
         services.AddWafishClient(o =>
         {
             o.GatewayUrl = "http://gateway.test"; o.RouteName = "clock";
@@ -126,7 +148,9 @@ internal static class RegistrationClientChecks
         var start = hosted.StartAsync(default);
         Check(!start.IsCompleted && handler.Calls.Count == 1, "Registration did not wait for retry.");
         handler.Status = HttpStatusCode.OK;
-        clock.Advance(TimeSpan.FromSeconds(2));
+        clock.Advance(TimeSpan.FromMilliseconds(1499));
+        Check(handler.Calls.Count == 1 && !start.IsCompleted, "Startup retry ran before its jittered delay.");
+        clock.Advance(TimeSpan.FromMilliseconds(1));
         await start.WaitAsync(TimeSpan.FromSeconds(5));
         Check(handler.Calls.Count == 2, "Controlled retry failed.");
         clock.Advance(TimeSpan.FromSeconds(30));
@@ -142,6 +166,8 @@ internal static class RegistrationClientChecks
         clock.Advance(TimeSpan.FromDays(1));
         Check(handler.Calls.Count == stoppedCount && clock.TimerCount == 0, "Shutdown retained a heartbeat timer.");
     }
+
+    private sealed class HalfRandom : Random { public override double NextDouble() => 0.5; }
 
     private sealed class CaptureGrpcClient : Wafish.GatewayRegistry.GatewayRegistry.GatewayRegistryClient
     {

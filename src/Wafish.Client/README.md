@@ -63,3 +63,10 @@ Results include `RetryAdvice` and `MayHaveApplied`. Transport failures retain un
 Boolean wrappers remain available. Caller cancellation now propagates through mutation APIs and their Boolean wrappers.
 Configured timeouts also set gRPC deadlines.
 See [response contracts and migration](../../docs/mutation-contracts.md).
+
+## Startup retry timing
+
+Registration makes at most five startup attempts. Each failed attempt waits before the next attempt.
+Waits use equal jitter between half the backoff ceiling and that ceiling: 2, 4, 8, and 16 seconds.
+An injected `Random` and `TimeProvider` support deterministic tests. Production uses `Random.Shared`.
+Cancellation removes the pending wait and prevents another startup attempt.

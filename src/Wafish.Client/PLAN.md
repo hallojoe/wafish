@@ -8,7 +8,8 @@ The [root execution plan](../../PLAN.md) remains the historical and cross-projec
 
 ### IMP-01: Add startup retry jitter
 
-Status: TODO.
+Status: DONE. Completed: 2026-11-14.
+Verification: Client checks, controlled 1.5-second delay, and cancellation during startup wait pass.
 
 Distribute registration retries when many services restart together.
 
