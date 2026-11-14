@@ -58,7 +58,9 @@ Orchestrated startup still respects the disabled automatic-browser setting.
 
 ### FEAT-02: Provide a minimal runtime composition profile
 
-Status: TODO. Priority: P3. Type: sample feature.
+Status: DONE. Completed: 2026-11-14.
+Verification: MinimalGateway Release build and real HTTP smoke checks passed.
+The host proxies backend traffic and returns 404 for administration paths. Priority: P3. Type: sample feature.
 
 Evidence: [Program.cs](Program.cs) always registers React administration and AI services.
 

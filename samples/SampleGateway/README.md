@@ -54,3 +54,7 @@ See the [HTTPS recipe](../../docs/sample-https.md) for certificate, authenticati
 Startup prints the effective HTTPS authority and configured React UI prefix after Kestrel binds.
 Wildcard listeners produce localhost links. HTTP/2-only gRPC endpoints are excluded from browser links.
 Orchestrated hosts never open a browser automatically.
+
+## Minimal composition
+
+Use [MinimalGateway](../MinimalGateway/README.md) for runtime and SQLite without administration, AI, registration, or Aspire.
