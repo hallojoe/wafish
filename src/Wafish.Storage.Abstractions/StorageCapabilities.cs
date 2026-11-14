@@ -7,7 +7,7 @@ namespace Wafish.Storage;
 
 /// <summary>Optional storage contracts available to a host.</summary>
 [Flags, JsonConverter(typeof(JsonStringEnumConverter))]
-public enum StorageFeature { None = 0, Encryption = 1, ConsistentBackup = 2, AtomicConfiguration = 4, AtomicBindings = 8, ConfigurationReceipts = 16 }
+public enum StorageFeature { None = 0, Encryption = 1, ConsistentBackup = 2, AtomicConfiguration = 4, AtomicBindings = 8, ConfigurationReceipts = 16, AtomicChangeSets = 32 }
 
 /// <summary>Provider support without connection strings or secret values.</summary>
 public sealed record StorageCapabilities(string Provider, StorageFeature Features, bool EncryptionEnabled);

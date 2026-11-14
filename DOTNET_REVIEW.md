@@ -221,7 +221,10 @@ Resolve the local SQLite comparison defect before the wider migration.
 
 ### NET-FEAT-01: Add versioned configuration change sets
 
-Status: TODO. Priority: P2. Type: feature.
+Status: DONE. Owner: Codex. Completed: 2026-11-15.
+
+Verification: Release builds, main `--group need-six`, administration `--need-six`, and existing configuration-change checks.
+See [feature contracts](docs/need-six-features.md).
 
 Evidence: Configuration and binding mutations currently have separate commit paths.
 See [NET-IMP-01](#net-imp-01-coordinate-snapshot-commit-and-publication).

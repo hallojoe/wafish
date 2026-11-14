@@ -81,6 +81,7 @@ public sealed class PluginBindingMutationService : IPluginBindingMutationService
                 await preparation.CommitAsync(CancellationToken.None);
                 _snapshotPublisher.Publish(snapshot);
                 GatewayPublicationCoordinator.For(_snapshotPublisher).Published(snapshot);
+                GatewayPublicationCoordinator.For(_snapshotPublisher).ActiveBindingRevision = committedRevision;
                 _configProvider?.Update(snapshot.Routes, snapshot.Clusters);
             }
             catch
@@ -130,6 +131,7 @@ public sealed class PluginBindingMutationService : IPluginBindingMutationService
                 await preparation.CommitAsync(CancellationToken.None);
                 _snapshotPublisher.Publish(snapshot);
                 GatewayPublicationCoordinator.For(_snapshotPublisher).Published(snapshot);
+                GatewayPublicationCoordinator.For(_snapshotPublisher).ActiveBindingRevision = committedRevision;
                 _configProvider?.Update(snapshot.Routes, snapshot.Clusters);
             }
             catch
@@ -158,6 +160,7 @@ public sealed class PluginBindingMutationService : IPluginBindingMutationService
             await preparation.CommitAsync(CancellationToken.None);
             _snapshotPublisher.Publish(snapshot);
             GatewayPublicationCoordinator.For(_snapshotPublisher).Published(snapshot);
+            GatewayPublicationCoordinator.For(_snapshotPublisher).ActiveBindingRevision = stored.Revision;
             _configProvider?.Update(snapshot.Routes, snapshot.Clusters);
         }
         finally { PublishGate.Release(); }

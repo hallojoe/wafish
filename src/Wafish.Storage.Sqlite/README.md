@@ -135,3 +135,8 @@ SQLite reports encryption, consistent backup, atomic configuration, atomic bindi
 Provider-owned backups preserve encryption and committed WAL data. Disposal removes the private temporary directory.
 
 See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.
+
+## Atomic change sets
+
+Versioned change sets combine routes, clusters, and plugin bindings in one transaction.
+See [change-set contracts](../../docs/need-six-features.md) for API examples, revisions, permissions, and recovery.

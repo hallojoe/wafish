@@ -46,7 +46,12 @@ internal class DynamicConfigPublisher : IDynamicConfigPublisher
     internal Task<Action> PreparePreviewAsync(GatewayDynamicConfig config, long version, CancellationToken cancellationToken, Action<GatewaySnapshot>? preview = null)
         => PrepareCoreAsync(config, version, false, cancellationToken, preview);
 
-    private async Task<Action> PrepareCoreAsync(GatewayDynamicConfig config, long version, bool recordErrors, CancellationToken cancellationToken, Action<GatewaySnapshot>? preview = null)
+    internal Task<Action> PrepareChangeSetAsync(GatewayDynamicConfig config, IReadOnlyList<Wafish.Storage.Entities.PluginBindingEntity> bindings,
+        CancellationToken cancellationToken, Action<GatewaySnapshot>? preview = null)
+        => PrepareCoreAsync(config, config.Version, false, cancellationToken, preview, bindings);
+
+    private async Task<Action> PrepareCoreAsync(GatewayDynamicConfig config, long version, bool recordErrors, CancellationToken cancellationToken, Action<GatewaySnapshot>? preview = null,
+        IReadOnlyList<Wafish.Storage.Entities.PluginBindingEntity>? candidateBindings = null)
     {
         await PreValidateAsync(config.Routes, config.Clusters, recordErrors, cancellationToken).ConfigureAwait(false);
         var publishRoutes = new List<DynamicRouteConfig>(config.Routes.Count);
@@ -110,7 +115,7 @@ internal class DynamicConfigPublisher : IDynamicConfigPublisher
         var gatewaySnapshot = await _snapshotCompiler.CompileAsync(
                 publishRoutes.Select(x => x.Config).ToList(),
                 publishClusters.Select(x => x.Config).ToList(),
-                snapshotVersion, cancellationToken,
+                snapshotVersion, cancellationToken, candidateBindings,
                 candidateRouteIds: config.Routes.ToDictionary(r => r.RouteUid, r => r.Config.RouteId),
                 candidateClusterIds: config.Clusters.ToDictionary(c => c.ClusterUid, c => c.Config.ClusterId)).ConfigureAwait(false);
 

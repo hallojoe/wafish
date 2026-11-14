@@ -116,3 +116,8 @@ Input is limited to 1,000 distinct plugin IDs.
 A five-second reaper removes expired leased destinations without removing healthy or legacy peers.
 
 See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.
+
+## Atomic change sets
+
+Versioned change sets combine routes, clusters, and plugin bindings in one transaction.
+See [change-set contracts](../../docs/need-six-features.md) for API examples, revisions, permissions, and recovery.

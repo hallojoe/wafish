@@ -9,6 +9,7 @@ public sealed class GatewayPublicationCoordinator
 {
     private static readonly ConditionalWeakTable<IGatewaySnapshotPublisher, GatewayPublicationCoordinator> Coordinators = new();
     private readonly Dictionary<string, (PluginBindingSnapshot Binding, IReadOnlyDictionary<string, DestinationConfig> Destinations)> _discoveries = new(StringComparer.Ordinal);
+    public long? ActiveBindingRevision { get; set; }
     public SemaphoreSlim Gate { get; } = new(1, 1);
     public static GatewayPublicationCoordinator For(IGatewaySnapshotPublisher publisher) => Coordinators.GetValue(publisher, _ => new());
 

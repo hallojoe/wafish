@@ -85,3 +85,8 @@ Providers without this optional contract reject idempotent configuration applies
 `IStorageBackupProvider` returns an owned backup stream. Dispose `StorageBackup` to release all temporary resources.
 
 See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.
+
+## Atomic change sets
+
+Versioned change sets combine routes, clusters, and plugin bindings in one transaction.
+See [change-set contracts](../../docs/need-six-features.md) for API examples, revisions, permissions, and recovery.

@@ -539,6 +539,7 @@ public sealed partial class PluginBindingsController : ControllerBase
             await runtimePreparation.CommitAsync(CancellationToken.None);
             _snapshotPublisher.Publish(snapshot);
             coordinator.Published(snapshot);
+            coordinator.ActiveBindingRevision = revision;
             _configProvider?.Update(snapshot.Routes, snapshot.Clusters);
             foreach (var candidate in candidateBindings)
                 AuditExclusions(stored.Bindings.FirstOrDefault(b => b.Id == candidate.Id), candidate);

@@ -1,0 +1,17 @@
+@base = http://localhost:5000/ops
+@apiKey = replace-locally
+
+### Preview a complete empty configuration and binding set. Replace both revisions first.
+POST {{base}}/api/config/change-sets/preview
+X-Api-Key: {{apiKey}}
+Content-Type: application/json
+
+{"configuration":{"expectedVersion":1,"routes":[],"clusters":[]},"expectedBindingRevision":0,"bindings":[]}
+
+### Apply the reviewed replacement with a unique key.
+POST {{base}}/api/config/change-sets
+X-Api-Key: {{apiKey}}
+Idempotency-Key: change-set-example-1
+Content-Type: application/json
+
+{"configuration":{"expectedVersion":1,"routes":[],"clusters":[]},"expectedBindingRevision":0,"bindings":[]}

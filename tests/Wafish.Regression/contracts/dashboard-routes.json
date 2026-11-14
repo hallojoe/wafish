@@ -59,6 +59,8 @@
   "POST control/api/ai/tool/execute",
   "POST control/api/cache/purge",
   "POST control/api/circuit-breaker/reset",
+  "POST control/api/config/change-sets",
+  "POST control/api/config/change-sets/preview",
   "POST control/api/config/changes",
   "POST control/api/config/changes/preview",
   "POST control/api/config/clusters/batch-delete",

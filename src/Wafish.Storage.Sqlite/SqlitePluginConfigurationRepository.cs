@@ -71,7 +71,7 @@ public sealed class SqlitePluginConfigurationRepository : IPluginConfigurationRe
         await transaction.CommitAsync(ct);
     }
 
-    private static async Task UpsertAsync(Microsoft.Data.Sqlite.SqliteConnection conn,
+    internal static async Task UpsertAsync(Microsoft.Data.Sqlite.SqliteConnection conn,
         Microsoft.Data.Sqlite.SqliteTransaction transaction, PluginBindingEntity binding, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(binding);

@@ -9,7 +9,7 @@ public sealed partial class SqliteConnectionFactory : IStorageCapabilitiesProvid
     {
         cancellationToken.ThrowIfCancellationRequested();
         return ValueTask.FromResult(new StorageCapabilities("sqlite", StorageFeature.Encryption | StorageFeature.ConsistentBackup
-            | StorageFeature.AtomicConfiguration | StorageFeature.AtomicBindings | StorageFeature.ConfigurationReceipts,
+            | StorageFeature.AtomicConfiguration | StorageFeature.AtomicBindings | StorageFeature.ConfigurationReceipts | StorageFeature.AtomicChangeSets,
             !string.IsNullOrEmpty(new SqliteConnectionStringBuilder(_connectionString).Password)));
     }
 

@@ -102,3 +102,8 @@ Instance registration supports expiring leases and graceful draining. Lease stat
 Configuration previews include active WAF exclusions. Legacy registration cannot replace leased ownership.
 
 See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.
+
+## Atomic change sets
+
+Versioned change sets combine routes, clusters, and plugin bindings in one transaction.
+See [change-set contracts](../../docs/need-six-features.md) for API examples, revisions, permissions, and recovery.

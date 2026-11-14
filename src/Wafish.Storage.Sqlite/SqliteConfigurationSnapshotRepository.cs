@@ -4,7 +4,7 @@ namespace Wafish.Storage.Sqlite;
 
 /// <summary>Commits the complete configuration in one SQLite transaction.</summary>
 public sealed partial class SqliteConfigurationSnapshotRepository(SqliteConnectionFactory connections)
-    : IIdempotentConfigurationSnapshotRepository
+    : IConfigurationChangeSetRepository
 {
     public async Task<ConfigurationSnapshot> LoadAsync(CancellationToken ct = default)
     {
@@ -27,11 +27,17 @@ public sealed partial class SqliteConfigurationSnapshotRepository(SqliteConnecti
     public Task SaveAsync(ConfigurationSnapshot snapshot, long expectedVersion, CancellationToken ct = default)
         => SaveCoreAsync(snapshot, expectedVersion, null, ct);
 
-    private async Task SaveCoreAsync(ConfigurationSnapshot snapshot, long expectedVersion, ConfigurationMutationReceipt? receipt, CancellationToken ct)
+    private async Task<long> SaveCoreAsync(ConfigurationSnapshot snapshot, long expectedVersion, ConfigurationMutationReceipt? receipt, CancellationToken ct,
+        long? expectedBindingRevision = null, IReadOnlyList<Wafish.Storage.Entities.PluginBindingEntity>? bindings = null)
     {
         await using var conn = await connections.CreateConnectionAsync(ct);
         await conn.OpenAsync(ct);
         await using var tx = (SqliteTransaction)await conn.BeginTransactionAsync(ct);
+        if (expectedBindingRevision is { } expectedBindings)
+        {
+            var actualBindings = await ReadBindingRevisionAsync(conn, tx, ct);
+            if (actualBindings != expectedBindings) throw new BindingRevisionConflictException(expectedBindings, actualBindings);
+        }
         if (receipt is not null) await InsertReceiptAsync(conn, tx, receipt, ct);
         var actual = await ReadVersion(conn, tx, ct);
         if (actual != expectedVersion)
@@ -97,10 +103,10 @@ public sealed partial class SqliteConfigurationSnapshotRepository(SqliteConnecti
             await cmd.ExecuteNonQueryAsync(ct);
         }
         await BindIdentities(conn, tx, ct);
-        await using (var bindings = conn.CreateCommand())
+        await using (var renamedBindings = conn.CreateCommand())
         {
-            bindings.Transaction = tx;
-            bindings.CommandText = """
+            renamedBindings.Transaction = tx;
+            renamedBindings.CommandText = """
                 UPDATE plugin_bindings SET scope_id = (SELECT route_id FROM yarp_routes WHERE route_uid = plugin_bindings.route_uid),
                     config_version = config_version + 1
                 WHERE scope = 1 AND EXISTS (SELECT 1 FROM yarp_routes WHERE route_uid = plugin_bindings.route_uid AND route_id != plugin_bindings.scope_id);
@@ -108,7 +114,7 @@ public sealed partial class SqliteConfigurationSnapshotRepository(SqliteConnecti
                     config_version = config_version + 1
                 WHERE scope = 2 AND EXISTS (SELECT 1 FROM yarp_clusters WHERE cluster_uid = plugin_bindings.cluster_uid AND cluster_id != plugin_bindings.scope_id);
                 """;
-            await bindings.ExecuteNonQueryAsync(ct);
+            await renamedBindings.ExecuteNonQueryAsync(ct);
         }
         await using (var update = conn.CreateCommand())
         {
@@ -117,7 +123,18 @@ public sealed partial class SqliteConfigurationSnapshotRepository(SqliteConnecti
             update.Parameters.AddWithValue("@version", snapshot.Version);
             await update.ExecuteNonQueryAsync(ct);
         }
+        if (bindings is not null)
+        {
+            await using var delete = conn.CreateCommand();
+            delete.Transaction = tx;
+            delete.CommandText = "DELETE FROM plugin_bindings";
+            await delete.ExecuteNonQueryAsync(ct);
+            foreach (var binding in bindings)
+                await SqlitePluginConfigurationRepository.UpsertAsync(conn, tx, binding, ct);
+        }
+        var bindingRevision = await ReadBindingRevisionAsync(conn, tx, ct);
         await tx.CommitAsync(ct);
+        return bindingRevision;
     }
 
     private static async Task BindIdentities(SqliteConnection conn, SqliteTransaction tx, CancellationToken ct)
