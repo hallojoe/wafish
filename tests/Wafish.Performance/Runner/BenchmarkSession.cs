@@ -1,0 +1,112 @@
+using System.Diagnostics;
+using System.Runtime;
+using System.Runtime.InteropServices;
+using System.Text.Json;
+using Wafish.Performance;
+
+internal sealed class BenchmarkSession : IDisposable
+{
+    public static BenchmarkSession Current { get; private set; } = null!;
+    private readonly List<object> _hosts = [];
+    private readonly Dictionary<int, string> _hashes = [];
+    private string? _directory;
+    private object _environment = null!;
+    private readonly string _root;
+    public Uri Backend { get; }
+    public Uri Native { get; }
+    public Uri Enhanced { get; }
+    public string PayloadMode { get; }
+    public string ResultsDirectory { get; }
+    public string[]? Modes { get; }
+    public string DataDirectory
+    {
+        get
+        {
+            if (_directory is not null) return _directory;
+            _directory = Path.Combine(Path.GetTempPath(), "wafish-perf-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(_directory);
+            if (!OperatingSystem.IsWindows()) File.SetUnixFileMode(_directory, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+            return _directory;
+        }
+    }
+    private BenchmarkSession(string[] args, string root)
+    {
+        _root = root;
+        Backend = BenchmarkOptions.LoopbackAddress(BenchmarkOptions.Read(args, "--backend-url", "http://127.0.0.1:5300"), "--backend-url");
+        Native = BenchmarkOptions.LoopbackAddress(BenchmarkOptions.Read(args, "--native-url", "http://127.0.0.1:5301"), "--native-url");
+        Enhanced = BenchmarkOptions.LoopbackAddress(BenchmarkOptions.Read(args, "--enhanced-url", "http://127.0.0.1:5302"), "--enhanced-url");
+        if (new[] { Backend.Port, Native.Port, Enhanced.Port }.Distinct().Count() != 3 || Backend.Port == 0 || Native.Port == 0 || Enhanced.Port == 0)
+            throw new ArgumentException("Managed listener ports must be distinct and nonzero.");
+        PayloadMode = BenchmarkOptions.Read(args, "--payload-mode", "precomputed");
+        if (PayloadMode is not ("precomputed" or "generated")) throw new ArgumentException("Unknown payload mode.");
+        ResultsDirectory = Path.GetFullPath(BenchmarkOptions.Read(args, "--results-directory", Path.Combine(root, "tests", "Wafish.Performance", "results")));
+        var modes = BenchmarkOptions.Read(args, "--modes", "");
+        Modes = string.IsNullOrWhiteSpace(modes) ? null : modes.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+    }
+    public static async Task<BenchmarkSession> CreateAsync(string[] args, string root)
+    {
+        var session = new BenchmarkSession(args, root);
+        var revision = await session.GitAsync("rev-parse", "HEAD");
+        var dirty = await session.GitAsync("status", "--porcelain");
+        var cpu = Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER");
+        if (OperatingSystem.IsLinux())
+        {
+            try { cpu = File.ReadLines("/proc/cpuinfo").FirstOrDefault(line => line.StartsWith("model name", StringComparison.Ordinal))?.Split(':', 2)[1].Trim(); }
+            catch (IOException) { }
+        }
+        session._environment = new
+        {
+            capturedUtc = DateTimeOffset.UtcNow, runtime = RuntimeInformation.FrameworkDescription,
+            operatingSystem = RuntimeInformation.OSDescription, processArchitecture = RuntimeInformation.ProcessArchitecture.ToString(),
+            osArchitecture = RuntimeInformation.OSArchitecture.ToString(), logicalProcessors = Environment.ProcessorCount,
+            cpuModel = cpu ?? "unavailable", serverGc = GCSettings.IsServerGC, sourceRevision = revision?.Trim(),
+            workingTreeDirty = dirty is null ? (bool?)null : !string.IsNullOrWhiteSpace(dirty)
+        };
+        Current = session;
+        return session;
+    }
+    private async Task<string?> GitAsync(params string[] arguments)
+    {
+        try
+        {
+            var info = new ProcessStartInfo("git") { WorkingDirectory = _root, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
+            foreach (var argument in arguments) info.ArgumentList.Add(argument);
+            using var process = Process.Start(info)!;
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var output = process.StandardOutput.ReadToEndAsync(timeout.Token);
+            var errors = process.StandardError.ReadToEndAsync(timeout.Token);
+            try { await process.WaitForExitAsync(timeout.Token); }
+            catch (OperationCanceledException) { process.Kill(entireProcessTree: true); return null; }
+            await errors;
+            return process.ExitCode == 0 ? await output : null;
+        }
+        catch (Exception error) when (error is IOException or System.ComponentModel.Win32Exception or InvalidOperationException) { return null; }
+    }
+    public Uri AddressForPort(int port) => port == Backend.Port ? Backend : port == Native.Port ? Native : port == Enhanced.Port ? Enhanced : throw new ArgumentException("Unknown managed port.");
+    public async Task CaptureHostAsync(string name, Uri endpoint)
+    {
+        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+        using var response = await client.GetAsync(new Uri(endpoint, "/benchmark/manifest"));
+        response.EnsureSuccessStatusCode();
+        using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var manifest = body.RootElement.Clone();
+        _hashes[endpoint.Port] = manifest.GetProperty("configurationHash").GetString()!;
+        _hosts.Add(new { name, endpoint = endpoint.ToString(), manifest });
+    }
+    public string? ConfigurationHash(int port) => _hashes.GetValueOrDefault(port);
+    public async Task WriteAsync(string path, object results, object settings)
+    {
+        await File.WriteAllTextAsync(path, JsonSerializer.Serialize(new
+        {
+            schemaVersion = 1, environment = _environment, settings,
+            latency = new { strategy = "fixed logarithmic histogram; upper-bound nearest rank", relativeError = BoundedLatencyHistogram.RelativeError,
+                absoluteErrorBelowMinimumMs = BoundedLatencyHistogram.MinimumMilliseconds, maximumMs = BoundedLatencyHistogram.MaximumMilliseconds,
+                retainedBytes = new BoundedLatencyHistogram().RetainedBytes },
+            hosts = _hosts, results
+        }, new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
+    }
+    public void Dispose()
+    {
+        if (_directory is not null) Directory.Delete(_directory, recursive: true);
+    }
+}

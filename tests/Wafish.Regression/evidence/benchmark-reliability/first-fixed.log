@@ -1,0 +1,29 @@
+dotnet-coverage v18.12.0.0 [linux-x64 - .NET 10.0.14]
+
+SessionId: 9eb57ee4-c366-42c2-8496-b39347b49d6d
+[Wafish full] concurrency-1: 1,961 RPS, P95 0.76 ms, errors 0.00%
+[Wafish full] concurrency-16: 8,306 RPS, P95 3.75 ms, errors 0.00%
+[Wafish full] concurrency-64: 10,095 RPS, P95 13.13 ms, errors 0.00%
+[Wafish full] concurrency-128: 12,411 RPS, P95 17.70 ms, errors 0.00%
+[Wafish full] response-1024: 12,126 RPS, P95 5.15 ms, errors 0.00%
+[Wafish full] request-1024: 8,686 RPS, P95 6.95 ms, errors 0.00%
+[Wafish full] response-65536: 8,468 RPS, P95 6.48 ms, errors 0.00%
+[Wafish full] request-65536: 2,659 RPS, P95 23.85 ms, errors 0.00%
+[Wafish full] response-1048576: 817 RPS, P95 81.92 ms, errors 0.00%
+[Wafish full] request-1048576: 243 RPS, P95 219.39 ms, errors 0.00%
+[log-meta] plain: 3,887 RPS, P95 22.92 ms, errors 0.00%
+[log-request] post-64kb: 1,030 RPS, P95 74.90 ms, errors 0.00%
+[log-response] response-64kb: 2,155 RPS, P95 36.59 ms, errors 0.00%
+[log-sqlite] post-64kb: 934 RPS, P95 76.41 ms, errors 0.00%
+[waf-normal] normal: 3,741 RPS, P95 20.14 ms, errors 0.00%
+[waf-attack] status 403, backend calls 0: PASS
+[rate-fixed] plain: 7,828 RPS, P95 22.25 ms, errors 0.00%
+[rate-sliding] plain: 2,313 RPS, P95 63.88 ms, errors 0.00%
+[rate-token] plain: 2,355 RPS, P95 81.92 ms, errors 0.00%
+[rate-concurrency] plain: 2,555 RPS, P95 46.93 ms, errors 0.00%
+[retry] status 200, backend calls 3: PASS
+[circuit] backend before recovery 3, after 4: PASS
+[soak] plain-1s: 3,742 RPS, P95 32.15 ms, errors 0.00%
+CSV: /tmp/wafish-priority10-fixed-results/performance-first-20261114-200040-715-f681df41.csv
+Report: /tmp/wafish-priority10-fixed-results/performance-first-20261114-200040-715-f681df41.md
+Code coverage results: /tmp/wafish-priority10-first-fixed.xml.

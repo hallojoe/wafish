@@ -1,14 +1,16 @@
 # NativeYarp: proposed work
 
 Reviewed against source on 2026-11-14.
-All items below are TODO proposals, not implemented capabilities or scheduled commitments.
+Completed items include verification evidence. Remaining items are proposals.
 The [root execution plan](../../../PLAN.md) remains the historical and cross-project record.
 
 ## Improvements not yet implemented
 
 ### IMP-01: Make baseline addresses configurable
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [benchmark reliability](../../Wafish.Regression/evidence/benchmark-reliability/README.md).
 
 Allow the runner to supply listener and upstream addresses.
 
@@ -16,7 +18,9 @@ Acceptance: The same route works on isolated port assignments.
 
 ### IMP-02: Record effective baseline configuration
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [benchmark reliability](../../Wafish.Regression/evidence/benchmark-reliability/README.md).
 
 Include proxy version and transport settings in benchmark metadata.
 
@@ -39,7 +43,9 @@ See [solution priorities and dependencies](../../../DOTNET_REVIEW.md).
 
 ### IMP-03: Verify the workload route before measurement
 
-Status: TODO. Priority: P2. Type: benchmark readiness gap.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [benchmark reliability](../../Wafish.Regression/evidence/benchmark-reliability/README.md). Priority: P2. Type: benchmark readiness gap.
 
 Evidence: [Program.cs](Program.cs) returns a successful local `/health` response.
 

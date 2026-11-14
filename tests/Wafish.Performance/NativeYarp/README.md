@@ -44,3 +44,16 @@ This project has no direct solution project references. Package and framework re
 Use the [runner](../Runner/README.md) to coordinate this host with the shared backend.
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+
+## Benchmark isolation and metadata
+
+Listener and upstream options accept loopback HTTP origins only.
+Native and Wafish upstream connections use HTTP/1.1 with an exact version policy.
+The runner validates workload status and payload before measurement.
+Preflight has a five-second deadline and a four-MiB response limit.
+
+`/benchmark/manifest` exports normalized configuration and a SHA-256 configuration hash.
+Reports retain these manifests beside each measured configuration hash.
+Secrets in named credential fields are redacted before hashing.
+
+Set `--listen-url` and `--backend-url` to select isolated addresses.

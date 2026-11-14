@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "suite": "main",
+  "cases": [
+    {
+      "name": "Benchmarks: isolated backend cancellation drains work and identifies payload allocation",
+      "group": "benchmarks",
+      "durationMs": 5238.1244,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    }
+  ]
+}

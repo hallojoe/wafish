@@ -16,7 +16,9 @@ Acceptance: Each mode reports its effective configuration and fails if required 
 
 ### IMP-02: Remove remaining legacy labels and configuration keys
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [benchmark reliability](../../Wafish.Regression/evidence/benchmark-reliability/README.md).
 
 Review scenario names and options against current plugin manifests.
 
@@ -54,7 +56,9 @@ A WAF probe is blocked, and a rate-limit probe exhausts permits.
 
 ### FEAT-02: Export a benchmark configuration manifest
 
-Status: TODO. Priority: P2. Type: benchmark feature.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [benchmark reliability](../../Wafish.Regression/evidence/benchmark-reliability/README.md). Priority: P2. Type: benchmark feature.
 
 Evidence: [Program.cs](Program.cs) selects configuration from mode strings.
 

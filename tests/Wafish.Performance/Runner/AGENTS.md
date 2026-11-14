@@ -12,7 +12,7 @@ Proposals do not authorize implementation outside the current user request.
 ## Boundaries and invariants
 
 - Build Release binaries before using managed mode.
-- Managed mode owns benchmark processes and cleans benchmark databases; external mode does neither.
+- Managed mode owns benchmark processes and cleans only its private benchmark directories; external mode does neither.
 - Keep sample gateway data outside benchmark cleanup paths.
 - Report environment, failures, and missing process measurements alongside throughput.
 
@@ -41,3 +41,7 @@ For documentation-only changes, check links and Mermaid rendering instead of sta
 Update the README when behavior or scope changes.
 Keep future work in PLAN.md until its acceptance checks pass.
 Record implementation evidence when completing a plan item.
+
+Preserve explicit loopback addresses, bounded preflight, and configuration hashes.
+Never delete databases outside the current session directory.
+Verify changes with the regression `--benchmarks` group after a Release solution build.

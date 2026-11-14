@@ -1,0 +1,6 @@
+dotnet-coverage v18.12.0.0 [linux-x64 - .NET 10.0.14]
+
+SessionId: 03497a70-55e7-4932-9f65-5c8bd2d6a0b7
+PASS: Benchmarks: isolated backend cancellation drains work and identifies payload allocation
+All regression checks passed.
+Code coverage results: /tmp/wafish-priority10-backend.xml.

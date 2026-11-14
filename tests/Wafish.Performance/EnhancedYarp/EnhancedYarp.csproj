@@ -10,4 +10,8 @@
     <ProjectReference Include="..\..\..\src\Wafish.Administration\Wafish.Administration.csproj" />
     <ProjectReference Include="..\..\..\src\Wafish.Storage.Sqlite\Wafish.Storage.Sqlite.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Shared/BenchmarkOptions.cs" Link="BenchmarkOptions.cs" />
+    <Compile Include="../Shared/BenchmarkManifest.cs" Link="BenchmarkManifest.cs" />
+  </ItemGroup>
 </Project>

@@ -1,3 +1,7 @@
+using Wafish.Performance;
+using Yarp.ReverseProxy.Configuration;
+using Yarp.ReverseProxy.Forwarder;
+
 using Wafish.Administration;
 using Wafish.Runtime;
 using System.Text.Json;
@@ -15,9 +19,13 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
     ContentRootPath = AppContext.BaseDirectory
 });
 builder.Logging.ClearProviders();
-builder.WebHost.UseUrls("http://127.0.0.1:5302");
+var listener = BenchmarkOptions.LoopbackAddress(BenchmarkOptions.Read(args, "--listen-url", "http://127.0.0.1:5302"), "--listen-url");
+var backend = BenchmarkOptions.LoopbackAddress(BenchmarkOptions.Read(args, "--backend-url", "http://127.0.0.1:5300"), "--backend-url");
+var dataRoot = Path.GetFullPath(BenchmarkOptions.Read(args, "--data-root", Environment.GetEnvironmentVariable("BENCHMARK_DATA_ROOT") ?? Environment.CurrentDirectory));
+Directory.CreateDirectory(dataRoot);
+builder.WebHost.UseUrls(listener.ToString());
 
-var mode = args.FirstOrDefault(x => x.StartsWith("--mode=", StringComparison.OrdinalIgnoreCase))?[7..] ?? "full";
+var mode = BenchmarkOptions.Read(args, "--mode", "full");
 if (mode is not ("core" or "storage" or "services" or "host-native" or "minimal" or "full" or "waf" or "waf-attack"
     or "retry" or "circuit" or "rate-fixed" or "rate-sliding" or "rate-token" or "rate-concurrency"
     or "log-meta" or "log-request" or "log-response" or "log-bodies" or "log-sqlite"))
@@ -30,7 +38,7 @@ var circuitEnabled = mode.StartsWith("circuit", StringComparison.OrdinalIgnoreCa
 
 builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
 {
-    ["Gateway:Storage:Sqlite:ConnectionString"] = $"Data Source=performance-{mode}.db",
+    ["Gateway:Storage:Sqlite:ConnectionString"] = new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder { DataSource = Path.Combine(dataRoot, $"performance-{mode}.db"), Pooling = false }.ToString(),
     ["Gateway:Deployment:Mode"] = "ProxyOnly",
     ["Gateway:Deployment:HealthCheck:Enabled"] = "false",
     ["Gateway:Dashboard:Auth:AuthMode"] = "None",
@@ -42,7 +50,9 @@ builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
     ["Gateway:ProxyLog:LogMaxBodyBufferBytes"] = (256 * 1024).ToString(),
     ["ReverseProxy:Routes:perf:ClusterId"] = "backend",
     ["ReverseProxy:Routes:perf:Match:Path"] = "/api/perf/{**catch-all}",
-    ["ReverseProxy:Clusters:backend:Destinations:backend:Address"] = "http://127.0.0.1:5300"
+    ["ReverseProxy:Clusters:backend:Destinations:backend:Address"] = backend.ToString(),
+    ["ReverseProxy:Clusters:backend:HttpRequest:Version"] = "1.1",
+    ["ReverseProxy:Clusters:backend:HttpRequest:VersionPolicy"] = "RequestVersionExact"
 });
 
 var coreOnly = mode == "core";
@@ -62,9 +72,10 @@ if (nativeHost)
         [new Yarp.ReverseProxy.Configuration.ClusterConfig
         {
             ClusterId = "backend",
+            HttpRequest = new ForwarderRequestConfig { Version = System.Net.HttpVersion.Version11, VersionPolicy = HttpVersionPolicy.RequestVersionExact },
             Destinations = new Dictionary<string, Yarp.ReverseProxy.Configuration.DestinationConfig>
             {
-                ["backend"] = new() { Address = "http://127.0.0.1:5300" }
+                ["backend"] = new() { Address = backend.ToString() }
             }
         }]);
 }
@@ -102,6 +113,28 @@ else
 var ready = false;
 string[] effectivePolicies = [];
 app.MapGet("/health", () => Volatile.Read(ref ready) ? Results.Ok(new { mode, effectivePolicies }) : Results.StatusCode(503));
+
+app.MapGet("/benchmark/manifest", () =>
+{
+    var proxy = app.Services.GetRequiredService<IProxyConfigProvider>().GetConfig();
+    var snapshot = app.Services.GetService<IGatewaySnapshotPublisher>()?.Current;
+    var manager = app.Services.GetService<IGatewayPluginManager>();
+    var bindings = snapshot?.RoutePlugins.Values.SelectMany(value => value).Concat(snapshot.ClusterPlugins.Values.SelectMany(value => value))
+        .OrderBy(binding => binding.Scope).ThenBy(binding => binding.ScopeId).ThenBy(binding => binding.Order).ThenBy(binding => binding.PluginId)
+        .Select(binding => new { binding.PluginId, version = manager?.GetManifest(binding.PluginId)?.Version,
+            binding.Scope, binding.ScopeId, binding.SchemaVersion, binding.Order, configuration = JsonSerializer.Deserialize<JsonElement>(binding.ConfigJson) }).ToArray();
+    var configuration = BenchmarkManifest.Create(new
+    {
+        mode, effectivePolicies, proxyVersion = typeof(IProxyConfigProvider).Assembly.GetName().Version?.ToString(),
+        listener = listener.ToString(), routes = proxy.Routes.Select(route => new { route.RouteId, route.ClusterId, route.Match, route.Order, route.Transforms }),
+        clusters = proxy.Clusters.Select(cluster => new { cluster.ClusterId, cluster.Destinations, cluster.LoadBalancingPolicy, cluster.HttpClient, cluster.HttpRequest, cluster.SessionAffinity, cluster.HealthCheck }), bindings,
+        clientTransport = "HTTP/1.1 cleartext", upstreamTransport = "HTTP/1.1 exact cleartext"
+    });
+    var lifecycle = app.Services.GetService<IPluginResourceLifecycleCoordinator>();
+    var resources = effectivePolicies.SelectMany(plugin => (lifecycle?.GetRuntimeResources(plugin) ?? [])
+        .Select(resource => new { pluginId = plugin, resource.ResourceType, resource.Running, health = resource.Health.ToString() }));
+    return Results.Json(new { configuration.SchemaVersion, configuration.ConfigurationHash, configuration.Configuration, resources });
+});
 
 await app.StartAsync();
 if (!coreOnly && !storageOnly && !servicesOnly && !nativeHost && mode != "minimal")
@@ -203,8 +236,9 @@ if (!coreOnly && !storageOnly && !servicesOnly && !nativeHost && mode != "minima
                 failureThreshold = 3,
                 recoveryTimeoutSeconds = 2,
                 halfOpenMaxAttempts = 1,
-                failureRatio = 0.5,
-                minimumThroughput = 3,
+                // One successful workload preflight precedes three measured failures.
+                failureRatio = 0.75,
+                minimumThroughput = 4,
                 samplingDurationSeconds = 30,
                 failureStatusCodes = new[] { 500, 502, 503, 504 }
             }),
@@ -254,6 +288,12 @@ if (!coreOnly && !storageOnly && !servicesOnly && !nativeHost && mode != "minima
     {
         throw new InvalidOperationException("Requested resilience policy is inactive.");
     }
+}
+if (app.Services.GetService<IPluginResourceLifecycleCoordinator>() is { } coordinator)
+{
+    await coordinator.ReconcileAsync();
+    if (effectivePolicies.SelectMany(coordinator.GetRuntimeResources).Any(resource => !resource.Running || resource.Health == PluginResourceHealthStatus.Faulted))
+        throw new InvalidOperationException("Benchmark resources are not ready.");
 }
 Volatile.Write(ref ready, true);
 await app.WaitForShutdownAsync();

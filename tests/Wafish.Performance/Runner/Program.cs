@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+using Wafish.Performance;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net;
@@ -7,7 +7,8 @@ using System.Text;
 using System.Text.Json;
 
 var root = FindRepositoryRoot();
-var resultsDirectory = Path.Combine(root, "tests", "Wafish.Performance", "results");
+using var session = await BenchmarkSession.CreateAsync(args, root);
+var resultsDirectory = session.ResultsDirectory;
 Directory.CreateDirectory(resultsDirectory);
 
 var durationSeconds = ReadIntArgument(args, "--duration", 10);
@@ -16,9 +17,12 @@ var concurrency = ReadIntArgument(args, "--concurrency", 64);
 var repetitions = ReadIntArgument(args, "--repetitions", 3);
 var suite = ReadStringArgument(args, "--suite", "baseline");
 var soakSeconds = ReadIntArgument(args, "--soak-duration", 30);
-var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
+var timestamp = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff", CultureInfo.InvariantCulture) + "-" + Guid.NewGuid().ToString("N")[..8];
 var results = new List<BenchmarkResult>();
 var processes = new List<Process>();
+if (durationSeconds <= 0 || warmupSeconds < 0 || concurrency is <= 0 or > 4096 || repetitions is <= 0 or > 100 || soakSeconds <= 0)
+    throw new ArgumentException("Duration and soak must be positive; warmup nonnegative; concurrency 1..4096; repetitions 1..100.");
+if (suite is not ("baseline" or "first")) throw new ArgumentException("Unknown benchmark suite.");
 
 var externalUrl = ReadStringArgument(args, "--external-url", "");
 if (!string.IsNullOrWhiteSpace(externalUrl))
@@ -34,6 +38,7 @@ if (!string.IsNullOrWhiteSpace(externalUrl))
     }
 
     var scenario = Scenario.Get("external", ReadStringArgument(args, "--path", "/api/local-service/instance"));
+    await BenchmarkPreflight.VerifyAsync(endpoint, scenario.Method, scenario.Path, scenario.Body, knownWorkload: false);
     Console.WriteLine($"External endpoint: {endpoint}. The runner does not manage processes or databases.");
     if (warmupSeconds > 0)
     {
@@ -51,6 +56,7 @@ if (!string.IsNullOrWhiteSpace(externalUrl))
         "\nExternal mode does not collect process CPU or memory. Zero values mean unavailable.\n" +
         "Keep telemetry settings identical when comparing hosts. Services remain running after this test.\n");
     await File.WriteAllTextAsync(Path.ChangeExtension(report, ".csv"), BuildCsv(results, summary));
+    await session.WriteAsync(Path.ChangeExtension(report, ".json"), results, new { mode = "external", processMeasurementsAvailable = false, durationSeconds, warmupSeconds, concurrency, repetitions, requestTimeoutSeconds = 10, clientTransport = "HTTP/1.1" });
     Console.WriteLine($"Report: {report}; failures: {results.Sum(r => r.Failures)}");
     if (results.Any(r => r.Failures > 0))
     {
@@ -68,31 +74,34 @@ if (suite.Equals("first", StringComparison.OrdinalIgnoreCase))
 
 try
 {
-    CleanupDatabases(root);
     var backend = StartService("Backend", Path.Combine(root, "tests", "Wafish.Performance", "Backend", "bin", "Release", "net10.0", "Backend.dll"), root);
     processes.Add(backend);
-    await WaitForHealthyAsync("http://127.0.0.1:5300/health", backend);
+    await WaitForHealthyAsync(new Uri(BenchmarkSession.Current.Backend, "/health").ToString(), backend);
+    await BenchmarkSession.Current.CaptureHostAsync("Backend", BenchmarkSession.Current.Backend);
 
     var gateways = new[]
     {
-        new GatewayCase("Native YARP", 5301, "NativeYarp", Array.Empty<string>()),
-        new GatewayCase("Same host native", 5302, "EnhancedYarp", ["--mode=host-native"]),
-        new GatewayCase("Aneiang core", 5302, "EnhancedYarp", ["--mode=core"]),
-        new GatewayCase("Aneiang storage", 5302, "EnhancedYarp", ["--mode=storage"]),
-        new GatewayCase("Aneiang services", 5302, "EnhancedYarp", ["--mode=services"]),
-        new GatewayCase("Aneiang minimal", 5302, "EnhancedYarp", ["--mode=minimal"]),
-        new GatewayCase("Aneiang full", 5302, "EnhancedYarp", ["--mode=full"]),
-        new GatewayCase("Aneiang WAF", 5302, "EnhancedYarp", ["--mode=waf"])
+        new GatewayCase("Native YARP", session.Native.Port, "NativeYarp", Array.Empty<string>()),
+        new GatewayCase("Same host native", session.Enhanced.Port, "EnhancedYarp", ["--mode=host-native"]),
+        new GatewayCase("Wafish core", session.Enhanced.Port, "EnhancedYarp", ["--mode=core"]),
+        new GatewayCase("Wafish storage", session.Enhanced.Port, "EnhancedYarp", ["--mode=storage"]),
+        new GatewayCase("Wafish services", session.Enhanced.Port, "EnhancedYarp", ["--mode=services"]),
+        new GatewayCase("Wafish minimal", session.Enhanced.Port, "EnhancedYarp", ["--mode=minimal"]),
+        new GatewayCase("Wafish full", session.Enhanced.Port, "EnhancedYarp", ["--mode=full"]),
+        new GatewayCase("Wafish WAF", session.Enhanced.Port, "EnhancedYarp", ["--mode=waf"])
     };
 
-    foreach (var gateway in gateways)
+    if (session.Modes is { } selected && selected.Any(mode => !gateways.Any(gateway => (gateway.Arguments.FirstOrDefault() ?? "--mode=native")[7..] == mode)))
+        throw new ArgumentException("--modes contains an unknown baseline mode.");
+    foreach (var gateway in gateways.Where(gateway => session.Modes is null || session.Modes.Contains((gateway.Arguments.FirstOrDefault() ?? "--mode=native")[7..])))
     {
         var dll = Path.Combine(root, "tests", "Wafish.Performance", gateway.Project, "bin", "Release", "net10.0", gateway.Project + ".dll");
         var process = StartService(gateway.Name, dll, root, gateway.Arguments);
         processes.Add(process);
-        await WaitForHealthyAsync($"http://127.0.0.1:{gateway.Port}/health", process);
+        await WaitForHealthyAsync(new Uri(BenchmarkSession.Current.AddressForPort(gateway.Port), "/health").ToString(), process);
+        await session.CaptureHostAsync(gateway.Name, session.AddressForPort(gateway.Port));
 
-        var scenarios = gateway.Name == "Aneiang WAF"
+        var scenarios = gateway.Name == "Wafish WAF"
             ? new[] { Scenario.Get("plain", "/api/perf/plain"), Scenario.Get("json-small", "/api/perf/json-small") }
             : new[]
             {
@@ -103,6 +112,7 @@ try
 
         foreach (var scenario in scenarios)
         {
+            await BenchmarkPreflight.VerifyAsync(session.AddressForPort(gateway.Port), scenario.Method, scenario.Path, scenario.Body);
             Console.WriteLine($"[{gateway.Name}] {scenario.Name}: warmup {warmupSeconds}s, test {durationSeconds}s x {repetitions}, concurrency {concurrency}");
             await RunLoadAsync(gateway.Port, scenario, concurrency, TimeSpan.FromSeconds(warmupSeconds), null);
             for (var repetition = 1; repetition <= repetitions; repetition++)
@@ -136,6 +146,7 @@ try
         Console.WriteLine($"{item.Gateway,-18} {item.Scenario,-12} {item.RequestsPerSecond,10:N0} RPS  P95 {item.P95Ms,7:N2} ms  P99 {item.P99Ms,7:N2} ms  CPU {item.CpuPercent,6:N1}%  Memory {item.WorkingSetMb,7:N1} MB");
     }
 
+    await BenchmarkSession.Current.WriteAsync(Path.ChangeExtension(csvPath, ".json"), results, new { processMeasurementsAvailable = true, durationSeconds, warmupSeconds, concurrency, repetitions, suite, requestTimeoutSeconds = 10, clientTransport = "HTTP/1.1" });
     Console.WriteLine($"CSV: {csvPath}");
     Console.WriteLine($"Report: {markdownPath}");
 }
@@ -146,7 +157,6 @@ finally
         StopProcess(process);
     }
 
-    CleanupDatabases(root);
 }
 
 static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int concurrency, TimeSpan duration, Process? measuredProcess, Uri? endpoint = null, bool allowPolicyRejections = false)
@@ -158,10 +168,10 @@ static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int
         AutomaticDecompression = DecompressionMethods.None,
         UseProxy = false
     };
-    using var client = new HttpClient(handler) { BaseAddress = endpoint ?? new Uri($"http://127.0.0.1:{port}"), Timeout = TimeSpan.FromSeconds(10) };
+    using var client = new HttpClient(handler) { BaseAddress = endpoint ?? BenchmarkSession.Current.AddressForPort(port), Timeout = TimeSpan.FromSeconds(10) };
     client.DefaultRequestHeaders.ConnectionClose = false;
 
-    var latencies = new ConcurrentBag<double>();
+    var latencies = new BoundedLatencyHistogram();
     long completed = 0;
     long failed = 0;
     long policyRejections = 0;
@@ -169,6 +179,7 @@ static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int
     var startedAt = Stopwatch.GetTimestamp();
     var cpuStart = measuredProcess?.TotalProcessorTime ?? TimeSpan.Zero;
     var stopAt = Stopwatch.GetTimestamp() + (long)(duration.TotalSeconds * Stopwatch.Frequency);
+    using var runDeadline = new CancellationTokenSource(duration + TimeSpan.FromSeconds(12));
 
     var workers = Enumerable.Range(0, concurrency).Select(async _ =>
     {
@@ -183,7 +194,8 @@ static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int
                     request.Content = new StringContent(scenario.Body, Encoding.UTF8, "application/json");
                     request.Content.Headers.ContentLength = Encoding.UTF8.GetByteCount(scenario.Body);
                 }
-                using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                using var deadline = CancellationTokenSource.CreateLinkedTokenSource(runDeadline.Token);
+                deadline.CancelAfter(TimeSpan.FromSeconds(10));
                 using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, deadline.Token);
                 await response.Content.CopyToAsync(Stream.Null, deadline.Token);
                 if (allowPolicyRejections && response.StatusCode == HttpStatusCode.TooManyRequests)
@@ -203,7 +215,7 @@ static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int
             finally
             {
                 var elapsedMs = Stopwatch.GetElapsedTime(requestStart).TotalMilliseconds;
-                latencies.Add(elapsedMs);
+                latencies.Record(elapsedMs);
                 Interlocked.Increment(ref completed);
             }
         }
@@ -215,23 +227,12 @@ static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int
     var cpuEnd = measuredProcess?.TotalProcessorTime ?? cpuStart;
     var cpuPercent = measuredProcess == null ? 0 : (cpuEnd - cpuStart).TotalMilliseconds / elapsed.TotalMilliseconds / Environment.ProcessorCount * 100;
     var memoryMb = measuredProcess?.WorkingSet64 / 1024d / 1024d ?? 0;
-    var ordered = latencies.OrderBy(x => x).ToArray();
 
     return new BenchmarkResult(
         "", "", 0, completed / elapsed.TotalSeconds,
-        Percentile(ordered, 0.50), Percentile(ordered, 0.95), Percentile(ordered, 0.99),
+        latencies.Percentile(0.50), latencies.Percentile(0.95), latencies.Percentile(0.99),
         completed == 0 ? 100 : failed * 100d / completed,
-        cpuPercent, memoryMb, completed, failed, policyRejections, transportFailures);
-}
-
-static double Percentile(double[] values, double percentile)
-{
-    if (values.Length == 0)
-    {
-        return 0;
-    }
-
-    return values[(int)Math.Clamp(Math.Ceiling(percentile * values.Length) - 1, 0, values.Length - 1)];
+        cpuPercent, memoryMb, completed, failed, policyRejections, transportFailures) { ConfigurationHash = BenchmarkSession.Current.ConfigurationHash(port) };
 }
 
 static async Task RunFirstBatchAsync(string root, string resultsDirectory, string timestamp, int durationSeconds, int warmupSeconds, int soakSeconds)
@@ -240,21 +241,21 @@ static async Task RunFirstBatchAsync(string root, string resultsDirectory, strin
     var processes = new List<Process>();
     try
     {
-        CleanupDatabases(root);
         var backendDll = Path.Combine(root, "tests", "Wafish.Performance", "Backend", "bin", "Release", "net10.0", "Backend.dll");
         var enhancedDll = Path.Combine(root, "tests", "Wafish.Performance", "EnhancedYarp", "bin", "Release", "net10.0", "EnhancedYarp.dll");
         var backend = StartService("Backend", backendDll, root);
         processes.Add(backend);
-        await WaitForHealthyAsync("http://127.0.0.1:5300/health", backend);
+        await WaitForHealthyAsync(new Uri(BenchmarkSession.Current.Backend, "/health").ToString(), backend);
+        await BenchmarkSession.Current.CaptureHostAsync("Backend", BenchmarkSession.Current.Backend);
 
         foreach (var concurrency in new[] { 1, 16, 64, 128 })
         {
-            await RunExtendedCaseAsync("Aneiang full", "full", Scenario.Get($"concurrency-{concurrency}", "/api/perf/plain"), concurrency, durationSeconds, warmupSeconds, records, processes, enhancedDll, root);
+            await RunExtendedCaseAsync("Wafish full", "full", Scenario.Get($"concurrency-{concurrency}", "/api/perf/plain"), concurrency, durationSeconds, warmupSeconds, records, processes, enhancedDll, root);
         }
         foreach (var size in new[] { 1024, 64 * 1024, 1024 * 1024 })
         {
-            await RunExtendedCaseAsync("Aneiang full", "full", Scenario.Get($"response-{size}", $"/api/perf/payload/{size}"), 32, durationSeconds, warmupSeconds, records, processes, enhancedDll, root);
-            await RunExtendedCaseAsync("Aneiang full", "full", Scenario.Post($"request-{size}", "/api/perf/echo", new string('x', size)), 32, durationSeconds, warmupSeconds, records, processes, enhancedDll, root);
+            await RunExtendedCaseAsync("Wafish full", "full", Scenario.Get($"response-{size}", $"/api/perf/payload/{size}"), 32, durationSeconds, warmupSeconds, records, processes, enhancedDll, root);
+            await RunExtendedCaseAsync("Wafish full", "full", Scenario.Post($"request-{size}", "/api/perf/echo", new string('x', size)), 32, durationSeconds, warmupSeconds, records, processes, enhancedDll, root);
         }
 
         foreach (var item in new[]
@@ -287,6 +288,7 @@ static async Task RunFirstBatchAsync(string root, string resultsDirectory, strin
 
         await File.WriteAllTextAsync(csvPath, BuildExtendedCsv(records), Encoding.UTF8);
         await File.WriteAllTextAsync(markdownPath, BuildExtendedMarkdown(records, durationSeconds, soakSeconds), Encoding.UTF8);
+        await BenchmarkSession.Current.WriteAsync(Path.ChangeExtension(csvPath, ".json"), records, new { processMeasurementsAvailable = true, durationSeconds, warmupSeconds, soakSeconds, suite = "first", requestTimeoutSeconds = 10, clientTransport = "HTTP/1.1" });
         Console.WriteLine($"CSV: {csvPath}");
         Console.WriteLine($"Report: {markdownPath}");
     }
@@ -297,7 +299,6 @@ static async Task RunFirstBatchAsync(string root, string resultsDirectory, strin
             StopProcess(process);
         }
 
-        CleanupDatabases(root);
     }
 }
 
@@ -305,10 +306,12 @@ static async Task RunExtendedCaseAsync(string group, string mode, Scenario scena
 {
     var process = StartService(group, dll, root, [$"--mode={mode}"]);
     processes.Add(process);
-    await WaitForHealthyAsync("http://127.0.0.1:5302/health", process);
-    await RunLoadAsync(5302, scenario, concurrency, TimeSpan.FromSeconds(warmupSeconds), null);
+    await WaitForHealthyAsync(new Uri(BenchmarkSession.Current.Enhanced, "/health").ToString(), process);
+    await BenchmarkSession.Current.CaptureHostAsync("EnhancedYarp", BenchmarkSession.Current.Enhanced);
+    await BenchmarkPreflight.VerifyAsync(BenchmarkSession.Current.Enhanced, scenario.Method, scenario.Path, scenario.Body);
+    await RunLoadAsync(BenchmarkSession.Current.Enhanced.Port, scenario, concurrency, TimeSpan.FromSeconds(warmupSeconds), null);
     await ResetBackendAsync();
-    var result = await RunLoadAsync(5302, scenario, concurrency, TimeSpan.FromSeconds(durationSeconds), process, allowPolicyRejections: allowNonSuccess);
+    var result = await RunLoadAsync(BenchmarkSession.Current.Enhanced.Port, scenario, concurrency, TimeSpan.FromSeconds(durationSeconds), process, allowPolicyRejections: allowNonSuccess);
     var counters = await ReadBackendCountersAsync();
     var passed = result.Requests > 0 && result.Failures == 0;
     records.Add(ExtendedResult.FromLoad(group, scenario.Name, concurrency, result, counters.Total, passed, allowNonSuccess ? "Expected policy rejections included" : "All responses successful"));
@@ -322,11 +325,13 @@ static async Task RunFunctionalCaseAsync(string group, string mode, string path,
 {
     var process = StartService(group, dll, root, [$"--mode={mode}"]);
     processes.Add(process);
-    await WaitForHealthyAsync("http://127.0.0.1:5302/health", process);
+    await WaitForHealthyAsync(new Uri(BenchmarkSession.Current.Enhanced, "/health").ToString(), process);
+    await BenchmarkSession.Current.CaptureHostAsync("EnhancedYarp", BenchmarkSession.Current.Enhanced);
+    await BenchmarkPreflight.VerifyAsync(BenchmarkSession.Current.Enhanced, HttpMethod.Get, "/api/perf/plain");
     await ResetBackendAsync();
     using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
     var started = Stopwatch.GetTimestamp();
-    using var response = await client.GetAsync("http://127.0.0.1:5302" + path);
+    using var response = await client.GetAsync(new Uri(BenchmarkSession.Current.Enhanced, path));
     await response.Content.CopyToAsync(Stream.Null);
     var latency = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
     var counters = await ReadBackendCountersAsync();
@@ -342,19 +347,21 @@ static async Task RunCircuitCaseAsync(List<ExtendedResult> records, List<Process
 {
     var process = StartService("circuit", dll, root, ["--mode=circuit"]);
     processes.Add(process);
-    await WaitForHealthyAsync("http://127.0.0.1:5302/health", process);
+    await WaitForHealthyAsync(new Uri(BenchmarkSession.Current.Enhanced, "/health").ToString(), process);
+    await BenchmarkSession.Current.CaptureHostAsync("EnhancedYarp", BenchmarkSession.Current.Enhanced);
+    await BenchmarkPreflight.VerifyAsync(BenchmarkSession.Current.Enhanced, HttpMethod.Get, "/api/perf/plain");
     await ResetBackendAsync();
     using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
     var statuses = new List<int>();
     for (var i = 0; i < 6; i++)
     {
-        using var response = await client.GetAsync("http://127.0.0.1:5302/api/perf/status/503");
+        using var response = await client.GetAsync(new Uri(BenchmarkSession.Current.Enhanced, "/api/perf/status/503"));
         statuses.Add((int)response.StatusCode);
         await response.Content.CopyToAsync(Stream.Null);
     }
     var openCounters = await ReadBackendCountersAsync();
     await Task.Delay(2200);
-    using var probe = await client.GetAsync("http://127.0.0.1:5302/api/perf/plain");
+    using var probe = await client.GetAsync(new Uri(BenchmarkSession.Current.Enhanced, "/api/perf/plain"));
     await probe.Content.CopyToAsync(Stream.Null);
     var recoveredCounters = await ReadBackendCountersAsync();
     var passed = statuses.All(x => x == 503) && openCounters.Total == 3 && probe.IsSuccessStatusCode && recoveredCounters.Total == 4;
@@ -368,23 +375,28 @@ static async Task RunCircuitCaseAsync(List<ExtendedResult> records, List<Process
 static async Task ResetBackendAsync()
 {
     using var client = new HttpClient();
-    using var response = await client.PostAsync("http://127.0.0.1:5300/api/perf/control/reset", null);
-    response.EnsureSuccessStatusCode();
+    using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+    while (true)
+    {
+        using var response = await client.PostAsync(new Uri(BenchmarkSession.Current.Backend, "/api/perf/control/reset"), null, deadline.Token);
+        if (response.StatusCode != HttpStatusCode.Conflict) { response.EnsureSuccessStatusCode(); return; }
+        await Task.Delay(20, deadline.Token);
+    }
 }
 
 static async Task<BackendCounters> ReadBackendCountersAsync()
 {
     using var client = new HttpClient();
-    var json = await client.GetStringAsync("http://127.0.0.1:5300/api/perf/control/counters");
+    var json = await client.GetStringAsync(new Uri(BenchmarkSession.Current.Backend, "/api/perf/control/counters"));
     return JsonSerializer.Deserialize<BackendCounters>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new BackendCounters();
 }
 
 static string BuildExtendedCsv(IEnumerable<ExtendedResult> records)
 {
-    var sb = new StringBuilder("Group,Scenario,Concurrency,RPS,P50Ms,P95Ms,P99Ms,NonSuccessPercent,BackendRequests,Statuses,Passed,Notes\n");
+    var sb = new StringBuilder("Group,Scenario,Concurrency,RPS,P50Ms,P95Ms,P99Ms,NonSuccessPercent,BackendRequests,Statuses,Passed,Notes,ConfigurationHash\n");
     foreach (var x in records)
     {
-        sb.AppendLine(string.Join(',', Csv(x.Group), Csv(x.Scenario), x.Concurrency, F(x.RequestsPerSecond), F(x.P50Ms), F(x.P95Ms), F(x.P99Ms), F(x.NonSuccessPercent), x.BackendRequests, Csv(x.Statuses), x.Passed, Csv(x.Notes)));
+        sb.AppendLine(string.Join(',', Csv(x.Group), Csv(x.Scenario), x.Concurrency, F(x.RequestsPerSecond), F(x.P50Ms), F(x.P95Ms), F(x.P99Ms), F(x.NonSuccessPercent), x.BackendRequests, Csv(x.Statuses), x.Passed, Csv(x.Notes), Csv(x.ConfigurationHash ?? "unavailable")));
     }
 
     return sb.ToString();
@@ -396,6 +408,7 @@ static string BuildExtendedMarkdown(IEnumerable<ExtendedResult> records, int dur
     var sb = new StringBuilder("# Wafish First Batch Performance Results\n\n");
     sb.AppendLine($"- Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
     sb.AppendLine($"- Runtime: {Environment.Version}; processors: {Environment.ProcessorCount}");
+    sb.AppendLine("- Latency: fixed-memory histogram; upper-bound percentiles, ≤1% relative error above 1 μs. See the adjacent JSON metadata.");
     sb.AppendLine($"- Regular duration: {durationSeconds}s; soak duration: {soakSeconds}s").AppendLine();
     sb.AppendLine("| Group | Scenario | C | RPS | P95 ms | P99 ms | Non-success % | Backend calls | Check |");
     sb.AppendLine("|---|---|---:|---:|---:|---:|---:|---:|---|");
@@ -421,16 +434,21 @@ static Process StartService(string name, string dll, string workingDirectory, IR
         throw new FileNotFoundException($"Build output for {name} was not found.", dll);
     }
 
-    var argumentText = $"\"{dll}\"" + (arguments is { Count: > 0 } ? " " + string.Join(' ', arguments) : "");
-    var process = Process.Start(new ProcessStartInfo("dotnet", argumentText)
+    var info = new ProcessStartInfo("dotnet")
     {
-        WorkingDirectory = workingDirectory,
-        UseShellExecute = false,
-        RedirectStandardOutput = true,
-        RedirectStandardError = true,
-        CreateNoWindow = true,
-        Environment = { ["DOTNET_ENVIRONMENT"] = "Production" }
-    }) ?? throw new InvalidOperationException($"Unable to start {name}.");
+        WorkingDirectory = workingDirectory, UseShellExecute = false, RedirectStandardOutput = true,
+        RedirectStandardError = true, CreateNoWindow = true, Environment = { ["DOTNET_ENVIRONMENT"] = "Production" }
+    };
+    info.ArgumentList.Add(dll);
+    foreach (var argument in arguments ?? []) info.ArgumentList.Add(argument);
+    var session = BenchmarkSession.Current;
+    var project = Path.GetFileNameWithoutExtension(dll);
+    var address = project == "Backend" ? session.Backend : project == "NativeYarp" ? session.Native : session.Enhanced;
+    info.ArgumentList.Add("--listen-url=" + address);
+    info.ArgumentList.Add("--backend-url=" + session.Backend);
+    info.ArgumentList.Add("--payload-mode=" + session.PayloadMode);
+    info.ArgumentList.Add("--data-root=" + Path.Combine(session.DataDirectory, Guid.NewGuid().ToString("N")));
+    var process = Process.Start(info) ?? throw new InvalidOperationException($"Unable to start {name}.");
     _ = DrainAsync(process.StandardOutput);
     _ = DrainAsync(process.StandardError);
     return process;
@@ -490,10 +508,10 @@ static List<BenchmarkResult> BuildSummary(List<BenchmarkResult> results) => resu
 
 static string BuildCsv(List<BenchmarkResult> results, List<BenchmarkResult> summary)
 {
-    var sb = new StringBuilder("Kind,Gateway,Scenario,Repetition,RPS,P50Ms,P95Ms,P99Ms,ErrorRatePercent,CpuPercent,WorkingSetMb,Requests,Failures,PolicyRejections,TransportFailures\n");
+    var sb = new StringBuilder("Kind,Gateway,Scenario,Repetition,RPS,P50Ms,P95Ms,P99Ms,ErrorRatePercent,CpuPercent,WorkingSetMb,Requests,Failures,PolicyRejections,TransportFailures,ConfigurationHash\n");
     foreach (var item in results.Select(x => (Kind: "run", Item: x)).Concat(summary.Select(x => (Kind: "median", Item: x))))
     {
-        sb.AppendLine(string.Join(',', item.Kind, Csv(item.Item.Gateway), Csv(item.Item.Scenario), item.Item.Repetition, F(item.Item.RequestsPerSecond), F(item.Item.P50Ms), F(item.Item.P95Ms), F(item.Item.P99Ms), F(item.Item.ErrorRatePercent), F(item.Item.CpuPercent), F(item.Item.WorkingSetMb), item.Item.Requests, item.Item.Failures, item.Item.PolicyRejections, item.Item.TransportFailures));
+        sb.AppendLine(string.Join(',', item.Kind, Csv(item.Item.Gateway), Csv(item.Item.Scenario), item.Item.Repetition, F(item.Item.RequestsPerSecond), F(item.Item.P50Ms), F(item.Item.P95Ms), F(item.Item.P99Ms), F(item.Item.ErrorRatePercent), F(item.Item.CpuPercent), F(item.Item.WorkingSetMb), item.Item.Requests, item.Item.Failures, item.Item.PolicyRejections, item.Item.TransportFailures, Csv(item.Item.ConfigurationHash ?? "unavailable")));
     }
 
     return sb.ToString();
@@ -508,6 +526,8 @@ static string BuildMarkdown(List<BenchmarkResult> summary, int duration, int war
     sb.AppendLine($"- Logical processors: {Environment.ProcessorCount}");
     sb.AppendLine($"- Runtime: {Environment.Version}");
     sb.AppendLine($"- Concurrency: {concurrency}");
+    sb.AppendLine("- Latency: fixed-memory histogram; upper-bound percentiles, ≤1% relative error above 1 μs.");
+    sb.AppendLine("- Full environment and configuration manifests: adjacent JSON report.");
     sb.AppendLine($"- Warmup: {warmup}s; duration: {duration}s; repetitions: {repetitions}; result: median RPS run").AppendLine();
     sb.AppendLine("| Gateway | Scenario | RPS | P50 ms | P95 ms | P99 ms | Errors % | CPU % | Memory MB |");
     sb.AppendLine("|---|---|---:|---:|---:|---:|---:|---:|---:|");
@@ -536,14 +556,13 @@ static string BuildMarkdown(List<BenchmarkResult> summary, int duration, int war
 
 static int ReadIntArgument(string[] args, string name, int fallback)
 {
-    var index = Array.IndexOf(args, name);
-    return index >= 0 && index + 1 < args.Length && int.TryParse(args[index + 1], out var value) ? value : fallback;
+    var text = BenchmarkOptions.Read(args, name, fallback.ToString(CultureInfo.InvariantCulture));
+    return int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value) ? value : throw new ArgumentException(name + " requires an integer.");
 }
 
 static string ReadStringArgument(string[] args, string name, string fallback)
 {
-    var index = Array.IndexOf(args, name);
-    return index >= 0 && index + 1 < args.Length ? args[index + 1] : fallback;
+    return BenchmarkOptions.Read(args, name, fallback);
 }
 
 static string FindRepositoryRoot()
@@ -557,14 +576,6 @@ static string FindRepositoryRoot()
     return directory?.FullName ?? throw new DirectoryNotFoundException("Repository root was not found.");
 }
 
-static void CleanupDatabases(string root)
-{
-    foreach (var path in Directory.EnumerateFiles(root, "performance-*.db*", SearchOption.TopDirectoryOnly))
-    {
-        try { File.Delete(path); } catch { }
-    }
-}
-
 static string Csv(string value) => '"' + value.Replace("\"", "\"\"") + '"';
 static string F(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
 
@@ -574,9 +585,11 @@ sealed record Scenario(string Name, HttpMethod Method, string Path, string? Body
     public static Scenario Get(string name, string path) => new(name, HttpMethod.Get, path, null);
     public static Scenario Post(string name, string path, string body) => new(name, HttpMethod.Post, path, body);
 }
-sealed record BenchmarkResult(string Gateway, string Scenario, int Repetition, double RequestsPerSecond, double P50Ms, double P95Ms, double P99Ms, double ErrorRatePercent, double CpuPercent, double WorkingSetMb, long Requests, long Failures, long PolicyRejections, long TransportFailures);
+sealed record BenchmarkResult(string Gateway, string Scenario, int Repetition, double RequestsPerSecond, double P50Ms, double P95Ms, double P99Ms, double ErrorRatePercent, double CpuPercent, double WorkingSetMb, long Requests, long Failures, long PolicyRejections, long TransportFailures)
+{ public string? ConfigurationHash { get; init; } }
 sealed record ExtendedResult(string Group, string Scenario, int Concurrency, double RequestsPerSecond, double P50Ms, double P95Ms, double P99Ms, double NonSuccessPercent, long BackendRequests, string Statuses, bool Passed, string Notes)
 {
+    public string? ConfigurationHash { get; init; } = BenchmarkSession.Current.ConfigurationHash(BenchmarkSession.Current.Enhanced.Port);
     public static ExtendedResult FromLoad(string group, string scenario, int concurrency, BenchmarkResult result, long backendRequests, bool passed, string notes) =>
         new(group, scenario, concurrency, result.RequestsPerSecond, result.P50Ms, result.P95Ms, result.P99Ms, result.ErrorRatePercent, backendRequests, "load", passed, $"{notes}; expected 429: {result.PolicyRejections}; transport failures: {result.TransportFailures}");
 }

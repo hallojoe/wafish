@@ -8,4 +8,8 @@
   <ItemGroup>
     <PackageReference Include="Yarp.ReverseProxy" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Shared/BenchmarkOptions.cs" Link="BenchmarkOptions.cs" />
+    <Compile Include="../Shared/BenchmarkManifest.cs" Link="BenchmarkManifest.cs" />
+  </ItemGroup>
 </Project>

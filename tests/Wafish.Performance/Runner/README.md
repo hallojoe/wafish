@@ -58,3 +58,29 @@ Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in
 
 Managed and external failures return nonzero exit codes. Rate-limit scenarios accept only HTTP 429 as expected rejection.
 Reports separate expected rejections from transport failures. Each request has a ten-second deadline covering headers and response reads.
+
+## Isolated and attributable runs
+
+Select distinct loopback origins with `--backend-url`, `--native-url`, and `--enhanced-url`.
+Defaults remain ports 5300, 5301, and 5302.
+Use `--results-directory` for report output and `--payload-mode=precomputed|generated` for upstream allocation behavior.
+Both `--option=value` and `--option value` forms work.
+`--modes=native,core,full,waf` selects baseline comparisons; omit it to run all eight modes.
+The first suite always runs its complete scenario matrix.
+
+Managed runs own private database directories and remove only those directories.
+Workload preflight runs before warmup and rejects invalid status, payload, size, or stalled bodies.
+External preflight checks successful status and bounded body completion.
+Each request has a ten-second deadline. Run shutdown has a separate bounded deadline.
+
+Latency storage uses a fixed logarithmic histogram, under 32 KiB per run.
+Percentiles use the upper bound of the nearest-rank bucket.
+Relative error is at most one percent above one microsecond.
+Absolute error is at most one microsecond below that threshold.
+The supported range ends at 24 hours. Every completed request contributes one sample.
+
+Each Markdown and CSV report has an adjacent JSON report.
+It records runtime, operating system, CPU, architectures, GC mode, source revision, and dirty state.
+It also records workload settings, transport, histogram bounds, effective host manifests, and configuration hashes.
+External reports explicitly mark process measurements unavailable.
+Short verification runs establish correctness, not production throughput.

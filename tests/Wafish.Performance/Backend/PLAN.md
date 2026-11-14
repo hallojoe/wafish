@@ -1,14 +1,16 @@
 # Backend: proposed work
 
 Reviewed against source on 2026-11-14.
-All items below are TODO proposals, not implemented capabilities or scheduled commitments.
+Completed items include verification evidence. Remaining items are proposals.
 The [root execution plan](../../../PLAN.md) remains the historical and cross-project record.
 
 ## Improvements not yet implemented
 
 ### IMP-01: Make the listen address configurable
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [benchmark reliability](../../Wafish.Regression/evidence/benchmark-reliability/README.md).
 
 Replace the fixed benchmark port with an explicit harness option.
 
@@ -16,7 +18,9 @@ Acceptance: Parallel isolated runs can select separate addresses.
 
 ### IMP-02: Separate payload generation cost
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [benchmark reliability](../../Wafish.Regression/evidence/benchmark-reliability/README.md).
 
 Precompute selected payloads or report generation cost separately.
 
@@ -39,7 +43,9 @@ See [solution priorities and dependencies](../../../DOTNET_REVIEW.md).
 
 ### IMP-03: Stop work when the client disconnects
 
-Status: TODO. Priority: P2. Type: measurement distortion.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [benchmark reliability](../../Wafish.Regression/evidence/benchmark-reliability/README.md). Priority: P2. Type: measurement distortion.
 
 Evidence: [Program.cs](Program.cs), echo and delay endpoints.
 

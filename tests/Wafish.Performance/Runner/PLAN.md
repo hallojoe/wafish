@@ -8,7 +8,9 @@ The [root execution plan](../../../PLAN.md) remains the historical and cross-pro
 
 ### IMP-01: Bound latency sample memory
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [benchmark reliability](../../Wafish.Regression/evidence/benchmark-reliability/README.md).
 
 Replace unbounded sample retention with a documented bounded measurement strategy.
 
@@ -16,7 +18,9 @@ Acceptance: Long soak runs retain accurate percentiles within a stated error bou
 
 ### IMP-02: Record complete run metadata
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [benchmark reliability](../../Wafish.Regression/evidence/benchmark-reliability/README.md).
 
 Capture runtime, operating system, CPU, effective mode, and source revision when available.
 

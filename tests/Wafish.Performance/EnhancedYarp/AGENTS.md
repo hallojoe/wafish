@@ -42,3 +42,7 @@ For documentation-only changes, check links and Mermaid rendering instead of sta
 Update the README when behavior or scope changes.
 Keep future work in PLAN.md until its acceptance checks pass.
 Record implementation evidence when completing a plan item.
+
+Preserve explicit loopback addresses, bounded preflight, and configuration hashes.
+Never delete databases outside the current session directory.
+Verify changes with the regression `--benchmarks` group after a Release solution build.

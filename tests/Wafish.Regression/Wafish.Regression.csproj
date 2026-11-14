@@ -7,6 +7,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../Wafish.Performance/Shared/*.cs" Link="Performance/%(Filename)%(Extension)" />
     <Compile Include="../Shared/RegressionReport.cs" Link="RegressionReport.cs" />
     <Compile Include="../Shared/RegressionCaseRegistry.cs" Link="RegressionCaseRegistry.cs" />
     <None Update="contracts/*.json" CopyToOutputDirectory="PreserveNewest" />

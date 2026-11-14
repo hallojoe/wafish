@@ -1,0 +1,40 @@
+dotnet-coverage v18.12.0.0 [linux-x64 - .NET 10.0.14]
+
+SessionId: bbb42c43-88f5-48a1-9561-e3f0fc3b90ff
+PASS: Authorization matrix: every mapped action rejects missing and invalid credentials across four modes
+PASS: Mutation contracts: validation and model binding share Problem Details without losing endpoint fields
+PASS: Shutdown: connected hubs close while queued notifications retain exact accounting
+PASS: Cleanup: failed assertions release clients, sockets, hosts, and temporary database files
+PASS: Cleanup: failed host startup disposes services before the next case
+PASS: Storage API: oversized filters return 400 and extreme pages do not wrap
+PASS: Sessions: bounded capacity, distinct tokens, generation races, revocation, expiry, and disposal
+PASS: Sessions: DefaultJwt sign-out, security changes, expiry, and concurrent API/hub requests
+PASS: Sessions: CustomJwt sign-out, security changes, expiry, and concurrent API/hub requests
+PASS: Sessions: BasicAuth credential rotation terminates realtime access and rejects old credentials
+PASS: Sessions: ApiKey credential rotation terminates realtime access and rejects old credentials
+PASS: Authentication: bounded atomic attempts, refunds, source isolation, and expiry
+PASS: Authentication: Basic and API-key failures throttle without limiting valid traffic
+PASS: Authentication: HTTPS cookie login, logout, expiry, transport, host, and origin
+PASS: Authentication: HTTP login and direct credential limits return 429
+PASS: Administration deploys without the dashboard assembly or Razor assets
+PASS: Two-factor state persists privately and fails on corruption or write failure
+PASS: Administration rejects missing and invalid API credentials
+PASS: AI and MCP configuration cannot activate unregistered services
+PASS: Administration APIs work without page or static-asset endpoints
+PASS: Administration creates clusters and routes through the preserved JSON API
+PASS: Snapshots, rollback, and import preserve route activation
+PASS: Administration exposes storage failures and preserves the active revision
+PASS: Administration serves system settings and database downloads without Razor
+PASS: Encrypted database backup retains committed WAL data and rejects missing keys
+PASS: Administration realtime hubs accept subscriptions and send overview updates
+PASS: Corrupted two-factor persistence rejects JWT login
+PASS: Administration login issues a usable JWT without a Razor login page
+PASS: Administration retains configuration after host restart and supports deletion
+PASS: Explicit AI registration resolves services and preserves administration authentication
+PASS: MCP binds loopback, enforces parent credentials, rejects origins, and limits request bodies
+PASS: Anonymous administration requires explicit loopback permission in Development
+PASS: Anonymous administration requires explicit loopback permission in Staging
+PASS: Anonymous administration requires explicit loopback permission in Production
+PASS: Explicit MCP registration is independent and idempotent
+All administration checks passed.
+Code coverage results: /tmp/wafish-priority10-admin.xml.

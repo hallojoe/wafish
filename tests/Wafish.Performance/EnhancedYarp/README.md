@@ -51,3 +51,22 @@ Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in
 WAF, rate-limit, logging, retry, and circuit modes install explicit bindings. Health returns 503 until activation and validation finish.
 Unknown modes fail startup. Proxy log settings use `Gateway:ProxyLog`.
 `full` enables pipeline composition without implicit route or cluster policies.
+
+## Benchmark isolation and metadata
+
+Listener and upstream options accept loopback HTTP origins only.
+Native and Wafish upstream connections use HTTP/1.1 with an exact version policy.
+The runner validates workload status and payload before measurement.
+Preflight has a five-second deadline and a four-MiB response limit.
+
+`/benchmark/manifest` exports normalized configuration and a SHA-256 configuration hash.
+Reports retain these manifests beside each measured configuration hash.
+Secrets in named credential fields are redacted before hashing.
+
+Set `--listen-url` and `--backend-url` to select isolated addresses.
+
+`--data-root` selects this host's database directory. Pooling is disabled.
+The runner assigns a private directory for every host instance.
+Readiness waits for validated bindings and required running resources.
+The manifest includes effective routes, clusters, plugin versions, settings, and resource states.
+Transient resource identifiers and timestamps do not affect the configuration hash.

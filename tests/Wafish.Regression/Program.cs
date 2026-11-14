@@ -46,6 +46,7 @@ var registry = new RegressionCaseRegistry(report);
 await registry.DefineGroupAsync("runner", RegressionRegistryChecks.RunAsync);
 await registry.DefineGroupAsync("fault-schedules", FaultScheduleChecks.RunAsync);
 await registry.DefineGroupAsync("protocol-properties", ProtocolPropertyChecks.RunAsync);
+await registry.DefineGroupAsync("benchmarks", BenchmarkReliabilityChecks.RunAsync);
 await registry.DefineGroupAsync("allocation-pressure", AllocationPressureChecks.RunAsync);
 await registry.DefineGroupAsync("async-policy", AsyncConfigurationChecks.RunAsync);
 await registry.DefineGroupAsync("async-policy", RetryTimingChecks.RunAsync);
