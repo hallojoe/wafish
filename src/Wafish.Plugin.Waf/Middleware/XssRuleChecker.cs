@@ -9,6 +9,7 @@ namespace Wafish.Plugin.Waf;
 /// </summary>
 public sealed class XssRuleChecker : IWafRuleChecker
 {
+    public string RuleId => "xss";
     public static readonly XssRuleChecker Instance = new();
 
     private static readonly Regex Pattern = new(

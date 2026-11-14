@@ -4,10 +4,15 @@ namespace Wafish.Models;
 
 // ──────────────── Route-scoped plugin binding configs ────────────────
 
+/// <summary>A route binding excludes one parsed field from one named rule. JSON fields use JSON Pointer syntax.</summary>
+public sealed record WafRuleExclusion(string RuleId, string Target, string Field);
+
 /// <summary>Route-scoped WAF configuration stored in a plugin binding.</summary>
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class WafBindingOptions
 {
+    public List<string> DetectionOnlyRules { get; set; } = [];
+    public List<WafRuleExclusion> Exclusions { get; set; } = [];
     public bool Enabled { get; set; } = true;
     public List<string> IpWhitelist { get; set; } = [];
     public List<string> IpBlacklist { get; set; } = [];
@@ -95,6 +100,7 @@ public sealed record ProxyLogBindingExecutionConfig
 
 public sealed record ResponseCacheExecutionConfig
 {
+    public string[] Tags { get; init; } = [];
     public bool Enabled { get; init; } = true;
     public int TtlSeconds { get; init; } = 60;
     public int MaxBodyBytes { get; init; } = 1_048_576;

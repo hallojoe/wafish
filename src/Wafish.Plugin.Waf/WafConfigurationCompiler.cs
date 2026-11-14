@@ -21,6 +21,7 @@ public sealed class WafConfigurationCompiler : IRoutePluginCompiler
             throw new InvalidOperationException("WAF address rules require valid IP addresses, wildcards, or CIDR prefixes.");
         }
 
+        WafFieldExclusions.Validate(config);
         return new(binding, PluginExecutionStage.PreProxy, config, route);
     }
 }

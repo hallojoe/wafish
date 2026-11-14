@@ -163,7 +163,7 @@ public sealed class ResponseCacheMiddleware(RequestDelegate next, ResponseCacheS
 
             var savedHeaders = context.Response.Headers.Where(h => !excluded.Contains(h.Key))
                 .ToDictionary(h => h.Key, h => h.Value.ToString(), StringComparer.OrdinalIgnoreCase);
-            cache.Store(capture, key, plan.SnapshotVersion, context.Response.StatusCode, savedHeaders, stream.CapturedLength, lifetime, age);
+            cache.Store(capture, key, plan.SnapshotVersion, context.Response.StatusCode, savedHeaders, stream.CapturedLength, lifetime, age, routeId, config.Tags);
         }
         finally { context.Response.Body = original; }
     }

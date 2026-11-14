@@ -92,7 +92,9 @@ public sealed class WafMiddleware : GatewayMiddlewareBase
                     await BlockRequest(context, "Request exceeds the body or inspection limit", StatusCodes.Status413PayloadTooLarge);
                     return;
                 }
-                wafContext.DecodedBodyText = body.Text;
+                wafContext.RawBodyText = body.Text;
+                wafContext.DecodedBodyText = context.Request.ContentType?.Contains("urlencoded", StringComparison.OrdinalIgnoreCase) == true
+                    ? WebUtility.UrlDecode(body.Text) : body.Text;
             }
             catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested) { throw; }
             catch (DecoderFallbackException)
@@ -112,7 +114,12 @@ public sealed class WafMiddleware : GatewayMiddlewareBase
         foreach (var checker in Checkers)
         {
             WafCheckResult result;
-            try { result = checker.Check(wafContext); }
+            try { result = checker.Check(WafFieldExclusions.ForRule(wafContext, checker.RuleId)); }
+            catch (JsonException)
+            {
+                await BlockRequest(context, "Field inspection requires valid structured content", StatusCodes.Status400BadRequest);
+                return;
+            }
             catch (System.Text.RegularExpressions.RegexMatchTimeoutException)
             {
                 await BlockRequest(context, "Request inspection timed out", StatusCodes.Status503ServiceUnavailable);
@@ -120,6 +127,12 @@ public sealed class WafMiddleware : GatewayMiddlewareBase
             }
             if (result.IsBlocked)
             {
+                if (checker.RuleId != "request-limits" && opts.DetectionOnlyRules.Contains(checker.RuleId, StringComparer.Ordinal))
+                {
+                    _logger.LogWarning("WAF detection-only decision: Rule={Rule}, Event={Event}, Route={Route}, Trace={Trace}",
+                        checker.RuleId, result.EventType, routeId, context.TraceIdentifier);
+                    continue;
+                }
                 LogWafBlock(context, result.EventType!, result.Details);
                 await BlockRequest(context, result.EventType switch
                 {
@@ -224,10 +237,6 @@ public sealed class WafMiddleware : GatewayMiddlewareBase
             using var reader = new StreamReader(context.Request.Body, new UTF8Encoding(false, true),
                 detectEncodingFromByteOrderMarks: false, bufferSize: 4096, leaveOpen: true);
             var text = await reader.ReadToEndAsync(context.RequestAborted);
-            if (context.Request.ContentType?.Contains("urlencoded", StringComparison.OrdinalIgnoreCase) == true)
-            {
-                text = WebUtility.UrlDecode(text);
-            }
 
             return (false, text);
         }

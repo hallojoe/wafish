@@ -13,6 +13,7 @@ namespace Wafish.Plugin.Waf;
 /// </summary>
 public sealed class SqlInjectionRuleChecker : IWafRuleChecker
 {
+    public string RuleId => "sql-injection";
     public static readonly SqlInjectionRuleChecker Instance = new();
 
     private static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(50);

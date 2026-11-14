@@ -13,12 +13,13 @@ public sealed class ResponseCacheStore(IOptions<ResponseCacheBudgetOptions> opti
     internal DateTimeOffset UtcNow => timeProvider.GetUtcNow();
     internal TimeSpan Age(Entry entry) => timeProvider.GetElapsedTime(entry.StoredTimestamp);
     internal const int HeaderAllowance = 64 * 1024;
-    private const int EntryOverhead = 1024;
+    private const int EntryOverhead = 4096;
     private readonly object _sync = new();
     private readonly Dictionary<string, Entry> _entries = new(StringComparer.Ordinal);
     private readonly LinkedList<string> _lru = new();
     private long _allocated;
     private long _generation = -1;
+    private long _purgeVersion;
     public long AllocatedBytes { get { lock (_sync) { return _allocated; } } }
     public long SizeLimitBytes => Math.Max(0, options.Value.SizeLimitBytes);
 
@@ -47,6 +48,7 @@ public sealed class ResponseCacheStore(IOptions<ResponseCacheBudgetOptions> opti
             return null;
         }
 
+        long purgeVersion;
         var charge = (long)capacity + HeaderAllowance + EntryOverhead;
         lock (_sync)
         {
@@ -66,8 +68,9 @@ public sealed class ResponseCacheStore(IOptions<ResponseCacheBudgetOptions> opti
             }
 
             _allocated += charge;
+            purgeVersion = _purgeVersion;
         }
-        try { return new Capture(this, new byte[capacity], charge); }
+        try { return new Capture(this, new byte[capacity], charge, purgeVersion); }
         catch { Release(charge); throw; }
     }
 
@@ -95,11 +98,11 @@ public sealed class ResponseCacheStore(IOptions<ResponseCacheBudgetOptions> opti
     }
 
     internal bool Store(Capture capture, string key, long generation, int status, Dictionary<string, string> headers,
-        int length, TimeSpan lifetime, TimeSpan initialAge)
+        int length, TimeSpan lifetime, TimeSpan initialAge, string routeId = "", string[]? tags = null)
     {
         lock (_sync)
         {
-            if (generation != _generation || capture.Buffer == null)
+            if (generation != _generation || capture.Buffer == null || capture.PurgeVersion != _purgeVersion || routeId.Length > 256 || tags is { Length: > 8 } || tags?.Any(t => string.IsNullOrWhiteSpace(t) || t.Length > 64) == true)
             {
                 return false;
             }
@@ -121,11 +124,26 @@ public sealed class ResponseCacheStore(IOptions<ResponseCacheBudgetOptions> opti
                 }
                 catch { _allocated -= temporaryCharge; throw; }
             }
-            var entry = new Entry(capture.Buffer, length, status, headers, capture.Charge, lifetime, initialAge, timeProvider);
+            var entry = new Entry(capture.Buffer, length, status, headers, capture.Charge, lifetime, initialAge, timeProvider) { RouteId = routeId, Tags = tags?.ToArray() ?? [] };
             capture.Transfer();
             entry.Node = _lru.AddLast(key);
             _entries[key] = entry;
             return true;
+        }
+    }
+
+    /// <summary>Invalidates matching entries and prevents pending fills from restoring purged responses.</summary>
+    public int Purge(string? routeId = null, string? tag = null)
+    {
+        if (string.IsNullOrWhiteSpace(routeId) && string.IsNullOrWhiteSpace(tag)) throw new ArgumentException("A route or tag is required.");
+        if (routeId?.Length > 256 || tag?.Length > 64) throw new ArgumentException("Purge selectors exceed their limits.");
+        lock (_sync)
+        {
+            _purgeVersion++;
+            var keys = _entries.Where(p => (routeId is null || string.Equals(p.Value.RouteId, routeId, StringComparison.OrdinalIgnoreCase))
+                && (tag is null || p.Value.Tags.Contains(tag, StringComparer.Ordinal))).Select(p => p.Key).ToArray();
+            foreach (var key in keys) Remove(key);
+            return keys.Length;
         }
     }
 
@@ -159,6 +177,8 @@ public sealed class ResponseCacheStore(IOptions<ResponseCacheBudgetOptions> opti
     internal sealed class Entry(byte[] body, int length, int status, Dictionary<string, string> headers,
         long charge, TimeSpan lifetime, TimeSpan initialAge, TimeProvider clock)
     {
+        public string RouteId { get; init; } = "";
+        public string[] Tags { get; init; } = [];
         public byte[] Body { get; } = body;
         public int Length { get; } = length;
         public int Status { get; } = status;
@@ -178,8 +198,9 @@ public sealed class ResponseCacheStore(IOptions<ResponseCacheBudgetOptions> opti
         public Entry Value => entry;
         public void Dispose() { if (!_disposed) { _disposed = true; owner.ReleaseRead(entry); } }
     }
-    internal sealed class Capture(ResponseCacheStore owner, byte[] buffer, long charge) : IDisposable
+    internal sealed class Capture(ResponseCacheStore owner, byte[] buffer, long charge, long purgeVersion) : IDisposable
     {
+        public long PurgeVersion { get; } = purgeVersion;
         public byte[]? Buffer { get; private set; } = buffer;
         public long Charge { get; private set; } = charge;
         public void Replace(byte[] replacement, long replacementCharge) { Buffer = replacement; Charge = replacementCharge; }

@@ -168,10 +168,12 @@ internal static class ResponseStreamingChecks
         private readonly ResponseCacheMiddleware _middleware;
         private readonly int _capacity;
         private readonly bool _compress;
-        public Fixture(int capacity = 65536, long budget = 1024 * 1024, bool compress = false)
+        private readonly string[] _tags;
+        public Fixture(int capacity = 65536, long budget = 1024 * 1024, bool compress = false, string routeId = "test", string[]? tags = null, ResponseCacheStore? sharedStore = null)
         {
-            _capacity = capacity; _compress = compress;
-            Store = new(Options.Create(new ResponseCacheBudgetOptions { SizeLimitBytes = budget }));
+            _capacity = capacity; _compress = compress; _tags = tags ?? [];
+            _route = _route with { RouteId = routeId };
+            Store = sharedStore ?? new(Options.Create(new ResponseCacheBudgetOptions { SizeLimitBytes = budget }));
             Publish(1);
             var plans = new GatewayPluginExecutionPlanProvider(_publisher, NullLogger<GatewayPluginExecutionPlanProvider>.Instance);
             RequestDelegate upstream = async c => { var calls = Interlocked.Increment(ref Calls); c.Response.ContentType = "text/plain"; c.Response.Headers.CacheControl = "public, max-age=60"; c.Response.Headers.Append("Vary", "Accept-Language"); if (Respond != null)
@@ -189,8 +191,8 @@ internal static class ResponseStreamingChecks
         public void Publish(long version) => _publisher.Publish(GatewaySnapshot.Empty with
         {
             Version = version, Routes = [_route],
-            RoutePlugins = ImmutableDictionary<string, ImmutableArray<PluginBindingSnapshot>>.Empty.Add("test",
-                [new("cache", "response-cache", PluginBindingScope.Route, "test", $"{{\"enabled\":true,\"maxBodyBytes\":{_capacity}}}", 1, 1, 0),
+            RoutePlugins = ImmutableDictionary<string, ImmutableArray<PluginBindingSnapshot>>.Empty.Add(_route.RouteId,
+                [new("cache", "response-cache", PluginBindingScope.Route, _route.RouteId, System.Text.Json.JsonSerializer.Serialize(new { enabled = true, maxBodyBytes = _capacity, tags = _tags }), 1, 1, 0),
                  new("compression", "compression", PluginBindingScope.Route, "test", $"{{\"enabled\":{_compress.ToString().ToLowerInvariant()},\"minResponseSize\":1024}}", 1, 1, 0)])
         });
         public async Task<HttpContext> Send(Action<HttpContext>? configure = null)

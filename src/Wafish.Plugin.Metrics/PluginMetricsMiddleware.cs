@@ -12,14 +12,21 @@ public enum PluginMetricOutcome { Completed, Faulted, Cancelled }
 
 public sealed record PluginMetricSnapshot(long Requests, long Errors, long RequestBytes, long ResponseBytes, long DurationMicroseconds)
 {
+    public PluginLatencyHistogram? Latency { get; init; }
     public long Exceptions { get; init; }
     public long Cancellations { get; init; }
 }
+
+/// <summary>Disjoint latency counts in seconds. A null upper bound denotes the overflow bucket.</summary>
+public sealed record PluginLatencyHistogram(IReadOnlyList<double?> UpperBoundsSeconds, IReadOnlyList<long> Counts);
 
 public sealed class PluginMetricStore : IDisposable
 {
     private readonly System.Diagnostics.Metrics.Meter _meter = new("Wafish.Plugin.Metrics", "1.0");
     private readonly object _gate = new();
+    private static readonly long[] DurationBounds = [1_000, 5_000, 10_000, 25_000, 50_000, 100_000, 250_000, 500_000, 1_000_000, 2_500_000, 5_000_000, 10_000_000];
+    private static readonly IReadOnlyList<double?> DurationBoundsSeconds = Array.AsReadOnly(DurationBounds.Select(b => (double?)(b / 1_000_000d)).Append(null).ToArray());
+    private System.Diagnostics.Metrics.Histogram<double> _routeLatency = null!, _clusterLatency = null!;
     private readonly IGatewaySnapshotPublisher? _snapshots;
     private long _version = -1;
     private HashSet<string>? _routes, _clusters, _destinations;
@@ -29,6 +36,8 @@ public sealed class PluginMetricStore : IDisposable
 
     private void RegisterInstruments()
     {
+        _routeLatency = _meter.CreateHistogram<double>("wafish.route.latency", "s", "Measured pipeline attempt duration.");
+        _clusterLatency = _meter.CreateHistogram<double>("wafish.cluster.latency", "s", "Measured pipeline attempt duration.");
         foreach (var scope in new[] { "route", "cluster" })
         {
             IReadOnlyDictionary<string, PluginMetricSnapshot> Read() => scope == "route" ? GetRoutes() : GetClusters();
@@ -106,11 +115,13 @@ public sealed class PluginMetricStore : IDisposable
             if (routeId != null && Admit(_route, _routes, routeId) is { } route)
             {
                 Record(route, statusCode, durationMicroseconds, requestBytes, responseBytes, outcome);
+                _routeLatency.Record(Math.Max(0, durationMicroseconds) / 1_000_000d, new KeyValuePair<string, object?>("wafish.route.id", routeId));
             }
 
             if (clusterId != null && Admit(_cluster, _clusters, clusterId) is { } cluster)
             {
                 Record(cluster, statusCode, durationMicroseconds, requestBytes, responseBytes, outcome);
+                _clusterLatency.Record(Math.Max(0, durationMicroseconds) / 1_000_000d, new KeyValuePair<string, object?>("wafish.cluster.id", clusterId));
             }
 
             if (clusterId != null && destinationId != null && Admit(_destination, _destinations, $"{clusterId}/{destinationId}") is { } destination)
@@ -126,6 +137,8 @@ public sealed class PluginMetricStore : IDisposable
 
     private static void Record(Counters counters, int statusCode, long duration, long requestBytes, long responseBytes, PluginMetricOutcome outcome)
     {
+        var bucket = Array.BinarySearch(DurationBounds, Math.Max(0, duration));
+        counters.DurationBuckets[bucket < 0 ? ~bucket : bucket]++;
         Interlocked.Increment(ref counters.Requests);
         if (outcome == PluginMetricOutcome.Cancelled)
         {
@@ -151,9 +164,9 @@ public sealed class PluginMetricStore : IDisposable
             Interlocked.Read(ref pair.Value.Requests), Interlocked.Read(ref pair.Value.Errors),
             Interlocked.Read(ref pair.Value.RequestBytes), Interlocked.Read(ref pair.Value.ResponseBytes),
             Interlocked.Read(ref pair.Value.DurationMicroseconds))
-            { Exceptions = Interlocked.Read(ref pair.Value.Exceptions), Cancellations = Interlocked.Read(ref pair.Value.Cancellations) }, StringComparer.OrdinalIgnoreCase);
+            { Latency = new(DurationBoundsSeconds, Array.AsReadOnly(pair.Value.DurationBuckets.ToArray())), Exceptions = Interlocked.Read(ref pair.Value.Exceptions), Cancellations = Interlocked.Read(ref pair.Value.Cancellations) }, StringComparer.OrdinalIgnoreCase);
 
-    private sealed class Counters { public long Requests; public long Errors; public long RequestBytes; public long ResponseBytes; public long DurationMicroseconds; public long Exceptions; public long Cancellations; }
+    private sealed class Counters { public long[] DurationBuckets = new long[DurationBounds.Length + 1]; public long Requests; public long Errors; public long RequestBytes; public long ResponseBytes; public long DurationMicroseconds; public long Exceptions; public long Cancellations; }
 }
 
 public sealed class PluginMetricsMiddleware

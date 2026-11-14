@@ -56,7 +56,7 @@ internal static class WafBodyChecks
     }
 
     internal static async Task<(int Status, byte[]? Forwarded)> Invoke(byte[] body, long limit,
-        bool inspect = true, bool failRead = false, bool cancel = false, string path = "/waf-test", ILogger<WafMiddleware>? logger = null, string? query = null, string contentType = "text/plain; charset=utf-8", int chunkSize = 7)
+        bool inspect = true, bool failRead = false, bool cancel = false, string path = "/waf-test", ILogger<WafMiddleware>? logger = null, string? query = null, string contentType = "text/plain; charset=utf-8", int chunkSize = 7, object? binding = null)
     {
         var route = new RouteConfig { RouteId = "waf-test", Match = new() { Path = path } };
         var publisher = new GatewaySnapshotPublisher();
@@ -65,7 +65,7 @@ internal static class WafBodyChecks
             Version = 1, Routes = [route],
             RoutePlugins = ImmutableDictionary<string, ImmutableArray<PluginBindingSnapshot>>.Empty.Add("waf-test",
                 [new("waf-binding", "waf", PluginBindingScope.Route, "waf-test",
-                    JsonSerializer.Serialize(new { enabled = true, enableIpCheck = false, enableSqlInjectionDetection = inspect,
+                    JsonSerializer.Serialize(binding ?? new { enabled = true, enableIpCheck = false, enableSqlInjectionDetection = inspect,
                         enableXssDetection = inspect, enableRequestSizeValidation = true, maxRequestBodySize = limit }), 1, 1, 0)])
         });
         var plans = new GatewayPluginExecutionPlanProvider(publisher, NullLogger<GatewayPluginExecutionPlanProvider>.Instance);

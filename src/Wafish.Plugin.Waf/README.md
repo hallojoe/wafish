@@ -59,3 +59,11 @@ The corpus still records two expected benign rejections: a standalone SQL verb a
 These limits reflect broad text rules. They do not establish complete attack detection or arbitrary JSON semantic decoding.
 Generated cases cover Unicode, malformed escapes, split reads, invalid UTF-8, and byte limits.
 Run `--protocol-properties` with an optional `--seed` to reproduce generated inputs.
+
+## Detection-only rules and field exclusions
+
+Route bindings can report selected rules without blocking. Mandatory size and decoding limits still apply.
+Stable rule IDs support exact query, form, and JSON scalar exclusions for SQL injection and XSS checks.
+Other fields and rules remain protected. Previews expose exclusions, and binding changes produce audit records.
+
+See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.

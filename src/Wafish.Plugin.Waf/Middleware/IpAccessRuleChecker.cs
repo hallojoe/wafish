@@ -9,6 +9,7 @@ namespace Wafish.Plugin.Waf;
 /// </summary>
 public sealed class IpAccessRuleChecker : IWafRuleChecker
 {
+    public string RuleId => "ip-access";
     public static readonly IpAccessRuleChecker Instance = new();
 
     public WafCheckResult Check(WafCheckContext context)

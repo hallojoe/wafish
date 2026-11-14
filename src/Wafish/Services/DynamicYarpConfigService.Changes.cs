@@ -20,14 +20,18 @@ public partial class DynamicYarpConfigService : IConfigurationChangeService
                 request = JsonSerializer.Deserialize<ConfigurationChangeRequest>(JsonSerializer.Serialize(request))!;
                 CheckChangeVersion(request);
                 var candidate = BuildCandidate(request);
-                _ = await _publisher.PreparePreviewAsync(candidate, candidate.Version, cancellationToken);
+                GatewaySnapshot? preview = null;
+                _ = await _publisher.PreparePreviewAsync(candidate, candidate.Version, cancellationToken, snapshot => preview = snapshot);
+                var exclusions = preview!.RoutePlugins.ToDictionary(p => p.Key, p => (IReadOnlyList<WafRuleExclusion>)p.Value
+                    .Where(b => b.PluginId == "waf").SelectMany(b => JsonSerializer.Deserialize<WafBindingOptions>(b.ConfigJson,
+                        new JsonSerializerOptions(JsonSerializerDefaults.Web))!.Exclusions).ToArray());
                 var normalized = new ConfigurationChangeRequest(request.ExpectedVersion, candidate.Routes.Select(r => r.Config).ToArray(), candidate.Clusters.Select(c => c.Config).ToArray())
                 { RouteActivation = candidate.Routes.ToDictionary(r => r.Config.RouteId, r => r.Enabled) };
                 var changes = Diff(_state.Config.Routes.Select(r => (r.Config.RouteId, Fingerprint(new { r.Config, r.Enabled }))),
                     candidate.Routes.Select(r => (r.Config.RouteId, Fingerprint(new { r.Config, r.Enabled }))), "route")
                     .Concat(Diff(_state.Config.Clusters.Select(c => (c.Config.ClusterId, Fingerprint(c.Config))),
                         candidate.Clusters.Select(c => (c.Config.ClusterId, Fingerprint(c.Config))), "cluster")).ToArray();
-                return new(true, request.ExpectedVersion, _state.Version, _state.PersistedVersion, normalized, changes, []);
+                return new(true, request.ExpectedVersion, _state.Version, _state.PersistedVersion, normalized, changes, []) { WafExclusions = exclusions };
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
             catch (Exception error) when (error is ArgumentException or InvalidOperationException or ConfigurationVersionConflictException)

@@ -49,7 +49,7 @@ internal static class AllocationPressureChecks
         foreach (var reader in readers) reader.Release.SetResult();
         await Task.WhenAll(reads);
         Check(fixture.Store.AllocatedBytes == 0, "Final reader did not release its evicted entry.");
-        var saturated = new ResponseStreamingChecks.Fixture(capacity: 1024, budget: 1024 + 65536 + 1024)
+        var saturated = new ResponseStreamingChecks.Fixture(capacity: 1024, budget: 1024 + 65536 + 4096)
         { Respond = context => context.Response.Body.WriteAsync(new byte[16]).AsTask() };
         await saturated.Send(); await saturated.Send();
         Check(saturated.Calls == 1 && saturated.Store.AllocatedBytes == saturated.Store.SizeLimitBytes,

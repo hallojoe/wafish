@@ -17,6 +17,7 @@ public sealed class PluginBindingMutationService : IPluginBindingMutationService
     private SemaphoreSlim PublishGate => GatewayPublicationCoordinator.For(_snapshotPublisher).Gate;
     private readonly WafishProxyConfigProvider? _configProvider;
 
+    private readonly IConfigChangeAuditLog? _audit;
     private readonly IPluginConfigurationRepository _repository;
     private readonly IGatewayPluginManager _pluginManager;
     private readonly IDynamicYarpConfigService _dynamicConfig;
@@ -39,6 +40,25 @@ public sealed class PluginBindingMutationService : IPluginBindingMutationService
         _snapshotCompiler = snapshotCompiler;
         _snapshotPublisher = snapshotPublisher;
         _runtimeDomains = runtimeDomains;
+    }
+
+    public PluginBindingMutationService(IPluginConfigurationRepository repository, IGatewayPluginManager pluginManager,
+        IDynamicYarpConfigService dynamicConfig, IGatewaySnapshotCompiler snapshotCompiler, IGatewaySnapshotPublisher snapshotPublisher,
+        IPluginRuntimeDomainManager runtimeDomains, WafishProxyConfigProvider? configProvider, IConfigChangeAuditLog audit)
+        : this(repository, pluginManager, dynamicConfig, snapshotCompiler, snapshotPublisher, runtimeDomains, configProvider) => _audit = audit;
+
+    private void AuditExclusions(PluginBindingEntity? before, PluginBindingEntity? after)
+    {
+        if (_audit is null) return;
+        static Wafish.Models.WafRuleExclusion[] Fields(PluginBindingEntity? binding) => binding?.PluginId == "waf"
+            ? System.Text.Json.JsonSerializer.Deserialize<Wafish.Models.WafBindingOptions>(binding.ConfigJson,
+                new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web))!.Exclusions.ToArray() : [];
+        var previous = Fields(before); var current = Fields(after);
+        if (previous.Length == 0 && current.Length == 0) return;
+        if (previous.SequenceEqual(current) && before?.Enabled == after?.Enabled && before?.ScopeId == after?.ScopeId) return;
+        _audit.RecordSuccess("WafExclusions", (after ?? before)!.Id, "plugin-binding-service",
+            before: new { before?.ScopeId, before?.Enabled, exclusions = previous },
+            after: new { after?.ScopeId, after?.Enabled, exclusions = current });
     }
 
     public async Task UpsertAsync(PluginBindingEntity candidate, CancellationToken cancellationToken = default)
@@ -77,6 +97,7 @@ public sealed class PluginBindingMutationService : IPluginBindingMutationService
                 throw;
             }
 
+            AuditExclusions(previous, candidate);
         }
         finally
         {
@@ -117,6 +138,7 @@ public sealed class PluginBindingMutationService : IPluginBindingMutationService
                 throw;
             }
 
+            AuditExclusions(existing, null);
             return true;
         }
         finally

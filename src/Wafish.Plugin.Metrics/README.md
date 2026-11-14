@@ -97,3 +97,10 @@ Each scope retains its existing 10,000-series bound. No paths, headers, users, o
 Route and cluster counters describe the same attempts in separate scopes. Do not sum both scopes as gateway traffic.
 Repeated collection reports cumulative totals; it does not increment request counters.
 Dispose manually created stores to remove their instruments. Dependency injection disposes the registered singleton automatically.
+
+## Latency distributions
+
+Route and cluster snapshots include 13 bounded latency buckets with explicit second-based boundaries.
+`wafish.route.latency` and `wafish.cluster.latency` export histogram measurements with unit `s`.
+
+See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.

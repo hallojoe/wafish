@@ -8,6 +8,7 @@ namespace Wafish.Plugin.Waf;
 /// </summary>
 public sealed class PathTraversalRuleChecker : IWafRuleChecker
 {
+    public string RuleId => "path-traversal";
     public static readonly PathTraversalRuleChecker Instance = new();
 
     /// <summary>

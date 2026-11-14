@@ -79,3 +79,10 @@ A 512-byte response with the default one-MiB capture limit retains 67,096 charge
 The previous implementation retained 1,115,136 bytes for the same response.
 The pressure check overlaps 32 misses with eight readers across generation changes.
 These charges bound owned buffers and allowances, not process RSS or delayed garbage collection.
+
+## Tags and purge
+
+Bindings accept up to eight bounded tags. Authorized operators can purge by route, tag, or their intersection.
+Unrelated cached entries remain available. Purge fences pending fills and preserves active-reader memory accounting.
+
+See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.

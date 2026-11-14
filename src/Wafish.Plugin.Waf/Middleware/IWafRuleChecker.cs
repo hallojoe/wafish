@@ -18,6 +18,7 @@ public sealed class WafCheckContext
 
     /// <summary>Decoded body text for POST/PUT/PATCH requests (null when not applicable).</summary>
     public string? DecodedBodyText { get; set; }
+    public string? RawBodyText { get; set; }
 
     /// <summary>Raw (un-normalized) request path used for path traversal detection.</summary>
     public required string RawRequestPath { get; init; }
@@ -44,6 +45,7 @@ public sealed class WafCheckResult
 /// </summary>
 public interface IWafRuleChecker
 {
+    string RuleId => GetType().Name;
     /// <summary>
     /// Evaluate the request against this rule. Return <see cref="WafCheckResult.Passed"/>
     /// when the check passes, or <see cref="WafCheckResult.Blocked"/> to reject the request.

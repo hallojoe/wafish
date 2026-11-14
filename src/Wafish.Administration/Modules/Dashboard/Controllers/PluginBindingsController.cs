@@ -15,7 +15,7 @@ namespace Wafish.Dashboard.Modules.Dashboard.Controllers;
 [ApiController]
 [Wafish.Filters.ConfigurationMutation]
 [Route("api/plugin-bindings")]
-public sealed class PluginBindingsController : ControllerBase
+public sealed partial class PluginBindingsController : ControllerBase
 {
     private readonly IPluginConfigurationRepository _repository;
     private readonly IGatewayPluginManager _pluginManager;
@@ -228,7 +228,10 @@ public sealed class PluginBindingsController : ControllerBase
     {
         var mutations = new PluginBindingMutationService(_repository, _pluginManager, _dynamicConfig,
             _snapshotCompiler, _snapshotPublisher, _runtimeDomains, _configProvider);
-        return await mutations.DeleteAsync(id, ct)
+        var previous = await _repository.GetBindingAsync(id, ct);
+        var deleted = await mutations.DeleteAsync(id, ct);
+        if (deleted) AuditExclusions(previous, null);
+        return deleted
             ? Ok(new { code = 200, message = "Plugin binding deleted." })
             : NotFound(new { code = 404, message = $"Plugin binding '{id}' was not found." });
     }
@@ -537,6 +540,9 @@ public sealed class PluginBindingsController : ControllerBase
             _snapshotPublisher.Publish(snapshot);
             coordinator.Published(snapshot);
             _configProvider?.Update(snapshot.Routes, snapshot.Clusters);
+            foreach (var candidate in candidateBindings)
+                AuditExclusions(stored.Bindings.FirstOrDefault(b => b.Id == candidate.Id), candidate);
+            foreach (var previous in stored.Bindings.Where(b => deleted.Contains(b.Id))) AuditExclusions(previous, null);
             return (true, null);
         }
         catch
@@ -645,9 +651,13 @@ public sealed class PluginBindingsController : ControllerBase
         return cluster == null ? null : (cluster.ClusterUid, cluster.ClusterId);
     }
 
-    private Task PersistAndPublishAsync(PluginBindingEntity candidate, CancellationToken ct) =>
-        new PluginBindingMutationService(_repository, _pluginManager, _dynamicConfig,
+    private async Task PersistAndPublishAsync(PluginBindingEntity candidate, CancellationToken ct)
+    {
+        var previous = await _repository.GetBindingAsync(candidate.Id, ct);
+        await new PluginBindingMutationService(_repository, _pluginManager, _dynamicConfig,
             _snapshotCompiler, _snapshotPublisher, _runtimeDomains, _configProvider).UpsertAsync(candidate, ct);
+        AuditExclusions(previous, candidate);
+    }
 
     private string[] GetEnabledPluginIds(IReadOnlyCollection<PluginBindingEntity> bindings)
     {

@@ -7,6 +7,7 @@ namespace Wafish.Plugin.Waf;
 /// </summary>
 public sealed class RequestSizeRuleChecker : IWafRuleChecker
 {
+    public string RuleId => "request-limits";
     public static readonly RequestSizeRuleChecker Instance = new();
 
     public WafCheckResult Check(WafCheckContext context)
