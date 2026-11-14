@@ -88,7 +88,10 @@ Long streams remain valid until their request leases finish.
 
 ### FEAT-02: Report plugin drain progress
 
-Status: TODO. Priority: P2. Type: feature.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [R19–R28 evidence](../../tests/Wafish.Regression/evidence/need-seven/README.md).
+Compatibility and limits: [feature contracts](../../docs/need-seven-features.md).
 
 Evidence: [PluginRuntimeDomain.cs](Infrastructure/Plugin/PluginRuntimeDomain.cs) tracks active requests and retirement internally.
 

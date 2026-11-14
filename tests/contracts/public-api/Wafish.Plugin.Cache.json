@@ -11,6 +11,7 @@
   "Method: public global::Wafish.Plugin.Cache.ResponseCacheStore.ResponseCacheStore(global::Microsoft.Extensions.Options.IOptions\u003Cglobal::Wafish.Plugin.Cache.ResponseCacheBudgetOptions\u003E options)",
   "Method: public global::Wafish.Plugin.Cache.ResponseCacheStore.ResponseCacheStore(global::Microsoft.Extensions.Options.IOptions\u003Cglobal::Wafish.Plugin.Cache.ResponseCacheBudgetOptions\u003E options, global::System.TimeProvider timeProvider)",
   "Method: public global::Wafish.Plugins.PluginManifest global::Wafish.Plugin.Cache.ResponseCachePlugin.Manifest.get",
+  "Method: public int global::Wafish.Plugin.Cache.ResponseCacheStore.Purge(string? routeId = null, string? tag = null)",
   "Method: public long global::Wafish.Plugin.Cache.ResponseCacheBudgetOptions.SizeLimitBytes.get",
   "Method: public long global::Wafish.Plugin.Cache.ResponseCacheStore.AllocatedBytes.get",
   "Method: public long global::Wafish.Plugin.Cache.ResponseCacheStore.SizeLimitBytes.get",

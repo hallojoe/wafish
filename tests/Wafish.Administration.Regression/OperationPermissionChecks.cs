@@ -29,7 +29,7 @@ internal static class OperationPermissionChecks
             await using var host = await start(services => services.Configure<DashboardOptions>(options => options.Auth.Permissions = [DashboardPermission.Read]));
             using var client = Client(host); client.DefaultRequestHeaders.Add("X-Api-Key", credential);
             Require((await client.GetAsync("/ops/api/routes")).StatusCode == HttpStatusCode.OK, "Reader cannot inspect routes.");
-            foreach (var path in new[] { "/ops/api/config/routes/batch-delete", "/ops/api/plugins/test/toggle", "/ops/api/ai/tool/execute", "/ops/api/ai/config", "/ops/api/2fa/verify", "/ops/api/config/changes", "/ops/api/plugins/preview" })
+            foreach (var path in new[] { "/ops/api/config/routes/batch-delete", "/ops/api/plugins/test/toggle", "/ops/api/ai/tool/execute", "/ops/api/ai/config", "/ops/api/2fa/verify", "/ops/api/config/changes", "/ops/api/plugins/preview", "/ops/api/cache/purge" })
             {
                 using var response = await client.PostAsJsonAsync(path, new { toolName = "create_route", arguments = "{}" });
                 Require(response.StatusCode == HttpStatusCode.Forbidden, "Reader mutation was not denied: " + path + " " + response.StatusCode);

@@ -47,7 +47,9 @@ The naming correction is complete; see [consumer migration](docs/naming-migratio
 
 R01–R14 implementation and Linux public-package verification are complete.
 R15–R18 are complete. This authorized follow-up batch is finished.
-R19–R55 remain deferred: 37 tasks.
+R19–R28 are complete. All need-7 tasks are complete. Stop before R29.
+See [R19–R28 verification](tests/Wafish.Regression/evidence/need-seven/README.md).
+R29–R55 remain deferred: 27 tasks.
 See [R15–R18 verification](tests/Wafish.Regression/evidence/operation-previews/README.md).
 See [verification evidence](tests/Wafish.Regression/evidence/public-release/README.md) and [consumer changes](docs/public-release.md).
 R14 is complete: opt-in loopback transport faults with distinct abort and cancellation accounting.
@@ -72,10 +74,11 @@ Public availability does not require multi-tenancy, multiple registration gatewa
 Existing hosts retain administrator access by default. R15 adds configurable operation permissions.
 These permissions do not provide tenant or route ownership isolation.
 
-**Initial release scope: R01–R14, complete. Authorized follow-up R15–R18 is also complete.**
-Implementation stops after this follow-up batch.
-This means thirteen implementation tasks and one review-status reconciliation, not fifty-five required features.
-R19–R35 are remaining follow-up work. R36–R55 are optional extensions and demonstrations.
+**Initial release scope: R01–R14, complete. Authorized follow-up R15–R28 is also complete.**
+Implementation stops after R28.
+The initial release included thirteen implementation tasks and one review-status reconciliation.
+The authorized follow-up completed fourteen additional tasks.
+R29–R35 are remaining follow-up work. R36–R55 are optional extensions and demonstrations.
 Their TODO statuses remain unchanged; postponement does not mean completion.
 Implementation order within optional work follows actual dependencies, not the need score alone.
 
@@ -128,25 +131,30 @@ The source plans retain their acceptance criteria. This queue supersedes their o
 | R17 | 7 | Preview configuration changes | [Wafish FEAT-02](src/Wafish/PLAN.md#feat-02-preview-a-configuration-change) | Useful operational protection; existing validation and atomic apply remain the baseline for the first public package. | DONE |
 | R18 | 7 | Preview plugin activation | [Wafish.Runtime FEAT-01](src/Wafish.Runtime/PLAN.md#feat-01-expose-plugin-activation-previews) | Inspect candidate health and resource needs before publication. Coordinate with R17, R05, and R06. | DONE |
 
-### Follow-up work: R19–R35
+### Completed need-7 follow-up: R19–R28
+
+| Rank | Need / 10 | Task | Source | Reason and dependencies | Status |
+|---|---|---|---|---|---|
+| R19 | 7 | Add registration leases and draining | [Wafish.Grpc FEAT-02](src/Wafish.Grpc/PLAN.md#feat-02-negotiate-registration-leases) | Define expiry and stale-renewal protection across protocol, client, core, and storage. After R07; includes NET-FEAT-02. | DONE |
+| R20 | 7 | Expose registration readiness | [SampleServiceDefaults FEAT-02](samples/SampleServiceDefaults/PLAN.md#feat-02-add-optional-registration-readiness) | Distinguish a live backend from one registered for routing; keep liveness independent. | DONE |
+| R21 | 7 | Add bounded latency histograms | [Wafish.Plugin.Metrics FEAT-02](src/Wafish.Plugin.Metrics/PLAN.md#feat-02-add-route-latency-distributions) | Expose tail-latency distributions using the completed metric contract and telemetry export. | DONE |
+| R22 | 7 | Purge cached responses by route or tag | [Wafish.Plugin.Cache FEAT-01](src/Wafish.Plugin.Cache/PLAN.md#feat-01-add-route-scoped-cache-tags-and-purge) | Give operators controlled invalidation. Apply R15 permissions when available. | DONE |
+| R23 | 7 | Evaluate WAF rules without blocking | [Wafish.Plugin.Waf FEAT-01](src/Wafish.Plugin.Waf/PLAN.md#feat-01-add-an-explicit-detection-only-mode) | Support staged rule evaluation while blocking remains the default. | DONE |
+| R24 | 7 | Add narrow WAF exclusions | [Wafish.Plugin.Waf FEAT-02](src/Wafish.Plugin.Waf/PLAN.md#feat-02-add-narrow-rule-exclusions) | Handle legitimate fields without disabling unrelated protection. Include exclusions in R17 previews. | DONE |
+| R25 | 7 | Expose plugin drain progress | [Wafish.Runtime FEAT-02](src/Wafish.Runtime/PLAN.md#feat-02-report-plugin-drain-progress) | Show held requests, retirement age, and disposal failures during transitions. | DONE |
+| R26 | 7 | Describe storage provider capabilities | [Wafish.Storage.Abstractions FEAT-01](src/Wafish.Storage.Abstractions/PLAN.md#feat-01-expose-provider-capability-metadata) | Useful for third-party storage providers. The first public release supports the existing SQLite provider explicitly. | DONE |
+| R27 | 7 | Abstract backup operations | [Wafish.Storage.Abstractions FEAT-02](src/Wafish.Storage.Abstractions/PLAN.md#feat-02-add-a-storage-backup-capability) | Use R26 capabilities to expose consistent backups through a provider-owned contract. | DONE |
+| R28 | 7 | Export a redacted diagnostic bundle | [Solution review NET-FEAT-03](DOTNET_REVIEW.md#net-feat-03-add-a-redacted-diagnostic-bundle) | Collect bounded support information. Use R25 drain diagnostics and R26 storage capabilities. | DONE |
+
+### Remaining follow-up: R29–R35
 
 | Rank | Need / 10 | Task | Source | Reason and dependencies |
 |---|---|---|---|---|
-| R19 | 7 | Add registration leases and draining | [Wafish.Grpc FEAT-02](src/Wafish.Grpc/PLAN.md#feat-02-negotiate-registration-leases) | Define expiry and stale-renewal protection across protocol, client, core, and storage. After R07; includes NET-FEAT-02. |
-| R20 | 7 | Expose registration readiness | [SampleServiceDefaults FEAT-02](samples/SampleServiceDefaults/PLAN.md#feat-02-add-optional-registration-readiness) | Distinguish a live backend from one registered for routing; keep liveness independent. |
-| R21 | 7 | Add bounded latency histograms | [Wafish.Plugin.Metrics FEAT-02](src/Wafish.Plugin.Metrics/PLAN.md#feat-02-add-route-latency-distributions) | Useful tail-latency visibility; defer the additional histogram feature until after the base metric contract and export. |
-| R22 | 7 | Purge cached responses by route or tag | [Wafish.Plugin.Cache FEAT-01](src/Wafish.Plugin.Cache/PLAN.md#feat-01-add-route-scoped-cache-tags-and-purge) | Give operators controlled invalidation. Apply R15 permissions when available. |
-| R23 | 7 | Evaluate WAF rules without blocking | [Wafish.Plugin.Waf FEAT-01](src/Wafish.Plugin.Waf/PLAN.md#feat-01-add-an-explicit-detection-only-mode) | Support staged rule evaluation while blocking remains the default. |
-| R24 | 7 | Add narrow WAF exclusions | [Wafish.Plugin.Waf FEAT-02](src/Wafish.Plugin.Waf/PLAN.md#feat-02-add-narrow-rule-exclusions) | Handle legitimate fields without disabling unrelated protection. Include exclusions in R17 previews. |
-| R25 | 7 | Expose plugin drain progress | [Wafish.Runtime FEAT-02](src/Wafish.Runtime/PLAN.md#feat-02-report-plugin-drain-progress) | Show held requests, retirement age, and disposal failures during transitions. |
-| R26 | 7 | Describe storage provider capabilities | [Wafish.Storage.Abstractions FEAT-01](src/Wafish.Storage.Abstractions/PLAN.md#feat-01-expose-provider-capability-metadata) | Useful for third-party storage providers. The first public release supports the existing SQLite provider explicitly. |
-| R27 | 7 | Abstract backup operations | [Wafish.Storage.Abstractions FEAT-02](src/Wafish.Storage.Abstractions/PLAN.md#feat-02-add-a-storage-backup-capability) | After R26. Current SQLite backup already exists; a provider-independent API can follow when another provider is supported. |
-| R28 | 7 | Export a redacted diagnostic bundle | [Solution review NET-FEAT-03](DOTNET_REVIEW.md#net-feat-03-add-a-redacted-diagnostic-bundle) | Collect bounded support information. Use R25 drain diagnostics and R26 storage capabilities. |
 | R29 | 6 | Split administration tests into modules | [Wafish.Administration.Regression IMP-01](tests/Wafish.Administration.Regression/PLAN.md#imp-01-split-checks-into-focused-modules) | Improve maintenance without changing scenario names or coverage. |
 | R30 | 6 | Share concurrent cache fills | [Wafish.Plugin.Cache FEAT-02](src/Wafish.Plugin.Cache/PLAN.md#feat-02-share-concurrent-cache-fills) | Reduce duplicate upstream work with bounded waits and independent cancellation. |
 | R31 | 6 | Spread circuit recovery probes | [Wafish.Plugin.CircuitBreaker FEAT-01](src/Wafish.Plugin.CircuitBreaker/PLAN.md#feat-01-add-configurable-recovery-jitter) | Reduce synchronized recovery across replicas. |
 | R32 | 6 | Apply versioned configuration change sets | [Solution review NET-FEAT-01](DOTNET_REVIEW.md#net-feat-01-add-versioned-configuration-change-sets) | Coordinate route, cluster, and plugin edits in one operation. After R17 and existing atomic binding storage. |
-| R33 | 6 | Support ordered gateway failover | [Wafish.Client FEAT-01](src/Wafish.Client/PLAN.md#feat-01-support-ordered-gateway-failover) | Add multiple registration endpoints with clear ownership. Settle R19 lease semantics first. |
+| R33 | 6 | Support ordered gateway failover | [Wafish.Client FEAT-01](src/Wafish.Client/PLAN.md#feat-01-support-ordered-gateway-failover) | Add multiple registration endpoints with clear ownership. Build on the completed R19 lease contract. |
 | R34 | 6 | Add destination maintenance windows | [Wafish.Plugin.CircuitBreaker FEAT-02](src/Wafish.Plugin.CircuitBreaker/PLAN.md#feat-02-add-destination-maintenance-windows) | Temporarily remove one destination with an actor, reason, and expiry. Coordinate with R15 permissions. |
 | R35 | 6 | Support Kubernetes EndpointSlice | [Wafish.Plugin.ServiceDiscovery FEAT-01](src/Wafish.Plugin.ServiceDiscovery/PLAN.md#feat-01-support-kubernetes-endpointslice-discovery) | Improve Kubernetes discovery when that deployment is required. |
 
@@ -193,10 +201,10 @@ This planning cutoff does not claim public release verification is already compl
 ### Conditions that change the ratings
 
 - Shared operator roles: configure the completed R15 operation permissions before granting restricted access.
-- Multiple registration gateways: promote R19 and R33; settle lease ownership before failover.
+- Multiple registration gateways: evaluate R33 using the completed R19 lease contract.
 - Tenant-based quotas: promote R37 to 9 and validate the tenant trust boundary before release.
 - Kubernetes deployment: promote R35 to 9 when EndpointSlice discovery is required.
-- Additional supported storage providers: promote R26 and R27 to 8 before promising provider interchangeability.
+- Additional supported storage providers: implement and verify the completed R26 and R27 contracts before claiming interchangeability.
 - Mandatory passkeys: promote R46 to 9; otherwise existing authentication keeps it optional.
 
 ## Tracking rules
@@ -899,4 +907,8 @@ Priority 11 completed: [allocation pressure evidence](tests/Wafish.Regression/ev
 Priority 12 completed: [sample deployment evidence](tests/Wafish.Regression/evidence/sample-deployment/README.md).
 
 Priority 13 completed: [sample contracts and final verification](tests/Wafish.Regression/evidence/sample-contracts/README.md).
-Paused after priority 13. Resume only when requested.
+The historical pause after priority 13 ended with authorized follow-up work. The current stop boundary is R28.
+
+R19–R28 completed on 2026-11-14. All need-7 tasks are complete.
+[Verification](tests/Wafish.Regression/evidence/need-seven/README.md) covers 265 main cases, 42 administration cases, and 30 browser checks.
+R29–R55 remain deferred: 27 tasks.

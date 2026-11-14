@@ -12,6 +12,32 @@ internal static class NeedSevenClientChecks
 {
     public static async Task RunAsync(Func<string, Func<Task>, Task> run)
     {
+        await run("Client lease shutdown: drain waits for the configured deadline before unregistering", async () =>
+        {
+            var clock = new ReviewReleaseChecks.ManualTime();
+            await using var gateway = await ConfigurationTransactionChecks.Fixture.Create(configure: s => s.AddSingleton<TimeProvider>(clock));
+            var rpc = new Bridge(new(gateway.Config, NullLogger<GatewayRegistryGrpcService>.Instance));
+            var builder = Host.CreateApplicationBuilder();
+            builder.Services.AddSingleton<TimeProvider>(clock);
+            builder.Services.AddWafishClient(o =>
+            {
+                o.GatewayUrl = "http://gateway.test"; o.UseGrpcRegistration = true; o.RouteName = "lease";
+                o.InstanceId = "one"; o.DestinationAddress = "http://localhost:9000/"; o.AutoResolveIp = false;
+                o.LeaseDurationSeconds = 15; o.DrainSeconds = 10;
+            });
+            builder.Services.AddSingleton<GatewayRegistry.GatewayRegistryClient>(rpc);
+            await using var services = builder.Services.BuildServiceProvider();
+            var hosted = services.GetServices<IHostedService>().Single(s => s.GetType().Name == "GatewayRegistrationHostedService");
+            await hosted.StartAsync(default);
+            var stop = hosted.StopAsync(default);
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var status = services.GetRequiredService<IRegistrationStatusSource>();
+            while (!status.GetRegistrationStatus().Draining || clock.TimerCount == 0) await Task.Delay(5, timeout.Token);
+            Check(!stop.IsCompleted && gateway.Config.IsInstanceRegistered("lease", "one"), "Drain did not retain the registration during its wait.");
+            clock.Advance(TimeSpan.FromSeconds(9)); Check(!stop.IsCompleted, "Drain ended before its deadline.");
+            clock.Advance(TimeSpan.FromSeconds(1)); await stop.WaitAsync(timeout.Token);
+            Check(!gateway.Config.IsInstanceRegistered("lease", "one") && clock.TimerCount == 0, "Shutdown failed to unregister or release its timers.");
+        });
         await run("Client leases and sample readiness: negotiation, loss, expiry, recovery, and drain preserve liveness", async () =>
         {
             var clock = new ReviewReleaseChecks.ManualTime();

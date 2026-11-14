@@ -42,7 +42,7 @@ Acceptance: A test collector receives route and cluster metrics without duplicat
 
 ## Source review follow-up: 2026-11-14
 
-Static review findings follow. Implementation and acceptance checks remain pending.
+Static review findings follow. Completed items include implementation and acceptance evidence.
 See [solution priorities and dependencies](../../DOTNET_REVIEW.md).
 
 ### IMP-03: Record failed and cancelled requests
@@ -82,7 +82,10 @@ Concurrent updates and removals preserve active counters.
 
 ### FEAT-02: Add route latency distributions
 
-Status: TODO. Priority: P2. Type: feature.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [R19–R28 evidence](../../tests/Wafish.Regression/evidence/need-seven/README.md).
+Compatibility and limits: [feature contracts](../../docs/need-seven-features.md).
 
 Evidence: `PluginMetricSnapshot` stores total duration but no route latency distribution.
 

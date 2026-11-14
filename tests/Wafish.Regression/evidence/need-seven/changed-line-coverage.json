@@ -1,0 +1,333 @@
+{
+  "base": "d4f1bd9",
+  "covered": 522,
+  "executable": 551,
+  "percent": 94.74,
+  "files": [
+    {
+      "file": "src/Wafish.Client/Services/RegistrationReadiness.cs",
+      "covered": 36,
+      "executable": 37,
+      "missed": [
+        70
+      ]
+    },
+    {
+      "file": "src/Wafish.Client/Services/GatewayRegistrationHostedService.cs",
+      "covered": 4,
+      "executable": 5,
+      "missed": [
+        137
+      ]
+    },
+    {
+      "file": "src/Wafish.Client/Extensions/WafishClientServiceCollectionExtensions.cs",
+      "covered": 2,
+      "executable": 2,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Client/Services/GatewayAutoRegistrationClient.cs",
+      "covered": 16,
+      "executable": 18,
+      "missed": [
+        92,
+        273
+      ]
+    },
+    {
+      "file": "samples/SampleServiceDefaults/Extensions.cs",
+      "covered": 2,
+      "executable": 2,
+      "missed": []
+    },
+    {
+      "file": "samples/SampleServiceDefaults/RegistrationReadinessHealthCheck.cs",
+      "covered": 5,
+      "executable": 5,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish/Services/DynamicConfigPublisher.cs",
+      "covered": 6,
+      "executable": 6,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish/Services/DynamicYarpConfigService.Leases.cs",
+      "covered": 78,
+      "executable": 79,
+      "missed": [
+        86
+      ]
+    },
+    {
+      "file": "src/Wafish/Services/DynamicYarpConfigService.Instances.cs",
+      "covered": 20,
+      "executable": 20,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish/Services/GatewayRegistryGrpcService.cs",
+      "covered": 22,
+      "executable": 28,
+      "missed": [
+        82,
+        138,
+        190,
+        191,
+        198,
+        203
+      ]
+    },
+    {
+      "file": "src/Wafish/Services/IConfigurationChangeService.cs",
+      "covered": 2,
+      "executable": 2,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish/Models/PluginExecutionConfigs.cs",
+      "covered": 4,
+      "executable": 4,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish/Services/DynamicYarpConfigService.Changes.cs",
+      "covered": 4,
+      "executable": 6,
+      "missed": [
+        26,
+        27
+      ]
+    },
+    {
+      "file": "src/Wafish/Services/DynamicYarpConfigService.cs",
+      "covered": 3,
+      "executable": 4,
+      "missed": [
+        352
+      ]
+    },
+    {
+      "file": "src/Wafish/Services/GatewaySnapshotCompiler.cs",
+      "covered": 1,
+      "executable": 1,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish/Services/RouteConfigManager.cs",
+      "covered": 5,
+      "executable": 6,
+      "missed": [
+        62
+      ]
+    },
+    {
+      "file": "src/Wafish.Storage.Sqlite/SqliteStorageCapabilities.cs",
+      "covered": 20,
+      "executable": 22,
+      "missed": [
+        35,
+        36
+      ]
+    },
+    {
+      "file": "src/Wafish.Storage.Sqlite/StorageServiceCollectionExtensions.cs",
+      "covered": 2,
+      "executable": 2,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Runtime/Infrastructure/Plugin/PluginDrainDiagnostics.cs",
+      "covered": 20,
+      "executable": 20,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Runtime/Infrastructure/Plugin/PluginRuntimeDomain.cs",
+      "covered": 6,
+      "executable": 6,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Runtime/Infrastructure/Plugin/PluginBindingMutationService.cs",
+      "covered": 14,
+      "executable": 14,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Runtime/GatewayRuntimeExtensions.cs",
+      "covered": 2,
+      "executable": 2,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Runtime/RegistrationLeaseReaper.cs",
+      "covered": 6,
+      "executable": 9,
+      "missed": [
+        19,
+        20,
+        22
+      ]
+    },
+    {
+      "file": "src/Wafish.Storage.Abstractions/StorageCapabilities.cs",
+      "covered": 22,
+      "executable": 22,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Plugin.Cache/ResponseCachePlugin.cs",
+      "covered": 1,
+      "executable": 1,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Plugin.Cache/ResponseCacheStore.cs",
+      "covered": 17,
+      "executable": 17,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Plugin.Cache/ResponseCacheMiddleware.cs",
+      "covered": 1,
+      "executable": 1,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Plugin.Waf/Middleware/IpAccessRuleChecker.cs",
+      "covered": 1,
+      "executable": 1,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Plugin.Waf/Middleware/IWafRuleChecker.cs",
+      "covered": 0,
+      "executable": 1,
+      "missed": [
+        48
+      ]
+    },
+    {
+      "file": "src/Wafish.Plugin.Waf/Middleware/PathTraversalRuleChecker.cs",
+      "covered": 1,
+      "executable": 1,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Plugin.Waf/Middleware/RequestSizeRuleChecker.cs",
+      "covered": 1,
+      "executable": 1,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Plugin.Waf/Middleware/SqlInjectionRuleChecker.cs",
+      "covered": 1,
+      "executable": 1,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Plugin.Waf/Middleware/WafFieldExclusions.cs",
+      "covered": 38,
+      "executable": 42,
+      "missed": [
+        18,
+        64,
+        65,
+        66
+      ]
+    },
+    {
+      "file": "src/Wafish.Plugin.Waf/Middleware/XssRuleChecker.cs",
+      "covered": 1,
+      "executable": 1,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Plugin.Waf/WafConfigurationCompiler.cs",
+      "covered": 1,
+      "executable": 1,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Plugin.Waf/WafPlugin.cs",
+      "covered": 1,
+      "executable": 1,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Plugin.Waf/Middleware/WafMiddleware.cs",
+      "covered": 10,
+      "executable": 10,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Plugin.Metrics/PluginMetricsMiddleware.cs",
+      "covered": 11,
+      "executable": 11,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Administration/Modules/Dashboard/Controllers/CacheManagementController.cs",
+      "covered": 7,
+      "executable": 7,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Administration/Modules/Dashboard/Controllers/DiagnosticBundleController.cs",
+      "covered": 2,
+      "executable": 2,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Administration/Modules/Dashboard/Controllers/LatencyMetricsController.cs",
+      "covered": 2,
+      "executable": 2,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Administration/Modules/Dashboard/Controllers/PluginBindingsController.Preview.cs",
+      "covered": 26,
+      "executable": 26,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Administration/Modules/Dashboard/Controllers/PluginDiagnosticsController.cs",
+      "covered": 2,
+      "executable": 2,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Administration/Infrastructure/Diagnostics/DiagnosticBundleService.cs",
+      "covered": 79,
+      "executable": 81,
+      "missed": [
+        86,
+        103
+      ]
+    },
+    {
+      "file": "src/Wafish.Administration/AdministrationServiceCollectionExtensions.cs",
+      "covered": 1,
+      "executable": 1,
+      "missed": []
+    },
+    {
+      "file": "src/Wafish.Administration/Modules/Dashboard/Controllers/DashboardSettingsController.cs",
+      "covered": 5,
+      "executable": 7,
+      "missed": [
+        115,
+        116
+      ]
+    },
+    {
+      "file": "src/Wafish.Administration/Modules/Dashboard/Controllers/PluginBindingsController.cs",
+      "covered": 11,
+      "executable": 11,
+      "missed": []
+    }
+  ]
+}

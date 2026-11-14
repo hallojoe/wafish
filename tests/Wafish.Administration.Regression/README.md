@@ -69,3 +69,7 @@ Error assertions require Problem Details, named outcomes, and nullable revision 
 
 Use `--permissions` for operation policy checks. Use `--previews` for permission and preview endpoint checks.
 The complete suite includes these checks and the controller authentication matrix.
+
+Run `--need-seven` for WAF exclusion previews and audits, operational endpoints, and unsupported backup handling.
+The full suite also checks new routes in the authorization matrix and verifies encrypted WAL backups.
+See [feature contracts](../../docs/need-seven-features.md).

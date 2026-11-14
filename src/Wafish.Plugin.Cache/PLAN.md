@@ -30,7 +30,10 @@ Acceptance: The configured budget bounds retained memory under concurrent load.
 
 ### FEAT-01: Add route-scoped cache tags and purge
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [R19–R28 evidence](../../tests/Wafish.Regression/evidence/need-seven/README.md).
+Compatibility and limits: [feature contracts](../../docs/need-seven-features.md).
 
 Allow authenticated administration to invalidate tagged public responses.
 

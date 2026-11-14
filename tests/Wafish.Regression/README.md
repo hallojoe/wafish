@@ -136,3 +136,9 @@ Build the Release solution first; this group launches the performance host binar
 Configuration preview and receipt checks: `dotnet run --project tests/Wafish.Regression -c Release -- --group configuration-changes`.
 Plugin preview checks: `dotnet run --project tests/Wafish.Regression -c Release -- --group plugin-preview`.
 These cover restart retries, rollback, activation failures, receipt limits, candidate cleanup, and unchanged active traffic.
+
+## Need-seven feature checks
+
+Run `--group need-seven` for registration leases, readiness, storage capabilities, backups, histograms, cache purge, WAF policies, and diagnostics.
+Checks include controlled clocks, held requests, pending fills, provider timeouts, and restart persistence.
+See [contracts](../../docs/need-seven-features.md) and [evidence](evidence/need-seven/README.md).

@@ -67,3 +67,5 @@ Run `--benchmarks` after benchmark changes. Build the complete Release solution 
 
 Use `--sample-deployment` and `--sample-contracts` for sample host changes.
 The real topology script requires the target AppHost to be stopped.
+
+Use `--group need-seven` for lease, readiness, policy, storage, and diagnostic feature contracts.

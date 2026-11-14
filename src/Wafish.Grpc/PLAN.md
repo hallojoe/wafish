@@ -43,7 +43,7 @@ Acceptance: Older clients continue to register when the new RPC is unavailable.
 
 ## Source review follow-up: 2026-11-14
 
-Static review findings follow. Implementation and acceptance checks remain pending.
+Static review findings follow. Completed items include implementation and acceptance evidence.
 See [solution priorities and dependencies](../../DOTNET_REVIEW.md).
 
 ### IMP-03: Define ownership for destination updates
@@ -64,7 +64,10 @@ Preserve existing field numbers and define legacy request behavior.
 
 ### FEAT-02: Negotiate registration leases
 
-Status: TODO. Priority: P2. Type: feature.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [R19–R28 evidence](../../tests/Wafish.Regression/evidence/need-seven/README.md).
+Compatibility and limits: [feature contracts](../../docs/need-seven-features.md).
 
 Evidence: [GatewayRegistry.proto](Protos/GatewayRegistry.proto), registration and heartbeat messages.
 

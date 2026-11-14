@@ -44,3 +44,6 @@ For documentation-only changes, check links and Mermaid rendering instead of sta
 Update the README when behavior or scope changes.
 Keep future work in PLAN.md until its acceptance checks pass.
 Record implementation evidence when completing a plan item.
+
+Use `--need-seven` for exclusion audits and previews, operational endpoints, and provider backup contracts.
+Keep added endpoints in the shared dashboard route inventory.

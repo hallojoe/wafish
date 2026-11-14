@@ -43,6 +43,7 @@ if (args is ["--migration-crash", var database, var ready])
 }
 
 var registry = new RegressionCaseRegistry(report);
+await registry.DefineGroupAsync("need-seven", NeedSevenChecks.RunAsync);
 await registry.DefineGroupAsync("configuration-changes", ConfigurationChangeChecks.RunAsync);
 await registry.DefineGroupAsync("plugin-preview", PluginPreviewChecks.RunAsync);
 await registry.DefineGroupAsync("log-safety", PublicLogSafetyChecks.RunAsync);

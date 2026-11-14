@@ -240,11 +240,14 @@ An accepted change set publishes a consistent configuration and records one corr
 
 ### NET-FEAT-02: Add per-instance registration leases and draining
 
-Status: TODO. Priority: P2. Type: feature.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [R19–R28 evidence](tests/Wafish.Regression/evidence/need-seven/README.md).
+See [feature contracts](docs/need-seven-features.md) for compatibility and operational limits.
 
 Evidence: [gRPC plan](src/Wafish.Grpc/PLAN.md) records destination ownership gaps.
 The [client plan](src/Wafish.Client/PLAN.md) records heartbeat and shutdown lifecycle gaps.
-The current heartbeat model does not define an expiring lease for each registered instance.
+The previous heartbeat model did not define an expiring lease for each registered instance.
 
 Negotiate a lease identifier, expiry, refresh interval, and grace period during registration.
 Refresh only the authenticated instance's lease.
@@ -262,7 +265,10 @@ Graceful drain allows active requests to finish within a bounded deadline.
 
 ### NET-FEAT-03: Add a redacted diagnostic bundle
 
-Status: TODO. Priority: P2. Type: feature.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [R19–R28 evidence](tests/Wafish.Regression/evidence/need-seven/README.md).
+See [feature contracts](docs/need-seven-features.md) for compatibility and operational limits.
 
 Evidence: [Runtime](src/Wafish.Runtime/PLAN.md), [Metrics](src/Wafish.Plugin.Metrics/PLAN.md), and [ProxyLog](src/Wafish.Plugin.ProxyLog/PLAN.md) expose separate diagnostic concerns.
 

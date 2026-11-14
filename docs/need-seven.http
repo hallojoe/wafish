@@ -1,0 +1,32 @@
+@baseUrl = http://localhost:5000/control
+@apiKey = replace-with-local-key
+
+### Latency buckets
+GET {{baseUrl}}/api/metrics/latency
+X-Api-Key: {{apiKey}}
+
+### Drain progress
+GET {{baseUrl}}/api/plugins/drain
+X-Api-Key: {{apiKey}}
+
+### Redacted diagnostics
+GET {{baseUrl}}/api/diagnostics/bundle
+X-Api-Key: {{apiKey}}
+
+### Purge one route and tag
+POST {{baseUrl}}/api/cache/purge
+X-Api-Key: {{apiKey}}
+Content-Type: application/json
+
+{"routeId":"catalog","tag":"products"}
+
+### Preview a narrow exclusion
+POST {{baseUrl}}/api/plugin-bindings/preview
+X-Api-Key: {{apiKey}}
+Content-Type: application/json
+
+{"pluginId":"waf","scope":"Route","scopeId":"catalog","enabled":true,"configJson":"{\"exclusions\":[{\"ruleId\":\"sql-injection\",\"target\":\"Json\",\"field\":\"/example\"}]}"}
+
+### Provider-owned backup
+GET {{baseUrl}}/api/settings/database/backup
+X-Api-Key: {{apiKey}}

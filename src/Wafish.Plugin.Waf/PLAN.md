@@ -30,7 +30,10 @@ Acceptance: Rule changes report both missed attack fixtures and rejected benign 
 
 ### FEAT-01: Add an explicit detection-only mode
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [R19–R28 evidence](../../tests/Wafish.Regression/evidence/need-seven/README.md).
+Compatibility and limits: [feature contracts](../../docs/need-seven-features.md).
 
 Allow selected rules to report matches without blocking during policy evaluation.
 
@@ -79,7 +82,10 @@ Operators retain route, rule, trace, and rejection context.
 
 ### FEAT-02: Add narrow rule exclusions
 
-Status: TODO. Priority: P2. Type: feature.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [R19–R28 evidence](../../tests/Wafish.Regression/evidence/need-seven/README.md).
+Compatibility and limits: [feature contracts](../../docs/need-seven-features.md).
 
 Evidence: [SqlInjectionRuleChecker.cs](Middleware/SqlInjectionRuleChecker.cs) scans complete query and body text.
 

@@ -30,7 +30,10 @@ Acceptance: Paging tests show no duplicate or skipped rows for a stable dataset.
 
 ### FEAT-01: Expose provider capability metadata
 
-Status: TODO.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [R19–R28 evidence](../../tests/Wafish.Regression/evidence/need-seven/README.md).
+Compatibility and limits: [feature contracts](../../docs/need-seven-features.md).
 
 Describe provider support for encryption, backup, and transaction features.
 
@@ -38,7 +41,7 @@ Acceptance: Hosts can reject unsupported options before accepting traffic.
 
 ## Source review follow-up: 2026-11-14
 
-Static review findings follow. Implementation and acceptance checks remain pending.
+Static review findings follow. Completed items include implementation and acceptance evidence.
 See [solution priorities and dependencies](../../DOTNET_REVIEW.md).
 
 ### IMP-03: Add an atomic binding batch contract
@@ -59,7 +62,10 @@ Coordinate with solution item NET-IMP-01.
 
 ### FEAT-02: Add a storage backup capability
 
-Status: TODO. Priority: P2. Type: feature.
+Status: DONE. Owner: Codex. Completed: 2026-11-14.
+
+Verification: [R19–R28 evidence](../../tests/Wafish.Regression/evidence/need-seven/README.md).
+Compatibility and limits: [feature contracts](../../docs/need-seven-features.md).
 
 Evidence: [IDbConnectionFactory.cs](Storage/IDbConnectionFactory.cs).
 The [administration backup](../Wafish.Administration/Modules/Dashboard/Controllers/DashboardSettingsController.cs) currently executes SQLite SQL.

@@ -30,6 +30,9 @@ Directory.CreateDirectory(path);
 var key = Guid.NewGuid().ToString("N");
 try
 {
+    if (args.Length == 0 || args is ["--need-seven"])
+        await NeedSevenEndpointChecks.RunAsync(Check, configure => StartHost("ApiKey", configure: configure, registration: false), key);
+    if (args is ["--need-seven"]) return failures.Count == 0 ? 0 : 1;
     await OperationPermissionChecks.RunAsync(Check, configure => StartHost("ApiKey", enableAi: true, configure: configure, registration: false), key);
     if (args is ["--permissions"])
     {
