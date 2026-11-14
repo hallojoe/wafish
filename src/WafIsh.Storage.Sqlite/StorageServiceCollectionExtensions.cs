@@ -13,6 +13,7 @@ public static class StorageServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection AddWafIshStorage(this IServiceCollection services)
     {
+        Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAddSingleton(services, TimeProvider.System);
         services.AddOptions<StorageOptions>()
             .BindConfiguration(StorageOptions.SectionName);
 

@@ -75,7 +75,7 @@ public sealed class SqliteConfigHistoryRepository : IConfigHistoryRepository
         cmd.Parameters.AddWithValue("@cfg", history.ConfigData);
         cmd.Parameters.AddWithValue("@diff", history.DiffData ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@cb", history.CreatedBy);
-        cmd.Parameters.AddWithValue("@ca", history.CreatedAt.ToString("O"));
+        cmd.Parameters.AddWithValue("@ca", StorageTimestamp.Format(history.CreatedAt));
         await cmd.ExecuteNonQueryAsync(ct);
     }
 
@@ -122,6 +122,6 @@ public sealed class SqliteConfigHistoryRepository : IConfigHistoryRepository
         ConfigData = r.GetString(3),
         DiffData = r.IsDBNull(4) ? null : r.GetString(4),
         CreatedBy = r.GetString(5),
-        CreatedAt = DateTime.Parse(r.GetString(6), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)
+        CreatedAt = DateTime.Parse(r.GetString(6), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal)
     };
 }

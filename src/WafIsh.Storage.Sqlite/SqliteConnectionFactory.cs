@@ -18,6 +18,7 @@ namespace WafIsh.Storage.Sqlite;
 /// </summary>
 public sealed class SqliteConnectionFactory : IDbConnectionFactory
 {
+    internal TimeProvider Clock => _serviceProvider.GetService<TimeProvider>() ?? TimeProvider.System;
     private readonly string _connectionString;
     private readonly IServiceProvider _serviceProvider;
     private static bool _providerSet;

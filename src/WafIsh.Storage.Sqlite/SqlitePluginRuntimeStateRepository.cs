@@ -115,7 +115,7 @@ public sealed class SqlitePluginRuntimeStateRepository : IPluginRuntimeStateRepo
         cmd.Parameters.AddWithValue("@targetUid", entity.TargetUid);
         cmd.Parameters.AddWithValue("@nodeId", entity.NodeId);
         cmd.Parameters.AddWithValue("@stateJson", entity.StateJson);
-        cmd.Parameters.AddWithValue("@updatedAt", entity.UpdatedAt.ToString("O"));
+        cmd.Parameters.AddWithValue("@updatedAt", StorageTimestamp.Format(entity.UpdatedAt));
 
         await cmd.ExecuteNonQueryAsync(cancellationToken);
     }
@@ -162,7 +162,7 @@ public sealed class SqlitePluginRuntimeStateRepository : IPluginRuntimeStateRepo
             TargetUid = reader.GetString("target_uid"),
             NodeId = reader.GetString("node_id"),
             StateJson = reader.GetString("state_json"),
-            UpdatedAt = DateTime.TryParse(reader.GetString("updated_at"), out var dt) ? dt : DateTime.UtcNow
+            UpdatedAt = DateTime.TryParse(reader.GetString("updated_at"), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal, out var dt) ? dt : DateTime.UtcNow
         };
     }
 }

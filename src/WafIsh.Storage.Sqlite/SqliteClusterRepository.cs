@@ -60,7 +60,7 @@ public sealed class SqliteClusterRepository : IClusterRepository
     public async Task SaveClusterAsync(ClusterEntity cluster, CancellationToken ct = default)
     {
         await EnsureInitializedAsync(ct);
-        cluster.UpdatedAt = DateTime.Now;
+        cluster.UpdatedAt = DateTime.UtcNow;
         await using var conn = await _connections.CreateConnectionAsync(ct);
         await conn.OpenAsync(ct);
         await SaveOneAsync(conn, null, cluster, ct);
@@ -76,7 +76,7 @@ public sealed class SqliteClusterRepository : IClusterRepository
         {
             foreach (var c in clusters)
             {
-                c.UpdatedAt = DateTime.Now;
+                c.UpdatedAt = DateTime.UtcNow;
                 await SaveOneAsync(conn, tx, c, ct);
             }
             await tx.CommitAsync(ct);
@@ -178,9 +178,9 @@ public sealed class SqliteClusterRepository : IClusterRepository
         cmd.Parameters.AddWithValue("@hc", c.HealthCheckConfig ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@src", c.Source);
         cmd.Parameters.AddWithValue("@cb", c.CreatedBy ?? (object)DBNull.Value);
-        cmd.Parameters.AddWithValue("@ca", c.CreatedAt.ToString("O"));
-        cmd.Parameters.AddWithValue("@ua", c.UpdatedAt.ToString("O"));
-        cmd.Parameters.AddWithValue("@lh", c.LastHeartbeat?.ToString("O") ?? (object)DBNull.Value);
+        cmd.Parameters.AddWithValue("@ca", StorageTimestamp.Format(c.CreatedAt));
+        cmd.Parameters.AddWithValue("@ua", StorageTimestamp.Format(c.UpdatedAt));
+        cmd.Parameters.AddWithValue("@lh", c.LastHeartbeat is { } heartbeat ? StorageTimestamp.Format(heartbeat) : (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@cfg", c.ConfigJson ?? (object)DBNull.Value);
         await cmd.ExecuteNonQueryAsync(ct);
     }
@@ -208,7 +208,7 @@ public sealed class SqliteClusterRepository : IClusterRepository
     private static DateTime? ReadDateTime(SqliteDataReader r, string name)
     {
         var value = ReadString(r, name);
-        return string.IsNullOrEmpty(value) ? null : DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+        return string.IsNullOrEmpty(value) ? null : DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal);
     }
 
     internal static DestinationEntity MapDestination(SqliteDataReader r) => new()

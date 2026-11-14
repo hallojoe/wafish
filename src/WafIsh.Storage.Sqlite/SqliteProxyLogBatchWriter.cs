@@ -165,7 +165,7 @@ internal sealed class SqliteProxyLogBatchWriter
 
     private void SetMetaParams(SqliteCommand cmd, ProxyLogMetaEntity meta)
     {
-        SetParamIfColumn(cmd, "@ts", "Timestamp", meta.Timestamp ?? "");
+        SetParamIfColumn(cmd, "@ts", "Timestamp", StorageTimestamp.Normalize(meta.Timestamp ?? ""));
         SetParamIfColumn(cmd, "@et", "EventType", meta.EventType ?? "");
         SetParamIfColumn(cmd, "@lv", "Level", meta.Level ?? "");
         SetParamIfColumn(cmd, "@ri", "RouteId", meta.RouteId);

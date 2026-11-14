@@ -56,6 +56,16 @@ public sealed class SqlitePluginConfigurationRepository : IPluginConfigurationRe
 
     public async Task UpsertBindingAsync(PluginBindingEntity binding, CancellationToken ct = default)
     {
+        await using var conn = await _connections.CreateConnectionAsync(ct);
+        await conn.OpenAsync(ct);
+        await using var transaction = conn.BeginTransaction();
+        await UpsertAsync(conn, transaction, binding, ct);
+        await transaction.CommitAsync(ct);
+    }
+
+    private static async Task UpsertAsync(Microsoft.Data.Sqlite.SqliteConnection conn,
+        Microsoft.Data.Sqlite.SqliteTransaction transaction, PluginBindingEntity binding, CancellationToken ct)
+    {
         ArgumentNullException.ThrowIfNull(binding);
         ArgumentException.ThrowIfNullOrWhiteSpace(binding.Id);
         ArgumentException.ThrowIfNullOrWhiteSpace(binding.PluginId);
@@ -71,9 +81,8 @@ public sealed class SqlitePluginConfigurationRepository : IPluginConfigurationRe
         if (binding.ConfigVersion < 1) throw new ArgumentOutOfRangeException(nameof(binding), binding.ConfigVersion, "Invalid ConfigVersion.");
 
         binding.UpdatedAt = DateTime.UtcNow;
-        await using var conn = await _connections.CreateConnectionAsync(ct);
-        await conn.OpenAsync(ct);
         await using var cmd = conn.CreateCommand();
+        cmd.Transaction = transaction;
         cmd.CommandText = """
             INSERT INTO plugin_bindings (id, plugin_id, plugin_version, scope, scope_id, route_uid, cluster_uid, enabled, config_json, schema_version, config_version, sort_order, created_at, updated_at)
             VALUES (@id, @pluginId, @pluginVersion, @scope, @scopeId, @routeUid, @clusterUid, @enabled, @configJson, @schemaVersion, @configVersion, @sortOrder, @createdAt, @updatedAt)
@@ -95,8 +104,8 @@ public sealed class SqlitePluginConfigurationRepository : IPluginConfigurationRe
         cmd.Parameters.AddWithValue("@schemaVersion", binding.SchemaVersion);
         cmd.Parameters.AddWithValue("@configVersion", binding.ConfigVersion);
         cmd.Parameters.AddWithValue("@sortOrder", binding.Order);
-        cmd.Parameters.AddWithValue("@createdAt", binding.CreatedAt.ToString("O"));
-        cmd.Parameters.AddWithValue("@updatedAt", binding.UpdatedAt.ToString("O"));
+        cmd.Parameters.AddWithValue("@createdAt", StorageTimestamp.Format(binding.CreatedAt));
+        cmd.Parameters.AddWithValue("@updatedAt", StorageTimestamp.Format(binding.UpdatedAt));
         await cmd.ExecuteNonQueryAsync(ct);
     }
 
@@ -109,6 +118,49 @@ public sealed class SqlitePluginConfigurationRepository : IPluginConfigurationRe
         cmd.CommandText = "DELETE FROM plugin_bindings WHERE id = @id";
         cmd.Parameters.AddWithValue("@id", id);
         return await cmd.ExecuteNonQueryAsync(ct) > 0;
+    }
+
+    public async Task<PluginBindingsSnapshot> GetBindingsSnapshotAsync(CancellationToken ct = default)
+    {
+        await using var conn = await _connections.CreateConnectionAsync(ct);
+        await conn.OpenAsync(ct);
+        await using var transaction = conn.BeginTransaction();
+        await using var cmd = conn.CreateCommand();
+        cmd.Transaction = transaction;
+        cmd.CommandText = "SELECT revision FROM plugin_binding_revision WHERE id = 1";
+        var revision = Convert.ToInt64(await cmd.ExecuteScalarAsync(ct));
+        cmd.CommandText = $"SELECT {BindingColumns} FROM plugin_bindings ORDER BY id";
+        var bindings = new List<PluginBindingEntity>();
+        await using (var reader = await cmd.ExecuteReaderAsync(ct))
+            while (await reader.ReadAsync(ct)) bindings.Add(ReadBinding(reader));
+        await transaction.CommitAsync(ct);
+        return new(revision, bindings);
+    }
+
+    public async Task<long> CommitBindingsAsync(long expectedRevision, IReadOnlyList<PluginBindingEntity> upserts,
+        IReadOnlyList<string> deletes, CancellationToken ct = default)
+    {
+        await using var conn = await _connections.CreateConnectionAsync(ct);
+        await conn.OpenAsync(ct);
+        await using var transaction = conn.BeginTransaction();
+        await using var cmd = conn.CreateCommand();
+        cmd.Transaction = transaction;
+        cmd.CommandText = "SELECT revision FROM plugin_binding_revision WHERE id = 1";
+        var revision = Convert.ToInt64(await cmd.ExecuteScalarAsync(ct));
+        if (revision != expectedRevision) throw new BindingRevisionConflictException(expectedRevision, revision);
+        foreach (var id in deletes)
+        {
+            cmd.CommandText = "DELETE FROM plugin_bindings WHERE id = @id";
+            cmd.Parameters.Clear();
+            cmd.Parameters.AddWithValue("@id", id);
+            await cmd.ExecuteNonQueryAsync(ct);
+        }
+        foreach (var binding in upserts) await UpsertAsync(conn, transaction, binding, ct);
+        cmd.CommandText = "SELECT revision FROM plugin_binding_revision WHERE id = 1";
+        cmd.Parameters.Clear();
+        revision = Convert.ToInt64(await cmd.ExecuteScalarAsync(ct));
+        await transaction.CommitAsync(ct);
+        return revision;
     }
 
     public async Task<IReadOnlyList<PluginSchemaEntity>> GetSchemasAsync(CancellationToken ct = default)
@@ -153,8 +205,8 @@ public sealed class SqlitePluginConfigurationRepository : IPluginConfigurationRe
         cmd.Parameters.AddWithValue("@pluginId", schema.PluginId);
         cmd.Parameters.AddWithValue("@schemaVersion", schema.SchemaVersion);
         cmd.Parameters.AddWithValue("@schemaJson", schema.SchemaJson);
-        cmd.Parameters.AddWithValue("@createdAt", schema.CreatedAt.ToString("O"));
-        cmd.Parameters.AddWithValue("@updatedAt", schema.UpdatedAt.ToString("O"));
+        cmd.Parameters.AddWithValue("@createdAt", StorageTimestamp.Format(schema.CreatedAt));
+        cmd.Parameters.AddWithValue("@updatedAt", StorageTimestamp.Format(schema.UpdatedAt));
         await cmd.ExecuteNonQueryAsync(ct);
     }
 
@@ -166,8 +218,8 @@ public sealed class SqlitePluginConfigurationRepository : IPluginConfigurationRe
         ClusterUid = reader.IsDBNull(6) ? null : reader.GetString(6),
         Enabled = reader.GetBoolean(7), ConfigJson = reader.GetString(8),
         SchemaVersion = reader.GetInt32(9), ConfigVersion = reader.GetInt64(10), Order = reader.GetInt32(11),
-        CreatedAt = DateTime.Parse(reader.GetString(12), null, System.Globalization.DateTimeStyles.RoundtripKind),
-        UpdatedAt = DateTime.Parse(reader.GetString(13), null, System.Globalization.DateTimeStyles.RoundtripKind)
+        CreatedAt = DateTime.Parse(reader.GetString(12), null, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal),
+        UpdatedAt = DateTime.Parse(reader.GetString(13), null, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal)
     };
 
     // --- Strategy Presets ---
@@ -234,8 +286,8 @@ public sealed class SqlitePluginConfigurationRepository : IPluginConfigurationRe
         cmd.Parameters.AddWithValue("@pluginId", preset.PluginId);
         cmd.Parameters.AddWithValue("@configJson", preset.ConfigJson);
         cmd.Parameters.AddWithValue("@schemaVersion", preset.SchemaVersion);
-        cmd.Parameters.AddWithValue("@createdAt", preset.CreatedAt.ToString("O"));
-        cmd.Parameters.AddWithValue("@updatedAt", preset.UpdatedAt.ToString("O"));
+        cmd.Parameters.AddWithValue("@createdAt", StorageTimestamp.Format(preset.CreatedAt));
+        cmd.Parameters.AddWithValue("@updatedAt", StorageTimestamp.Format(preset.UpdatedAt));
         await cmd.ExecuteNonQueryAsync(ct);
     }
 
@@ -258,14 +310,14 @@ public sealed class SqlitePluginConfigurationRepository : IPluginConfigurationRe
         PluginId = reader.GetString(3),
         ConfigJson = reader.GetString(4),
         SchemaVersion = reader.GetInt32(5),
-        CreatedAt = DateTime.Parse(reader.GetString(6), null, System.Globalization.DateTimeStyles.RoundtripKind),
-        UpdatedAt = DateTime.Parse(reader.GetString(7), null, System.Globalization.DateTimeStyles.RoundtripKind)
+        CreatedAt = DateTime.Parse(reader.GetString(6), null, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal),
+        UpdatedAt = DateTime.Parse(reader.GetString(7), null, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal)
     };
 
     private static PluginSchemaEntity ReadSchema(Microsoft.Data.Sqlite.SqliteDataReader reader) => new()
     {
         PluginId = reader.GetString(0), SchemaVersion = reader.GetInt32(1), SchemaJson = reader.GetString(2),
-        CreatedAt = DateTime.Parse(reader.GetString(3), null, System.Globalization.DateTimeStyles.RoundtripKind),
-        UpdatedAt = DateTime.Parse(reader.GetString(4), null, System.Globalization.DateTimeStyles.RoundtripKind)
+        CreatedAt = DateTime.Parse(reader.GetString(3), null, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal),
+        UpdatedAt = DateTime.Parse(reader.GetString(4), null, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal)
     };
 }

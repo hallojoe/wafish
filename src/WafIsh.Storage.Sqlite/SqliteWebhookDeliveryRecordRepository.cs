@@ -52,7 +52,7 @@ public sealed class SqliteWebhookDeliveryRecordRepository : IWebhookDeliveryReco
                 INSERT INTO webhook_delivery_records
                     (Platform, EventType, Target, Success, HttpStatusCode, Error, DurationMs, CreatedAt)
                 VALUES
-                    (@platform, @eventType, @target, @success, @status, @error, @duration, datetime('now'))
+                    (@platform, @eventType, @target, @success, @status, @error, @duration, strftime('%Y-%m-%dT%H:%M:%f0000Z','now'))
                 """;
             cmd.Parameters.AddWithValue("@platform", record.Platform ?? string.Empty);
             cmd.Parameters.AddWithValue("@eventType", record.EventType ?? string.Empty);
@@ -106,7 +106,7 @@ public sealed class SqliteWebhookDeliveryRecordRepository : IWebhookDeliveryReco
                 HttpStatusCode = reader.IsDBNull(5) ? null : reader.GetInt32(5),
                 Error = reader.IsDBNull(6) ? null : reader.GetString(6),
                 DurationMs = reader.GetInt32(7),
-                CreatedAt = DateTime.TryParse(reader.GetString(8), out var createdAt) ? createdAt : DateTime.UtcNow
+                CreatedAt = DateTime.TryParse(reader.GetString(8), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal, out var createdAt) ? createdAt : DateTime.UtcNow
             });
         }
         return result;

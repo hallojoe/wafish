@@ -30,7 +30,7 @@ internal sealed class SqliteProxyLogAggregator
         await using var conn = await _connections.CreateConnectionAsync(ct);
         await conn.OpenAsync(ct);
 
-        var fromTime = DateTime.Now.AddMinutes(-recentMinutes).ToString("O");
+        var fromTime = _connections.Clock.GetUtcNow().UtcDateTime.AddMinutes(-recentMinutes).ToString("O");
         var eventFilter = HasColumn("EventType") ? "AND EventType = 'ProxyResponse'" : "";
 
         await using var statsCmd = conn.CreateCommand();
@@ -42,7 +42,7 @@ internal sealed class SqliteProxyLogAggregator
                 AVG(CASE WHEN ElapsedMs > 0 THEN ElapsedMs ELSE NULL END) as avg_latency,
                 COUNT(*) as recent_count
             FROM proxy_logs_meta
-            WHERE Timestamp >= @from {eventFilter}
+            WHERE julianday(Timestamp) >= julianday(@from) {eventFilter}
             """;
         statsCmd.Parameters.AddWithValue("@from", fromTime);
         await using var reader = await statsCmd.ExecuteReaderAsync(ct);
@@ -84,11 +84,11 @@ internal sealed class SqliteProxyLogAggregator
                 COUNT(*) as request_count,
                 SUM(CASE WHEN StatusCode >= 400 THEN 1 ELSE 0 END) as error_count
             FROM proxy_logs_meta
-            WHERE Timestamp >= @from {eventFilter}
+            WHERE julianday(Timestamp) >= julianday(@from) {eventFilter}
             GROUP BY time_bucket
             ORDER BY time_bucket
             """;
-        cmd.Parameters.AddWithValue("@from", startTime.ToString("O"));
+        cmd.Parameters.AddWithValue("@from", StorageTimestamp.Format(startTime));
 
         var result = new List<ProxyLogTrafficBucket>();
         await using var reader = await cmd.ExecuteReaderAsync(ct);
@@ -96,7 +96,7 @@ internal sealed class SqliteProxyLogAggregator
         {
             result.Add(new ProxyLogTrafficBucket
             {
-                TimeBucket = DateTime.Parse(reader.GetString(0), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+                TimeBucket = DateTime.Parse(reader.GetString(0), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal),
                 RequestCount = reader.GetInt32(1),
                 ErrorCount = reader.IsDBNull(2) ? 0 : reader.GetInt32(2)
             });
@@ -119,12 +119,12 @@ internal sealed class SqliteProxyLogAggregator
                 COUNT(*) as total_count,
                 SUM(CASE WHEN StatusCode >= 400 THEN 1 ELSE 0 END) as error_count
             FROM proxy_logs_meta
-            WHERE Timestamp >= @from {eventFilter}
+            WHERE julianday(Timestamp) >= julianday(@from) {eventFilter}
             GROUP BY RouteId
             ORDER BY error_count DESC
             LIMIT @lim
             """;
-        cmd.Parameters.AddWithValue("@from", startTime.ToString("O"));
+        cmd.Parameters.AddWithValue("@from", StorageTimestamp.Format(startTime));
         cmd.Parameters.AddWithValue("@lim", count);
 
         var result = new List<ProxyLogRouteIssue>();
@@ -152,11 +152,13 @@ internal sealed class SqliteProxyLogAggregator
         var eventFilter = HasColumn("EventType") ? "AND EventType = 'ProxyResponse'" : "";
         cmd.CommandText = $"""
             SELECT COUNT(*) FROM proxy_logs_meta
-            WHERE Timestamp >= datetime('now', @mins || ' minutes')
+            WHERE julianday(Timestamp) BETWEEN julianday(@from) AND julianday(@now)
               AND StatusCode >= 500
               {eventFilter}
             """;
-        cmd.Parameters.AddWithValue("@mins", $"-{minutes}");
+        var now = _connections.Clock.GetUtcNow().UtcDateTime;
+        cmd.Parameters.AddWithValue("@from", StorageTimestamp.Format(now.AddMinutes(-minutes)));
+        cmd.Parameters.AddWithValue("@now", StorageTimestamp.Format(now));
         return Convert.ToInt32(await cmd.ExecuteScalarAsync(ct));
     }
 
@@ -165,7 +167,7 @@ internal sealed class SqliteProxyLogAggregator
         await using var countCmd = conn.CreateCommand();
         countCmd.CommandText = """
             SELECT COUNT(*) FROM proxy_logs_meta
-            WHERE Timestamp >= @from AND EventType = 'ProxyResponse' AND ElapsedMs > 0
+            WHERE julianday(Timestamp) >= julianday(@from) AND EventType = 'ProxyResponse' AND ElapsedMs > 0
             """;
         countCmd.Parameters.AddWithValue("@from", fromTime);
         var total = Convert.ToInt64(await countCmd.ExecuteScalarAsync(ct));
@@ -175,7 +177,7 @@ internal sealed class SqliteProxyLogAggregator
         await using var cmd = conn.CreateCommand();
         cmd.CommandText = """
             SELECT ElapsedMs FROM proxy_logs_meta
-            WHERE Timestamp >= @from AND EventType = 'ProxyResponse' AND ElapsedMs > 0
+            WHERE julianday(Timestamp) >= julianday(@from) AND EventType = 'ProxyResponse' AND ElapsedMs > 0
             ORDER BY ElapsedMs
             LIMIT 1 OFFSET @off
             """;

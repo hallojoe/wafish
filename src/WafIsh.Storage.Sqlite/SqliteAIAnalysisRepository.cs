@@ -28,7 +28,7 @@ public class SqliteAIAnalysisRepository : IAIAnalysisRepository
         cmd.Parameters.AddWithValue("@sev", entry.Severity);
         cmd.Parameters.AddWithValue("@rr", (object?)entry.RelatedRoutes ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@rc", (object?)entry.RelatedClusters ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@at", entry.CreatedAt.ToString("O", CultureInfo.InvariantCulture));
+        cmd.Parameters.AddWithValue("@at", StorageTimestamp.Format(entry.CreatedAt));
         await cmd.ExecuteNonQueryAsync(ct);
     }
 
@@ -93,7 +93,7 @@ public class SqliteAIAnalysisRepository : IAIAnalysisRepository
         await conn.OpenAsync(ct);
         await using var cmd = conn.CreateCommand();
         cmd.CommandText = "DELETE FROM ai_analysis WHERE created_at < @cutoff";
-        cmd.Parameters.AddWithValue("@cutoff", cutoff.ToString("O", CultureInfo.InvariantCulture));
+        cmd.Parameters.AddWithValue("@cutoff", StorageTimestamp.Format(cutoff));
         await cmd.ExecuteNonQueryAsync(ct);
     }
 
@@ -115,6 +115,6 @@ public class SqliteAIAnalysisRepository : IAIAnalysisRepository
         Severity = r.GetInt32(3),
         RelatedRoutes = r.IsDBNull(4) ? null : r.GetString(4),
         RelatedClusters = r.IsDBNull(5) ? null : r.GetString(5),
-        CreatedAt = DateTime.Parse(r.GetString(6), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)
+        CreatedAt = DateTime.Parse(r.GetString(6), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal)
     };
 }

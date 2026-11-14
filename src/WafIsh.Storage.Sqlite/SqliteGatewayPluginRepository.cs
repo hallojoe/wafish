@@ -68,8 +68,8 @@ public sealed class SqliteGatewayPluginRepository : IGatewayPluginRepository
         cmd.Parameters.AddWithValue("@sourcePath", (object?)plugin.SourcePath ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@status", plugin.RegistrationStatus);
         cmd.Parameters.AddWithValue("@lastError", (object?)plugin.LastError ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@installedAt", plugin.InstalledAt.ToString("O"));
-        cmd.Parameters.AddWithValue("@updatedAt", plugin.UpdatedAt.ToString("O"));
+        cmd.Parameters.AddWithValue("@installedAt", StorageTimestamp.Format(plugin.InstalledAt));
+        cmd.Parameters.AddWithValue("@updatedAt", StorageTimestamp.Format(plugin.UpdatedAt));
         await cmd.ExecuteNonQueryAsync(cancellationToken);
     }
 
@@ -92,7 +92,7 @@ public sealed class SqliteGatewayPluginRepository : IGatewayPluginRepository
         SourcePath = reader.IsDBNull(4) ? null : reader.GetString(4),
         RegistrationStatus = reader.GetString(5),
         LastError = reader.IsDBNull(6) ? null : reader.GetString(6),
-        InstalledAt = DateTime.Parse(reader.GetString(7), null, System.Globalization.DateTimeStyles.RoundtripKind),
-        UpdatedAt = DateTime.Parse(reader.GetString(8), null, System.Globalization.DateTimeStyles.RoundtripKind)
+        InstalledAt = DateTime.Parse(reader.GetString(7), null, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal),
+        UpdatedAt = DateTime.Parse(reader.GetString(8), null, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal)
     };
 }

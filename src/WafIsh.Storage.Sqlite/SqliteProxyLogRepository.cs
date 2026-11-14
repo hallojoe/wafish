@@ -76,17 +76,17 @@ public sealed class SqliteProxyLogRepository : IProxyLogRepository
                 DELETE FROM proxy_logs_body
                 WHERE MetaId IN (
                     SELECT m.Id FROM proxy_logs_meta m
-                    WHERE m.Timestamp < datetime('now', @bodyDays || ' days')
+                    WHERE julianday(m.Timestamp) < julianday(@bodyCutoff)
                 )
                 """;
-            bodyCmd.Parameters.AddWithValue("@bodyDays", $"-{bodyRetentionDays}");
+            bodyCmd.Parameters.AddWithValue("@bodyCutoff", StorageTimestamp.Format(_connections.Clock.GetUtcNow().UtcDateTime.AddDays(-bodyRetentionDays)));
             await bodyCmd.ExecuteNonQueryAsync(ct);
 
             await using var metaCmd = conn.CreateCommand();
             metaCmd.Transaction = tx;
             metaCmd.CommandTimeout = 60;
-            metaCmd.CommandText = "DELETE FROM proxy_logs_meta WHERE Timestamp < datetime('now', @metaDays || ' days')";
-            metaCmd.Parameters.AddWithValue("@metaDays", $"-{metaRetentionDays}");
+            metaCmd.CommandText = "DELETE FROM proxy_logs_meta WHERE julianday(Timestamp) < julianday(@metaCutoff)";
+            metaCmd.Parameters.AddWithValue("@metaCutoff", StorageTimestamp.Format(_connections.Clock.GetUtcNow().UtcDateTime.AddDays(-metaRetentionDays)));
             await metaCmd.ExecuteNonQueryAsync(ct);
 
             await tx.CommitAsync(ct);

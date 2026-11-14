@@ -63,7 +63,7 @@ internal sealed class SqliteProxyLogReader
 
         var offset = (page - 1) * pageSize;
         await using var dataCmd = conn.CreateCommand();
-        dataCmd.CommandText = $"SELECT * FROM proxy_logs_meta WHERE {where} ORDER BY Timestamp DESC LIMIT @lim OFFSET @off";
+        dataCmd.CommandText = $"SELECT * FROM proxy_logs_meta WHERE {where} ORDER BY julianday(Timestamp) DESC, Id DESC LIMIT @lim OFFSET @off";
         dataCmd.Parameters.AddWithValue("@lim", pageSize);
         dataCmd.Parameters.AddWithValue("@off", offset);
         AddSearchParams(dataCmd, routeId, clusterId, level, statusCodeMin, statusCodeMax, startTime, endTime, keyword, eventType);
@@ -145,8 +145,8 @@ internal sealed class SqliteProxyLogReader
         if (level != null) conditions.Add("Level = @lv");
         if (statusCodeMin != null && HasColumn("StatusCode")) conditions.Add("StatusCode >= @scmin");
         if (statusCodeMax != null && HasColumn("StatusCode")) conditions.Add("StatusCode <= @scmax");
-        if (startTime != null) conditions.Add("Timestamp >= @st");
-        if (endTime != null) conditions.Add("Timestamp <= @et");
+        if (startTime != null) conditions.Add("julianday(Timestamp) >= julianday(@st)");
+        if (endTime != null) conditions.Add("julianday(Timestamp) <= julianday(@et)");
         if (keyword != null)
         {
             var kwParts = new List<string>();
@@ -171,8 +171,8 @@ internal sealed class SqliteProxyLogReader
         if (level != null) parameters.AddWithValue("@lv", level);
         if (statusCodeMin != null && HasColumn("StatusCode")) parameters.AddWithValue("@scmin", statusCodeMin.Value);
         if (statusCodeMax != null && HasColumn("StatusCode")) parameters.AddWithValue("@scmax", statusCodeMax.Value);
-        if (startTime != null) parameters.AddWithValue("@st", startTime.Value.ToString("O"));
-        if (endTime != null) parameters.AddWithValue("@et", endTime.Value.ToString("O"));
+        if (startTime != null) parameters.AddWithValue("@st", StorageTimestamp.Format(startTime.Value));
+        if (endTime != null) parameters.AddWithValue("@et", StorageTimestamp.Format(endTime.Value));
         if (keyword != null)
         {
             var pattern = $"%{keyword}%";

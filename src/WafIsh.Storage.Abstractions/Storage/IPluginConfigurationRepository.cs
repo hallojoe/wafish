@@ -5,6 +5,12 @@ namespace WafIsh.Storage;
 /// <summary>Stores plugin schemas and route/cluster configuration bindings.</summary>
 public interface IPluginConfigurationRepository
 {
+    Task<PluginBindingsSnapshot> GetBindingsSnapshotAsync(CancellationToken ct = default)
+        => throw new NotSupportedException("This provider does not support atomic binding snapshots.");
+    Task<long> CommitBindingsAsync(long expectedRevision, IReadOnlyList<PluginBindingEntity> upserts,
+        IReadOnlyList<string> deletes, CancellationToken ct = default)
+        => throw new NotSupportedException("This provider does not support atomic binding batches.");
+
     Task<IReadOnlyList<PluginBindingEntity>> GetBindingsAsync(CancellationToken ct = default);
     Task<IReadOnlyList<PluginBindingEntity>> GetBindingsAsync(PluginBindingScope scope, string scopeId, CancellationToken ct = default);
     Task<PluginBindingEntity?> GetBindingAsync(string id, CancellationToken ct = default);
@@ -31,4 +37,14 @@ public interface IPluginConfigurationRepository
 
     /// <summary>Delete a preset by id.</summary>
     Task<bool> DeletePresetAsync(string id, CancellationToken ct = default);
+}
+
+/// <summary>A consistent binding set and its monotonic storage revision.</summary>
+public sealed record PluginBindingsSnapshot(long Revision, IReadOnlyList<PluginBindingEntity> Bindings);
+
+public sealed class BindingRevisionConflictException(long expected, long actual)
+    : InvalidOperationException($"Binding revision conflict: expected {expected}, actual {actual}.")
+{
+    public long ExpectedRevision { get; } = expected;
+    public long ActualRevision { get; } = actual;
 }

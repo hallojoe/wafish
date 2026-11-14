@@ -83,7 +83,7 @@ public sealed class SqliteAuditLogRepository : IAuditLogRepository
         cmd.Parameters.AddWithValue("@after", audit.AfterData ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@succ", audit.Success ? 1 : 0);
         cmd.Parameters.AddWithValue("@err", audit.ErrorMessage ?? (object)DBNull.Value);
-        cmd.Parameters.AddWithValue("@ts", audit.Timestamp.ToString("O"));
+        cmd.Parameters.AddWithValue("@ts", StorageTimestamp.Format(audit.Timestamp));
         await cmd.ExecuteNonQueryAsync(ct);
     }
 
@@ -113,6 +113,6 @@ public sealed class SqliteAuditLogRepository : IAuditLogRepository
         AfterData = r.IsDBNull(7) ? null : r.GetString(7),
         Success = r.GetInt32(8) == 1,
         ErrorMessage = r.IsDBNull(9) ? null : r.GetString(9),
-        Timestamp = DateTime.Parse(r.GetString(10), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)
+        Timestamp = DateTime.Parse(r.GetString(10), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal)
     };
 }

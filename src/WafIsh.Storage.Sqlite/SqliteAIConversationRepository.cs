@@ -28,7 +28,7 @@ public class SqliteAIConversationRepository : IAIConversationRepository
         cmd.Parameters.AddWithValue("@content", entry.Content);
         cmd.Parameters.AddWithValue("@fc", (object?)entry.FunctionCalls ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@tci", (object?)entry.ToolCallId ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@at", entry.CreatedAt.ToString("O", CultureInfo.InvariantCulture));
+        cmd.Parameters.AddWithValue("@at", StorageTimestamp.Format(entry.CreatedAt));
         await cmd.ExecuteNonQueryAsync(ct);
     }
 
@@ -59,7 +59,7 @@ public class SqliteAIConversationRepository : IAIConversationRepository
                 Content = reader.GetString(3),
                 FunctionCalls = reader.IsDBNull(4) ? null : reader.GetString(4),
                 ToolCallId = reader.IsDBNull(5) ? null : reader.GetString(5),
-                CreatedAt = DateTime.Parse(reader.GetString(6), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)
+                CreatedAt = DateTime.Parse(reader.GetString(6), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal)
             });
         }
         results.Reverse(); // Return chronological order
@@ -88,7 +88,7 @@ public class SqliteAIConversationRepository : IAIConversationRepository
             {
                 SessionId = reader.GetString(0),
                 MessageCount = reader.GetInt32(1),
-                LastActivity = DateTime.Parse(reader.GetString(2), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)
+                LastActivity = DateTime.Parse(reader.GetString(2), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal)
             });
         }
         return results;
@@ -110,7 +110,7 @@ public class SqliteAIConversationRepository : IAIConversationRepository
         await conn.OpenAsync(ct);
         await using var cmd = conn.CreateCommand();
         cmd.CommandText = "DELETE FROM ai_conversations WHERE created_at < @cutoff";
-        cmd.Parameters.AddWithValue("@cutoff", cutoff.ToString("O", CultureInfo.InvariantCulture));
+        cmd.Parameters.AddWithValue("@cutoff", StorageTimestamp.Format(cutoff));
         await cmd.ExecuteNonQueryAsync(ct);
     }
 }

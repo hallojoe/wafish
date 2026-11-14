@@ -86,8 +86,8 @@ public sealed class SqliteWebhookSettingsRepository : IWebhookSettingsRepository
         await using var cmd = conn.CreateCommand();
         cmd.CommandText = """
             INSERT INTO webhook_settings (Key, Value, UpdatedAt)
-            VALUES (@key, @value, datetime('now'))
-            ON CONFLICT(Key) DO UPDATE SET Value = @value, UpdatedAt = datetime('now')
+            VALUES (@key, @value, strftime('%Y-%m-%dT%H:%M:%f0000Z','now'))
+            ON CONFLICT(Key) DO UPDATE SET Value = @value, UpdatedAt = strftime('%Y-%m-%dT%H:%M:%f0000Z','now')
             """;
         cmd.Parameters.AddWithValue("@key", SettingsKey);
         cmd.Parameters.AddWithValue("@value", json);

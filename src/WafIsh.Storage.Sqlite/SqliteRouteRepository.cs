@@ -81,7 +81,7 @@ public sealed class SqliteRouteRepository : IRouteRepository
     public async Task SaveRouteAsync(RouteEntity route, CancellationToken ct = default)
     {
         await EnsureInitializedAsync(ct);
-        route.UpdatedAt = DateTime.Now;
+        route.UpdatedAt = DateTime.UtcNow;
         await using var conn = await _connections.CreateConnectionAsync(ct);
         await conn.OpenAsync(ct);
         await using var cmd = conn.CreateCommand();
@@ -106,7 +106,7 @@ public sealed class SqliteRouteRepository : IRouteRepository
         {
             foreach (var r in routes)
             {
-                r.UpdatedAt = DateTime.Now;
+                r.UpdatedAt = DateTime.UtcNow;
                 await using var cmd = conn.CreateCommand();
                 cmd.Transaction = tx;
                 cmd.CommandText = """
@@ -157,8 +157,8 @@ public sealed class SqliteRouteRepository : IRouteRepository
         cmd.Parameters.AddWithValue("@trans", r.Transforms ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@src", r.Source);
         cmd.Parameters.AddWithValue("@cb", r.CreatedBy ?? (object)DBNull.Value);
-        cmd.Parameters.AddWithValue("@ca", r.CreatedAt.ToString("O"));
-        cmd.Parameters.AddWithValue("@ua", r.UpdatedAt.ToString("O"));
+        cmd.Parameters.AddWithValue("@ca", StorageTimestamp.Format(r.CreatedAt));
+        cmd.Parameters.AddWithValue("@ua", StorageTimestamp.Format(r.UpdatedAt));
         cmd.Parameters.AddWithValue("@meta", r.Metadata ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@enabled", r.Enabled ? 1 : 0);
         cmd.Parameters.AddWithValue("@cfg", r.ConfigJson ?? (object)DBNull.Value);
@@ -191,6 +191,6 @@ public sealed class SqliteRouteRepository : IRouteRepository
     private static DateTime? ReadDateTime(SqliteDataReader r, string name)
     {
         var value = ReadString(r, name);
-        return string.IsNullOrEmpty(value) ? null : DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+        return string.IsNullOrEmpty(value) ? null : DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal);
     }
 }
