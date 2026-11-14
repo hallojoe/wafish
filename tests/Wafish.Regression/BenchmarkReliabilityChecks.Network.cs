@@ -78,6 +78,44 @@ internal static partial class BenchmarkReliabilityChecks
         Check(uncached.Headers.GetValues("X-Benchmark-PayloadMode").Single() == "generated", "Explicit generated mode used prepared bytes.");
         Check((await Counters(otherClient)).GetProperty("total").GetInt64() == 1, "Parallel backend counters were shared.");
     }
+    private static async Task TransportFaultsAsync()
+    {
+        await using var backend = await BenchmarkProcess.StartAsync("Backend", ["--listen-url=" + FreeAddress(), "--transport-faults=true"]);
+        using var client = new HttpClient { BaseAddress = backend.Address, Timeout = TimeSpan.FromSeconds(10) };
+        try
+        {
+            await client.GetByteArrayAsync("/api/perf/fault/truncate/4096");
+            throw new Exception("Truncated response completed successfully.");
+        }
+        catch (HttpRequestException) { }
+        await UntilAsync(async () => (await Counters(client)).GetProperty("active").GetInt64() == 0);
+        Check((await Counters(client)).GetProperty("aborted").GetInt64() == 1, "Injected abort was classified as caller cancellation.");
+        using (var cancellation = new CancellationTokenSource())
+        using (var response = await client.GetAsync("/api/perf/fault/stall/30000", HttpCompletionOption.ResponseHeadersRead, cancellation.Token))
+        {
+            Check(response.IsSuccessStatusCode && response.Content.Headers.ContentLength == 1, "Stall omitted response headers.");
+            var read = response.Content.ReadAsByteArrayAsync(cancellation.Token);
+            Check(!read.IsCompleted, "Stall returned its body early.");
+            cancellation.Cancel();
+            try { await read.WaitAsync(TimeSpan.FromSeconds(5)); throw new Exception("Body read ignored cancellation."); }
+            catch (OperationCanceledException) { }
+        }
+        await UntilAsync(async () => (await Counters(client)).GetProperty("active").GetInt64() == 0);
+        var counters = await Counters(client);
+        Check(counters.GetProperty("aborted").GetInt64() == 1 && counters.GetProperty("cancelled").GetInt64() == 1,
+            "Fault counters did not distinguish abort and cancellation.");
+        using var reset = await client.PostAsync("/api/perf/control/reset", null);
+        Check(reset.IsSuccessStatusCode && (await Counters(client)).GetProperty("total").GetInt64() == 0, "Fault reset retained state.");
+        using var invalid = await client.GetAsync("/api/perf/fault/truncate/1048577");
+        Check((int)invalid.StatusCode == 400, "Unbounded fault size accepted.");
+        using var completed = await client.GetAsync("/api/perf/fault/stall/1");
+        Check((await completed.Content.ReadAsByteArrayAsync()).Length == 1, "Bounded stall did not complete.");
+        await using var normal = await BenchmarkProcess.StartAsync("Backend", ["--listen-url=" + FreeAddress()]);
+        using var normalClient = new HttpClient { BaseAddress = normal.Address };
+        using var disabled = await normalClient.GetAsync("/api/perf/fault/truncate/1");
+        Check((int)disabled.StatusCode == 404, "Transport faults were enabled by default.");
+    }
+
     private static async Task<JsonElement> Counters(HttpClient client)
     {
         using var json = JsonDocument.Parse(await client.GetStringAsync("/api/perf/control/counters")); return json.RootElement.Clone();

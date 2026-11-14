@@ -10,6 +10,7 @@ internal static partial class BenchmarkReliabilityChecks
         await run("Benchmarks: normalized manifests hash composition and redact nested secrets", ManifestAsync);
         await run("Benchmarks: workload preflight rejects wrong status, payload, size, and stalled reads", PreflightAsync);
         await run("Benchmarks: isolated backend cancellation drains work and identifies payload allocation", BackendAsync);
+        await run("Benchmarks: opt-in transport faults truncate bodies and cancel stalled reads", TransportFaultsAsync);
         await run("Benchmarks: native forwarding preflight detects backend failure on isolated addresses", NativeAsync);
         await run("Benchmarks: managed comparisons export effective manifests and clean only owned data", RunnerAsync);
     }

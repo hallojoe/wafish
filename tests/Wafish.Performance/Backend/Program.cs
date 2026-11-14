@@ -5,6 +5,7 @@ using Wafish.Performance;
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 var address = BenchmarkOptions.LoopbackAddress(BenchmarkOptions.Read(args, "--listen-url", "http://127.0.0.1:5300"), "--listen-url");
+var transportFaults = bool.Parse(BenchmarkOptions.Read(args, "--transport-faults", "false"));
 var payloadMode = BenchmarkOptions.Read(args, "--payload-mode", "precomputed");
 if (payloadMode is not ("precomputed" or "generated")) throw new ArgumentException("Unknown payload mode.");
 builder.WebHost.UseUrls(address.ToString());
@@ -30,11 +31,11 @@ app.Use(async (context, next) =>
     catch (IOException) { aborted = true; throw; }
     finally
     {
-        if (measured) state.Finish(context.Request.Path, context.Response.StatusCode, context.RequestAborted.IsCancellationRequested, aborted);
+        if (measured) state.Finish(context.Request.Path, context.Response.StatusCode, context.RequestAborted.IsCancellationRequested, aborted || context.Items.ContainsKey("Benchmark.TransportAbort"));
     }
 });
 app.MapGet("/health", () => Results.Ok());
-app.MapGet("/benchmark/manifest", () => Results.Json(BenchmarkManifest.Create(new { mode = "backend", payloadMode, preparedSizes, maxRequestBytes = 4194304, maxDelayMilliseconds = 30000 })));
+app.MapGet("/benchmark/manifest", () => Results.Json(BenchmarkManifest.Create(new { mode = "backend", payloadMode, preparedSizes, maxRequestBytes = 4194304, maxDelayMilliseconds = 30000, transportFaults })));
 app.MapGet("/api/perf/plain", () => Results.Bytes(plain, "text/plain"));
 app.MapGet("/api/perf/json-small", () => Results.Bytes(smallJson, "application/json"));
 app.MapGet("/api/perf/payload/{size:int}", (int size, HttpContext context) =>
@@ -66,6 +67,29 @@ app.MapGet("/api/perf/delay/{milliseconds:int}", async (int milliseconds, HttpCo
 app.MapGet("/api/perf/status/{statusCode:int}", (int statusCode) => Results.StatusCode(Math.Clamp(statusCode, 100, 599)));
 app.MapGet("/api/perf/flaky/{failCount:int}", (int failCount, BackendState state) => state.NextFlakyAttempt() <= Math.Max(0, failCount)
     ? Results.StatusCode(503) : Results.Bytes(plain, "text/plain"));
+if (transportFaults)
+{
+    app.MapGet("/api/perf/fault/truncate/{bytes:int}", async (int bytes, HttpContext context) =>
+    {
+        if (bytes is < 1 or > 1048576) { context.Response.StatusCode = 400; return; }
+        context.Response.ContentType = "application/octet-stream";
+        context.Response.ContentLength = bytes + 1;
+        context.Items["Benchmark.TransportAbort"] = true;
+        await context.Response.Body.WriteAsync(new byte[bytes], context.RequestAborted);
+        await context.Response.Body.FlushAsync(context.RequestAborted);
+        context.Abort();
+    });
+    app.MapGet("/api/perf/fault/stall/{milliseconds:int}", async (int milliseconds, HttpContext context) =>
+    {
+        if (milliseconds is < 1 or > 30000) { context.Response.StatusCode = 400; return; }
+        context.Response.ContentType = "application/octet-stream";
+        context.Response.ContentLength = 1;
+        await context.Response.StartAsync(context.RequestAborted);
+        await context.Response.Body.FlushAsync(context.RequestAborted);
+        await Task.Delay(milliseconds, context.RequestAborted);
+        await context.Response.Body.WriteAsync(new byte[1], context.RequestAborted);
+    });
+}
 app.MapGet("/api/perf/control/counters", (BackendState state) => Results.Json(state.Snapshot()));
 app.MapPost("/api/perf/control/reset", (BackendState state) => state.TryReset() ? Results.NoContent() : Results.StatusCode(409));
 app.Run();
@@ -83,8 +107,8 @@ sealed class BackendState
         lock (_gate)
         {
             _active--; _total++;
-            if (cancelled) _cancelled++;
-            else if (aborted) _aborted++;
+            if (aborted) _aborted++;
+            else if (cancelled) _cancelled++;
             _paths[path] = _paths.GetValueOrDefault(path) + 1;
             _statuses[statusCode] = _statuses.GetValueOrDefault(statusCode) + 1;
         }

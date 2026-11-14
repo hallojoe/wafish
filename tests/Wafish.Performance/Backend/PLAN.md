@@ -58,7 +58,9 @@ A following scenario starts without leftover delay or echo work.
 
 ### FEAT-02: Add deterministic transport faults
 
-Status: TODO. Priority: P2. Type: benchmark feature.
+Status: DONE. Completed: 2026-11-14.
+Verification: Release solution build and all eight `--benchmarks` cases pass.
+Real HTTP checks cover truncated responses, cancelled body reads, bounds, reset, and opt-in behavior. Priority: P2. Type: benchmark feature.
 
 Evidence: [Program.cs](Program.cs) supports status failures but no partial-response disconnect.
 

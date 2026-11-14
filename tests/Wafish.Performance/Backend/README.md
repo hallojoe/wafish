@@ -64,3 +64,14 @@ Echo accepts at most four MiB. Delay accepts at most 30 seconds.
 Both operations stop when clients disconnect.
 Counters distinguish active, completed, cancelled, and aborted requests.
 Reset returns HTTP 409 while work remains active.
+
+## Transport fault fixtures
+
+Pass `--transport-faults=true` to enable fault endpoints. They remain unavailable by default.
+`/api/perf/fault/truncate/{bytes}` writes 1–1,048,576 bytes, advertises one additional byte, then aborts the connection.
+`/api/perf/fault/stall/{milliseconds}` sends headers, waits 1–30,000 milliseconds, then sends one byte.
+A cancelled body read stops the stalled request. Invalid bounds return 400.
+The backend binds only to an explicitly validated loopback address.
+Counters classify injected disconnects as aborted and caller-cancelled stalls as cancelled.
+Reset through `/api/perf/control/reset` after active requests reach zero. Reset during active work returns 409.
+The benchmark manifest includes the fault-mode setting. These endpoints require explicit fault workloads, not normal success preflight.
