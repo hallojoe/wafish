@@ -21,16 +21,19 @@ export default defineConfig({
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },
-  webServer: ["DefaultJwt", "BasicAuth", "ApiKey"].map((mode, index) => ({
+  webServer: ["DefaultJwt", "BasicAuth", "ApiKey", "DefaultJwt", "BasicAuth", "ApiKey"].map((mode, index) => ({
     command: `dotnet run --project tests/WafIsh.ReactUi.Host -c Release --no-launch-profile${index || process.env.UI_TEST_NO_BUILD === "true" ? " --no-build" : ""}`,
     cwd: "../../..",
-    url: `http://127.0.0.1:${5219 + index}/console`,
+    url: `http://127.0.0.1:${5219 + index}${index >= 3 ? "/edge/manage/ui" : "/console"}`,
     reuseExistingServer: false,
     timeout: 120000,
     env: {
       UI_TEST_PASSWORD: password,
       UI_TEST_AUTH: mode,
       UI_TEST_PORT: String(5219 + index),
+      UI_TEST_PATH_BASE: index >= 3 ? "/edge" : "",
+      UI_TEST_UI_PREFIX: index >= 3 ? "manage/ui" : "console",
+      UI_TEST_API_PREFIX: index >= 3 ? "manage/api" : "aneiang",
       ASPNETCORE_ENVIRONMENT: "Development",
     },
     stdout: "ignore",

@@ -15,7 +15,8 @@ try
     builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
     {
         ["Gateway:Storage:Sqlite:ConnectionString"] = new SqliteConnectionStringBuilder { DataSource = Path.Combine(directory, "gateway.db"), Password = password }.ToString(),
-        ["Gateway:Dashboard:RoutePrefix"] = "aneiang",
+        ["Gateway:Dashboard:RoutePrefix"] = Environment.GetEnvironmentVariable("UI_TEST_API_PREFIX") ?? "aneiang",
+        ["Gateway:ReactUi:RoutePrefix"] = Environment.GetEnvironmentVariable("UI_TEST_UI_PREFIX") ?? "console",
         ["Gateway:Dashboard:Locale"] = "en-US",
         ["Gateway:Dashboard:Auth:AuthMode"] = Environment.GetEnvironmentVariable("UI_TEST_AUTH") ?? "DefaultJwt",
         ["Gateway:Dashboard:Auth:JwtPassword"] = password,
@@ -36,6 +37,8 @@ try
     await using var app = builder.Build();
     if (app.Services.GetService<Microsoft.AspNetCore.Mvc.Razor.IRazorViewEngine>() != null || File.Exists(Path.Combine(AppContext.BaseDirectory, "WafIsh.Dashboard.dll")))
         throw new InvalidOperationException("React UI must run without Razor or the dashboard assembly.");
+    var pathBase = Environment.GetEnvironmentVariable("UI_TEST_PATH_BASE");
+    if (!string.IsNullOrEmpty(pathBase)) app.UsePathBase(pathBase);
     app.UseWafIshRuntime();
     app.MapWafIshAdministration();
     app.MapWafIshReactUi();

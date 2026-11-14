@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: { alias: { "@": path.resolve(import.meta.dirname, "./src") } },
   base: "./",
-  build: { outDir: "../wwwroot", emptyOutDir: true },
+  build: { manifest: true, outDir: "../wwwroot", emptyOutDir: true },
   server: {
     host: "127.0.0.1",
     proxy: {
