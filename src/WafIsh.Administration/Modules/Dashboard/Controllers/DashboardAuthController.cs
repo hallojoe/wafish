@@ -15,6 +15,7 @@ namespace WafIsh.Dashboard.Modules.Dashboard.Controllers;
 public class DashboardAuthController : Controller
 {
     private readonly IDashboardAuthorizationService _authService;
+    private readonly AuthenticationAttemptLimiter _attempts;
 
     private readonly string _defaultLocale;
     private readonly DashboardAuthMode _authMode;
@@ -33,9 +34,11 @@ public class DashboardAuthController : Controller
     /// </summary>
     public DashboardAuthController(
         IDashboardAuthorizationService authService,
-        IOptions<DashboardOptions> dashboardOptions)
+        IOptions<DashboardOptions> dashboardOptions,
+        AuthenticationAttemptLimiter attempts)
     {
         _authService = authService;
+        _attempts = attempts;
 
         var opt = dashboardOptions.Value;
         _defaultLocale = opt.Locale;
@@ -57,8 +60,14 @@ public class DashboardAuthController : Controller
     [HttpPost("login")]
     public IActionResult Login([FromBody] LoginRequest request)
     {
+        if (!_attempts.TryAcquire(HttpContext, "login", out _))
+            return StatusCode(429, new { code = 429, message = "Too many authentication attempts. Retry later." });
         if (request == null || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
             return Json(new { code = 400, message = "Username and password are required" });
+
+        var account = _authMode == DashboardAuthMode.DefaultJwt ? "admin" : _jwtUsername;
+        if (string.Equals(request.Username, account, StringComparison.Ordinal) && !_attempts.TryAcquireAccount(HttpContext))
+            return StatusCode(429, new { code = 429, message = "Too many authentication attempts. Retry later." });
 
         if (request.Password.Length < _minPasswordLength)
             return Json(new { code = 400, message = $"Password must be at least {_minPasswordLength} characters" });

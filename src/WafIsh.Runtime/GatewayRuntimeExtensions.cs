@@ -48,6 +48,7 @@ public static class GatewayRuntimeExtensions
     public static IServiceCollection AddWafIshRuntime(this IServiceCollection services, bool enableRegistration = false)
     {
         if (services.Any(d => d.ServiceType == typeof(RuntimeMarker))) return services;
+        Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAddSingleton(services, TimeProvider.System);
         services.AddSingleton<RuntimeMarker>();
         services.AddWafIsh(enableRegistration: enableRegistration);
         services.AddMemoryCache();
@@ -118,6 +119,7 @@ public static class GatewayRuntimeExtensions
         services.AddOptions<RedisRateLimitStoreOptions>().BindConfiguration("Gateway:RateLimit:Redis");
         services.AddSingleton<IDistributedRateLimitStore, RedisLuaRateLimitStore>();
         services.AddSingleton<IGatewayPlugin, WafPlugin>();
+        services.AddSingleton<IRoutePluginCompiler, WafConfigurationCompiler>();
         services.AddSingleton<IGatewayPlugin, ProxyLogPlugin>();
         services.AddSingleton<IGatewayPlugin, ResponseCachePlugin>();
         services.AddSingleton<IGatewayPlugin, TrafficMetricsPlugin>();

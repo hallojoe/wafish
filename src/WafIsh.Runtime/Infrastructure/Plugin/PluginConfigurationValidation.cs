@@ -235,6 +235,12 @@ public sealed class PluginConfigurationSchemaValidator : IPluginConfigurationSch
             return false;
         }
 
+        if (schema.TryGetProperty("format", out var addressFormat) && addressFormat.GetString() == "ip-pattern" &&
+            !WafIsh.Plugin.Waf.Helpers.IpMatcher.IsValidPattern(text))
+        {
+            error = $"{path} must contain an IP address, wildcard, or valid CIDR prefix.";
+            return false;
+        }
         return true;
     }
 

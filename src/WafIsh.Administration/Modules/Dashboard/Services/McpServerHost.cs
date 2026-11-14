@@ -175,7 +175,7 @@ public sealed class McpServerHost : BackgroundService
             }
             if (!await authorization.IsAuthorizedAsync(context))
             {
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                if (context.Response.StatusCode != 429) context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 return;
             }
             context.Response.Headers.CacheControl = "no-store";

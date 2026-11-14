@@ -12,15 +12,17 @@ namespace WafIsh.Dashboard.Infrastructure.Auth;
 public sealed class DashboardAuthorizationService : IDashboardAuthorizationService
 {
     private readonly DashboardOptions _options;
+    private readonly AuthenticationAttemptLimiter _attempts;
     private readonly ControlPlaneAccessPolicy _policy;
     private readonly ILogger<DashboardAuthorizationService> _logger;
 
     /// <summary>
     /// Creates the authorization service.
     /// </summary>
-    public DashboardAuthorizationService(IOptions<DashboardOptions> options, ILogger<DashboardAuthorizationService> logger, ControlPlaneAccessPolicy? policy = null)
+    public DashboardAuthorizationService(IOptions<DashboardOptions> options, ILogger<DashboardAuthorizationService> logger, ControlPlaneAccessPolicy? policy = null, AuthenticationAttemptLimiter? attempts = null)
     {
         _options = options.Value;
+        _attempts = attempts ?? new AuthenticationAttemptLimiter();
         _policy = policy ?? new ControlPlaneAccessPolicy(Options.Create(new WafIsh.Models.ControlPlaneSecurityOptions()));
         _logger = logger;
     }
@@ -36,14 +38,15 @@ public sealed class DashboardAuthorizationService : IDashboardAuthorizationServi
             return await _options.Auth.AuthorizeRequest(context);
         }
 
-        if (_options.Auth.AuthMode == DashboardAuthMode.BasicAuth)
-            return ControlPlaneCredentials.ValidateBasic(context.Request.Headers.Authorization,
-                _options.Auth.JwtUsername, _options.Auth.JwtPassword);
-
-        // Priority 2: API Key
-        if (_options.Auth.AuthMode == DashboardAuthMode.ApiKey)
+        if (_options.Auth.AuthMode is DashboardAuthMode.BasicAuth or DashboardAuthMode.ApiKey)
         {
-            return !string.IsNullOrWhiteSpace(_options.Auth.ApiKey) && CheckApiKey(context);
+            if (!_attempts.TryAcquire(context, "direct", out var refund)) return false;
+            var valid = _options.Auth.AuthMode == DashboardAuthMode.BasicAuth
+                ? ControlPlaneCredentials.ValidateBasic(context.Request.Headers.Authorization,
+                    _options.Auth.JwtUsername, _options.Auth.JwtPassword)
+                : !string.IsNullOrWhiteSpace(_options.Auth.ApiKey) && CheckApiKey(context);
+            if (valid) refund();
+            return valid;
         }
 
         // Priority 3: JWT (DefaultJwt / CustomJwt)

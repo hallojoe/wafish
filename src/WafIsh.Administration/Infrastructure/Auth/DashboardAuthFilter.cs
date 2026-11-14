@@ -47,6 +47,11 @@ internal sealed class DashboardAuthFilter : IAsyncAuthorizationFilter
         // Use authorization service for unified check
         if (await _authService.IsAuthorizedAsync(context.HttpContext)) return;
 
+        if (context.HttpContext.Response.StatusCode == 429)
+        {
+            context.Result = new JsonResult(new { code = 429, message = "Too many authentication attempts. Retry later." }) { StatusCode = 429 };
+            return;
+        }
         if (options.Auth.AuthMode == DashboardAuthMode.BasicAuth)
         {
             context.HttpContext.Response.Headers.WWWAuthenticate = "Basic realm=\"Gateway administration\", charset=\"UTF-8\"";

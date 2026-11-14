@@ -65,7 +65,7 @@ public sealed partial class WebhookSettingsController : ControllerBase
         data["retryCount"] = settings.RetryCount;
         data["timeoutSeconds"] = settings.TimeoutSeconds;
 
-        return Ok(new { code = 200, data });
+        return Ok(new { code = 200, data, dispatch = _dispatcher.GetSnapshot() });
     }
 
     // POST api/webhook/settings

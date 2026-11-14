@@ -210,6 +210,7 @@ public static class AdministrationServiceCollectionExtensions
         services.AddSingleton<GatewayApiAuthFilter>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<MvcOptions>, GatewayApiAuthMvcOptionsSetup>());
 
+        services.TryAddSingleton<AuthenticationAttemptLimiter>();
         services.AddSingleton<IDashboardAuthorizationService, DashboardAuthorizationService>();
         services.TryAddSingleton<JwtSecretProvider>();
         services.AddSingleton<IConfigureOptions<MvcOptions>, DashboardMvcOptionsSetup>();

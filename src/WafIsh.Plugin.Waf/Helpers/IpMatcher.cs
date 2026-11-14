@@ -55,6 +55,17 @@ public static class IpMatcher
     /// Checks if client IP is within a CIDR range using zero-allocation bit operations.
     /// Supports both IPv4 (uint bitmask) and IPv6 (full-byte prefix matching).
     /// </summary>
+    public static bool IsValidPattern(string pattern)
+    {
+        pattern = pattern.Trim();
+        var slash = pattern.IndexOf('/');
+        if (slash < 0) return pattern.Contains('*') || IPAddress.TryParse(pattern, out _);
+        return IPAddress.TryParse(pattern.AsSpan(0, slash), out var address) &&
+            int.TryParse(pattern.AsSpan(slash + 1), System.Globalization.NumberStyles.None,
+                System.Globalization.CultureInfo.InvariantCulture, out var prefix) &&
+            prefix <= address.GetAddressBytes().Length * 8;
+    }
+
     public static bool IsInCidrRange(string cidr, string clientIp)
     {
         var slashIdx = cidr.IndexOf('/');
@@ -72,6 +83,8 @@ public static class IpMatcher
 
         if (!int.TryParse(cidr.AsSpan(slashIdx + 1), out var maskBits))
             return false;
+
+        if (maskBits < 0 || maskBits > baseBytes.Length * 8) return false;
 
         if (baseBytes.Length == 4)
         {

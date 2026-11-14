@@ -206,10 +206,9 @@ public sealed class WafMiddleware : GatewayMiddlewareBase
     private void LogWafBlock(HttpContext context, string eventType, string? details)
     {
         var clientIp = ClientIpResolver.GetClientIp(context);
-        var requestUri = context.Request.Path.Value + context.Request.QueryString.Value;
-
-        _logger.LogWarning("WAF [{EventType}] from IP: {Ip}, Path: {Path}, Details: {Details}",
-            eventType, clientIp, requestUri, details ?? "(hidden)");
+        var routeId = context.Features.Get<IReverseProxyFeature>()?.Route?.Config.RouteId;
+        _logger.LogWarning("WAF rejected request: Rule={Rule}, Route={Route}, Trace={Trace}, IP={Ip}",
+            eventType, routeId, context.TraceIdentifier, clientIp);
 
     }
 
