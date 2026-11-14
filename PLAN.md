@@ -46,6 +46,7 @@ The naming correction is complete; see [consumer migration](docs/naming-migratio
 ## Remaining work: ranked release scope
 
 Public-release implementation R01–R14 is active. Stop after its acceptance checks and release verification.
+R11–R13 are complete: metric units, statistic descriptors, and bounded OpenTelemetry instruments.
 R10 is complete: host-local shared cluster retry budgets with bounded identity retention.
 R09 is complete: bounded startup retry jitter and cancellable waits.
 R08 is complete: reproducible embedded asset identity and administration compatibility metadata.

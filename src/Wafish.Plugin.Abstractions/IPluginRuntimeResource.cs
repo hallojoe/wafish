@@ -18,7 +18,11 @@ public sealed record PluginRuntimeResourceSnapshot(
     DateTimeOffset? StartedAt,
     DateTimeOffset? StoppedAt,
     string? Message,
-    IReadOnlyDictionary<string, long> Statistics);
+    IReadOnlyDictionary<string, long> Statistics)
+{
+    /// <summary>Known units and lifetimes. Undescribed extension values remain available in Statistics.</summary>
+    public IReadOnlyDictionary<string, PluginStatisticDescriptor> Descriptors { get; init; } = PluginStatisticDescriptors.Describe(Statistics);
+}
 
 /// <summary>Controllable runtime resource owned by one plugin. Registration in DI does not start the resource.</summary>
 public interface IPluginRuntimeResource
@@ -51,7 +55,10 @@ public sealed record PluginResourceUsage(
     PluginResourceHealthStatus OverallHealth,
     TimeSpan Uptime,
     DateTimeOffset LastUpdated,
-    IReadOnlyDictionary<string, long> CustomStatistics);
+    IReadOnlyDictionary<string, long> CustomStatistics)
+{
+    public IReadOnlyDictionary<string, PluginStatisticDescriptor> Descriptors { get; init; } = PluginStatisticDescriptors.Describe(CustomStatistics);
+}
 
 /// <summary>Monitors and aggregates per-plugin resource usage statistics.</summary>
 public interface IPluginResourceMonitor

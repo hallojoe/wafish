@@ -67,3 +67,5 @@ Path comparisons ignore case. Normal paths such as `/health/reports` remain trac
 Probe filtering applies to server spans; an independently instrumented health-check client can still emit client spans.
 Metrics remain enabled for health requests.
 The regression `--sample-contracts` group verifies custom probe paths and exporter-free telemetry behavior.
+
+The metrics pipeline includes `Wafish.Plugin.Metrics` route and cluster instruments when their bindings are enabled.

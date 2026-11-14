@@ -16,15 +16,36 @@ public sealed record PluginMetricSnapshot(long Requests, long Errors, long Reque
     public long Cancellations { get; init; }
 }
 
-public sealed class PluginMetricStore
+public sealed class PluginMetricStore : IDisposable
 {
+    private readonly System.Diagnostics.Metrics.Meter _meter = new("Wafish.Plugin.Metrics", "1.0");
     private readonly object _gate = new();
     private readonly IGatewaySnapshotPublisher? _snapshots;
     private long _version = -1;
     private HashSet<string>? _routes, _clusters, _destinations;
     public const int MaximumSeriesPerScope = 10_000;
-    public PluginMetricStore() { }
-    public PluginMetricStore(IGatewaySnapshotPublisher snapshots) => _snapshots = snapshots;
+    public PluginMetricStore() => RegisterInstruments();
+    public PluginMetricStore(IGatewaySnapshotPublisher snapshots) : this() => _snapshots = snapshots;
+
+    private void RegisterInstruments()
+    {
+        foreach (var scope in new[] { "route", "cluster" })
+        {
+            IReadOnlyDictionary<string, PluginMetricSnapshot> Read() => scope == "route" ? GetRoutes() : GetClusters();
+            IEnumerable<System.Diagnostics.Metrics.Measurement<long>> Observe(Func<PluginMetricSnapshot, long> value)
+                => Read().Select(p => new System.Diagnostics.Metrics.Measurement<long>(value(p.Value), new KeyValuePair<string, object?>("wafish." + scope + ".id", p.Key)));
+            _meter.CreateObservableCounter("wafish." + scope + ".requests", () => Observe(s => s.Requests), "{request}");
+            _meter.CreateObservableCounter("wafish." + scope + ".errors", () => Observe(s => s.Errors), "{request}");
+            _meter.CreateObservableCounter("wafish." + scope + ".exceptions", () => Observe(s => s.Exceptions), "{request}");
+            _meter.CreateObservableCounter("wafish." + scope + ".cancellations", () => Observe(s => s.Cancellations), "{request}");
+            _meter.CreateObservableCounter("wafish." + scope + ".request_bytes", () => Observe(s => s.RequestBytes), "By");
+            _meter.CreateObservableCounter("wafish." + scope + ".response_bytes", () => Observe(s => s.ResponseBytes), "By");
+            _meter.CreateObservableCounter("wafish." + scope + ".duration", () => Read().Select(p =>
+                new System.Diagnostics.Metrics.Measurement<double>(p.Value.DurationMicroseconds / 1_000_000d,
+                    new KeyValuePair<string, object?>("wafish." + scope + ".id", p.Key))), "s");
+        }
+    }
+    public void Dispose() => _meter.Dispose();
 
     private void Refresh()
     {
@@ -120,7 +141,7 @@ public sealed class PluginMetricStore
             Interlocked.Increment(ref counters.Exceptions);
         }
 
-        Interlocked.Add(ref counters.DurationMicroseconds, duration);
+        Interlocked.Add(ref counters.DurationMicroseconds, Math.Max(0, duration));
         Interlocked.Add(ref counters.RequestBytes, Math.Max(0, requestBytes));
         Interlocked.Add(ref counters.ResponseBytes, Math.Max(0, responseBytes));
     }

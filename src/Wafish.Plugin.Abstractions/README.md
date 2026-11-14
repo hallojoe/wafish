@@ -61,3 +61,12 @@ Available contracts are `wafish.runtime`, `wafish.proxy-pipeline`, and `wafish.r
 Names are case-sensitive. Versions are positive integers and represent compatible contract revisions.
 Unknown names or unsupported versions reject preparation before external plugin construction.
 Omitted requirements preserve legacy behavior. Rejected replacements leave the active domain unchanged.
+
+## Statistic descriptors
+
+Resource snapshots and aggregated usage expose additive `Descriptors` dictionaries beside their existing numeric statistics.
+Descriptors identify units, counter or gauge kind, reset conditions, and estimated values.
+Standard byte units use `By`; duration totals use `us`; generic counts use `{count}`.
+Memory and quota charges are estimates. Quota values describe the last committed write, not physical database file sizes.
+Unknown extension statistics remain readable without descriptors. Extensions can supply descriptors through the initializer.
+Consumers must treat undescribed values as having unknown semantics, rather than assuming they are counters.

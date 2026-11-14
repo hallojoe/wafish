@@ -49,7 +49,8 @@ See [solution priorities and dependencies](../../DOTNET_REVIEW.md).
 
 ### IMP-03: Define statistic names and units
 
-Status: TODO. Priority: P2. Type: contract improvement.
+Status: DONE. Completed: 2026-11-14.
+Verification: `--metric-contracts` verifies byte estimates, counters, durations, and unknown extension preservation. Priority: P2. Type: contract improvement.
 
 Evidence: [IPluginRuntimeResource.cs](IPluginRuntimeResource.cs), `PluginRuntimeResourceSnapshot`.
 

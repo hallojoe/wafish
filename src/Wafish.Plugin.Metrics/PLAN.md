@@ -18,7 +18,10 @@ Acceptance: Snapshots remain internally valid and counters do not lose updates.
 
 ### IMP-02: Define metric units and reset semantics
 
-Status: TODO.
+Status: DONE. Completed: 2026-11-14.
+Verification: `--metric-contracts` and `--protocol-properties` pass.
+A MeterListener receives route and cluster counters, with explicit units and no duplicated attempts.
+Concurrent snapshot checks verify retirement and reset behavior.
 
 Document bytes, duration units, errors, and process restart behavior.
 
@@ -28,7 +31,10 @@ Acceptance: Tests verify the documented units and reset behavior.
 
 ### FEAT-01: Export plugin measurements through OpenTelemetry
 
-Status: TODO.
+Status: DONE. Completed: 2026-11-14.
+Verification: `--metric-contracts` and `--protocol-properties` pass.
+A MeterListener receives route and cluster counters, with explicit units and no duplicated attempts.
+Concurrent snapshot checks verify retirement and reset behavior.
 
 Bridge these measurements to standard instruments with controlled dimensions.
 

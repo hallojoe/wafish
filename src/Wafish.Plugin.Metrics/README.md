@@ -75,3 +75,25 @@ Verification: [review evidence](../../tests/Wafish.Regression/evidence/review141
 Each seeded run records 2,048 outcomes and checks request, byte, duration, error, exception, and cancellation totals.
 Explicit barriers expose partial snapshots without using delays to select interleavings.
 Retired identities reject late writes. Reintroduced identities start with new counters.
+
+## Units and resets
+
+Snapshot byte totals use bytes. Duration totals use microseconds; divide by 1,000,000 for seconds.
+Negative supplied lengths and durations contribute zero. Missing content lengths contribute zero.
+Bytes are declared payload lengths, not compressed wire measurements. Route byte settings control shared byte collection.
+Cluster-only bindings therefore report zero byte totals. Counts and durations still apply.
+Counters are cumulative within the store lifetime. Store recreation and process restart reset them.
+Observed identity removal retires its counters; reintroduction starts new counters. Configuration changes preserve continuously active identities.
+
+## OpenTelemetry export
+
+Configure the host metrics pipeline with `.AddMeter("Wafish.Plugin.Metrics")`.
+Sample service defaults already include this meter. The library does not choose or configure an exporter.
+Observable counters use `wafish.route.*` and `wafish.cluster.*` instrument names.
+Suffixes are `requests`, `errors`, `exceptions`, `cancellations`, `request_bytes`, `response_bytes`, and `duration`.
+Count units are `{request}`. Byte units are `By`. Exported duration totals use seconds (`s`).
+Each instrument has one identity tag: `wafish.route.id` or `wafish.cluster.id`.
+Each scope retains its existing 10,000-series bound. No paths, headers, users, or query values become tags.
+Route and cluster counters describe the same attempts in separate scopes. Do not sum both scopes as gateway traffic.
+Repeated collection reports cumulative totals; it does not increment request counters.
+Dispose manually created stores to remove their instruments. Dependency injection disposes the registered singleton automatically.
