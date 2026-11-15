@@ -64,6 +64,9 @@ Evidence: [GitHub release v1.0.0](https://github.com/hallojoe/wafish/releases/ta
 The source and release notes still identify `1.0.0-rc.1`; the notes say publication is pending.
 Package-feed state was not verified during cleanup.
 
+Publishing automation is implemented: [workflow setup](docs/package-publishing.md).
+Trusted-publisher setup, version reconciliation, and actual publication remain pending.
+
 Acceptance:
 
 - Verify the package feed, published versions, release tag, and associated source commit.
