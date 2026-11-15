@@ -2,9 +2,10 @@
 
 Use `publish-packages` to publish all 19 packages.
 Use a package-specific workflow to publish one package.
-All workflows start manually through GitHub Actions.
+`publish-packages` starts automatically when a GitHub release is published, including prereleases.
+All workflows also support manual runs through GitHub Actions.
 They use the shared [publishing action](../.github/actions/publish-packages/action.yml).
-Pushes, pull requests, and release creation do not start publication automatically.
+Pushes, pull requests, and draft releases do not start publication.
 
 ## Registry setup
 
@@ -37,7 +38,38 @@ See [GitHub's NuGet registry documentation](https://docs.github.com/en/packages/
 Environment deployment restrictions can limit which branches or tags may publish.
 Use a source revision that passed the existing cross-platform Verify workflow.
 
-## Run a workflow
+## Publish a GitHub release
+
+1. Include the publishing workflows in the source commit selected for the release.
+2. Set the package version in [src/Directory.Build.props](../src/Directory.Build.props).
+3. Create a matching tag with the `v` prefix.
+4. Set the GitHub prerelease flag according to the table below.
+5. Publish the release. The workflow publishes all packages to both registries.
+
+| Release tag | GitHub prerelease flag | Package version | Result |
+|---|---|---|---|
+| `v1.1.1` | Off | `1.1.1` | Stable publication |
+| `v1.1.1-pre` | On | `1.1.1-pre` | Prerelease publication |
+| `v1.2.1-rc` | On | `1.2.1-rc` | Prerelease publication |
+| `v1.2.1-rc.1` | On | `1.2.1-rc.1` | Prerelease publication |
+| Any suffix tag | Off | — | Rejected |
+| Clean tag | On | — | Rejected |
+
+The workflow derives the version from the release tag and checks it against source metadata.
+Only clean `vMAJOR.MINOR.PATCH` tags can publish stable versions.
+Suffix tags must use valid prerelease versions and have the GitHub prerelease flag enabled.
+Clean tags cannot produce prerelease NuGet packages, even when GitHub marks the release as a prerelease.
+Malformed tags, build metadata, and numeric identifiers with leading zeros are rejected.
+Validation runs before builds, registry authentication, or package uploads.
+The workflow rejects mismatches; it does not change the release flag or package version automatically.
+
+The trigger uses `release: published`, which covers stable releases and prereleases published from drafts.
+See [GitHub release events](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#release).
+Editing a release does not start another run. Correct mismatches before publishing the release.
+If validation fails, correct the release settings, then run the workflow manually for the same tag.
+Rerunning the original failed event uses its original release payload.
+
+## Run a workflow manually
 
 1. Merge the workflow files into the default branch so manual dispatch becomes available.
 2. Select `publish-packages`, or a package-specific workflow, in GitHub Actions.
