@@ -1,0 +1,130 @@
+---
+const { kind } = Astro.props;
+---
+
+<svg class="scene-fallback" viewBox="0 0 800 360" aria-hidden="true">
+  <g stroke="#344030" stroke-width=".5">
+    {Array.from({ length: 26 }, (_, i) => (
+      <path d={`M${i * 32} 0v360`} />
+    ))}
+    {Array.from({ length: 12 }, (_, i) => (
+      <path d={`M0 ${i * 32}h800`} />
+    ))}
+  </g>
+  {kind === "configuration" ? (
+    <>
+      <path d="M170 180H650" fill="none" stroke="#6f805d" stroke-width="3" />
+      <g fill="#263022" stroke="#6c7c57">
+        <rect x="60" y="110" width="180" height="140" />
+        <rect x="310" y="110" width="180" height="140" />
+        <rect x="560" y="110" width="180" height="140" />
+      </g>
+      <g fill="#e9eddf" font-family="monospace" text-anchor="middle">
+        <text x="150" y="155" font-size="15">
+          PREVIEW
+        </text>
+        <text x="400" y="155" font-size="15">
+          SQLITE
+        </text>
+        <text x="650" y="155" font-size="15">
+          RUNTIME
+        </text>
+        <text x="150" y="203" font-size="14">
+          NO WRITE
+        </text>
+        <text x="400" y="203" font-size="14" data-persisted>
+          PERSISTED / 4
+        </text>
+        <text x="650" y="203" font-size="14" data-active>
+          ACTIVE / 4
+        </text>
+        <text x="400" y="305" font-size="13" fill="#d5f36b">
+          PERSISTENCE ≠ ACTIVATION
+        </text>
+      </g>
+    </>
+  ) : (
+    <>
+      <path d="M40 180H350" fill="none" stroke="#6f805d" stroke-width="3" />
+      <path
+        data-upstream
+        d="M350 180H500L620 64H760M500 180H760M500 180L620 296H760"
+        fill="none"
+        stroke="#6f805d"
+        stroke-width="3"
+      />
+      <g fill="#263022" stroke="#6c7c57">
+        <rect x="120" y="140" width="80" height="80" rx="5" />
+        <rect x="350" y="140" width="95" height="80" rx="5" />
+        {[26, 142, 258].map((y, i) => (
+          <rect
+            data-destination={i}
+            x="620"
+            y={y}
+            width="110"
+            height="76"
+            rx="5"
+          />
+        ))}
+      </g>
+      <g
+        fill="#e9eddf"
+        font-family="monospace"
+        font-size="14"
+        text-anchor="middle"
+      >
+        <text x="160" y="185">
+          POLICY
+        </text>
+        <text x="398" y="185">
+          YARP
+        </text>
+        {[70, 185, 301].map((y, i) => (
+          <text data-destination-label={i} x="675" y={y}>
+            SERVICE {String.fromCharCode(65 + i)}
+          </text>
+        ))}
+      </g>
+      <path
+        data-block-bar
+        d="M225 150v60"
+        stroke="#ec956f"
+        stroke-width="9"
+        visibility="hidden"
+      />
+      {kind === "cache" && (
+        <>
+          <path
+            data-cache-return
+            d="M250 180V55H400M400 55H75V180"
+            fill="none"
+            stroke="#d5f36b"
+            stroke-width="3"
+            opacity=".5"
+          />
+          <rect
+            x="330"
+            y="20"
+            width="140"
+            height="70"
+            rx="5"
+            fill="#263022"
+            stroke="#d5f36b"
+          />
+          <text
+            data-cache-state
+            x="400"
+            y="60"
+            fill="#d5f36b"
+            font-family="monospace"
+            font-size="14"
+            text-anchor="middle"
+          >
+            CACHE / FILL
+          </text>
+        </>
+      )}
+      <circle cx="275" cy="180" r="9" fill="#d5f36b" />
+    </>
+  )}
+</svg>

@@ -4,7 +4,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { Network, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { WafishMark } from "@/components/wafish-mark";
 import {
   api,
   config,
@@ -114,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       <div className="login-page">
         <div className="login-card">
           <div className="brand-mark">
-            <Network />
+            <WafishMark />
           </div>
           <p className="eyebrow mt-6">Wafish / YARP</p>
           <h1 className="mt-2 text-3xl font-semibold">{t("Sign in")}</h1>

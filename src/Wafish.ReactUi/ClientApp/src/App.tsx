@@ -9,7 +9,8 @@ import {
 } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider, useTheme } from "next-themes";
-import { Network, Menu, Moon, Sun, LogOut, ChevronRight } from "lucide-react";
+import { Menu, Moon, Sun, LogOut, ChevronRight } from "lucide-react";
+import { WafishMark } from "@/components/wafish-mark";
 import { config, ApiError } from "@/api/client";
 import { LocaleProvider, useLocale } from "@/locales/i18n";
 import { AuthProvider, useAuth } from "@/components/auth";
@@ -152,7 +153,7 @@ function Shell() {
         <div className="header-inner">
           <Link className="brand" to="/" aria-label={t("Gateway")}>
             <span className="brand-mark">
-              <Network className="size-5" />
+              <WafishMark className="size-5" />
             </span>
             <span>Wafish</span>
           </Link>

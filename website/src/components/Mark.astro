@@ -1,0 +1,21 @@
+---
+const { size = 38 } = Astro.props;
+---
+
+<svg
+  width={size}
+  height={size}
+  viewBox="0 0 96 96"
+  fill="none"
+  aria-hidden="true"
+>
+  <path
+    d="M14 20v32l18 24 16-24 16 24 18-24V20"
+    stroke="currentColor"
+    stroke-width="10"
+    stroke-linecap="square"
+    stroke-linejoin="round"
+  />
+  <path d="M48 22v30" stroke="var(--signal)" stroke-width="10" />
+  <path d="M41 15h14v14H41z" fill="var(--signal)" />
+</svg>

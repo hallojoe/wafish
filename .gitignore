@@ -362,7 +362,12 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /samples/SampleGateway/gateway-store.db
-website/
+website/dist/
+website/.astro/
+website/.cache/
+website/public/brand/
+website/public/downloads/
+website/public/images/
 /docs/blog
 /docs/test.json
 
@@ -383,3 +388,6 @@ src/Wafish.ReactUi/ClientApp/coverage/
 
 # Retain curated verification evidence.
 !tests/Wafish.Regression/evidence/**/*.log
+
+# Local browser inspection state
+.playwright-cli/
