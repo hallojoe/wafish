@@ -1,5 +1,5 @@
 <Project>
-  <!-- Stage the icon to avoid NuGet matching both logo.png and Logo.png on Linux. -->
+  <!-- Stage the canonical package icon in the intermediate output directory. -->
   <Target Name="StagePackageIcon" BeforeTargets="_GetPackageFiles">
     <MakeDir Directories="$(IntermediateOutputPath)package-icon" />
     <Copy SourceFiles="$(MSBuildThisFileDirectory)../logo.png" DestinationFiles="$(IntermediateOutputPath)package-icon/logo.png" SkipUnchangedFiles="true" />
