@@ -60,7 +60,7 @@ After publication, select the supported published version for SDK package-baseli
 ## Verification
 
 See [candidate evidence](../tests/Wafish.Regression/evidence/release-candidate/README.md).
-Hosted CI passed for preparation commit `bf493b2`, including all three package/storage platforms.
-[Verify run 43717485726](https://github.com/hallojoe/wafish/actions/runs/43717485726) passed all five jobs.
+Hosted CI passed for preparation commit `ecd6525`, including all three package/storage platforms.
+[Verify run 43735278426](https://github.com/hallojoe/wafish/actions/runs/43735278426) passed all five jobs.
 Package hashes identify the exact local staged artifacts.
 Publication and the final release tag require separate approval.

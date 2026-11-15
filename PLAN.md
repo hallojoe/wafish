@@ -71,7 +71,7 @@ Historical completion numbers and project task identifiers remain unchanged.
 ### Release candidate preparation
 
 Candidate `1.0.0-rc.1` passed local and hosted verification on 2026-11-15.
-[Hosted Verify](https://github.com/hallojoe/wafish/actions/runs/43717485726) passed all five jobs for preparation commit `bf493b2`.
+[Hosted Verify](https://github.com/hallojoe/wafish/actions/runs/43735278426) passed all five jobs for preparation commit `ecd6525`.
 Confirmed release version: `1.0.0-rc.1`.
 Advertised support: Linux, Windows, and macOS with .NET 10, following passed hosted platform checks.
 Two hosted test defects were found: a Debug-only collectible fixture and a Windows SQLite header-read lock.
