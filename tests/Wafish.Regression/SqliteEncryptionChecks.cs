@@ -52,13 +52,16 @@ internal static class SqliteEncryptionChecks
                             throw new InvalidOperationException("Migrated database failed its integrity check.");
                         }
                     }
-                    await using var reopened = CreateProvider(settings.ToString());
-                    await using var read = await reopened.GetRequiredService<SqliteConnectionFactory>().CreateConnectionAsync();
-                    await read.OpenAsync();
-                    if (await Scalar(read, "SELECT count(*) FROM compatibility_probe") != "2")
+                    await using (var reopened = CreateProvider(settings.ToString()))
                     {
-                        throw new InvalidOperationException("Legacy database did not retain the new write.");
+                        await using var read = await reopened.GetRequiredService<SqliteConnectionFactory>().CreateConnectionAsync();
+                        await read.OpenAsync();
+                        if (await Scalar(read, "SELECT count(*) FROM compatibility_probe") != "2")
+                        {
+                            throw new InvalidOperationException("Legacy database did not retain the new write.");
+                        }
                     }
+                    // Release native Windows file handles before inspecting the stored header.
 
                     var header = (await File.ReadAllBytesAsync(path)).Take(16).ToArray();
                     if (System.Text.Encoding.ASCII.GetString(header).StartsWith("SQLite format 3") == encrypted)
