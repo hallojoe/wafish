@@ -21,9 +21,9 @@ Plugin Architecture · Dashboard · Dynamic Routing · WAF · Service Discovery 
 
 ---
 
-**Wafish** is a production-ready API gateway built on [Microsoft YARP](https://microsoft.github.io/reverse-proxy/) 2.3.0. It ships with everything you'd otherwise build yourself: a **plugin architecture** (11 built-in plugins), a visual **management dashboard**, WAF, AI assistant, multi-provider **service discovery**, notifications, health & circuit-breaker monitoring, and **one-line client auto-registration**.
+**Wafish** is an API gateway built on [Microsoft YARP](https://microsoft.github.io/reverse-proxy/) 2.3.0. It adds a **plugin architecture** (11 built-in plugins), a visual **management dashboard**, WAF, AI assistant, multi-provider **service discovery**, notifications, health & circuit-breaker monitoring, and **client auto-registration**.
 
-[Documentation](#documentation) · [Quick Start](#quick-start)
+[Website](https://hallojoe.github.io/wafish/) · [Documentation](https://hallojoe.github.io/wafish/docs/) · [Presentation](https://hallojoe.github.io/wafish/presentation/) · [Quick Start](#quick-start)
 
 ---
 
@@ -34,16 +34,25 @@ See [release notes](docs/release-notes-1.0.0-rc.1.md) for the completed scope, s
 
 ## Wafish vs. Bare YARP
 
+Wafish uses YARP for proxy forwarding and destination selection.
+Its additions provide management, persistence, and operational policies.
+
 | Need | Bare YARP | Wafish |
 |:-----|:----------|:-------------|
 | Management UI | Build your own | ✅ Included |
-| Edit config at runtime | Reload file only | ✅ CRUD + form/JSON editor + rollback + audit |
+| Edit config at runtime | File reload and programmatic updates through configuration providers | ✅ Management API and UI, persistent revisions, previews, rollback, and audit |
 | Security (WAF) | None | ✅ WAF plugin (IP allow/deny, SQLi, XSS, path traversal) |
 | Microservice registration | None | ✅ One-line REST/gRPC + heartbeat recovery |
-| Observability | Logging only | ✅ Metrics, request logs, health, circuit-breaker panel |
-| Service discovery | Manual clusters | ✅ Consul / Nacos / Eureka / K8s / HTTP-JSON / Static |
+| Observability | Logging, distributed tracing, and .NET/ASP.NET Core metrics | ✅ Stored request logs, gateway metrics, health views, and circuit-breaker controls |
+| Service discovery | Destinations supplied through configuration providers | ✅ Consul / Nacos / Eureka / K8s / HTTP-JSON / Static |
 | AI assistant | None | ✅ Chat-based management (40 tools, read/write split) |
-| Extensibility | Custom middleware | ✅ Drop-in `IGatewayPlugin` framework |
+| Extensibility | Middleware, transforms, configuration providers, and policy extension points | ✅ Managed `IGatewayPlugin` lifecycle, bindings, ordering, and compatibility checks |
+
+See Microsoft’s documentation for [configuration providers](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/yarp/config-providers),
+[logging](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/yarp/diagnosing-yarp-issues?view=aspnetcore-10.0),
+[distributed tracing](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/yarp/distributed-tracing?view=aspnetcore-10.0),
+[framework metrics](https://learn.microsoft.com/en-us/aspnet/core/metrics/overview?view=aspnetcore-10.0),
+and [YARP extension points](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/yarp/extensibility?view=aspnetcore-10.0).
 
 ---
 

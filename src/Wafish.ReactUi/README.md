@@ -88,6 +88,9 @@ See [infrastructure evidence](../../tests/Wafish.Regression/evidence/regression-
 
 ## Build identity
 
+The header, sign-in view, and favicon use the shared Wafish routing mark.
+Editable masters and usage guidance are in [brand](../../brand/README.md).
+
 `GET /console/version` returns package version, asset SHA-256, and administration contract version 1.
 The configured UI prefix and PathBase also apply to this endpoint. Control-plane access policy remains enforced.
 The shell includes the same metadata in `app-config.build`. Responses use `Cache-Control: no-store`.
