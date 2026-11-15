@@ -1,0 +1,259 @@
+---
+import Shell from "../layouts/Shell.astro";
+import Scene from "../components/Scene.astro";
+import { url, github } from "../lib/site";
+---
+
+<Shell>
+  <section class="hero wrap">
+    <div class="hero-heading">
+      <p class="eyebrow">
+        <span class="status-dot"></span> THE .NET GATEWAY / BUILT ON YARP
+      </p>
+      <h1>
+        Your gateway.
+        <br />
+        <span>Under control.</span>
+      </h1>
+      <div class="hero-bottom">
+        <p>
+          Routing is only the beginning.
+          <br />
+          Bring policies, live configuration, and operations
+          <br class="desktop" /> into one deliberate workspace.
+        </p>
+        <a class="button signal" href={url("docs/getting-started/")}>
+          Build your gateway <span>↗</span>
+        </a>
+      </div>
+    </div>
+    <div class="hero-instrument">
+      <Scene />
+      <div class="instrument-index">
+        <span>FIG. 001 / FOLLOW THE REQUEST</span>
+        <span>YARP FORWARDS. WAFISH PUTS YOU IN CONTROL.</span>
+      </div>
+    </div>
+    <div class="release-strip mono">
+      <span>01 / OPEN SOURCE · MIT</span>
+      <span>02 / .NET 10 + YARP 2.3</span>
+      <a href={url("docs/release-notes/")}>
+        03 / 1.0.0-rc.1 · RELEASE CANDIDATE ↗
+      </a>
+    </div>
+  </section>
+
+  <section id="capabilities" class="capabilities wrap">
+    <div class="section-intro">
+      <p class="eyebrow">01 / THE OPERATING LAYER</p>
+      <h2>
+        Less glue.
+        <br />
+        More gateway.
+      </h2>
+      <p>
+        Keep YARP’s forwarding engine. Add the tools that make a gateway yours.
+      </p>
+    </div>
+    <div class="capability-list">
+      <a href={url("docs/configuration/")}>
+        <span class="item-number">01</span>
+        <div>
+          <h3>Change it while it runs.</h3>
+          <p>
+            Preview configuration. Apply versioned changes. Inspect what
+            persisted and what became active.
+          </p>
+        </div>
+        <span class="item-arrow">↗</span>
+      </a>
+      <a href={url("docs/plugins/")}>
+        <span class="item-number">02</span>
+        <div>
+          <h3>Policy, with a place to live.</h3>
+          <p>
+            11 built-in plugins. Scoped bindings. WAF, rate limits, cache,
+            retry, and circuit-breaking controls.
+          </p>
+        </div>
+        <span class="item-arrow">↗</span>
+      </a>
+      <a href={url("docs/operations/")}>
+        <span class="item-number">03</span>
+        <div>
+          <h3>Know what is happening.</h3>
+          <p>
+            Request logs, latency distributions, audit records, and destination
+            health. One connected view.
+          </p>
+        </div>
+        <span class="item-arrow">↗</span>
+      </a>
+      <a href={url("docs/registration/")}>
+        <span class="item-number">04</span>
+        <div>
+          <h3>Let services come to you.</h3>
+          <p>
+            Client registration, renewable leases, graceful draining, and
+            discovery from external registries.
+          </p>
+        </div>
+        <span class="item-arrow">↗</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="console-section">
+    <div class="wrap">
+      <div class="console-heading">
+        <div>
+          <p class="eyebrow">02 / A WORKSPACE FOR OPERATORS</p>
+          <h2>
+            See the system.
+            <br />
+            Make the change.
+          </h2>
+        </div>
+        <p>
+          Routes, clusters, policies, and their history.
+          <br />A React administration workspace you can include
+          <br class="desktop" /> when your deployment needs it.
+        </p>
+      </div>
+      <figure class="console-figure">
+        <div class="window-bar mono">
+          <span>
+            <i></i>
+            <i></i>
+            <i></i>
+          </span>
+          <span>WAFISH / ADMINISTRATION</span>
+          <span>DEMO FIXTURE</span>
+        </div>
+        <img
+          src={url("images/console-routes.webp")}
+          alt="Wafish administration workspace showing configured routes, destinations, and route controls in an isolated demo."
+          width="1440"
+          height="960"
+          loading="lazy"
+        />
+        <figcaption>
+          Real interface. Isolated demonstration data.{" "}
+          <a href={url("docs/administration/")}>Explore the workspace ↗</a>
+        </figcaption>
+      </figure>
+      <div class="console-details">
+        <div>
+          <span class="mono">INSPECT</span>
+          <p>Trace a decision through logs and audit history.</p>
+        </div>
+        <div>
+          <span class="mono">CONFIGURE</span>
+          <p>Use forms or work directly with the YARP schema.</p>
+        </div>
+        <div>
+          <span class="mono">CONTROL</span>
+          <p>Keep read and write permissions explicit.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="under-hood wrap">
+    <p class="eyebrow">03 / ENGINEERING YOU CAN EXPLAIN</p>
+    <div class="section-row">
+      <h2>Not a black box.</h2>
+      <p>
+        Step through a public cache fill.
+        <br />
+        See exactly when the upstream does work.
+      </p>
+    </div>
+    <Scene kind="cache" compact />
+    <div class="under-caption">
+      <p>
+        Illustrated behavior, not a performance benchmark. Cache sharing is
+        local to each process.
+      </p>
+      <a class="text-link" href={url("presentation/")}>
+        See all six demonstrations <span>↗</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="composition wrap">
+    <div>
+      <p class="eyebrow">04 / YOUR HOST. YOUR SHAPE.</p>
+      <h2>
+        Start small.
+        <br />
+        Add what you need.
+      </h2>
+      <p>
+        Run the proxy on its own. Add administration, the UI, or client
+        registration as your system grows.
+      </p>
+      <a class="text-link" href={url("docs/architecture/")}>
+        Read the architecture ↗
+      </a>
+    </div>
+    <div class="stack">
+      <div>
+        <span>Wafish.ReactUi</span>
+        <span>WORKSPACE / OPTIONAL</span>
+      </div>
+      <div>
+        <span>Wafish.Administration</span>
+        <span>CONTROL / OPTIONAL</span>
+      </div>
+      <div>
+        <span>Wafish.Runtime</span>
+        <span>POLICIES + YARP</span>
+      </div>
+      <div>
+        <span>Wafish.Storage.Sqlite</span>
+        <span>PERSISTENCE</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="talk-invite wrap">
+    <span class="eyebrow">05 / TAKE IT TO THE ROOM</span>
+    <div>
+      <h2>
+        A gateway.
+        <br />
+        In motion.
+      </h2>
+      <p>
+        A 27-minute technical talk. Six interactive models.
+        <br />
+        Speaker notes, an offline edition, and a PDF handout.
+      </p>
+      <a class="button signal" href={url("presentation/")}>
+        Open the presentation <span>↗</span>
+      </a>
+    </div>
+    <div class="talk-number" aria-hidden="true">
+      27<span>MINUTES</span>
+    </div>
+  </section>
+
+  <section class="start-section wrap">
+    <p class="eyebrow">YOUR NEXT REQUEST STARTS HERE</p>
+    <h2>Make it your gateway.</h2>
+    <p>Linux, Windows, and macOS. .NET 10. Open source.</p>
+    <div class="start-actions">
+      <a class="button signal" href={url("docs/getting-started/")}>
+        Get started <span>↗</span>
+      </a>
+      <a class="button outline" href={github}>
+        Explore the source <span>↗</span>
+      </a>
+    </div>
+    <p class="release-note">
+      First release candidate. Package publication is pending.{" "}
+      <a href={url("docs/release-notes/")}>Read the support boundaries.</a>
+    </p>
+  </section>
+</Shell>

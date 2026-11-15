@@ -1,0 +1,23 @@
+---
+import Shell from "../layouts/Shell.astro";
+import { url } from "../lib/site";
+---
+
+<Shell title="Route not found — Wafish">
+  <section class="start-section wrap">
+    <p class="eyebrow">404 / NO MATCHING ROUTE</p>
+    <h1>This route ends here.</h1>
+    <p>
+      The page may have moved. Start at the documentation or return to the
+      homepage.
+    </p>
+    <div class="start-actions">
+      <a class="button signal" href={url("docs/")}>
+        Documentation ↗
+      </a>
+      <a class="button outline" href={url()}>
+        Home ↗
+      </a>
+    </div>
+  </section>
+</Shell>

@@ -1,0 +1,204 @@
+---
+import Shell from "../../layouts/Shell.astro";
+import { documents, renderDocument, docUrl } from "../../lib/docs";
+import { github } from "../../lib/site";
+export function getStaticPaths() {
+  return documents.map((doc) => ({
+    params: { slug: doc.slug || undefined },
+    props: { doc },
+  }));
+}
+const { doc } = Astro.props;
+const rendered = await renderDocument(doc);
+const index = documents.findIndex((item) => item.slug === doc.slug);
+const groups = [...new Set(documents.map((item) => item.group))];
+---
+
+<Shell title={`${doc.title} — Wafish documentation`} section="documentation">
+  <div class="docs-grid">
+    <aside class="docs-nav" aria-label="Documentation navigation">
+      <button type="button" class="search-trigger" data-search-open>
+        Search documentation <span aria-hidden="true">⌕</span>
+      </button>
+      <details open>
+        <summary>Browse documentation ↓</summary>
+        <nav class="docs-menu" aria-label="Documentation">
+          {groups.map((group) => (
+            <div>
+              <h2>{group}</h2>
+              {documents
+                .filter((item) => item.group === group)
+                .map((item) => (
+                  <a
+                    href={docUrl(item.slug)}
+                    aria-current={item.slug === doc.slug ? "page" : undefined}
+                  >
+                    {item.title}
+                  </a>
+                ))}
+            </div>
+          ))}
+        </nav>
+      </details>
+    </aside>
+    <article class="docs-content" data-pagefind-body>
+      <header>
+        <p class="eyebrow">DOCUMENTATION / {doc.group.toUpperCase()}</p>
+        <h1 data-pagefind-meta="title">{doc.title}</h1>
+      </header>
+      <div class="prose" set:html={rendered.html} />
+      <div class="doc-source" data-pagefind-ignore>
+        Source: <a href={`${github}/blob/main/${doc.source}`}>{doc.source} ↗</a>
+      </div>
+      <nav
+        class="doc-pager"
+        aria-label="Adjacent documents"
+        data-pagefind-ignore
+      >
+        {index > 0 ? (
+          <a href={docUrl(documents[index - 1].slug)}>
+            ← {documents[index - 1].title}
+          </a>
+        ) : (
+          <span />
+        )}
+        {index < documents.length - 1 && (
+          <a href={docUrl(documents[index + 1].slug)}>
+            {documents[index + 1].title} →
+          </a>
+        )}
+      </nav>
+    </article>
+    <aside class="docs-toc">
+      <h2>ON THIS PAGE</h2>
+      {rendered.headings.map((heading) => (
+        <a href={`#${heading.id}`}>{heading.text}</a>
+      ))}
+    </aside>
+  </div>
+  <dialog class="search-dialog" aria-label="Search documentation">
+    <form method="dialog">
+      <label class="sr-only" for="doc-search">
+        Search documentation
+      </label>
+      <input
+        id="doc-search"
+        type="search"
+        placeholder="Search routes, cache, registration…"
+        autocomplete="off"
+      />
+      <button aria-label="Close search">✕</button>
+    </form>
+    <p class="search-status" role="status">
+      Type at least two characters.
+    </p>
+    <ul class="search-results"></ul>
+  </dialog>
+</Shell>
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .search-status {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 16px;
+  }
+</style>
+<script>
+  import { url } from "../../lib/site";
+  const navigation =
+    document.querySelector<HTMLDetailsElement>(".docs-nav details")!;
+  if (matchMedia("(max-width: 700px)").matches) navigation.open = false;
+  const dialog = document.querySelector<HTMLDialogElement>(".search-dialog")!;
+  const input = document.querySelector<HTMLInputElement>("#doc-search")!;
+  const status = document.querySelector<HTMLElement>(".search-status")!;
+  const results = document.querySelector<HTMLElement>(".search-results")!;
+  document
+    .querySelector("[data-search-open]")
+    ?.addEventListener("click", () => {
+      dialog.showModal();
+      input.focus();
+    });
+  dialog.addEventListener("click", (event) => {
+    if (event.target === dialog) {
+      const box = dialog.getBoundingClientRect();
+      if (
+        event.clientX < box.left ||
+        event.clientX > box.right ||
+        event.clientY < box.top ||
+        event.clientY > box.bottom
+      )
+        dialog.close();
+    }
+  });
+  let generation = 0;
+  let timer: ReturnType<typeof setTimeout>;
+  input.addEventListener("input", () => {
+    clearTimeout(timer);
+    const current = ++generation;
+    timer = setTimeout(async () => {
+      const query = input.value.trim();
+      results.replaceChildren();
+      if (query.length < 2) {
+        status.textContent = "Type at least two characters.";
+        return;
+      }
+      status.textContent = "Searching…";
+      try {
+        const pagefind = await import(
+          /* @vite-ignore */ url("pagefind/pagefind.js")
+        );
+        const response = await pagefind.search(query);
+        const entries = await Promise.all(
+          response.results.slice(0, 12).map(
+            (result: {
+              data: () => Promise<{
+                url: string;
+                meta: { title: string };
+                excerpt: string;
+              }>;
+            }) => result.data(),
+          ),
+        );
+        if (current !== generation) return;
+        status.textContent = `${response.results.length} results`;
+        for (const entry of entries) {
+          const li = document.createElement("li");
+          const link = document.createElement("a");
+          link.href = entry.url;
+          const title = document.createElement("strong");
+          title.textContent = entry.meta.title;
+          const excerpt = document.createElement("p");
+          excerpt.innerHTML = entry.excerpt;
+          link.append(title, excerpt);
+          li.append(link);
+          results.append(li);
+        }
+      } catch {
+        if (current === generation)
+          status.textContent =
+            "Search is unavailable. Browse the documentation navigation.";
+      }
+    }, 150);
+  });
+  const diagrams = document.querySelectorAll<HTMLElement>("[data-mermaid]");
+  if (diagrams.length) {
+    const { default: mermaid } = await import("mermaid");
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: "strict",
+      theme: "neutral",
+    });
+    for (const element of diagrams) element.classList.add("mermaid");
+    try {
+      await mermaid.run({ nodes: Array.from(diagrams) });
+    } catch {
+      /* Keep source visible on rendering failure. */
+    }
+  }
+</script>

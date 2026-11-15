@@ -1,0 +1,54 @@
+---
+import SceneFallback from "./SceneFallback.astro";
+import { scenarios } from "../lib/scenarios.mjs";
+const { kind = "request", compact = false, interactive = true } = Astro.props;
+const scenario = scenarios[kind as keyof typeof scenarios];
+---
+
+<div class:list={["scene", { compact }]} data-scene={kind} data-step="0">
+  <div class="scene-top">
+    <span class="mono">
+      <span class="status-dot"></span> {scenario.label}
+    </span>
+    <span class="mono">ILLUSTRATED MODEL</span>
+  </div>
+  <div class="scene-viewport" role="img" aria-label={scenario.description}>
+    <SceneFallback kind={kind} />
+  </div>
+  <div class="scene-legend mono">
+    <span>01 / REQUEST</span>
+    <span>02 / POLICY</span>
+    <span>03 / YARP</span>
+    <span>04 / DESTINATION</span>
+  </div>
+  <div class="scene-bottom">
+    <p class="scene-caption" aria-live="polite">
+      {scenario.steps[0].text}
+    </p>
+    {interactive && (
+      <div class="scene-controls">
+        <button
+          type="button"
+          data-scene-next
+          aria-label={`Step through: ${scenario.label}`}
+        >
+          Step through <span aria-hidden="true">→</span>
+        </button>
+        <button
+          type="button"
+          data-scene-reset
+          aria-label={`Replay ${scenario.label}`}
+        >
+          ↺
+        </button>
+        <button type="button" data-scene-motion aria-pressed="false">
+          Pause motion
+        </button>
+      </div>
+    )}
+  </div>
+</div>
+<script>
+  import { mountScenes } from "../scripts/scenes";
+  mountScenes();
+</script>

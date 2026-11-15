@@ -1,0 +1,78 @@
+---
+import Shell from "../../layouts/Shell.astro";
+import { url } from "../../lib/site";
+---
+
+<Shell title="Wafish — Brand assets">
+  <div class="wrap">
+    <header class="page-hero">
+      <p class="eyebrow">IDENTITY / ROUTES BECOME A MARK</p>
+      <h1>A clear signal.</h1>
+      <p>Three paths. One routing junction. A W that belongs to a gateway.</p>
+    </header>
+    <div class="brand-grid">
+      <figure class="brand-sample">
+        <img
+          src={url("brand/wordmark.svg")}
+          alt="Wafish wordmark on graphite"
+          width="392"
+          height="96"
+        />
+      </figure>
+      <figure class="brand-sample light">
+        <img
+          src={url("brand/wordmark-dark.svg")}
+          alt="Wafish wordmark on warm white"
+          width="392"
+          height="96"
+        />
+      </figure>
+      <figure class="brand-sample">
+        <img
+          src={url("brand/mark.svg")}
+          alt="Wafish routing symbol"
+          width="96"
+          height="96"
+        />
+      </figure>
+      <figure class="brand-sample light">
+        <img
+          src={url("brand/mark-mono-dark.svg")}
+          alt="Wafish monochrome routing symbol"
+          width="96"
+          height="96"
+        />
+      </figure>
+    </div>
+    <div class="prose">
+      <h2>Use the original geometry.</h2>
+      <p>
+        Keep the proportions. Leave clear space equal to one branch width. Use
+        the monochrome version when color is unavailable.
+      </p>
+      <p>
+        Graphite <code>#141915</code> · Warm white <code>#f1f0e8</code> · Signal
+        green <code>#d5f36b</code>
+      </p>
+      <p>
+        Space Grotesk sets the headlines. IBM Plex Sans and IBM Plex Mono
+        support the detail.
+      </p>
+    </div>
+    <div class="download-list">
+      <a href={url("downloads/wafish-brand.zip")} download>
+        Complete brand kit ↓
+      </a>
+      <a href={url("brand/mark.svg")} download>
+        SVG mark ↓
+      </a>
+      <a href={url("brand/wordmark.svg")} download>
+        SVG wordmark ↓
+      </a>
+      <a href={url("brand/mark.png")} download>
+        PNG mark ↓
+      </a>
+      <a href={url("brand/README.md")}>Usage guide ↗</a>
+    </div>
+  </div>
+</Shell>

@@ -1,0 +1,256 @@
+---
+import Mark from "../../components/Mark.astro";
+import Scene from "../../components/Scene.astro";
+import { slides } from "../../lib/slides";
+import { url } from "../../lib/site";
+import "../../styles/global.css";
+import "reveal.js/reveal.css";
+import "../../styles/presentation.css";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wafish — The technical field guide</title>
+    <meta
+      name="description"
+      content="A 27-minute technical presentation with six interactive gateway models, speaker notes, and an offline edition."
+    />
+    <link
+      rel="canonical"
+      href="https://hallojoe.github.io/wafish/presentation/"
+    />
+    <link rel="icon" href={url("brand/favicon.svg")} />
+  </head>
+  <body class="presentation-body">
+    <header class="deck-toolbar">
+      <a href={url()} class="wordmark" aria-label="Wafish home">
+        <Mark size={28} />
+        <span>Wafish.</span>
+      </a>
+      <div class="deck-actions">
+        <button type="button" data-notes>
+          Speaker notes
+        </button>
+        <button type="button" data-fullscreen>
+          Fullscreen
+        </button>
+        <button type="button" data-sound aria-pressed="false">
+          Sound off
+        </button>
+        <label class="volume-control">
+          Volume{" "}
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value="25"
+            aria-label="Sound volume"
+          />
+        </label>
+        <a href={url("downloads/wafish-talk.zip")} download>
+          Offline ZIP ↓
+        </a>
+        <a href={url("downloads/wafish-talk.pdf")} download>
+          PDF ↓
+        </a>
+      </div>
+    </header>
+    <main id="main" class="reveal" aria-label="Wafish presentation">
+      <div class="slides">
+        {slides.map((slide, index) => (
+          <section
+            data-timing={slide.time}
+            data-slide={index}
+            class:list={[
+              `slide-${slide.type || (slide.scene ? "scene" : slide.image ? "image" : "standard")}`,
+              { appendix: index >= 22 },
+            ]}
+            aria-label={`Slide ${index + 1}: ${slide.title.replace("\n", " ")}`}
+          >
+            <div class="slide-inner">
+              <div class="slide-top">
+                <span class="eyebrow">{slide.kicker}</span>
+                <span class="mono">
+                  {String(index + 1).padStart(2, "0")} /{" "}
+                  {index >= 22 ? "APPENDIX" : "22"}
+                </span>
+              </div>
+              <h1>
+                {slide.title.split("\n").map((line, i) => (
+                  <span class:list={{ accent: i > 0 }}>
+                    {line}
+                    <br />
+                  </span>
+                ))}
+              </h1>
+              {slide.subtitle && <p class="slide-subtitle">{slide.subtitle}</p>}
+              {slide.scene && <Scene kind={slide.scene} />}
+              {slide.image && (
+                <figure class="slide-screen">
+                  <img
+                    src={url(`images/${slide.image}`)}
+                    alt="The real Wafish administration workspace, showing isolated demo routes."
+                  />
+                  <figcaption>ACTUAL INTERFACE / ISOLATED DEMO DATA</figcaption>
+                </figure>
+              )}
+              {slide.code && <pre class="slide-code"><code>{slide.code}</code></pre>}
+              {slide.points && (
+                <ul class="slide-points">
+                  {slide.points.map((point, i) => (
+                    <li>
+                      <span class="mono">0{i + 1}</span>
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {slide.type === "title" && (
+                <div class="title-graphic" aria-hidden="true">
+                  <Mark size={300} />
+                  <span class="mono">THE .NET GATEWAY BUILT ON YARP</span>
+                </div>
+              )}
+              {slide.type === "closing" && (
+                <a class="deck-cta" href={url("docs/")}>
+                  Documentation ↗
+                </a>
+              )}
+              <div class="slide-foot mono">
+                <span>WAFISH / TECHNICAL FIELD GUIDE</span>
+                <span>YARP + .NET 10 / 1.0.0-rc.1</span>
+              </div>
+            </div>
+            <aside class="notes">
+              <p>{slide.notes}</p>
+              <p>
+                Target:{" "}
+                {slide.time ? `${slide.time} seconds` : "Optional discussion"}.{" "}
+                {slide.scene
+                  ? "Use the scene controls. Demonstration data is illustrative."
+                  : ""}
+              </p>
+            </aside>
+          </section>
+        ))}
+      </div>
+    </main>
+    <div class="deck-help mono">
+      <span>← → SLIDES · S NOTES · F FULLSCREEN</span>
+      <a href={url("docs/")}>DOCUMENTATION ↗</a>
+    </div>
+    <p class="deck-status" role="status" aria-live="polite"></p>
+  </body>
+</html>
+<script>
+  import Reveal from "reveal.js";
+  import Notes from "reveal.js/plugin/notes";
+  const config = {
+    plugins: [Notes],
+    hash: true,
+    width: 1440,
+    height: 900,
+    margin: 0.035,
+    minScale: 0.2,
+    maxScale: 1.5,
+    transition: matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? ("none" as const)
+      : ("fade" as const),
+    backgroundTransition: "none" as const,
+    controls: true,
+    progress: true,
+    center: false,
+    totalTime: 1620,
+    pdfSeparateFragments: false,
+    showNotes: false,
+    keyboardCondition: "focused" as const,
+  };
+  const deck = new Reveal(config);
+  await deck.initialize();
+  // Default document keyboard handling works with clickers; inputs retain their native keys.
+  deck.configure({
+    keyboardCondition: (event: KeyboardEvent) =>
+      !/INPUT|TEXTAREA|SELECT/.test(
+        (event.target as HTMLElement)?.tagName || "",
+      ),
+  });
+  document
+    .querySelector("[data-notes]")
+    ?.addEventListener("click", () =>
+      (deck.getPlugin("notes") as unknown as { open: () => void }).open(),
+    );
+  document
+    .querySelector("[data-fullscreen]")
+    ?.addEventListener("click", async () => {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await document.documentElement.requestFullscreen();
+    });
+  let audio: AudioContext | undefined;
+  let sound = false;
+  const soundButton =
+    document.querySelector<HTMLButtonElement>("[data-sound]")!;
+  const volume = document.querySelector<HTMLInputElement>(
+    '[aria-label="Sound volume"]',
+  )!;
+  const status = document.querySelector<HTMLElement>(".deck-status")!;
+  soundButton.addEventListener("click", async () => {
+    try {
+      audio ??= new AudioContext();
+      await audio.resume();
+      sound = !sound;
+      soundButton.textContent = sound ? "Sound on" : "Sound off";
+      soundButton.setAttribute("aria-pressed", String(sound));
+    } catch {
+      status.textContent =
+        "Audio is unavailable. All demonstrations remain usable without sound.";
+    }
+  });
+  function cue(frequency: number) {
+    if (!sound || !audio || document.hidden) return;
+    const oscillator = audio.createOscillator(),
+      gain = audio.createGain();
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(frequency, audio.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(
+      frequency * 0.7,
+      audio.currentTime + 0.16,
+    );
+    gain.gain.setValueAtTime(0, audio.currentTime);
+    gain.gain.linearRampToValueAtTime(
+      (Number(volume.value) / 100) * 0.12,
+      audio.currentTime + 0.015,
+    );
+    gain.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + 0.18);
+    oscillator.connect(gain);
+    gain.connect(audio.destination);
+    oscillator.start();
+    oscillator.stop(audio.currentTime + 0.2);
+    oscillator.onended = () => {
+      oscillator.disconnect();
+      gain.disconnect();
+    };
+  }
+  document.addEventListener("wafish:scene", (event) => {
+    const state = (event as CustomEvent).detail.state;
+    cue(state.gate === "block" ? 180 : state.cache === "hit" ? 660 : 440);
+  });
+  deck.on("slidechanged", (event) => {
+    cue(320);
+    const current = (event as unknown as { currentSlide: HTMLElement })
+      .currentSlide;
+    current
+      .querySelector("[data-scene]")
+      ?.dispatchEvent(
+        new CustomEvent("scene:set", {
+          detail: current.dataset.slide === "15" ? 2 : 0,
+        }),
+      );
+  });
+  if (location.search.includes("print-pdf"))
+    document
+      .querySelectorAll(".scene")
+      .forEach((scene) => scene.classList.remove("has-webgl"));
+</script>
