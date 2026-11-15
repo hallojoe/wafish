@@ -1,5 +1,11 @@
 ---
+import master from "../../../brand/mark.svg?raw";
 const { size = 38 } = Astro.props;
+const paths = master
+  .replace(/<svg[^>]*>/, "")
+  .replace(/<\/svg>\s*$/, "")
+  .replaceAll("#e9eddf", "currentColor")
+  .replaceAll("#d5f36b", "var(--signal)");
 ---
 
 <svg
@@ -9,13 +15,5 @@ const { size = 38 } = Astro.props;
   fill="none"
   aria-hidden="true"
 >
-  <path
-    d="M14 20v32l18 24 16-24 16 24 18-24V20"
-    stroke="currentColor"
-    stroke-width="10"
-    stroke-linecap="square"
-    stroke-linejoin="round"
-  />
-  <path d="M48 22v30" stroke="var(--signal)" stroke-width="10" />
-  <path d="M41 15h14v14H41z" fill="var(--signal)" />
+  <Fragment set:html={paths} />
 </svg>

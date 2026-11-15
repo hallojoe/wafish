@@ -41,6 +41,10 @@ for (const [name, svg] of Object.entries(variants)) {
 }
 const icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" rx="24" fill="#141915"/><g transform="translate(12 12)">${paths}</g></svg>`;
 await writeFile(path.join(output, "favicon.svg"), icon);
+await writeFile(
+  path.join(root, "src/Wafish.ReactUi/ClientApp/src/assets/wafish-favicon.svg"),
+  icon,
+);
 const png = await sharp(Buffer.from(icon)).resize(512).png().toBuffer();
 await writeFile(path.join(root, "logo.png"), png);
 await sharp(Buffer.from(icon))
@@ -60,7 +64,7 @@ for (const [name, color, mark] of [
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 392 96" style="color:${color}">${mark}${letters}</svg>`;
   await writeFile(path.join(output, `${name}.svg`), svg);
 }
-const cover = `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="800" viewBox="0 0 1600 800"><rect width="1600" height="800" fill="#141915"/><g stroke="#30392e" fill="none"><path d="M1000 0v220l240 160v420M1100 0v170l240 160v470M1200 0v120l240 160v520" stroke-width="38"/><path d="M900 0v270l240 160v370" stroke="#d5f36b" stroke-width="4"/></g><g transform="translate(90 78) scale(1.1)">${paths}</g><text x="220" y="148" font-family="sans-serif" font-size="62" letter-spacing="-3" fill="#f1f0e8">Wafish</text><text x="94" y="366" font-family="sans-serif" font-weight="bold" font-size="98" letter-spacing="-5" fill="#f1f0e8">Your gateway.</text><text x="94" y="480" font-family="sans-serif" font-weight="bold" font-size="98" letter-spacing="-5" fill="#d5f36b">Under control.</text><path d="M96 566h550" stroke="#44503d"/><text x="96" y="618" font-family="monospace" font-size="24" fill="#b4bead">THE .NET GATEWAY BUILT ON YARP</text><text x="96" y="726" font-family="monospace" font-size="18" fill="#b4bead">ROUTE / PROTECT / OBSERVE / OPERATE</text><circle cx="1140" cy="644" r="12" fill="#d5f36b"/></svg>`;
+const cover = `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="800" viewBox="0 0 1600 800"><rect width="1600" height="800" fill="#141915"/><circle cx="1285" cy="494" r="246" stroke="#394333" fill="none"/><circle cx="1285" cy="494" r="290" stroke="#283122" fill="none"/><g transform="translate(1024 245) scale(5.2)">${paths}</g><g transform="translate(90 68) scale(1.1)">${paths}</g><text x="220" y="148" font-family="sans-serif" font-size="62" letter-spacing="-3" fill="#f1f0e8">Wafish</text><text x="94" y="366" font-family="sans-serif" font-weight="bold" font-size="98" letter-spacing="-5" fill="#f1f0e8">An API gateway.</text><text x="94" y="480" font-family="sans-serif" font-weight="bold" font-size="98" letter-spacing="-5" fill="#d5f36b">Built for .NET.</text><path d="M96 566h700" stroke="#44503d"/><text x="96" y="618" font-family="monospace" font-size="24" fill="#b4bead">REVERSE PROXY + REQUEST POLICIES</text><text x="96" y="726" font-family="monospace" font-size="18" fill="#b4bead">WAF / RATE LIMITS / CACHE / LIVE CONFIGURATION</text></svg>`;
 await writeFile(path.join(output, "cover.svg"), cover);
 await sharp(Buffer.from(cover)).png().toFile(path.join(root, "cover-en.png"));
 await sharp(Buffer.from(cover))

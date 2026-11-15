@@ -3,8 +3,8 @@ import Mark from "../components/Mark.astro";
 import { url, github } from "../lib/site";
 import "../styles/global.css";
 const {
-  title = "Wafish — Your gateway. Under control.",
-  description = "Route, protect, observe, and operate. Wafish brings a management workspace and operational policies to Microsoft YARP.",
+  title = "Wafish — An API gateway built for .NET",
+  description = "An open-source .NET API gateway built on YARP. Add a web application firewall, rate limits, caching, and live route management.",
   section = "",
   wide = false,
 } = Astro.props;
@@ -71,7 +71,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
           <Mark size={28} />
           <span>Wafish.</span>
         </a>
-        <p>Built on YARP. Made for the people operating it.</p>
+        <p>Route traffic. Filter requests. Manage your .NET gateway.</p>
       </div>
       <div class="footer-links">
         <a href={url("docs/getting-started/")}>Get started</a>

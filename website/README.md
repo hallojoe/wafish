@@ -27,7 +27,7 @@ It does not publish the entire repository. Repository-only links resolve to GitH
 New public guides belong in `docs/guide`. Keep configuration examples aligned with source contracts.
 Mermaid loads only for documents containing a diagram. Pagefind indexes documentation after the Astro build.
 
-`brand/mark.svg` is the root identity master. `npm run assets` creates exports and updates root PNG assets.
+`brand/mark.svg` is the root identity master. `npm run assets` creates exports, root PNG assets, and the administration favicon.
 Keep the inline website and administration mark geometry aligned with that master.
 Font files and licenses are self-hosted through the locked Fontsource packages.
 The brand kit contains vector marks, outlined wordmarks, PNG variants, favicon, cover, and usage guidance.

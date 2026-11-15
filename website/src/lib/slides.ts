@@ -12,9 +12,9 @@ export type Slide = {
 };
 export const slides: Slide[] = [
   {
-    title: "Your gateway.\nUnder control.",
+    title: "An API gateway.\nBuilt for .NET.",
     kicker: "WAFISH / A TECHNICAL FIELD GUIDE",
-    subtitle: "Route. Protect. Observe. Operate.",
+    subtitle: "YARP routing. Request policies. Live management.",
     type: "title",
     time: 35,
     notes:
