@@ -70,7 +70,8 @@ Historical completion numbers and project task identifiers remain unchanged.
 
 ### Release candidate preparation
 
-Candidate `1.0.0-rc.1` is being verified on 2026-11-15.
+Candidate `1.0.0-rc.1` passed local and hosted verification on 2026-11-15.
+[Hosted Verify](https://github.com/hallojoe/wafish/actions/runs/43717485726) passed all five jobs for preparation commit `bf493b2`.
 Initial advertised support is Linux x64 with .NET 10. Additional platform jobs remain verification targets.
 Two hosted test defects were found: a Debug-only collectible fixture and a Windows SQLite header-read lock.
 Preparation fixes are covered by the solution build, lifetime checks, and native storage checks.

@@ -33,7 +33,18 @@ Local checks passed:
 
 See [main results](main-results.json), [administration](admin-results.json), [storage](storage-results.json), and [Redis](redis-results.json).
 See [local package hashes](local-packages.json) and [audit result](audit-summary.json).
-Hosted verification of the preparation commit is pending.
+Hosted verification passed for preparation commit `bf493b201ee18c65bdfa0d5d20d86eecd9523013`.
+[Verify run 43717485726](https://github.com/hallojoe/wafish/actions/runs/43717485726) completed successfully.
+All five jobs passed: dependency audit, Linux packages/storage, Windows packages/storage, macOS packages/storage, and full verification.
+Hosted reports confirm 286 main cases, 44 administration cases, and the live Redis suite passed.
+The full verification job also passed frontend checks and all 30 browser cases.
+See [hosted job results](hosted-verification.json) and [hosted package hashes](hosted-packages.json).
+
+The exact hosted Linux artifacts are downloaded under `artifacts/release/1.0.0-rc.1/linux`.
+They contain 19 NuGet packages and 19 symbol packages, all tied to the preparation commit.
+Publication approval should identify these artifacts. Do not substitute freshly repacked files.
+Additional platform checks pass; initial advertised support remains Linux x64.
+The final evidence commit changes only documentation and verification manifests.
 The local staging feed is `artifacts/package-checks`.
 Consumers use fresh caches outside repository imports, with no project references.
 They verify runtime, administration, UI assets, native encryption, and incorrect-key rejection.

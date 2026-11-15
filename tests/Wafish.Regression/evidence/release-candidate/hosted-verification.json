@@ -1,0 +1,51 @@
+{
+  "verifiedDate": "2026-11-15",
+  "candidate": "1.0.0-rc.1",
+  "sourceRevision": "bf493b201ee18c65bdfa0d5d20d86eecd9523013",
+  "run": "https://github.com/hallojoe/wafish/actions/runs/43717485726",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "dependency-audit",
+      "conclusion": "success",
+      "url": "https://github.com/hallojoe/wafish/actions/runs/43717485726/job/132822046859"
+    },
+    {
+      "name": "packages-and-storage (macos-latest)",
+      "conclusion": "success",
+      "url": "https://github.com/hallojoe/wafish/actions/runs/43717485726/job/132822047081"
+    },
+    {
+      "name": "packages-and-storage (ubuntu-latest)",
+      "conclusion": "success",
+      "url": "https://github.com/hallojoe/wafish/actions/runs/43717485726/job/132822047083"
+    },
+    {
+      "name": "packages-and-storage (windows-latest)",
+      "conclusion": "success",
+      "url": "https://github.com/hallojoe/wafish/actions/runs/43717485726/job/132822047132"
+    },
+    {
+      "name": "verify",
+      "conclusion": "success",
+      "url": "https://github.com/hallojoe/wafish/actions/runs/43717485726/job/132822047205"
+    }
+  ],
+  "suites": [
+    {
+      "report": "administration.json",
+      "passed": 44,
+      "failed": 0
+    },
+    {
+      "report": "main.json",
+      "passed": 286,
+      "failed": 0
+    },
+    {
+      "report": "redis.json",
+      "passed": 1,
+      "failed": 0
+    }
+  ]
+}
