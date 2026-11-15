@@ -74,5 +74,5 @@ The administration suite verifies encrypted backups with committed WAL data and 
 The route authorization matrix covers all new controller actions.
 Reader permissions reject cache purge and retain access to safe diagnostic operations.
 
-See [contracts and limits](../../../../docs/need-seven-features.md).
+See [contracts and limits](../../../../docs/registration-operations-contracts.md).
 R29–R55 remain deferred: 27 tasks. All need-7 tasks are complete.

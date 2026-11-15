@@ -1,6 +1,6 @@
 # Wafish.Plugin.Abstractions
 
-[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../../docs/projects.md)
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](../../PLAN.md) · [Project index](../../docs/projects.md)
 
 ## Intro
 
@@ -39,7 +39,7 @@ Plugins can describe their behavior through shared interfaces instead of couplin
 Source project: [Wafish.Plugin.Abstractions.csproj](Wafish.Plugin.Abstractions.csproj).
 This project has no direct solution project references. Package and framework references remain in its project file.
 
-Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../PLAN.md).
 
 ## Lifecycle and compatibility contracts
 

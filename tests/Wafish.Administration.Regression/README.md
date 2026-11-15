@@ -1,6 +1,6 @@
 # Wafish.Administration.Regression
 
-[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../../docs/projects.md)
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](../../PLAN.md) · [Project index](../../docs/projects.md)
 
 ## Intro
 
@@ -41,7 +41,7 @@ Management behavior can be tested without relying on a browser or Razor presenta
 Source project: [Wafish.Administration.Regression.csproj](Wafish.Administration.Regression.csproj).
 Direct project references: [Wafish.Administration](../../src/Wafish.Administration/README.md), [Wafish.Storage.Sqlite](../../src/Wafish.Storage.Sqlite/README.md).
 
-Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../PLAN.md).
 
 ## Review regression coverage
 
@@ -72,7 +72,7 @@ The complete suite includes these checks and the controller authentication matri
 
 Run `--need-seven` for WAF exclusion previews and audits, operational endpoints, and unsupported backup handling.
 The full suite also checks new routes in the authorization matrix and verifies encrypted WAL backups.
-See [feature contracts](../../docs/need-seven-features.md).
+See [feature contracts](../../docs/registration-operations-contracts.md).
 
 ## Focused scenario modules
 

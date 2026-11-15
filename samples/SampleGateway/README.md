@@ -1,6 +1,6 @@
 # SampleGateway
 
-[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../../docs/projects.md)
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](../../PLAN.md) · [Project index](../../docs/projects.md)
 
 ## Intro
 
@@ -46,7 +46,7 @@ Use the [security guide](../../docs/security.md) before standalone access.
 The sample serves administration APIs under `/wafish` and the React workspace at `/console`.
 See [naming migration](../../docs/naming-migration.md#repository-branding-and-configured-names) when upgrading existing clients or stored registrations.
 
-Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../PLAN.md).
 
 ## Standalone HTTPS and container checks
 

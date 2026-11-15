@@ -1,6 +1,6 @@
 # Wafish.ReactUi.Host
 
-[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../../docs/projects.md)
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](../../PLAN.md) · [Project index](../../docs/projects.md)
 
 ## Intro
 
@@ -44,7 +44,7 @@ Direct project references: [Wafish.ReactUi](../../src/Wafish.ReactUi/README.md),
 Playwright assigns ports 5219–5227 and generates a password when none is supplied.
 Use the [browser configuration](../../src/Wafish.ReactUi/ClientApp/playwright.config.ts) to start this fixture.
 
-Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../PLAN.md).
 
 `UI_TEST_PATH_BASE`, `UI_TEST_UI_PREFIX`, and `UI_TEST_API_PREFIX` select deployment prefixes.
 Defaults retain root hosting with `/console` and `/wafish`.

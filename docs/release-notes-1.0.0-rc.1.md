@@ -22,7 +22,7 @@ Use matching versions of all Wafish packages.
 - Bounded metrics, latency distributions, and OpenTelemetry instruments.
 - Service-discovery refresh, including bounded Kubernetes EndpointSlice queries.
 
-See [registration and operations](need-seven-features.md) and [feature contracts](need-six-features.md).
+See [registration and operations](registration-operations-contracts.md) and [feature contracts](configuration-policy-contracts.md).
 See [security boundaries](security.md) before configuring authentication, logging, or external plugins.
 
 ## Installation rehearsal

@@ -25,7 +25,7 @@ Follow-up commits: `630f7b7` and `189538e`.
 - Public API compatibility passed. All previous declarations remain; 228 declarations were added.
 - Changed production executable-line coverage: 493/553, or 89.15%.
 
-See [case results](checks.json), [coverage](changed-line-coverage.json), and [feature contracts](../../../../docs/need-six-features.md).
+See [case results](checks.json), [coverage](changed-line-coverage.json), and [feature contracts](../../../../docs/configuration-policy-contracts.md).
 The original 42 administration scenario names retain their relative execution order.
 
 Full main and administration runs collected coverage after the final production changes.

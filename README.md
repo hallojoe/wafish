@@ -279,7 +279,7 @@ Documentation is maintained in this repository.
 - **Dashboard** — [React workspace](docs/react-ui.md)
 - **Security** — [Authentication and deployment](docs/security.md) · [WAF](src/Wafish.Plugin.Waf/README.md)
 - **Plugins** — [Plugin contracts](src/Wafish.Plugin.Abstractions/README.md) · [Lifecycle](docs/plugin-lifecycle-contract.md)
-- **Operations** — [Leases, readiness, policy controls, and diagnostics](docs/need-seven-features.md)
+- **Operations** — [Leases, readiness, policy controls, and diagnostics](docs/registration-operations-contracts.md)
 - **Client SDK** — [Registration](src/Wafish.Client/README.md) · [Mutation outcomes](docs/mutation-contracts.md)
 - **Storage** — [SQLite](src/Wafish.Storage.Sqlite/README.md) · [Offline inspection](tools/Wafish.Storage.Tool/README.md)
 - **Development** — [SonarQube](docs/sonarqube.md) · [Regression checks](tests/Wafish.Regression/README.md)
@@ -341,7 +341,7 @@ The administration UI and API labels use English.
 - Add latency histograms, route/tag cache purge, and audited WAF detection and exclusion policies.
 - Add plugin drain diagnostics, storage capability checks, provider-owned backups, and redacted diagnostic bundles.
 
-See [contracts and limits](docs/need-seven-features.md) and [verification](tests/Wafish.Regression/evidence/need-seven/README.md).
+See [contracts and limits](docs/registration-operations-contracts.md) and [verification](tests/Wafish.Regression/evidence/need-seven/README.md).
 
 ### 2026-11-14 — Generated protocol checks
 
@@ -485,7 +485,7 @@ See [contracts and limits](docs/need-seven-features.md) and [verification](tests
 
 
 Track pending work and acceptance checks in [PLAN.md](PLAN.md).
-Deferred proposals are recorded in [IDEAS.md](IDEAS.md).
+Deferred proposals are recorded in the [backlog](PLAN.md#idea-01).
 Earlier release history remains in [CHANGELOG.md](CHANGELOG.md).
 
 ### 2026-11-14 — Administration and proxy security
@@ -550,7 +550,8 @@ Earlier release history remains in [CHANGELOG.md](CHANGELOG.md).
 - Recorded decisions to permit breaking changes and reject configuration updates when persistence fails.
 - Deferred separate administration processes and replacement UI selection to their respective design milestones.
 
-See [PLAN.md](PLAN.md) for completed work, verification evidence, and remaining tasks.
+See the [backlog](PLAN.md) for remaining tasks.
+See the [planning archive](docs/archive/2026-11-planning/README.md) for completed work and verification history.
 
 ## Review completion: items 14–16
 

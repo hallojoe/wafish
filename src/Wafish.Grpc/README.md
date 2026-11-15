@@ -1,6 +1,6 @@
 # Wafish.Grpc
 
-[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../../docs/projects.md)
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](../../PLAN.md) · [Project index](../../docs/projects.md)
 
 ## Intro
 
@@ -39,7 +39,7 @@ Clients and gateways share a typed registration contract instead of duplicating 
 Source project: [Wafish.Grpc.csproj](Wafish.Grpc.csproj).
 This project has no direct solution project references. Package and framework references remain in its project file.
 
-Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../PLAN.md).
 
 ## Review fixes 4–7
 
@@ -75,4 +75,4 @@ Capability names are additive. Ignore unknown names. Opt-in leases require capab
 Optional fields carry lease credentials, expiry, renewal timing, grace, and drain status.
 New capability names are `instance-leases` and `instance-draining`. Existing wire numbers remain unchanged.
 
-See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.
+See [registration and operations](../../docs/registration-operations-contracts.md) for limits, configuration, and compatibility.

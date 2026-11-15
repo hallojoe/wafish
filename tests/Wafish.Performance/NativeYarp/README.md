@@ -1,6 +1,6 @@
 # NativeYarp
 
-[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../../../docs/projects.md)
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](../../../PLAN.md) · [Project index](../../../docs/projects.md)
 
 ## Intro
 
@@ -43,7 +43,7 @@ This project has no direct solution project references. Package and framework re
 
 Use the [runner](../Runner/README.md) to coordinate this host with the shared backend.
 
-Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../../PLAN.md).
 
 ## Benchmark isolation and metadata
 

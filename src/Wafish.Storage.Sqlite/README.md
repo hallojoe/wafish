@@ -1,6 +1,6 @@
 # Wafish.Storage.Sqlite
 
-[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../../docs/projects.md)
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](../../PLAN.md) · [Project index](../../docs/projects.md)
 
 ## Intro
 
@@ -41,7 +41,7 @@ A gateway can retain its state without operating a separate database server.
 Source project: [Wafish.Storage.Sqlite.csproj](Wafish.Storage.Sqlite.csproj).
 Direct project references: [Wafish.Storage.Abstractions](../Wafish.Storage.Abstractions/README.md).
 
-Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../PLAN.md).
 
 ## Review fixes 4–7
 
@@ -134,9 +134,9 @@ A missing acknowledgement reports an unknown activation outcome and prevents dup
 SQLite reports encryption, consistent backup, atomic configuration, atomic bindings, and configuration receipt support.
 Provider-owned backups preserve encryption and committed WAL data. Disposal removes the private temporary directory.
 
-See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.
+See [registration and operations](../../docs/registration-operations-contracts.md) for limits, configuration, and compatibility.
 
 ## Atomic change sets
 
 Versioned change sets combine routes, clusters, and plugin bindings in one transaction.
-See [change-set contracts](../../docs/need-six-features.md) for API examples, revisions, permissions, and recovery.
+See [change-set contracts](../../docs/configuration-policy-contracts.md) for API examples, revisions, permissions, and recovery.

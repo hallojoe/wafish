@@ -1,6 +1,6 @@
 # EnhancedYarp
 
-[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../../../docs/projects.md)
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](../../../PLAN.md) · [Project index](../../../docs/projects.md)
 
 ## Intro
 
@@ -44,7 +44,7 @@ Direct project references: [Wafish](../../../src/Wafish/README.md), [Wafish.Admi
 Examples include `--mode=host-native`, `--mode=core`, `--mode=full`, `--mode=retry`, and `--mode=circuit`.
 Use the [runner](../Runner/README.md) instead of starting conflicting benchmark processes manually.
 
-Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../../PLAN.md).
 
 ## Review fixes 4–7
 

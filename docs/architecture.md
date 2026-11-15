@@ -51,7 +51,7 @@ The storage factory preserves the SQLCipher 4 format when a database password is
 Plaintext databases remain plaintext. See [storage migration and backup guidance](security.md#native-sqlite-replacement-sec-14).
 Rebuild consumers after these assembly changes. Moved types retain their namespaces.
 Custom storage and snapshot compiler implementations require the interface changes documented below.
-Do not add remote administration transport in this phase. See [IDEAS.md](../IDEAS.md).
+Do not add remote administration transport in this phase. See the [deferred control-plane proposal](../PLAN.md#idea-01).
 
 ## Verification
 
@@ -124,7 +124,7 @@ The sample explicitly registers AI. MCP remains unregistered until its security 
 Persistence ordering changes remain under ARCH-06 and ARCH-07.
 
 See [ARCH-03 verification](../tests/Wafish.Regression/evidence/arch03/README.md).
-PLAN.md records the remaining target boundaries.
+The [backlog](../PLAN.md) records remaining work.
 
 ## Configuration transactions: ARCH-06 and ARCH-07
 

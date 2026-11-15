@@ -1,6 +1,6 @@
 # Wafish.Plugin.Metrics
 
-[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../../docs/projects.md)
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](../../PLAN.md) · [Project index](../../docs/projects.md)
 
 ## Intro
 
@@ -41,7 +41,7 @@ Request measurements help identify which route or backend needs investigation.
 Source project: [Wafish.Plugin.Metrics.csproj](Wafish.Plugin.Metrics.csproj).
 Direct project references: [Wafish.Plugin.Abstractions](../Wafish.Plugin.Abstractions/README.md), [Wafish](../Wafish/README.md).
 
-Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../PLAN.md).
 
 ## Measurement semantics
 
@@ -103,4 +103,4 @@ Dispose manually created stores to remove their instruments. Dependency injectio
 Route and cluster snapshots include 13 bounded latency buckets with explicit second-based boundaries.
 `wafish.route.latency` and `wafish.cluster.latency` export histogram measurements with unit `s`.
 
-See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.
+See [registration and operations](../../docs/registration-operations-contracts.md) for limits, configuration, and compatibility.

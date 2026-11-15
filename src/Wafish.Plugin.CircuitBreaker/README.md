@@ -1,6 +1,6 @@
 # Wafish.Plugin.CircuitBreaker
 
-[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../../docs/projects.md)
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](../../PLAN.md) · [Project index](../../docs/projects.md)
 
 ## Intro
 
@@ -45,7 +45,7 @@ Failing destinations receive less repeated traffic, which gives them time to rec
 Source project: [Wafish.Plugin.CircuitBreaker.csproj](Wafish.Plugin.CircuitBreaker.csproj).
 Direct project references: [Wafish.Plugin.Abstractions](../Wafish.Plugin.Abstractions/README.md), [Wafish](../Wafish/README.md).
 
-Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../PLAN.md).
 
 ## Review fixes 4–7
 
@@ -78,4 +78,4 @@ A failed recovery probe starts a new delay. Probe limits still apply.
 
 Authenticated operators can set process-local maintenance windows for individual destinations.
 Windows expire automatically and can optionally admit bounded recovery probes.
-See [maintenance contracts](../../docs/need-six-features.md#destination-maintenance).
+See [maintenance contracts](../../docs/configuration-policy-contracts.md#destination-maintenance).

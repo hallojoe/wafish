@@ -1,6 +1,6 @@
 # Runner
 
-[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../../../docs/projects.md)
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](../../../PLAN.md) · [Project index](../../../docs/projects.md)
 
 ## Intro
 
@@ -52,7 +52,7 @@ Managed mode uses loopback ports 5300–5302.
 For an existing Aspire gateway, use `--external-url` with its reported URL and an appropriate `--path`.
 External mode leaves the target services running.
 
-Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../../PLAN.md).
 
 ## Review fixes 4–7
 

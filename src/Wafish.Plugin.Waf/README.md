@@ -1,6 +1,6 @@
 # Wafish.Plugin.Waf
 
-[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../../docs/projects.md)
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](../../PLAN.md) · [Project index](../../docs/projects.md)
 
 ## Intro
 
@@ -38,7 +38,7 @@ Common request checks can be applied consistently at the gateway boundary.
 Source project: [Wafish.Plugin.Waf.csproj](Wafish.Plugin.Waf.csproj).
 Direct project references: [Wafish.Plugin.Abstractions](../Wafish.Plugin.Abstractions/README.md), [Wafish](../Wafish/README.md).
 
-Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../PLAN.md).
 
 ## Review safety limits
 
@@ -66,4 +66,4 @@ Route bindings can report selected rules without blocking. Mandatory size and de
 Stable rule IDs support exact query, form, and JSON scalar exclusions for SQL injection and XSS checks.
 Other fields and rules remain protected. Previews expose exclusions, and binding changes produce audit records.
 
-See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.
+See [registration and operations](../../docs/registration-operations-contracts.md) for limits, configuration, and compatibility.
