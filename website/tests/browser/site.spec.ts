@@ -8,7 +8,7 @@ test("homepage renders the instrument, steps the cache, and links to onboarding"
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/wafish/");
   await expect(
-    page.getByRole("heading", { name: "Your gateway. Under control." }),
+    page.getByRole("heading", { name: "An API gateway. Built for .NET." }),
   ).toBeVisible();
   await expect(page.locator("[data-scene=request]")).toHaveAttribute(
     "data-renderer",

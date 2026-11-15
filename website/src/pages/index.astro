@@ -2,25 +2,53 @@
 import Shell from "../layouts/Shell.astro";
 import Scene from "../components/Scene.astro";
 import { url, github } from "../lib/site";
+const packages = [
+  {
+    id: "Wafish.Runtime",
+    role: "01 / GATEWAY",
+    detail: "The YARP request pipeline and built-in policy plugins.",
+  },
+  {
+    id: "Wafish.Storage.Sqlite",
+    role: "02 / STORAGE",
+    detail:
+      "Persist gateway configuration in SQLite, with optional encryption.",
+  },
+  {
+    id: "Wafish.Administration",
+    role: "03 / MANAGEMENT · OPTIONAL",
+    detail: "Authenticated APIs for configuration and gateway operations.",
+  },
+  {
+    id: "Wafish.ReactUi",
+    role: "04 / DASHBOARD · OPTIONAL",
+    detail: "A web workspace for routes, policies, logs, and traffic.",
+  },
+  {
+    id: "Wafish.Client",
+    role: "05 / SERVICE REGISTRATION · OPTIONAL",
+    detail: "Let your ASP.NET Core services register with the gateway.",
+  },
+];
 ---
 
 <Shell>
   <section class="hero wrap">
     <div class="hero-heading">
       <p class="eyebrow">
-        <span class="status-dot"></span> THE .NET GATEWAY / BUILT ON YARP
+        <span class="status-dot"></span> OPEN-SOURCE REVERSE PROXY + REQUEST
+        POLICIES
       </p>
       <h1>
-        Your gateway.
+        An API gateway.
         <br />
-        <span>Under control.</span>
+        <span>Built for .NET.</span>
       </h1>
       <div class="hero-bottom">
         <p>
-          Routing is only the beginning.
-          <br />
-          Bring policies, live configuration, and operations
-          <br class="desktop" /> into one deliberate workspace.
+          Wafish routes HTTP traffic to your services using YARP. Add a web
+          application firewall, rate limits, caching, and retries. Change routes
+          and policies live through APIs or an optional web dashboard.
         </p>
         <a class="button signal" href={url("docs/getting-started/")}>
           Build your gateway <span>↗</span>
@@ -182,8 +210,8 @@ import { url, github } from "../lib/site";
   </section>
 
   <section class="composition wrap">
-    <div>
-      <p class="eyebrow">04 / YOUR HOST. YOUR SHAPE.</p>
+    <div class="composition-intro">
+      <p class="eyebrow">04 / INSTALL THE PACKAGES YOU NEED</p>
       <h2>
         Start small.
         <br />
@@ -197,23 +225,33 @@ import { url, github } from "../lib/site";
         Read the architecture ↗
       </a>
     </div>
-    <div class="stack">
-      <div>
-        <span>Wafish.ReactUi</span>
-        <span>WORKSPACE / OPTIONAL</span>
-      </div>
-      <div>
-        <span>Wafish.Administration</span>
-        <span>CONTROL / OPTIONAL</span>
-      </div>
-      <div>
-        <span>Wafish.Runtime</span>
-        <span>POLICIES + YARP</span>
-      </div>
-      <div>
-        <span>Wafish.Storage.Sqlite</span>
-        <span>PERSISTENCE</span>
-      </div>
+    <div class="package-installation">
+      <ol class="package-list" aria-label="Install Wafish packages">
+        {packages.map(({ id, role, detail }) => (
+          <li>
+            <div class="package-meta">
+              <span>{role}</span>
+              <a
+                href={`https://www.nuget.org/packages/${id}`}
+                aria-label={`${id} on NuGet.org`}
+              >
+                NuGet.org <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+            <code class="package-command">
+              dotnet add package <strong>{id}</strong>
+              <span class="package-version"> --version 1.0.0-rc.1</span>
+            </code>
+            <p>{detail}</p>
+          </li>
+        ))}
+      </ol>
+      <p class="package-note">
+        First release candidate. These commands require publication to
+        NuGet.org. Use the{" "}
+        <a href={url("docs/getting-started/")}>source checkout guide</a> until
+        then.
+      </p>
     </div>
   </section>
 
