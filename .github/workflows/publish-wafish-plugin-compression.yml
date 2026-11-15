@@ -1,0 +1,46 @@
+name: publish-wafish-plugin-compression
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Expected source version, for example 1.0.0-rc.1'
+        type: string
+        required: true
+      registry:
+        description: Package registry
+        type: choice
+        options: [both, nuget, github]
+        default: both
+      dry-run:
+        description: Build and verify without publishing
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: publish-packages
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: package-publishing
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - uses: ./.github/actions/publish-packages
+        with:
+          package: Wafish.Plugin.Compression
+          version: ${{ inputs.version }}
+          registry: ${{ inputs.registry }}
+          dry-run: ${{ inputs.dry-run }}
+          nuget-user: ${{ vars.NUGET_USER }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir, cp, readdir } from "node:fs/promises";
+import { readFile, writeFile, mkdir, cp, rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import sharp from "sharp";
@@ -7,14 +7,11 @@ const root = fileURLToPath(new URL("../../", import.meta.url));
 const output = path.join(root, "website/public/brand");
 await mkdir(output, { recursive: true });
 await mkdir(path.join(root, "website/public/images"), { recursive: true });
-await mkdir(path.join(root, "website/public/images/docs"), { recursive: true });
-for (const name of await readdir(path.join(root, "docs"))) {
-  if (/\.(png|webp|svg)$/.test(name))
-    await cp(
-      path.join(root, "docs", name),
-      path.join(root, "website/public/images/docs", name),
-    );
-}
+// Remove obsolete documentation screenshots from previous local builds.
+await rm(path.join(root, "website/public/images/docs"), {
+  recursive: true,
+  force: true,
+});
 await cp(
   path.join(root, "brand/screenshots"),
   path.join(root, "website/public/images"),
@@ -46,7 +43,6 @@ const icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rec
 await writeFile(path.join(output, "favicon.svg"), icon);
 const png = await sharp(Buffer.from(icon)).resize(512).png().toBuffer();
 await writeFile(path.join(root, "logo.png"), png);
-await writeFile(path.join(root, "Logo.png"), png);
 await sharp(Buffer.from(icon))
   .resize(180)
   .png()

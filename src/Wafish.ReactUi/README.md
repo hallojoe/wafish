@@ -1,6 +1,6 @@
 # Wafish.ReactUi
 
-[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../../docs/projects.md)
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](../../PLAN.md) · [Project index](../../docs/projects.md)
 
 ## Intro
 
@@ -44,7 +44,7 @@ Direct project references: [Wafish.Administration](../Wafish.Administration/READ
 Node.js is required for frontend builds. See [frontend instructions](ClientApp/README.md).
 Browser tests start isolated hosts on ports 5219–5224.
 
-Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../PLAN.md).
 
 ## Deployment prefixes and build validation
 
@@ -58,7 +58,7 @@ Frontend inputs include package scripts, lockfiles, source files, public assets,
 An input-list record detects added and removed source files.
 Vite emits an asset manifest. Builds and packing reject missing entry, stylesheet, font, chunk, or manifest assets.
 `SkipReactBuild=true` skips generation but retains asset validation. Node.js remains required for validation.
-The package icon is staged separately because the repository contains both `logo.png` and `Logo.png`.
+The package icon is staged from the canonical root `logo.png`.
 Browser fixtures use ports 5219–5224, including three prefixed authentication hosts.
 
 [Verification](../../tests/Wafish.Regression/evidence/review111213/README.md).

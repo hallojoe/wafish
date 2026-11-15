@@ -1,6 +1,6 @@
 # Wafish.Regression
 
-[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../../docs/projects.md)
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](../../PLAN.md) · [Project index](../../docs/projects.md)
 
 ## Intro
 
@@ -44,7 +44,7 @@ Direct project references: [Wafish](../../src/Wafish/README.md), [Wafish.Adminis
 Options: `--storage`, `--redis`, and `--dashboard-routes`.
 Live Redis checks require `WAFISH_REDIS_SERVER` to identify a Redis server executable.
 
-Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../PLAN.md).
 
 ## Review regression coverage
 
@@ -141,7 +141,7 @@ These cover restart retries, rollback, activation failures, receipt limits, cand
 
 Run `--group need-seven` for registration leases, readiness, storage capabilities, backups, histograms, cache purge, WAF policies, and diagnostics.
 Checks include controlled clocks, held requests, pending fills, provider timeouts, and restart persistence.
-See [contracts](../../docs/need-seven-features.md) and [evidence](evidence/need-seven/README.md).
+See [contracts](../../docs/registration-operations-contracts.md) and [evidence](evidence/need-seven/README.md).
 
 ## Need-6 follow-up
 

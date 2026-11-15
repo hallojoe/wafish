@@ -21,7 +21,7 @@ Do not report such a result as fully applied.
 Inspect the response, active revision, plugin health, and logs before making further changes.
 Restart reconciles the persisted configuration according to the documented activation contract.
 
-Versioned [change sets](../need-six-features.md) can store configuration, bindings, and receipts atomically in SQLite.
+Versioned [change sets](../configuration-policy-contracts.md) can store configuration, bindings, and receipts atomically in SQLite.
 Runtime publication remains a distinct phase.
 
 ## Observe the request path
@@ -36,25 +36,25 @@ See [metrics](../../src/Wafish.Plugin.Metrics/README.md) and [safe logging](../s
 Maintenance windows exclude new traffic from selected destinations.
 Existing requests can finish. Recovery probes follow the configured policy.
 Windows are process-local and disappear on restart. Apply them to each serving replica when required.
-See [maintenance contracts](../need-six-features.md).
+See [maintenance contracts](../configuration-policy-contracts.md).
 
 ## Back up state
 
 SQLite backups include committed data and preserve source encryption.
 Keep the encryption key available for restoration through your own secret-management process.
 Check storage capabilities before requiring encryption or consistent backup.
-See [storage and backup contracts](../need-seven-features.md) and [encryption boundaries](../security.md).
+See [storage and backup contracts](../registration-operations-contracts.md) and [encryption boundaries](../security.md).
 
 ## Register and retire instances
 
 Use renewable instance leases when registration ownership must be tracked.
 Use readiness to gate service exposure and draining to stop new traffic before removal.
 Endpoint failover waits when release of previous ownership is uncertain.
-See [registration contracts](../need-seven-features.md) and [ordered endpoints](../need-six-features.md).
+See [registration contracts](../registration-operations-contracts.md) and [ordered endpoints](../configuration-policy-contracts.md).
 
 ## Collect diagnostics
 
 The administration diagnostic bundle reports revisions, plugin health, drain state, queue losses, and storage capabilities.
 It excludes configuration bodies, credentials, connection strings, and raw exception text.
 Collection remains bounded. An uncooperative probe can retain its slot until completion.
-See [diagnostic bundle limits](../need-seven-features.md).
+See [diagnostic bundle limits](../registration-operations-contracts.md).

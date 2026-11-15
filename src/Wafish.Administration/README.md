@@ -1,6 +1,6 @@
 # Wafish.Administration
 
-[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../../docs/projects.md)
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](../../PLAN.md) · [Project index](../../docs/projects.md)
 
 ## Intro
 
@@ -41,7 +41,7 @@ Operators get one management boundary that can support different user interfaces
 Source project: [Wafish.Administration.csproj](Wafish.Administration.csproj).
 Direct project references: [Wafish.Runtime](../Wafish.Runtime/README.md).
 
-Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../PLAN.md).
 
 ## Review safety limits
 
@@ -131,9 +131,9 @@ Protected endpoints expose latency buckets, cache purge, plugin drain progress, 
 Binding previews expose WAF exclusions. Binding mutations audit exclusion changes, including batch operations.
 Backup downloads use the provider-owned backup contract.
 
-See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.
+See [registration and operations](../../docs/registration-operations-contracts.md) for limits, configuration, and compatibility.
 
 ## Atomic change sets
 
 Versioned change sets combine routes, clusters, and plugin bindings in one transaction.
-See [change-set contracts](../../docs/need-six-features.md) for API examples, revisions, permissions, and recovery.
+See [change-set contracts](../../docs/configuration-policy-contracts.md) for API examples, revisions, permissions, and recovery.

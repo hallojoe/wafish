@@ -1,6 +1,6 @@
 # Wafish.Client
 
-[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../../docs/projects.md)
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](../../PLAN.md) · [Project index](../../docs/projects.md)
 
 ## Intro
 
@@ -41,7 +41,7 @@ Service instances can join a gateway without manually editing every destination 
 Source project: [Wafish.Client.csproj](Wafish.Client.csproj).
 Direct project references: [Wafish.Grpc](../Wafish.Grpc/README.md).
 
-Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../PLAN.md).
 
 ## Review fixes 4–7
 
@@ -76,10 +76,10 @@ Cancellation removes the pending wait and prevents another startup attempt.
 Set `LeaseDurationSeconds` to 15–3,600 for negotiated gRPC leases. Set `DrainSeconds` for bounded shutdown draining.
 `IRegistrationStatusSource` exposes local registration readiness without network calls.
 
-See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.
+See [registration and operations](../../docs/registration-operations-contracts.md) for limits, configuration, and compatibility.
 
 ## Ordered gateway failover
 
 `RegistrationEndpoints` configures up to eight trusted gRPC origins. Instance leases and heartbeats are required.
 The selected gateway owns every mutation until release is confirmed. Network partitions can delay failover.
-See [failover contracts](../../docs/need-six-features.md#ordered-registration-endpoints).
+See [failover contracts](../../docs/configuration-policy-contracts.md#ordered-registration-endpoints).

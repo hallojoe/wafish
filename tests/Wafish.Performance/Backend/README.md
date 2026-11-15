@@ -1,6 +1,6 @@
 # Backend
 
-[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../../../docs/projects.md)
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](../../../PLAN.md) · [Project index](../../../docs/projects.md)
 
 ## Intro
 
@@ -44,7 +44,7 @@ This project has no direct solution project references. Package and framework re
 The default listener is `http://127.0.0.1:5300`; override it with `--listen-url`.
 Run scenarios through the [performance runner](../Runner/README.md).
 
-Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../../PLAN.md).
 
 ## Benchmark isolation and metadata
 

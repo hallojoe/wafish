@@ -1,7 +1,7 @@
 # EnhancedYarp: agent notes
 
 These instructions apply to this project and its subdirectories.
-Read [README.md](README.md) for scope and [PLAN.md](PLAN.md) for proposals.
+Read [README.md](README.md) for scope and [PLAN.md](../../../PLAN.md) for proposals.
 Proposals do not authorize implementation outside the current user request.
 
 ## Source map
@@ -40,7 +40,7 @@ For documentation-only changes, check links and Mermaid rendering instead of sta
 ## Documentation maintenance
 
 Update the README when behavior or scope changes.
-Keep future work in PLAN.md until its acceptance checks pass.
+Keep future work in the root PLAN.md until its acceptance checks pass.
 Record implementation evidence when completing a plan item.
 
 Preserve explicit loopback addresses, bounded preflight, and configuration hashes.

@@ -3,7 +3,7 @@
 The first public scope is R01–R14 in [PLAN.md](../PLAN.md).
 R15–R18 add operation permissions, idempotent configuration changes, and previews.
 R19–R35 are complete. R36–R55 remain deferred.
-See [registration and operations](need-seven-features.md) and [R29–R35 contracts](need-six-features.md).
+See [registration and operations](registration-operations-contracts.md) and [R29–R35 contracts](configuration-policy-contracts.md).
 See [R15–R18 verification](../tests/Wafish.Regression/evidence/operation-previews/README.md).
 
 ## Candidate and supported scope

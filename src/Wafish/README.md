@@ -1,6 +1,6 @@
 # Wafish
 
-[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../../docs/projects.md)
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](../../PLAN.md) · [Project index](../../docs/projects.md)
 
 ## Intro
 
@@ -41,7 +41,7 @@ Applications can change routing without replacing their gateway host or restarti
 Source project: [Wafish.csproj](Wafish.csproj).
 Direct project references: [Wafish.Client](../Wafish.Client/README.md), [Wafish.Grpc](../Wafish.Grpc/README.md), [Wafish.Plugin.Abstractions](../Wafish.Plugin.Abstractions/README.md), [Wafish.Storage.Abstractions](../Wafish.Storage.Abstractions/README.md).
 
-Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../PLAN.md).
 
 ## Review safety limits
 
@@ -101,9 +101,9 @@ See [limits and examples](../../docs/configuration-changes.md).
 Instance registration supports expiring leases and graceful draining. Lease state persists with destination configuration.
 Configuration previews include active WAF exclusions. Legacy registration cannot replace leased ownership.
 
-See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.
+See [registration and operations](../../docs/registration-operations-contracts.md) for limits, configuration, and compatibility.
 
 ## Atomic change sets
 
 Versioned change sets combine routes, clusters, and plugin bindings in one transaction.
-See [change-set contracts](../../docs/need-six-features.md) for API examples, revisions, permissions, and recovery.
+See [change-set contracts](../../docs/configuration-policy-contracts.md) for API examples, revisions, permissions, and recovery.

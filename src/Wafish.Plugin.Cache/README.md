@@ -1,6 +1,6 @@
 # Wafish.Plugin.Cache
 
-[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../../docs/projects.md)
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](../../PLAN.md) · [Project index](../../docs/projects.md)
 
 ## Intro
 
@@ -41,7 +41,7 @@ Public read traffic can use fewer upstream requests while preserving HTTP cache 
 Source project: [Wafish.Plugin.Cache.csproj](Wafish.Plugin.Cache.csproj).
 Direct project references: [Wafish.Plugin.Abstractions](../Wafish.Plugin.Abstractions/README.md), [Wafish](../Wafish/README.md).
 
-Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../PLAN.md).
 
 ## Cache key configuration
 
@@ -85,7 +85,7 @@ These charges bound owned buffers and allowances, not process RSS or delayed gar
 Bindings accept up to eight bounded tags. Authorized operators can purge by route, tag, or their intersection.
 Unrelated cached entries remain available. Purge fences pending fills and preserves active-reader memory accounting.
 
-See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.
+See [registration and operations](../../docs/registration-operations-contracts.md) for limits, configuration, and compatibility.
 
 ## Concurrent fills
 

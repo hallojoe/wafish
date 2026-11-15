@@ -1,6 +1,6 @@
 # Wafish.Plugin.ServiceDiscovery
 
-[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../../docs/projects.md)
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](../../PLAN.md) · [Project index](../../docs/projects.md)
 
 ## Intro
 
@@ -41,7 +41,7 @@ Operators can use an existing service registry instead of maintaining every dest
 Source project: [Wafish.Plugin.ServiceDiscovery.csproj](Wafish.Plugin.ServiceDiscovery.csproj).
 Direct project references: [Wafish.Plugin.Abstractions](../Wafish.Plugin.Abstractions/README.md), [Wafish](../Wafish/README.md).
 
-Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../PLAN.md).
 
 ## Review fixes 4–7
 
@@ -103,4 +103,4 @@ Verification: [Redis and discovery recovery](../../tests/Wafish.Regression/evide
 
 `KubernetesEndpointSlice` discovers ready IPv4 and IPv6 destinations across bounded list pages.
 Configure the API origin, namespace, service, optional port name, and explicit service-account token access.
-See [configuration, RBAC, and limits](../../docs/need-six-features.md#kubernetes-endpointslice-discovery).
+See [configuration, RBAC, and limits](../../docs/configuration-policy-contracts.md#kubernetes-endpointslice-discovery).

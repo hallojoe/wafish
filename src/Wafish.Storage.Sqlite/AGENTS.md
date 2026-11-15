@@ -1,7 +1,7 @@
 # Wafish.Storage.Sqlite: agent notes
 
 These instructions apply to this project and its subdirectories.
-Read [README.md](README.md) for scope and [PLAN.md](PLAN.md) for proposals.
+Read [README.md](README.md) for scope and [PLAN.md](../../PLAN.md) for proposals.
 Proposals do not authorize implementation outside the current user request.
 
 ## Source map
@@ -51,12 +51,12 @@ For documentation-only changes, check links and Mermaid rendering instead of sta
 ## Documentation maintenance
 
 Update the README when behavior or scope changes.
-Keep future work in PLAN.md until its acceptance checks pass.
+Keep future work in the root PLAN.md until its acceptance checks pass.
 Record implementation evidence when completing a plan item.
 
 Compare every persisted field during differential writes. Keep deletion, insertion, binding renames, and version changes transactional.
 
-Preserve the [R19–R28 contracts](../../docs/need-seven-features.md) when changing registration or operational controls.
+Preserve the [R19–R28 contracts](../../docs/registration-operations-contracts.md) when changing registration or operational controls.
 Run the `--group need-seven` regression checks for these contracts.
 
 Preserve atomic change-set receipts and both expected revisions. Run `--group need-six` for combined mutations.

@@ -1,6 +1,6 @@
 # Wafish.AppHost
 
-[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../docs/projects.md)
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](../PLAN.md) · [Project index](../docs/projects.md)
 
 ## Intro
 
@@ -58,7 +58,7 @@ The gRPC endpoint appears only in resource details. It requires an HTTP/2 client
 Service root paths have no page and return HTTP 404.
 See [browser-link verification](../tests/Wafish.Regression/evidence/aspire-dashboard-links/README.md).
 
-Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../PLAN.md).
 
 ## Isolated persistent state
 

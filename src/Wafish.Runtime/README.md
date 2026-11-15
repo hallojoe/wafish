@@ -1,6 +1,6 @@
 # Wafish.Runtime
 
-[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../../docs/projects.md)
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](../../PLAN.md) · [Project index](../../docs/projects.md)
 
 ## Intro
 
@@ -41,7 +41,7 @@ Gateway traffic processing can remain independent of presentation choices.
 Source project: [Wafish.Runtime.csproj](Wafish.Runtime.csproj).
 Direct project references: [Wafish](../Wafish/README.md), [Wafish.Plugin.Abstractions](../Wafish.Plugin.Abstractions/README.md), [Wafish.Storage.Abstractions](../Wafish.Storage.Abstractions/README.md), [Wafish.Plugin.Waf](../Wafish.Plugin.Waf/README.md), [Wafish.Plugin.Retry](../Wafish.Plugin.Retry/README.md), [Wafish.Plugin.CircuitBreaker](../Wafish.Plugin.CircuitBreaker/README.md), [Wafish.Plugin.RateLimit](../Wafish.Plugin.RateLimit/README.md), [Wafish.Plugin.RateLimit.Redis](../Wafish.Plugin.RateLimit.Redis/README.md), [Wafish.Plugin.ProxyLog](../Wafish.Plugin.ProxyLog/README.md), [Wafish.Plugin.Cache](../Wafish.Plugin.Cache/README.md), [Wafish.Plugin.Compression](../Wafish.Plugin.Compression/README.md), [Wafish.Plugin.ServiceDiscovery](../Wafish.Plugin.ServiceDiscovery/README.md), [Wafish.Plugin.Metrics](../Wafish.Plugin.Metrics/README.md).
 
-Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../PLAN.md).
 
 ## Review safety limits
 
@@ -115,9 +115,9 @@ Input is limited to 1,000 distinct plugin IDs.
 `IPluginDrainDiagnostics` reports held generations, retirement age, and safe disposal failures.
 A five-second reaper removes expired leased destinations without removing healthy or legacy peers.
 
-See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.
+See [registration and operations](../../docs/registration-operations-contracts.md) for limits, configuration, and compatibility.
 
 ## Atomic change sets
 
 Versioned change sets combine routes, clusters, and plugin bindings in one transaction.
-See [change-set contracts](../../docs/need-six-features.md) for API examples, revisions, permissions, and recovery.
+See [change-set contracts](../../docs/configuration-policy-contracts.md) for API examples, revisions, permissions, and recovery.

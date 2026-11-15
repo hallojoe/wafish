@@ -40,7 +40,7 @@ For example, an eligible route cache can use:
 
 This is the binding's configuration object, not a complete administration API request.
 Credentials, private responses, and HTTP cache directives still affect cache eligibility.
-See [change-set examples](../need-six-features.md) for complete route and binding requests.
+See [change-set examples](../configuration-policy-contracts.md) for complete route and binding requests.
 
 ## Order and lifecycle
 

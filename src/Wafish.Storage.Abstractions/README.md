@@ -1,6 +1,6 @@
 # Wafish.Storage.Abstractions
 
-[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](PLAN.md) · [Project index](../../docs/projects.md)
+[README](README.md) · [Agent notes](AGENTS.md) · [Proposed work](../../PLAN.md) · [Project index](../../docs/projects.md)
 
 ## Intro
 
@@ -41,7 +41,7 @@ Business services can use storage operations without embedding database-specific
 Source project: [Wafish.Storage.Abstractions.csproj](Wafish.Storage.Abstractions.csproj).
 This project has no direct solution project references. Package and framework references remain in its project file.
 
-Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](PLAN.md).
+Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../PLAN.md).
 
 ## Review fixes 4–7
 
@@ -84,9 +84,9 @@ Providers without this optional contract reject idempotent configuration applies
 `IStorageCapabilitiesProvider` reports optional provider support. `AddWafishStorageRequirements` rejects unsupported requirements at startup.
 `IStorageBackupProvider` returns an owned backup stream. Dispose `StorageBackup` to release all temporary resources.
 
-See [registration and operations](../../docs/need-seven-features.md) for limits, configuration, and compatibility.
+See [registration and operations](../../docs/registration-operations-contracts.md) for limits, configuration, and compatibility.
 
 ## Atomic change sets
 
 Versioned change sets combine routes, clusters, and plugin bindings in one transaction.
-See [change-set contracts](../../docs/need-six-features.md) for API examples, revisions, permissions, and recovery.
+See [change-set contracts](../../docs/configuration-policy-contracts.md) for API examples, revisions, permissions, and recovery.

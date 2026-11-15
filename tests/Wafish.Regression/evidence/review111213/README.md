@@ -74,7 +74,7 @@ python3 tests/Wafish.Regression/evidence/review111213/changed-coverage.py /tmp/w
 npm --prefix src/Wafish.ReactUi/ClientApp run lint
 npm --prefix src/Wafish.ReactUi/ClientApp run test:coverage
 node --test --experimental-test-coverage src/Wafish.ReactUi/ClientApp/scripts/verify-assets.test.mjs
-python3 tests/Wafish.Regression/evidence/review111213/check-frontend-build.py
+python3 scripts/check-frontend-build.py
 UI_TEST_NO_BUILD=true PLAYWRIGHT_CHROMIUM_EXECUTABLE=/usr/bin/chromium npm --prefix src/Wafish.ReactUi/ClientApp run test:e2e
 dotnet pack src/Wafish.ReactUi -c Release --no-build -o /tmp/wafish111213-packages
 git diff --check
