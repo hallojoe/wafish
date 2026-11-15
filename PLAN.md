@@ -68,6 +68,15 @@ R01 is complete: resource-limit, async-policy, lifetime, and allocation evidence
 The previous grouped priorities 14–24 are superseded by R01–R55 below.
 Historical completion numbers and project task identifiers remain unchanged.
 
+### Release candidate preparation
+
+Candidate `1.0.0-rc.1` is being verified on 2026-11-15.
+Initial advertised support is Linux x64 with .NET 10. Additional platform jobs remain verification targets.
+Two hosted test defects were found: a Debug-only collectible fixture and a Windows SQLite header-read lock.
+Preparation fixes are covered by the solution build, lifetime checks, and native storage checks.
+See [candidate evidence](tests/Wafish.Regression/evidence/release-candidate/README.md) and [release notes](docs/release-notes-1.0.0-rc.1.md).
+Publication and the final release tag remain pending approval.
+
 ### Release finish line
 
 Confirmed target: a public package for external adopters.

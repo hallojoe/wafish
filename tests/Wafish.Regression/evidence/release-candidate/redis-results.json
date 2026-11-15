@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "suite": "main",
+  "cases": [
+    {
+      "name": "Live Redis integration",
+      "group": "redis-live",
+      "durationMs": 1484.6925,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    }
+  ]
+}

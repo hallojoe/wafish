@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.0-rc.1] - 2026-11-15
+
+First Wafish public release candidate. Publication is pending approval.
+Includes completed R01–R35 scope and reviewed first-release API snapshots.
+See [candidate release notes](docs/release-notes-1.0.0-rc.1.md) for compatibility and support boundaries.
+
+Earlier version entries retain inherited development history. They do not define this first-release compatibility baseline.
+
 ## [Unreleased]
 
 - Rename projects, packages, namespaces, and extension methods to Wafish.
