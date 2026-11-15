@@ -21,7 +21,7 @@ class PublicationTests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory(prefix='wafish-publication-test-')
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
-        self.env = patch.dict(os.environ, {'GITHUB_REF_TYPE': 'branch', 'GITHUB_REF_NAME': 'main'})
+        self.env = patch.dict(os.environ, {'GITHUB_REF_TYPE': 'branch', 'GITHUB_REF_NAME': 'main', 'GITHUB_EVENT_NAME': 'workflow_dispatch'})
         self.env.start()
         self.addCleanup(self.env.stop)
         (self.root / 'src').mkdir()
@@ -74,6 +74,93 @@ class PublicationTests(unittest.TestCase):
     def test_matching_release_tag_accepted(self):
         with patch.dict(os.environ, {'GITHUB_REF_TYPE': 'tag', 'GITHUB_REF_NAME': 'v1.0.0-rc.1'}):
             self.prepare()
+
+    def release_environment(self, tag, prerelease, **overrides):
+        event = {'action': 'published', 'release': {'tag_name': tag, 'prerelease': prerelease, 'draft': False}}
+        event.update(overrides)
+        event_path = self.root / 'release.json'
+        event_path.write_text(json.dumps(event))
+        return patch.dict(os.environ, {
+            'GITHUB_EVENT_NAME': 'release', 'GITHUB_EVENT_PATH': str(event_path),
+            'GITHUB_REF_TYPE': 'tag', 'GITHUB_REF_NAME': tag,
+        })
+
+    def test_release_tag_and_status_matrix(self):
+        for tag, prerelease, allowed in [
+            ('v1.1.1', False, True),
+            ('v1.1.1-pre', True, True),
+            ('v1.2.1-rc', True, True),
+            ('v1.2.1-rc.1', True, True),
+            ('v1.2.1-alpha-beta.2', True, True),
+            ('v1.1.1-pre', False, False),
+            ('v1.2.1-rc', False, False),
+            ('v1.1.1', True, False),
+        ]:
+            with self.subTest(tag=tag, prerelease=prerelease), self.release_environment(tag, prerelease):
+                if allowed:
+                    self.assertEqual(tag[1:], publication.release_version())
+                else:
+                    with self.assertRaises(ValueError):
+                        publication.release_version()
+
+    def test_invalid_release_tags_rejected(self):
+        for tag in ['1.2.3', 'v1.2', 'v1.2.3.4', 'v01.2.3', 'v1.2.3+build', 'v1.2.3-01',
+                    'v1.2.3-rc..1', 'v1.2.3-rc.01', 'v1.2.3\nversion=9.9.9']:
+            with self.subTest(tag=tag), self.release_environment(tag, True):
+                with self.assertRaises(ValueError):
+                    publication.release_version()
+
+    def test_unpublished_or_malformed_release_rejected(self):
+        for overrides in [
+            {'action': 'created'},
+            {'action': 'edited'},
+            {'release': {'tag_name': 'v1.0.0-rc.1', 'prerelease': True, 'draft': True}},
+            {'release': {'tag_name': 'v1.0.0-rc.1', 'prerelease': 'true', 'draft': False}},
+            {'release': {}},
+        ]:
+            with self.subTest(overrides=overrides), self.release_environment('v1.0.0-rc.1', True, **overrides):
+                with self.assertRaises(ValueError):
+                    publication.release_version()
+
+    def test_release_checks_apply_to_normal_preparation(self):
+        with self.release_environment('v1.0.0-rc.1', False):
+            with self.assertRaisesRegex(ValueError, 'must be marked'):
+                self.prepare()
+        self.assertFalse((self.root / 'artifacts/publish').exists())
+
+    def test_release_version_cannot_differ_from_package_version(self):
+        with self.release_environment('v1.1.1-pre', True):
+            with self.assertRaisesRegex(ValueError, 'match the release tag'):
+                self.prepare()
+
+    def test_release_version_must_match_source_metadata(self):
+        with self.release_environment('v1.1.1-pre', True):
+            with self.assertRaisesRegex(ValueError, 'differs from source'):
+                publication.check_inputs(self.root, 'all', publication.release_version())
+
+    def test_cli_resolves_release_and_manual_versions(self):
+        import xml.etree.ElementTree as ET
+        version = ET.parse(REPO / 'src/Directory.Build.props').findtext('.//Version')
+        output = self.root / 'outputs.txt'
+        command = ['python3', str(REPO / 'scripts/prepare-publication.py'), '--package', 'all', '--resolve-version']
+        with self.release_environment('v'+version, publication.validate_version(version)):
+            result = subprocess.run(command, env=dict(os.environ, GITHUB_OUTPUT=str(output)), capture_output=True, text=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual(f'version={version}\n', output.read_text())
+        output.unlink()
+        result = subprocess.run(command+['--version', version], env=dict(os.environ, GITHUB_OUTPUT=str(output)), capture_output=True, text=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual(f'version={version}\n', output.read_text())
+
+    def test_invalid_release_writes_no_workflow_output(self):
+        output = self.root / 'outputs.txt'
+        with self.release_environment('v1.0.0-rc.1', False):
+            result = subprocess.run(
+                ['python3', str(REPO / 'scripts/prepare-publication.py'), '--package', 'all', '--resolve-version'],
+                env=dict(os.environ, GITHUB_OUTPUT=str(output)), capture_output=True, text=True)
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn('must be marked', result.stderr)
+        self.assertFalse(output.exists())
 
     def test_missing_symbols_rejected_before_staging(self):
         (self.root / 'artifacts/package-checks/Wafish.A.1.0.0-rc.1.snupkg').unlink()

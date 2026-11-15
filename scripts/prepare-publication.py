@@ -12,6 +12,39 @@ import xml.etree.ElementTree as ET
 import zipfile
 
 
+def validate_version(version):
+    number = r'(?:0|[1-9][0-9]*)'
+    match = re.fullmatch(rf'{number}\.{number}\.{number}(?:-([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*))?', version)
+    if not match:
+        raise ValueError('Use a three-part NuGet version, with an optional prerelease suffix; build metadata is not allowed')
+    suffix = match[1]
+    if suffix and any(part.isdigit() and len(part) > 1 and part.startswith('0') for part in suffix.split('.')):
+        raise ValueError('Numeric prerelease identifiers must not contain leading zeros')
+    return suffix is not None
+
+
+def release_version():
+    event_path = os.environ.get('GITHUB_EVENT_PATH')
+    if not event_path:
+        raise ValueError('Release event payload is required')
+    event = json.loads(Path(event_path).read_text())
+    release = event.get('release') if isinstance(event, dict) else None
+    if not isinstance(release, dict) or event.get('action') != 'published' or release.get('draft') is not False:
+        raise ValueError('Publication requires a published, non-draft release')
+    tag = release.get('tag_name')
+    if not isinstance(tag, str) or not tag.startswith('v'):
+        raise ValueError('Release tags must use the v prefix, for example v1.2.3')
+    version = tag[1:]
+    prerelease = validate_version(version)
+    if type(release.get('prerelease')) is not bool:
+        raise ValueError('Release prerelease status must be a boolean')
+    if prerelease != release['prerelease']:
+        if prerelease:
+            raise ValueError('Tags with a suffix must be marked as a GitHub prerelease')
+        raise ValueError('A GitHub prerelease requires a tag suffix; clean tags publish stable NuGet versions')
+    return version
+
+
 def package_projects(root):
     projects = {}
     for path in sorted((root / 'src').glob('*/*.csproj')):
@@ -29,8 +62,9 @@ def package_projects(root):
 
 def check_inputs(root, package, version):
     configured = ET.parse(root / 'src/Directory.Build.props').findtext('.//Version')
-    if not re.fullmatch(r'\d+\.\d+\.\d+(?:-[A-Za-z0-9]+(?:\.[A-Za-z0-9]+)*)?', version):
-        raise ValueError('Use a three-part NuGet version, with an optional prerelease suffix')
+    validate_version(version)
+    if os.environ.get('GITHUB_EVENT_NAME') == 'release' and release_version() != version:
+        raise ValueError('Package version must match the release tag')
     if version != configured:
         raise ValueError(f'Requested version {version} differs from source version {configured}')
     if os.environ.get('GITHUB_REF_TYPE') == 'tag' and os.environ.get('GITHUB_REF_NAME') != f'v{version}':
@@ -99,12 +133,22 @@ def prepare(root, package, version):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--package', required=True)
-    parser.add_argument('--version', required=True)
-    parser.add_argument('--check-only', action='store_true')
+    parser.add_argument('--version', default='')
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument('--check-only', action='store_true')
+    mode.add_argument('--resolve-version', action='store_true', help='Validate release or manual inputs and write the version to GITHUB_OUTPUT')
     args = parser.parse_args()
     root = Path(__file__).resolve().parent.parent
     try:
-        if args.check_only:
+        if args.resolve_version:
+            version = release_version() if os.environ.get('GITHUB_EVENT_NAME') == 'release' else args.version
+            check_inputs(root, args.package, version)
+            output = os.environ.get('GITHUB_OUTPUT')
+            if not output:
+                raise ValueError('GITHUB_OUTPUT is required to resolve the workflow version')
+            with Path(output).open('a') as stream:
+                stream.write(f'version={version}\n')
+        elif args.check_only:
             check_inputs(root, args.package, args.version)
         else:
             prepare(root, args.package, args.version)
