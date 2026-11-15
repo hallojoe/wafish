@@ -1,0 +1,182 @@
+{
+  "candidate": "1.0.0-rc.1",
+  "sourceRevision": "ecd65251a5b1303bf4fb7e40d7ad27e84bced39a",
+  "run": "https://github.com/hallojoe/wafish/actions/runs/43735278426",
+  "artifact": "packages-and-storage-ubuntu-latest",
+  "localArtifactDirectory": "artifacts/release/1.0.0-rc.1/ecd6525/linux",
+  "packages": [
+    {
+      "package": "Wafish",
+      "file": "package-checks/Wafish.1.0.0-rc.1.nupkg",
+      "sha256": "be7efd047dfbbb5962e59c700242eab19461e5e4a88bf4f0a39b81f8750dd193"
+    },
+    {
+      "package": "Wafish.Administration",
+      "file": "package-checks/Wafish.Administration.1.0.0-rc.1.nupkg",
+      "sha256": "fde01b6f03408aa3c6fd496c3b4d9b9bdf7f394b260bddd71faea89c46f77126"
+    },
+    {
+      "package": "Wafish.Client",
+      "file": "package-checks/Wafish.Client.1.0.0-rc.1.nupkg",
+      "sha256": "855b85596be3641300f4caaa457ed2797d10ff92a1f2900aa191a3f04c9b9309"
+    },
+    {
+      "package": "Wafish.Grpc",
+      "file": "package-checks/Wafish.Grpc.1.0.0-rc.1.nupkg",
+      "sha256": "c5fc0b75f38a9c00ddb81db36407587cceddbebda84c267320cb5a2273a04519"
+    },
+    {
+      "package": "Wafish.Plugin.Abstractions",
+      "file": "package-checks/Wafish.Plugin.Abstractions.1.0.0-rc.1.nupkg",
+      "sha256": "1b9ace43bf765c43986c90ad80aa06c42edc202c87a3a8ceafdfcc58110e710c"
+    },
+    {
+      "package": "Wafish.Plugin.Cache",
+      "file": "package-checks/Wafish.Plugin.Cache.1.0.0-rc.1.nupkg",
+      "sha256": "27c874cc4619386c9453eb1b64c0896598483c1df71dcb2ec7b02b335ce39fbf"
+    },
+    {
+      "package": "Wafish.Plugin.CircuitBreaker",
+      "file": "package-checks/Wafish.Plugin.CircuitBreaker.1.0.0-rc.1.nupkg",
+      "sha256": "ce7d645d4e1e9e5620c247cf6fe840dbb8f62cfa19dfee8d6d25ff94bec5b26f"
+    },
+    {
+      "package": "Wafish.Plugin.Compression",
+      "file": "package-checks/Wafish.Plugin.Compression.1.0.0-rc.1.nupkg",
+      "sha256": "f56585ded938022852f375c684575c6b930e28b2a0ed7309477c7612ef7639f0"
+    },
+    {
+      "package": "Wafish.Plugin.Metrics",
+      "file": "package-checks/Wafish.Plugin.Metrics.1.0.0-rc.1.nupkg",
+      "sha256": "441790fa100d8fabcf829f70608e06e4eb93c199b32b78a25bb685510655cb25"
+    },
+    {
+      "package": "Wafish.Plugin.ProxyLog",
+      "file": "package-checks/Wafish.Plugin.ProxyLog.1.0.0-rc.1.nupkg",
+      "sha256": "eda89b49b74f9f939138a927320d230bc34718361b8b901576040d87f42bf174"
+    },
+    {
+      "package": "Wafish.Plugin.RateLimit",
+      "file": "package-checks/Wafish.Plugin.RateLimit.1.0.0-rc.1.nupkg",
+      "sha256": "38715aaea08e04cbc94f6f2c3863d01cfeec57b795230c7339397a68431620fd"
+    },
+    {
+      "package": "Wafish.Plugin.RateLimit.Redis",
+      "file": "package-checks/Wafish.Plugin.RateLimit.Redis.1.0.0-rc.1.nupkg",
+      "sha256": "ddbd4c3af072a0ad286d630cea351ee752f28b36076368ef3b121ca0a731ed62"
+    },
+    {
+      "package": "Wafish.Plugin.Retry",
+      "file": "package-checks/Wafish.Plugin.Retry.1.0.0-rc.1.nupkg",
+      "sha256": "2bbe0657265c8bc031bfbcf31c54ac7440845f1e4b3ddb670baba9a65077c805"
+    },
+    {
+      "package": "Wafish.Plugin.ServiceDiscovery",
+      "file": "package-checks/Wafish.Plugin.ServiceDiscovery.1.0.0-rc.1.nupkg",
+      "sha256": "c4e5e3a44c911fe9c23b82fb93930479b02e9de872e7bff23d050e4cae6aa887"
+    },
+    {
+      "package": "Wafish.Plugin.Waf",
+      "file": "package-checks/Wafish.Plugin.Waf.1.0.0-rc.1.nupkg",
+      "sha256": "ea17939a17181562558304d4985348232151a44c8c3f50d4445480f97c6557f5"
+    },
+    {
+      "package": "Wafish.ReactUi",
+      "file": "package-checks/Wafish.ReactUi.1.0.0-rc.1.nupkg",
+      "sha256": "30e895c84a91449b6f857af440fdd05019c3f7ab357d1c7062bdfd76f2f0865d"
+    },
+    {
+      "package": "Wafish.Runtime",
+      "file": "package-checks/Wafish.Runtime.1.0.0-rc.1.nupkg",
+      "sha256": "fd101d4d9da0e7285e3f6d3214ab19a46cc3ed192707d4d0e2de588a057ffb4e"
+    },
+    {
+      "package": "Wafish.Storage.Abstractions",
+      "file": "package-checks/Wafish.Storage.Abstractions.1.0.0-rc.1.nupkg",
+      "sha256": "f8db91d580072080f16d8000b761d5dbe01c8e5475063401aac361e6fdfd9453"
+    },
+    {
+      "package": "Wafish.Storage.Sqlite",
+      "file": "package-checks/Wafish.Storage.Sqlite.1.0.0-rc.1.nupkg",
+      "sha256": "33dd97bbe466eabfdd02441e153442a0d684503b8bcbacffd86cd7f0ef47f25c"
+    }
+  ],
+  "symbols": [
+    {
+      "file": "package-checks/Wafish.1.0.0-rc.1.snupkg",
+      "sha256": "16fc2e00123dd2755e33ff9f26e64947ef1e24a4e383aa9dd6fda614c7a6c5bf"
+    },
+    {
+      "file": "package-checks/Wafish.Administration.1.0.0-rc.1.snupkg",
+      "sha256": "5f98f7afd159a66c291e59e0c8615bb3b004fab40ad6aa1c88d09b95e383b61e"
+    },
+    {
+      "file": "package-checks/Wafish.Client.1.0.0-rc.1.snupkg",
+      "sha256": "24dcef3536edd4a5836f50deff62a40c3779995a47feb7926ea73776d04fb812"
+    },
+    {
+      "file": "package-checks/Wafish.Grpc.1.0.0-rc.1.snupkg",
+      "sha256": "37a7a222d324d1ccd8b52254f2b45cbf8acd5c37524d5ab11c744c1c8fdbd365"
+    },
+    {
+      "file": "package-checks/Wafish.Plugin.Abstractions.1.0.0-rc.1.snupkg",
+      "sha256": "419f477a37df3018258ab531cbe8a87b8ac3a7c79e36481c1545870e5dcd3ae1"
+    },
+    {
+      "file": "package-checks/Wafish.Plugin.Cache.1.0.0-rc.1.snupkg",
+      "sha256": "6d6381abb410db31c06f2b040449237b9b627eac7648d424a5705abf304e9503"
+    },
+    {
+      "file": "package-checks/Wafish.Plugin.CircuitBreaker.1.0.0-rc.1.snupkg",
+      "sha256": "9c19eae686ff30ca060fbfd04a8249d7a037d8c1502c1f0e99f7cb38d6506321"
+    },
+    {
+      "file": "package-checks/Wafish.Plugin.Compression.1.0.0-rc.1.snupkg",
+      "sha256": "f4e1bae34a5710ca95d91fa73bb4bad05430414ad87a76da0826ffc5c9158a8c"
+    },
+    {
+      "file": "package-checks/Wafish.Plugin.Metrics.1.0.0-rc.1.snupkg",
+      "sha256": "743e06c6a826fd052689c5e3929d9c98d6e6b430d9ff077e1ea47f246c69cb68"
+    },
+    {
+      "file": "package-checks/Wafish.Plugin.ProxyLog.1.0.0-rc.1.snupkg",
+      "sha256": "62e2b8c4bf636e7125f4da19d57f4fda67ad4efc8e3d925fc81c5a4316ce0a15"
+    },
+    {
+      "file": "package-checks/Wafish.Plugin.RateLimit.1.0.0-rc.1.snupkg",
+      "sha256": "a0412640d6bb3f3e09a690298a49e10d18215c65793b629fa85a83eb11cadeec"
+    },
+    {
+      "file": "package-checks/Wafish.Plugin.RateLimit.Redis.1.0.0-rc.1.snupkg",
+      "sha256": "9fd6f47fa5d8b84015ae541454977bcfc65a5de57c21faf526351cd01a550d78"
+    },
+    {
+      "file": "package-checks/Wafish.Plugin.Retry.1.0.0-rc.1.snupkg",
+      "sha256": "47579fececb9cd527b73b1d60d9e6eb73f9d47ecd71fd72c6cdcd37e8d5cdee1"
+    },
+    {
+      "file": "package-checks/Wafish.Plugin.ServiceDiscovery.1.0.0-rc.1.snupkg",
+      "sha256": "65f6d7d1f3d5e3305747b9e1a3effd27047a0d6519128d58120ac46c8cbee1fa"
+    },
+    {
+      "file": "package-checks/Wafish.Plugin.Waf.1.0.0-rc.1.snupkg",
+      "sha256": "77e6af574e8f84e08d9ff3c69706eadbb120d150e3e10bc62134ec52bade86d5"
+    },
+    {
+      "file": "package-checks/Wafish.ReactUi.1.0.0-rc.1.snupkg",
+      "sha256": "38f9ca807250f3f1c106da783fa8b0b56f07d89536bf4f8b00a19067a2d537c5"
+    },
+    {
+      "file": "package-checks/Wafish.Runtime.1.0.0-rc.1.snupkg",
+      "sha256": "c4e1d944b2c08cb89a7ebca1c988d01db21c8836289b8f20946ea4fb9f8d702d"
+    },
+    {
+      "file": "package-checks/Wafish.Storage.Abstractions.1.0.0-rc.1.snupkg",
+      "sha256": "b98538b9a8e1b64d9dfdbf631d63c30112973b7cd3e46f84e1c2c2394b62a4d4"
+    },
+    {
+      "file": "package-checks/Wafish.Storage.Sqlite.1.0.0-rc.1.snupkg",
+      "sha256": "7a9068255e0a41b734ce6b5323080c58cd094afbf87cab48b1e54bb4d1d2fade"
+    }
+  ]
+}

@@ -36,6 +36,9 @@
     <Project Path="tests/Wafish.ReactUi.Host/Wafish.ReactUi.Host.csproj" />
     <Project Path="tests/Wafish.Regression/Wafish.Regression.csproj" />
   </Folder>
+  <Folder Name="/tests/Fixtures/">
+    <Project Path="tests/Fixtures/Wafish.CollectiblePlugin/Wafish.CollectiblePlugin.csproj" />
+  </Folder>
   <Folder Name="/tests/Wafish.Performance/">
     <Project Path="tests/Wafish.Performance/Backend/Backend.csproj" />
     <Project Path="tests/Wafish.Performance/EnhancedYarp/EnhancedYarp.csproj" />

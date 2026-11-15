@@ -1,0 +1,3 @@
+Kind,Gateway,Scenario,Repetition,RPS,P50Ms,P95Ms,P99Ms,ErrorRatePercent,CpuPercent,WorkingSetMb,Requests,Failures,PolicyRejections,TransportFailures,ConfigurationHash
+run,"External","external",1,45456.297,0.074,0.131,0.441,0,0,0,1363695,0,0,0,"unavailable"
+median,"External","external",0,45456.297,0.074,0.131,0.441,0,0,0,1363695,0,0,0,"unavailable"

@@ -1,0 +1,358 @@
+{
+  "schemaVersion": 1,
+  "suite": "administration",
+  "cases": [
+    {
+      "name": "Change set API: preview requires read access and apply requires configuration and plugin permissions",
+      "group": null,
+      "durationMs": 2284.4695,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Maintenance API: authorization, actor, reason, expiry, and cancellation are enforced",
+      "group": null,
+      "durationMs": 331.8348,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Administration: WAF previews and all binding mutations expose exclusion audits",
+      "group": null,
+      "durationMs": 384.1465,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Administration: diagnostics, histograms, cache purge, and unsupported backup retain protected contracts",
+      "group": null,
+      "durationMs": 229.9088,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Permissions: bound restrictions replace administrator defaults",
+      "group": null,
+      "durationMs": 4.6669,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Permissions: readers cannot mutate configuration, credentials, plugins, or AI tools",
+      "group": null,
+      "durationMs": 1246.2126,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Permissions: authenticated claims restrict defaults and custom operation rules remain supported",
+      "group": null,
+      "durationMs": 181.36,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Administration: configuration preview and idempotent apply preserve HTTP results",
+      "group": null,
+      "durationMs": 161.1299,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Administration: plugin preview reports health without activating a candidate",
+      "group": null,
+      "durationMs": 155.5624,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Authorization matrix: every mapped action rejects missing and invalid credentials across four modes",
+      "group": null,
+      "durationMs": 1398.897,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Mutation contracts: validation and model binding share Problem Details without losing endpoint fields",
+      "group": null,
+      "durationMs": 340.0056,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Shutdown: connected hubs close while queued notifications retain exact accounting",
+      "group": null,
+      "durationMs": 3112.9013,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Cleanup: failed assertions release clients, sockets, hosts, and temporary database files",
+      "group": null,
+      "durationMs": 757.0779,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Cleanup: failed host startup disposes services before the next case",
+      "group": null,
+      "durationMs": 474.2516,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Storage API: oversized filters return 400 and extreme pages do not wrap",
+      "group": null,
+      "durationMs": 171.8768,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Sessions: bounded capacity, distinct tokens, generation races, revocation, expiry, and disposal",
+      "group": null,
+      "durationMs": 1591.6784,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Sessions: DefaultJwt sign-out, security changes, expiry, and concurrent API/hub requests",
+      "group": null,
+      "durationMs": 208.5391,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Sessions: CustomJwt sign-out, security changes, expiry, and concurrent API/hub requests",
+      "group": null,
+      "durationMs": 120.1718,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Sessions: BasicAuth credential rotation terminates realtime access and rejects old credentials",
+      "group": null,
+      "durationMs": 136.0134,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Sessions: ApiKey credential rotation terminates realtime access and rejects old credentials",
+      "group": null,
+      "durationMs": 101.6866,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Authentication: bounded atomic attempts, refunds, source isolation, and expiry",
+      "group": null,
+      "durationMs": 454.5293,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Authentication: Basic and API-key failures throttle without limiting valid traffic",
+      "group": null,
+      "durationMs": 3.3877,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Authentication: HTTPS cookie login, logout, expiry, transport, host, and origin",
+      "group": null,
+      "durationMs": 178.6056,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Authentication: HTTP login and direct credential limits return 429",
+      "group": null,
+      "durationMs": 389.4196,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Administration deploys without the dashboard assembly or Razor assets",
+      "group": null,
+      "durationMs": 15.8603,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Two-factor state persists privately and fails on corruption or write failure",
+      "group": null,
+      "durationMs": 2.1686,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Administration rejects missing and invalid API credentials",
+      "group": null,
+      "durationMs": 18.8537,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "AI and MCP configuration cannot activate unregistered services",
+      "group": null,
+      "durationMs": 2.2662,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Administration APIs work without page or static-asset endpoints",
+      "group": null,
+      "durationMs": 142.7094,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Administration creates clusters and routes through the preserved JSON API",
+      "group": null,
+      "durationMs": 306.0294,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Snapshots, rollback, and import preserve route activation",
+      "group": null,
+      "durationMs": 384.2192,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Administration exposes storage failures and preserves the active revision",
+      "group": null,
+      "durationMs": 8.8286,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Administration serves system settings and database downloads without Razor",
+      "group": null,
+      "durationMs": 32.7056,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Encrypted database backup retains committed WAL data and rejects missing keys",
+      "group": null,
+      "durationMs": 266.013,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Administration realtime hubs accept subscriptions and send overview updates",
+      "group": null,
+      "durationMs": 4833.6451,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Corrupted two-factor persistence rejects JWT login",
+      "group": null,
+      "durationMs": 8.3765,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Administration login issues a usable JWT without a Razor login page",
+      "group": null,
+      "durationMs": 20.9566,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Administration retains configuration after host restart and supports deletion",
+      "group": null,
+      "durationMs": 51.8408,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Explicit AI registration resolves services and preserves administration authentication",
+      "group": null,
+      "durationMs": 34.1279,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "MCP binds loopback, enforces parent credentials, rejects origins, and limits request bodies",
+      "group": null,
+      "durationMs": 1146.3143,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Anonymous administration requires explicit loopback permission in Development",
+      "group": null,
+      "durationMs": 122.8692,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Anonymous administration requires explicit loopback permission in Staging",
+      "group": null,
+      "durationMs": 109.4647,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Anonymous administration requires explicit loopback permission in Production",
+      "group": null,
+      "durationMs": 102.0288,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Explicit MCP registration is independent and idempotent",
+      "group": null,
+      "durationMs": 11.0528,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    }
+  ]
+}

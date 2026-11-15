@@ -2,11 +2,12 @@
   <Import Project="../Directory.Build.props" />
 
   <PropertyGroup>
-    <Version>2.3.0.30</Version>
+    <Version>1.0.0-rc.1</Version>
     <Authors>Wafish Team</Authors>
     <Company>Wafish</Company>
     <Copyright>Copyright © Wafish $([System.DateTime]::Now.Year)</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReleaseNotes>First public release candidate. Includes completed R01–R35 scope. See docs/release-notes-1.0.0-rc.1.md for compatibility and operational limits.</PackageReleaseNotes>
     <PackageIcon>logo.png</PackageIcon>
     <PackageProjectUrl>https://github.com/hallojoe/wafish</PackageProjectUrl>
     <RepositoryUrl>https://github.com/hallojoe/wafish</RepositoryUrl>

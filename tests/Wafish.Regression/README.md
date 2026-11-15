@@ -147,3 +147,9 @@ See [contracts](../../docs/need-seven-features.md) and [evidence](evidence/need-
 
 Run `--group need-six` for cache sharing, recovery jitter, combined change sets, gateway failover, maintenance, and EndpointSlice contracts.
 See [verification evidence](evidence/need-six/README.md).
+
+## Release candidate verification
+
+The solution includes the collectible plugin fixture so Release builds produce the required Release assembly.
+Legacy database tests dispose reopened connections before reading file headers, including on Windows.
+See [candidate evidence](evidence/release-candidate/README.md).
