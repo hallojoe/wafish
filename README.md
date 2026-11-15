@@ -29,7 +29,7 @@ Plugin Architecture · Dashboard · Dynamic Routing · WAF · Service Discovery 
 
 ## Release candidate
 
-Candidate `1.0.0-rc.1` targets Linux x64 and .NET 10. Publication is pending.
+Candidate `1.0.0-rc.1` supports Linux, Windows, and macOS with .NET 10. Publication is pending.
 See [release notes](docs/release-notes-1.0.0-rc.1.md) for the completed scope, support boundaries, and verification.
 
 ## Wafish vs. Bare YARP

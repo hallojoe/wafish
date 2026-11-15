@@ -72,7 +72,8 @@ Historical completion numbers and project task identifiers remain unchanged.
 
 Candidate `1.0.0-rc.1` passed local and hosted verification on 2026-11-15.
 [Hosted Verify](https://github.com/hallojoe/wafish/actions/runs/43717485726) passed all five jobs for preparation commit `bf493b2`.
-Initial advertised support is Linux x64 with .NET 10. Additional platform jobs remain verification targets.
+Confirmed release version: `1.0.0-rc.1`.
+Advertised support: Linux, Windows, and macOS with .NET 10, following passed hosted platform checks.
 Two hosted test defects were found: a Debug-only collectible fixture and a Windows SQLite header-read lock.
 Preparation fixes are covered by the solution build, lifetime checks, and native storage checks.
 See [candidate evidence](tests/Wafish.Regression/evidence/release-candidate/README.md) and [release notes](docs/release-notes-1.0.0-rc.1.md).

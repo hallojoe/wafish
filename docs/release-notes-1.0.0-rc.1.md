@@ -6,8 +6,8 @@ This is the first public release candidate. It is not a final availability annou
 ## Scope
 
 R01–R35 are complete. R36–R55 remain deferred.
-The initial support target is Linux x64 with .NET 10.
-Windows and macOS are additional verification targets, not advertised support commitments for this candidate.
+Confirmed support: Linux, Windows, and macOS with .NET 10.
+Hosted checks passed for native storage, encryption, and all three consumer profiles on each platform.
 Use matching versions of all Wafish packages.
 
 ## Included capabilities

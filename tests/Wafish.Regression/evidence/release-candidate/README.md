@@ -2,7 +2,7 @@
 
 Candidate: `1.0.0-rc.1`. Prepared: 2026-11-15.
 Source preparation starts from `963bb204fb7024de30315220e0ec210414662fcd`.
-Initial advertised support: Linux x64 with .NET 10.
+Confirmed version: `1.0.0-rc.1`. Advertised support: Linux, Windows, and macOS with .NET 10.
 Public API snapshots remain unchanged. No package or release tag is published.
 
 ## Hosted defects repaired
@@ -43,7 +43,8 @@ See [hosted job results](hosted-verification.json) and [hosted package hashes](h
 The exact hosted Linux artifacts are downloaded under `artifacts/release/1.0.0-rc.1/linux`.
 They contain 19 NuGet packages and 19 symbol packages, all tied to the preparation commit.
 Publication approval should identify these artifacts. Do not substitute freshly repacked files.
-Additional platform checks pass; initial advertised support remains Linux x64.
+All three platform checks pass. The user confirmed advertised support for Linux, Windows, and macOS.
+The packaged README now reflects this decision. Refreshed artifact hashes follow hosted verification of the documentation update.
 The final evidence commit changes only documentation and verification manifests.
 The local staging feed is `artifacts/package-checks`.
 Consumers use fresh caches outside repository imports, with no project references.
