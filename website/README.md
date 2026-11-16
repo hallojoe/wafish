@@ -18,7 +18,9 @@ npm run preview
 
 `npm run dev` serves a development build. Search needs a production build first.
 `npm run preview` serves the built site below `/wafish/`.
-The production workflow validates pull requests and deploys successful `main` builds.
+The `Build` workflow builds the solution and website on pushes and pull requests.
+Run `Website` manually for detailed checks, browser tests, and offline packaging.
+Manual `Website` runs on `main` also deploy the website after successful checks.
 
 ## Content and identity
 
@@ -45,6 +47,17 @@ npm run build
 
 The capture process owns its temporary host, password, browser, and database directory.
 It never uses a production gateway. Source screenshots live in `brand/screenshots`.
+
+## Homepage request film
+
+The homepage follows four request stories through a shared 3D gateway.
+Forwarding, WAF rejection, rate-limit rejection, and cache hits have distinct response paths.
+`src/lib/request-journey.ts` defines the timeline and explanations.
+The player and Three.js scene share one clock, so captions and geometry stay synchronized.
+
+Playback advances through all four stories, then stops. Pause, replay, seek, and stage buttons support inspection.
+Opening decision details pauses playback. Hidden pages and scenes stop advancing.
+Reduced motion starts paused with a static diagram. WebGL failures retain manual navigation and explanations.
 
 ## Presentation
 

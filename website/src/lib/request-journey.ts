@@ -71,6 +71,33 @@ export const journeyCases = {
 
 export type JourneyCase = keyof typeof journeyCases;
 
+export const journeyOrder = Object.keys(journeyCases) as JourneyCase[];
+export const shotDuration = (stage: number) => (stage === 5 ? 6000 : 4200);
+export function journeyPath(kind: JourneyCase) {
+  return [
+    ...Array.from({ length: journeyCases[kind].stop + 1 }, (_, i) => i),
+    5,
+  ];
+}
+export function journeyDuration(kind: JourneyCase) {
+  return journeyPath(kind).reduce(
+    (total, stage) => total + shotDuration(stage),
+    0,
+  );
+}
+export function journeyFrame(kind: JourneyCase, milliseconds: number) {
+  const path = journeyPath(kind);
+  let remaining = Math.max(0, milliseconds);
+  for (const stage of path) {
+    const duration = shotDuration(stage);
+    if (remaining < duration || stage === 5) {
+      return { stage, progress: Math.min(remaining / duration, 1) };
+    }
+    remaining -= duration;
+  }
+  return { stage: 5, progress: 1 };
+}
+
 export function journeyDetail(kind: JourneyCase, stage: number) {
   const example = journeyCases[kind];
   switch (stage) {

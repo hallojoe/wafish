@@ -84,7 +84,7 @@ See [SonarSource .NET coverage guidance](https://docs.sonarsource.com/sonarqube-
 
 ## Continuous integration
 
-The `SonarQube` workflow runs on default-branch pushes or manual dispatch from that branch.
+Run the `SonarQube` workflow manually from the default branch.
 It remains inactive until the repository variable `SONAR_HOST_URL` is configured.
 
 Configure these GitHub repository settings:
@@ -97,7 +97,7 @@ Configure these GitHub repository settings:
 
 A local Aspire URL is not reachable from GitHub-hosted runners.
 Use a reachable server for CI. The workflow does not expose your local server or provision remote infrastructure.
-Community Build analysis uses the main branch. Pull requests continue through the existing `Verify` workflow.
+Community Build analysis uses the main branch. Pushes and pull requests run only the `Build` workflow.
 Quality-gate failures fail the analysis job. This post-push check does not itself prevent merges.
 The workflow uploads coverage but never uploads the scanner working directory.
 

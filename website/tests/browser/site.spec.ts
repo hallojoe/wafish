@@ -11,9 +11,9 @@ test("homepage explains the request, steps the cache, and links to onboarding", 
     page.getByRole("heading", { name: "An API gateway. Built for .NET." }),
   ).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "What happens to a request?" }),
+    page.getByRole("heading", { name: "Follow the request." }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Next: WAF" }).click();
+  await page.getByRole("button", { name: "Next stage" }).click();
   await expect(page.locator("[data-journey-title]")).toHaveText(
     "Inspect the request before it can continue.",
   );
@@ -45,6 +45,7 @@ test("request outcomes explain skipped stages and response origins", async ({
 }) => {
   await page.goto("/wafish/");
   const journey = page.locator("[data-journey]");
+  await journey.getByRole("button", { name: "Pause stories" }).click();
   for (const example of [
     {
       label: "WAF blocks",
@@ -68,23 +69,24 @@ test("request outcomes explain skipped stages and response origins", async ({
     await journey
       .getByRole("button", { name: example.label, exact: true })
       .click();
+    await expect(journey).toHaveAttribute("data-stage", "0");
+    await journey.locator(`[data-journey-stage="${example.stop}"]`).click();
     await expect(journey).toHaveAttribute("data-stage", String(example.stop));
     await expect(journey.locator('[data-state="skipped"]')).toHaveCount(
       4 - example.stop,
     );
     await expect(journey.locator('[data-journey-stage="4"]')).toBeDisabled();
-    await journey.getByRole("button", { name: "Next: Response" }).click();
+    await journey.getByRole("button", { name: "Next stage" }).click();
     await expect(journey.locator("[data-journey-progress]")).toHaveText(
       `${example.status} · 0 upstream requests · ${example.source}`,
     );
     await expect(journey.locator('[aria-current="step"]')).toHaveCount(1);
-    await journey
-      .getByRole("button", { name: "Back to previous request stage" })
-      .click();
+    await journey.locator(`[data-journey-stage="${example.stop}"]`).click();
     await expect(journey).toHaveAttribute("data-stage", String(example.stop));
-    await journey.getByRole("button", { name: "Next: Response" }).click();
-    await journey.getByRole("button", { name: "Replay request" }).click();
+    await journey.getByRole("button", { name: "Next stage" }).click();
+    await journey.getByRole("button", { name: "Replay current story" }).click();
     await expect(journey).toHaveAttribute("data-stage", "0");
+    await journey.getByRole("button", { name: "Pause stories" }).click();
   }
   await journey
     .getByRole("button", { name: "Forward to service", exact: true })
@@ -102,6 +104,57 @@ test("request outcomes explain skipped stages and response origins", async ({
   await page.keyboard.press("Enter");
   await expect(route).toHaveAttribute("aria-current", "step");
 });
+test("request film plays, pauses, seeks, and advances to the next story", async ({
+  page,
+}) => {
+  await page.clock.install();
+  await page.goto("/wafish/");
+  const journey = page.locator("[data-journey]");
+  await page.locator(".journey-viewport").scrollIntoViewIfNeeded();
+  await expect(journey).toHaveAttribute("data-renderer", "webgl");
+  await journey.getByRole("button", { name: "Pause stories" }).click();
+  await journey.locator('[data-journey-case="forwarded"]').click();
+  await journey.getByRole("button", { name: "Play stories" }).click();
+  await page.clock.runFor(4300);
+  await expect(journey).toHaveAttribute("data-stage", "1");
+  await journey.getByRole("button", { name: "Pause stories" }).click();
+  const seek = journey.getByRole("slider", { name: "Seek current story" });
+  const pausedTime = await seek.inputValue();
+  await page.clock.runFor(5000);
+  await expect(seek).toHaveValue(pausedTime);
+  await journey.getByRole("button", { name: "Play stories" }).click();
+  await page.locator(".start-section").scrollIntoViewIfNeeded();
+  await expect(journey).toHaveAttribute("data-playing", "false");
+  const hiddenTime = await seek.inputValue();
+  await page.clock.runFor(5000);
+  await expect(seek).toHaveValue(hiddenTime);
+  await page.locator(".journey-viewport").scrollIntoViewIfNeeded();
+  await journey.getByRole("button", { name: "Pause stories" }).click();
+  await seek.focus();
+  await page.keyboard.press("End");
+  await page.keyboard.press("ArrowLeft");
+  await expect(journey).toHaveAttribute("data-stage", "5");
+  await journey.getByRole("button", { name: "Play stories" }).click();
+  await page.clock.runFor(300);
+  await expect(journey).toHaveAttribute("data-case", "blocked");
+  await expect(journey).toHaveAttribute("data-stage", "0");
+  await journey.locator("summary").click();
+  await expect(journey).toHaveAttribute("data-playing", "false");
+  await expect(journey.locator("[data-journey-text]")).toBeVisible();
+  await journey.locator('[data-journey-case="cached"]').click();
+  await seek.focus();
+  await page.keyboard.press("End");
+  await page.keyboard.press("ArrowLeft");
+  await journey.getByRole("button", { name: "Play stories" }).click();
+  await page.locator(".journey-viewport").scrollIntoViewIfNeeded();
+  await page.clock.runFor(300);
+  await expect(journey).toHaveAttribute("data-playing", "false");
+  await expect(journey).toHaveAttribute("data-case", "cached");
+  await expect(journey.locator("[data-journey-progress]")).toContainText(
+    "0 upstream requests",
+  );
+});
+
 test("documentation search and source links work below the project base", async ({
   page,
 }) => {
@@ -174,12 +227,13 @@ test("reduced motion and unavailable WebGL retain readable demonstrations", asyn
   const context = await browser.newContext({ reducedMotion: "reduce" });
   const page = await context.newPage();
   await page.goto("/wafish/");
-  await expect(page.locator("[data-journey] .journey-tile").first()).toHaveCSS(
-    "transition-duration",
-    "0s",
+  await expect(page.locator("[data-journey]")).toHaveAttribute(
+    "data-playing",
+    "false",
   );
+  await expect(page.locator("[data-journey] canvas")).toHaveCount(0);
   await expect(page.locator("[data-scene=cache] canvas")).toHaveCount(0);
-  await page.getByRole("button", { name: "Next: WAF" }).click();
+  await page.getByRole("button", { name: "Next stage" }).click();
   await expect(page.locator("[data-journey]")).toHaveAttribute(
     "data-stage",
     "1",
@@ -199,6 +253,16 @@ test("reduced motion and unavailable WebGL retain readable demonstrations", asyn
   });
   const noGpu = await fallback.newPage();
   await noGpu.goto("/wafish/");
+  await noGpu.locator(".journey-viewport").scrollIntoViewIfNeeded();
+  await expect(
+    noGpu.getByRole("button", { name: "Static view: 3D unavailable" }),
+  ).toBeDisabled();
+  await expect(noGpu.locator(".journey-fallback")).toBeVisible();
+  await noGpu.getByRole("button", { name: "Next stage" }).click();
+  await expect(noGpu.locator("[data-journey]")).toHaveAttribute(
+    "data-stage",
+    "1",
+  );
   await noGpu.locator("[data-scene=cache]").scrollIntoViewIfNeeded();
   await expect(noGpu.locator("[data-scene=cache]")).toHaveAttribute(
     "data-renderer",

@@ -558,7 +558,7 @@ See the [planning archive](docs/archive/2026-11-planning/README.md) for complete
 
 Public packages now have package consistency checks and initial API snapshots.
 Isolated consumers verify runtime, administration, React assets, and encrypted SQLite.
-CI runs live Redis checks and strict dependency audits, with retained JSON test reports.
+The manual `Verify` workflow runs live Redis checks and strict dependency audits, with retained JSON test reports.
 UTC migration and injected clocks support consistent storage and controlled policy timing.
 Metric stores retire obsolete identities and bound retained series.
 See [verification and platform limits](tests/Wafish.Regression/evidence/review141516/README.md).
