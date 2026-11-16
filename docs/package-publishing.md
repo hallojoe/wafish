@@ -36,7 +36,9 @@ Check package visibility after first publication; GitHub packages initially defa
 See [GitHub's NuGet registry documentation](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-nuget-registry).
 
 Environment deployment restrictions can limit which branches or tags may publish.
-Use a source revision that passed the existing cross-platform Verify workflow.
+Pushes and pull requests run regression tests, including Linux storage tests, without package verification.
+Run the `Verify` workflow manually for cross-platform package and storage checks before a release.
+Publishing workflows still verify package APIs and isolated consumers before uploading packages.
 
 ## Publish a GitHub release
 
