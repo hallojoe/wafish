@@ -2,10 +2,12 @@ name: Verify
 on:
   push:
   pull_request:
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
   packages-and-storage:
+    if: github.event_name == 'workflow_dispatch'
     strategy:
       fail-fast: false
       matrix:
@@ -73,6 +75,9 @@ jobs:
       - run: dotnet run --project tests/Wafish.Regression -c Release --no-build
         env:
           WAFISH_TEST_REPORT: artifacts/test-results/main.json
+      - run: dotnet run --project tests/Wafish.Regression -c Release --no-build -- --storage
+        env:
+          WAFISH_TEST_REPORT: artifacts/test-results/storage.json
       - run: dotnet run --project tests/Wafish.Administration.Regression -c Release --no-build
         env:
           WAFISH_TEST_REPORT: artifacts/test-results/administration.json
