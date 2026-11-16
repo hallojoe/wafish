@@ -2,6 +2,24 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { scenarios, scenarioStep } from "../src/lib/scenarios.mjs";
 import { slides } from "../src/lib/slides.ts";
+import {
+  journeyFrame,
+  journeyDuration,
+  journeyPath,
+} from "../src/lib/request-journey.ts";
+
+test("request film returns directly from the deciding policy", () => {
+  assert.deepEqual(journeyPath("blocked"), [0, 1, 5]);
+  assert.deepEqual(journeyPath("limited"), [0, 1, 2, 5]);
+  assert.deepEqual(journeyPath("cached"), [0, 1, 2, 3, 5]);
+  assert.deepEqual(journeyPath("forwarded"), [0, 1, 2, 3, 4, 5]);
+  assert.deepEqual(journeyFrame("blocked", 8400), { stage: 5, progress: 0 });
+  assert.deepEqual(journeyFrame("cached", journeyDuration("cached")), {
+    stage: 5,
+    progress: 1,
+  });
+  assert.deepEqual(journeyFrame("forwarded", -1), { stage: 0, progress: 0 });
+});
 test("blocked requests and cache hits never reach an upstream in the model", () => {
   assert.equal(scenarioStep("policy", 1).upstream, false);
   assert.equal(scenarioStep("cache", 1).upstream, false);

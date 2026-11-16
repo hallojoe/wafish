@@ -1,13 +1,10 @@
 name: Verify
 on:
-  push:
-  pull_request:
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   packages-and-storage:
-    if: github.event_name == 'workflow_dispatch'
     strategy:
       fail-fast: false
       matrix:

@@ -1,10 +1,5 @@
 name: Website
 on:
-  push:
-    branches: [main]
-    paths: ['website/**', 'docs/**', 'brand/**', 'src/Wafish.Plugin.*/README.md', '.github/workflows/website.yml']
-  pull_request:
-    paths: ['website/**', 'docs/**', 'brand/**', 'src/Wafish.Plugin.*/README.md', '.github/workflows/website.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -42,7 +37,7 @@ jobs:
         with:
           path: website/dist
   deploy:
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     permissions:
