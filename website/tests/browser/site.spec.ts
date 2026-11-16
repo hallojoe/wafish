@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-test("homepage renders the instrument, steps the cache, and links to onboarding", async ({
+test("homepage explains the request, steps the cache, and links to onboarding", async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -10,15 +10,22 @@ test("homepage renders the instrument, steps the cache, and links to onboarding"
   await expect(
     page.getByRole("heading", { name: "An API gateway. Built for .NET." }),
   ).toBeVisible();
-  await expect(page.locator("[data-scene=request]")).toHaveAttribute(
-    "data-renderer",
-    "webgl",
+  await expect(
+    page.getByRole("heading", { name: "What happens to a request?" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Next: WAF" }).click();
+  await expect(page.locator("[data-journey-title]")).toHaveText(
+    "Inspect the request before it can continue.",
   );
   await page
     .getByRole("button", { name: "Step through: Public response cache" })
     .click();
   await expect(page.locator("[data-scene=cache] .scene-caption")).toContainText(
     "HIT",
+  );
+  await expect(page.locator("[data-scene=cache]")).toHaveAttribute(
+    "data-renderer",
+    "webgl",
   );
   await page
     .getByRole("button", { name: "Replay Public response cache" })
@@ -32,6 +39,68 @@ test("homepage renders the instrument, steps the cache, and links to onboarding"
     page.getByRole("heading", { name: "Your first gateway", exact: true }),
   ).toBeVisible();
   expect(errors).toEqual([]);
+});
+test("request outcomes explain skipped stages and response origins", async ({
+  page,
+}) => {
+  await page.goto("/wafish/");
+  const journey = page.locator("[data-journey]");
+  for (const example of [
+    {
+      label: "WAF blocks",
+      stop: 1,
+      status: "403 Forbidden",
+      source: "WAF policy",
+    },
+    {
+      label: "Limit reached",
+      stop: 2,
+      status: "429 Too Many Requests",
+      source: "Rate-limit policy",
+    },
+    {
+      label: "Cache hit",
+      stop: 3,
+      status: "200 OK",
+      source: "Local response cache",
+    },
+  ]) {
+    await journey
+      .getByRole("button", { name: example.label, exact: true })
+      .click();
+    await expect(journey).toHaveAttribute("data-stage", String(example.stop));
+    await expect(journey.locator('[data-state="skipped"]')).toHaveCount(
+      4 - example.stop,
+    );
+    await expect(journey.locator('[data-journey-stage="4"]')).toBeDisabled();
+    await journey.getByRole("button", { name: "Next: Response" }).click();
+    await expect(journey.locator("[data-journey-progress]")).toHaveText(
+      `${example.status} · 0 upstream requests · ${example.source}`,
+    );
+    await expect(journey.locator('[aria-current="step"]')).toHaveCount(1);
+    await journey
+      .getByRole("button", { name: "Back to previous request stage" })
+      .click();
+    await expect(journey).toHaveAttribute("data-stage", String(example.stop));
+    await journey.getByRole("button", { name: "Next: Response" }).click();
+    await journey.getByRole("button", { name: "Replay request" }).click();
+    await expect(journey).toHaveAttribute("data-stage", "0");
+  }
+  await journey
+    .getByRole("button", { name: "Forward to service", exact: true })
+    .click();
+  await expect(journey.locator('[data-state="skipped"]')).toHaveCount(0);
+  for (let stage = 1; stage <= 5; stage++) {
+    await journey.locator("[data-journey-advance]").click();
+    await expect(journey).toHaveAttribute("data-stage", String(stage));
+  }
+  await expect(journey.locator("[data-journey-progress]")).toHaveText(
+    "200 OK · 1 upstream request · Catalog service",
+  );
+  const route = journey.locator('[data-journey-stage="0"]');
+  await route.focus();
+  await page.keyboard.press("Enter");
+  await expect(route).toHaveAttribute("aria-current", "step");
 });
 test("documentation search and source links work below the project base", async ({
   page,
@@ -105,12 +174,14 @@ test("reduced motion and unavailable WebGL retain readable demonstrations", asyn
   const context = await browser.newContext({ reducedMotion: "reduce" });
   const page = await context.newPage();
   await page.goto("/wafish/");
-  await expect(page.locator("[data-scene=request] canvas")).toHaveCount(0);
-  await page
-    .getByRole("button", { name: "Step through: Request path" })
-    .click();
-  await expect(page.locator("[data-scene=request]")).toHaveAttribute(
-    "data-step",
+  await expect(page.locator("[data-journey] .journey-tile").first()).toHaveCSS(
+    "transition-duration",
+    "0s",
+  );
+  await expect(page.locator("[data-scene=cache] canvas")).toHaveCount(0);
+  await page.getByRole("button", { name: "Next: WAF" }).click();
+  await expect(page.locator("[data-journey]")).toHaveAttribute(
+    "data-stage",
     "1",
   );
   await context.close();
@@ -128,12 +199,13 @@ test("reduced motion and unavailable WebGL retain readable demonstrations", asyn
   });
   const noGpu = await fallback.newPage();
   await noGpu.goto("/wafish/");
-  await expect(noGpu.locator("[data-scene=request]")).toHaveAttribute(
+  await noGpu.locator("[data-scene=cache]").scrollIntoViewIfNeeded();
+  await expect(noGpu.locator("[data-scene=cache]")).toHaveAttribute(
     "data-renderer",
     "static",
   );
   await expect(
-    noGpu.locator("[data-scene=request] .scene-fallback"),
+    noGpu.locator("[data-scene=cache] .scene-fallback"),
   ).toBeVisible();
   await fallback.close();
 });

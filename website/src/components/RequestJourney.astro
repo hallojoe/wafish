@@ -1,0 +1,672 @@
+---
+import {
+  journeyStages,
+  journeyCases,
+  journeyDetail,
+} from "../lib/request-journey";
+import { url } from "../lib/site";
+const initial = journeyDetail("forwarded", 0);
+---
+
+<section
+  class="journey"
+  data-journey
+  data-case="forwarded"
+  data-stage="0"
+  aria-labelledby="journey-title"
+>
+  <div class="journey-heading">
+    <div>
+      <p class="eyebrow">INSIDE THE GATEWAY</p>
+      <h2 id="journey-title">What happens to a request?</h2>
+      <p>
+        Follow each decision. See why some requests never reach your service.
+      </p>
+    </div>
+    <span class="journey-example mono">ILLUSTRATED EXAMPLE</span>
+  </div>
+
+  <div class="journey-options" role="group" aria-label="Request outcome" hidden>
+    <span class="mono">TRY AN OUTCOME</span>
+    {Object.entries(journeyCases).map(([key, example]) => (
+      <button
+        type="button"
+        data-journey-case={key}
+        aria-pressed={key === "forwarded"}
+      >
+        {example.label}
+      </button>
+    ))}
+  </div>
+
+  <div class="journey-request">
+    <span class="mono">
+      <span class="status-dot"></span> INCOMING REQUEST
+    </span>
+    <code>GET /catalog/products</code>
+    <span>
+      Example route <strong>catalog</strong>
+    </span>
+  </div>
+
+  <ol class="journey-map" aria-label="Request stages">
+    {journeyStages.map((stage, index) => (
+      <li
+        data-journey-node={index}
+        data-state={index === 0 ? "current" : "pending"}
+      >
+        <button
+          type="button"
+          data-journey-stage={index}
+          aria-current={index === 0 ? "step" : undefined}
+          aria-controls="journey-detail"
+          disabled
+        >
+          <span class="journey-role mono">{stage.role}</span>
+          <span class="journey-tile" aria-hidden="true">
+            <span>{String(index + 1).padStart(2, "0")}</span>
+          </span>
+          <strong>{stage.name}</strong>
+          <span class="journey-short">{stage.short}</span>
+          <span class="journey-state mono" data-journey-state>
+            {index === 0 ? "YOU ARE HERE" : "UP NEXT"}
+          </span>
+        </button>
+      </li>
+    ))}
+  </ol>
+
+  <div
+    class="journey-detail"
+    id="journey-detail"
+    aria-live="polite"
+    aria-atomic="true"
+  >
+    <div class="journey-explanation">
+      <p class="mono journey-counter" data-journey-counter>
+        01 / MATCH ROUTE
+      </p>
+      <h3 data-journey-title>{initial.title}</h3>
+      <p data-journey-text>{initial.text}</p>
+      <a data-journey-doc href={url(`docs/${journeyStages[0].doc}`)}>
+        Explore this stage <span aria-hidden="true">↗</span>
+      </a>
+    </div>
+    <div class="journey-decision">
+      <div>
+        <span class="mono">DECISION</span>
+        <p data-journey-decision>{initial.decision}</p>
+      </div>
+      <div>
+        <span class="mono">
+          NEXT STEP <span aria-hidden="true">→</span>
+        </span>
+        <p data-journey-next>{initial.next}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="journey-footer">
+    <p class="journey-progress" data-journey-progress>
+      Request matched. No upstream request yet.
+    </p>
+    <div class="journey-controls" hidden>
+      <button
+        type="button"
+        data-journey-back
+        disabled
+        aria-label="Back to previous request stage"
+      >
+        <span aria-hidden="true">←</span> Back
+      </button>
+      <button type="button" data-journey-advance>
+        Next: WAF <span aria-hidden="true">→</span>
+      </button>
+    </div>
+  </div>
+  <p class="journey-note">
+    Example bindings and outcomes. Actual execution depends on enabled plugins,
+    their order, and route or cluster bindings.
+  </p>
+  <noscript>
+    <p class="journey-note">
+      WAF or rate-limit rejection returns a response immediately. A cache hit
+      also skips forwarding. Otherwise, YARP contacts the service.
+    </p>
+  </noscript>
+</section>
+
+<script>
+  import {
+    journeyStages,
+    journeyCases,
+    journeyDetail,
+    type JourneyCase,
+  } from "../lib/request-journey";
+  import { url } from "../lib/site";
+
+  document.querySelectorAll<HTMLElement>("[data-journey]").forEach((host) => {
+    let kind: JourneyCase = "forwarded";
+    let stage = 0;
+    const get = <T extends HTMLElement>(selector: string) =>
+      host.querySelector<T>(selector)!;
+    const advance = get<HTMLButtonElement>("[data-journey-advance]");
+    const back = get<HTMLButtonElement>("[data-journey-back]");
+
+    function render() {
+      const example = journeyCases[kind];
+      const detail = journeyDetail(kind, stage);
+      host.dataset.case = kind;
+      host.dataset.stage = String(stage);
+      host
+        .querySelectorAll<HTMLButtonElement>("[data-journey-case]")
+        .forEach((button) => {
+          button.setAttribute(
+            "aria-pressed",
+            String(button.dataset.journeyCase === kind),
+          );
+        });
+      host
+        .querySelectorAll<HTMLElement>("[data-journey-node]")
+        .forEach((node, index) => {
+          const skipped = index > example.stop && index < 5;
+          const state = skipped
+            ? "skipped"
+            : index === stage
+              ? "current"
+              : index < stage
+                ? "complete"
+                : "pending";
+          node.dataset.state = state;
+          const button = node.querySelector<HTMLButtonElement>("button")!;
+          button.disabled = skipped;
+          if (index === stage) button.setAttribute("aria-current", "step");
+          else button.removeAttribute("aria-current");
+          node.querySelector<HTMLElement>("[data-journey-state]")!.textContent =
+            {
+              skipped: "SKIPPED",
+              current: "YOU ARE HERE",
+              complete: "COMPLETE",
+              pending: "UP NEXT",
+            }[state];
+        });
+      get("[data-journey-counter]").textContent =
+        `${String(stage + 1).padStart(2, "0")} / ${journeyStages[stage].name.toUpperCase()}`;
+      get("[data-journey-title]").textContent = detail.title;
+      get("[data-journey-text]").textContent = detail.text;
+      get("[data-journey-decision]").textContent = detail.decision;
+      get("[data-journey-next]").textContent = detail.next;
+      get<HTMLAnchorElement>("[data-journey-doc]").href = url(
+        `docs/${journeyStages[stage].doc}`,
+      );
+      get("[data-journey-progress]").textContent =
+        stage === 5
+          ? `${example.status} · ${kind === "forwarded" ? "1 upstream request" : "0 upstream requests"} · ${example.source}`
+          : stage === example.stop
+            ? example.result +
+              (kind === "forwarded"
+                ? " 1 upstream request."
+                : " 0 upstream requests.")
+            : "Request in progress. No upstream request yet.";
+      back.disabled = stage === 0;
+      const next = stage === example.stop ? 5 : stage + 1;
+      advance.textContent =
+        stage === 5
+          ? "Replay request ↺"
+          : `Next: ${journeyStages[next].role === "CLIENT" ? "Response" : journeyStages[next].role} →`;
+    }
+
+    host
+      .querySelectorAll<HTMLButtonElement>("[data-journey-case]")
+      .forEach((button) => {
+        button.addEventListener("click", () => {
+          kind = button.dataset.journeyCase as JourneyCase;
+          stage = kind === "forwarded" ? 0 : journeyCases[kind].stop;
+          render();
+        });
+      });
+    host
+      .querySelectorAll<HTMLButtonElement>("[data-journey-stage]")
+      .forEach((button) => {
+        button.addEventListener("click", () => {
+          stage = Number(button.dataset.journeyStage);
+          render();
+        });
+      });
+    advance.addEventListener("click", () => {
+      stage =
+        stage === 5 ? 0 : stage === journeyCases[kind].stop ? 5 : stage + 1;
+      render();
+    });
+    back.addEventListener("click", () => {
+      stage = stage === 5 ? journeyCases[kind].stop : Math.max(0, stage - 1);
+      render();
+    });
+    get(".journey-options").hidden = false;
+    get(".journey-controls").hidden = false;
+    render();
+  });
+</script>
+
+<style>
+  .journey {
+    --tile: #34452a;
+    padding: 30px 30px 18px;
+  }
+  .journey-heading {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .journey-heading .eyebrow {
+    margin-bottom: 10px;
+    font-size: 10px;
+  }
+  .journey h2 {
+    font-size: clamp(25px, 3vw, 36px);
+    letter-spacing: -0.045em;
+  }
+  .journey-heading p:last-child {
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 12px;
+  }
+  .journey-example {
+    color: var(--muted);
+    font-size: 9px;
+    white-space: nowrap;
+    padding-top: 4px;
+  }
+  .journey-options {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 24px 0;
+  }
+  .journey-options > span {
+    color: var(--muted);
+    font-size: 9px;
+    margin-right: 12px;
+  }
+  .journey-options button {
+    border: 1px solid #4d5b43;
+    background: transparent;
+    padding: 9px 14px;
+    font-size: 12px;
+  }
+  .journey-options button:hover {
+    border-color: var(--signal);
+  }
+  .journey-options button[aria-pressed="true"] {
+    background: var(--signal);
+    border-color: var(--signal);
+    color: var(--ink);
+  }
+  .journey-request {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 24px;
+    padding: 14px 18px;
+    border: 1px solid var(--line);
+    background: #14191599;
+  }
+  .journey-request .mono {
+    font-size: 9px;
+    color: var(--muted);
+  }
+  .journey-request code {
+    font: 13px var(--mono);
+  }
+  .journey-request > span:last-child {
+    font-size: 12px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+  .journey-request strong {
+    font-weight: 500;
+    color: var(--paper);
+    margin-left: 6px;
+  }
+  .journey-map {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background-image: radial-gradient(#49553c77 0.7px, transparent 0.7px);
+    background-size: 18px 18px;
+  }
+  .journey-map li {
+    position: relative;
+    min-width: 0;
+  }
+  .journey-map li:not(:last-child)::after {
+    content: "→";
+    position: absolute;
+    top: 93px;
+    right: -7px;
+    color: #a2b38b;
+  }
+  .journey-map button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    width: 100%;
+    padding: 25px 4px 20px;
+    background: transparent;
+    border: 0;
+  }
+  .journey-role {
+    color: var(--muted);
+    font-size: 9px;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+  .journey-tile {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    margin: 18px 0 19px;
+    border: 1px solid #82936e;
+    background: var(--tile);
+    transform: rotateX(42deg) rotateZ(-35deg);
+    transform-style: preserve-3d;
+    box-shadow:
+      -9px 11px 0 #11180e,
+      -10px 12px 0 #526343;
+    transition:
+      transform 0.25s,
+      background 0.25s;
+  }
+  .journey-tile span {
+    font: 23px var(--mono);
+  }
+  .journey-map strong {
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .journey-short {
+    color: var(--muted);
+    font-size: 11px;
+  }
+  .journey-state {
+    color: var(--muted);
+    font-size: 8px;
+    margin-top: 8px;
+    letter-spacing: 0.06em;
+  }
+  [data-state="current"] .journey-tile {
+    --tile: var(--signal);
+    color: var(--ink);
+    border-color: var(--signal);
+    transform: translateY(-6px) rotateX(42deg) rotateZ(-35deg);
+    box-shadow:
+      -9px 11px 0 #344520,
+      -10px 12px 0 #99b94f,
+      -14px 19px 28px #d5f36b20;
+  }
+  [data-state="current"] .journey-state {
+    color: var(--signal);
+  }
+  [data-state="complete"] .journey-tile {
+    border-color: var(--signal);
+  }
+  [data-state="complete"] .journey-state {
+    color: var(--signal);
+  }
+  [data-state="skipped"] .journey-tile {
+    background: #1c231b;
+    border-style: dashed;
+    box-shadow: none;
+    color: var(--muted);
+  }
+  [data-state="skipped"] strong {
+    color: var(--muted);
+    text-decoration: line-through;
+  }
+  [data-state="skipped"] button {
+    cursor: default;
+  }
+  [data-case="blocked"] [data-state="current"] .journey-tile,
+  [data-case="limited"] [data-state="current"] .journey-tile {
+    --tile: var(--warning);
+    border-color: var(--warning);
+  }
+  .journey-detail {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    background: #14191580;
+  }
+  .journey-explanation {
+    padding: 24px;
+  }
+  .journey-counter {
+    color: var(--signal);
+    font-size: 10px;
+    margin-bottom: 12px;
+  }
+  .journey h3 {
+    font-size: 22px;
+    line-height: 1.25;
+    margin-bottom: 12px;
+    letter-spacing: -0.03em;
+  }
+  .journey-explanation > p:not(.journey-counter) {
+    color: var(--muted);
+    font-size: 14px;
+    min-height: 67px;
+    max-width: 520px;
+  }
+  .journey-explanation a {
+    display: inline-block;
+    font-size: 12px;
+    color: var(--signal);
+    margin-top: 14px;
+  }
+  .journey-explanation a:hover {
+    text-decoration: underline;
+  }
+  .journey-decision {
+    border-left: 1px solid var(--line);
+    padding: 24px;
+    display: grid;
+    align-content: start;
+    gap: 22px;
+  }
+  .journey-decision .mono {
+    color: var(--muted);
+    font-size: 9px;
+  }
+  .journey-decision p {
+    font-size: 14px;
+    margin-top: 8px;
+  }
+  .journey-decision > div:last-child .mono {
+    color: var(--signal);
+  }
+  .journey-footer {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 0;
+  }
+  .journey-progress {
+    color: var(--muted);
+    font: 11px/1.6 var(--mono);
+  }
+  .journey-controls {
+    display: flex;
+    flex-shrink: 0;
+    gap: 8px;
+  }
+  .journey-controls button {
+    padding: 11px 15px;
+    background: transparent;
+    border: 1px solid #4d5b43;
+    font-size: 12px;
+  }
+  .journey-controls button:last-child {
+    border-color: var(--signal);
+    color: var(--signal);
+    min-width: 168px;
+  }
+  .journey-controls button:hover:not(:disabled) {
+    background: #324127;
+  }
+  .journey-controls button:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+  .journey-note {
+    font-size: 11px;
+    color: var(--muted);
+  }
+  [hidden] {
+    display: none !important;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .journey-tile {
+      transition: none;
+    }
+  }
+  @media (max-width: 1000px) {
+    .journey {
+      padding: 24px 18px 18px;
+    }
+    .journey-example {
+      display: none;
+    }
+    .journey-map strong {
+      font-size: 12px;
+    }
+    .journey-short {
+      font-size: 10px;
+    }
+    .journey-role {
+      font-size: 8px;
+    }
+    .journey-explanation,
+    .journey-decision {
+      padding: 20px 16px;
+    }
+  }
+  @media (max-width: 700px) {
+    .journey {
+      padding: 22px 16px 16px;
+    }
+    .journey-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 20px 0;
+    }
+    .journey-options > span {
+      grid-column: 1 / -1;
+      margin-bottom: 4px;
+    }
+    .journey-options button {
+      padding: 11px 6px;
+    }
+    .journey-request {
+      padding: 12px;
+      gap: 9px;
+    }
+    .journey-request > .mono {
+      width: 100%;
+    }
+    .journey-request > span:last-child {
+      margin-left: 0;
+    }
+    .journey-map {
+      grid-template-columns: 1fr;
+      padding: 12px 0;
+    }
+    .journey-map button {
+      display: grid;
+      grid-template-columns: 52px 1fr auto;
+      grid-template-rows: auto auto;
+      gap: 4px 12px;
+      padding: 12px 8px;
+      text-align: left;
+    }
+    .journey-role {
+      grid-column: 2;
+      font-size: 8px;
+    }
+    .journey-tile {
+      grid-column: 1;
+      grid-row: 1 / 3;
+      width: 34px;
+      height: 34px;
+      margin: 0 0 0 7px;
+      box-shadow:
+        -5px 6px 0 #11180e,
+        -6px 7px 0 #526343;
+    }
+    .journey-tile span {
+      font-size: 14px;
+    }
+    .journey-map strong {
+      grid-column: 2;
+      font-size: 14px;
+    }
+    .journey-short {
+      display: none;
+    }
+    .journey-state {
+      grid-column: 3;
+      grid-row: 1 / 3;
+      font-size: 7px;
+      margin: 0;
+    }
+    .journey-map li:not(:last-child)::after {
+      content: "↓";
+      font-size: 12px;
+      top: auto;
+      bottom: -9px;
+      left: 29px;
+      right: auto;
+    }
+    [data-state="current"] .journey-tile {
+      transform: translateY(-2px) rotateX(42deg) rotateZ(-35deg);
+      box-shadow:
+        -5px 6px 0 #344520,
+        -6px 7px 0 #99b94f;
+    }
+    .journey-detail {
+      grid-template-columns: 1fr;
+    }
+    .journey-explanation {
+      padding: 20px 14px;
+    }
+    .journey h3 {
+      font-size: 21px;
+    }
+    .journey-decision {
+      border-left: 0;
+      border-top: 1px solid var(--line);
+      padding: 18px 14px;
+      gap: 16px;
+    }
+    .journey-footer {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 14px;
+    }
+    .journey-controls {
+      justify-content: space-between;
+    }
+    .journey-controls button:last-child {
+      flex: 1;
+    }
+  }
+</style>
