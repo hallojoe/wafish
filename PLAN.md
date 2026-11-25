@@ -19,26 +19,25 @@ R56 records a release discrepancy found during cleanup; it does not authorize pu
 | Order | ID | Remaining task | Value / 10 | Need / 10 |
 |---|---|---|---|---|
 | 1 | R56 | [Reconcile the release version and package publication](#r56) | 9 | 9 |
-| 2 | R44 | [Schedule request arrival rates](#r44) | 8 | 7 |
-| 3 | R42 | [Add paced streaming benchmarks](#r42) | 8 | 6 |
-| 4 | R47 | [Benchmark selected plugin combinations](#r47) | 8 | 6 |
-| 5 | R45 | [Enforce CI performance budgets](#r45) | 9 | 7 |
-| 6 | R38 | [Combine burst and sustained quotas](#r38) | 8 | 6 |
-| 7 | R36 | [Share local quotas across named route groups](#r36) | 7 | 6 |
-| 8 | R40 | [Measure compression savings](#r40) | 7 | 6 |
-| 9 | R41 | [Configure allowed compression algorithms](#r41) | 7 | 5 |
-| 10 | R50 | [Demonstrate blue-green deployment](#r50) | 7 | 5 |
-| 11 | R48 | [Benchmark multiple destinations](#r48) | 6 | 5 |
-| 12 | R46 | [Add WebAuthn authentication](#r46) | 8 | 5 |
-| 13 | R37 | [Partition quotas by trusted tenant](#r37) | 8 | 4 |
-| 14 | R39 | [Assign weighted request costs](#r39) | 6 | 4 |
-| 15 | R49 | [Add optional network fault injection](#r49) | 6 | 4 |
-| 16 | R51 | [Demonstrate service discovery](#r51) | 6 | 4 |
-| 17 | R55 | [Save operator views](#r55) | 5 | 3 |
-| 18 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
-| 19 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
-| 20 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
-| 21 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
+| 2 | R42 | [Add paced streaming benchmarks](#r42) | 8 | 6 |
+| 3 | R47 | [Benchmark selected plugin combinations](#r47) | 8 | 6 |
+| 4 | R45 | [Enforce CI performance budgets](#r45) | 9 | 7 |
+| 5 | R38 | [Combine burst and sustained quotas](#r38) | 8 | 6 |
+| 6 | R36 | [Share local quotas across named route groups](#r36) | 7 | 6 |
+| 7 | R40 | [Measure compression savings](#r40) | 7 | 6 |
+| 8 | R41 | [Configure allowed compression algorithms](#r41) | 7 | 5 |
+| 9 | R50 | [Demonstrate blue-green deployment](#r50) | 7 | 5 |
+| 10 | R48 | [Benchmark multiple destinations](#r48) | 6 | 5 |
+| 11 | R46 | [Add WebAuthn authentication](#r46) | 8 | 5 |
+| 12 | R37 | [Partition quotas by trusted tenant](#r37) | 8 | 4 |
+| 13 | R39 | [Assign weighted request costs](#r39) | 6 | 4 |
+| 14 | R49 | [Add optional network fault injection](#r49) | 6 | 4 |
+| 15 | R51 | [Demonstrate service discovery](#r51) | 6 | 4 |
+| 16 | R55 | [Save operator views](#r55) | 5 | 3 |
+| 17 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
+| 18 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
+| 19 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
+| 20 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
 
 ## Completion rule
 
@@ -141,19 +140,21 @@ Verification: [R43 evidence](tests/Wafish.Regression/evidence/performance-r43/RE
 
 ### R44: Schedule request arrival rates
 
-Status: TODO. Value: 8/10. Need: 7/10.
+Status: COMPLETE. Value: 8/10. Need: 7/10.
 
 Expose overload instead of reducing offered load silently.
 
 Source: [Runner FEAT-02](docs/archive/2026-11-planning/tests/Wafish.Performance/Runner/PLAN.md#feat-02-add-scheduled-request-rate-mode).
 
-Evidence: [Program.cs](tests/Wafish.Performance/Runner/Program.cs) uses workers that wait for each response before sending another request.
+The default remains closed-loop. `--arrival-rate` enables a fixed schedule with bounded workers and a bounded queue.
 
 Add an optional fixed arrival-rate mode with a bounded queue.
 Report queue delay, dropped arrivals, completed responses, and service time separately.
 
 Acceptance: A slow gateway does not silently reduce the offered request rate.
 Overload remains visible without unbounded client memory.
+
+Verification: [R44 evidence](tests/Wafish.Regression/evidence/performance-r44/README.md).
 
 <a id="r42"></a>
 

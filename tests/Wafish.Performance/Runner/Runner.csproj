@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../Shared/BenchmarkArrivalSchedule.cs" Link="BenchmarkArrivalSchedule.cs" />
     <Compile Include="../Shared/BenchmarkPreflight.cs" Link="BenchmarkPreflight.cs" />
     <Compile Include="../Shared/BenchmarkTransport.cs" Link="BenchmarkTransport.cs" />
     <Compile Include="../Shared/BenchmarkOptions.cs" Link="BenchmarkOptions.cs" />

@@ -12,6 +12,8 @@ internal sealed class BenchmarkSession : IDisposable
     private string? _directory;
     private object _environment = null!;
     private readonly string _root;
+    public int ArrivalRate { get; }
+    public int ArrivalQueueCapacity { get; }
     public bool External { get; }
     public BenchmarkTransport Transport { get; }
     public Uri Backend { get; }
@@ -43,6 +45,10 @@ internal sealed class BenchmarkSession : IDisposable
         Enhanced = Transport.Address(BenchmarkOptions.Read(args, "--enhanced-url", $"{Transport.Scheme}://127.0.0.1:5302"), "--enhanced-url");
         if (new[] { Backend.Port, Native.Port, Enhanced.Port }.Distinct().Count() != 3 || Backend.Port == 0 || Native.Port == 0 || Enhanced.Port == 0)
             throw new ArgumentException("Managed listener ports must be distinct and nonzero.");
+        ArrivalRate = int.Parse(BenchmarkOptions.Read(args, "--arrival-rate", "0"), System.Globalization.CultureInfo.InvariantCulture);
+        ArrivalQueueCapacity = int.Parse(BenchmarkOptions.Read(args, "--arrival-queue", "128"), System.Globalization.CultureInfo.InvariantCulture);
+        if (ArrivalRate is < 0 or > 100000 || ArrivalQueueCapacity is < 1 or > 65536)
+            throw new ArgumentException("Arrival rate must be 0..100000; queue capacity must be 1..65536.");
         PayloadMode = BenchmarkOptions.Read(args, "--payload-mode", "precomputed");
         if (PayloadMode is not ("precomputed" or "generated")) throw new ArgumentException("Unknown payload mode.");
         ResultsDirectory = Path.GetFullPath(BenchmarkOptions.Read(args, "--results-directory", Path.Combine(root, "tests", "Wafish.Performance", "results")));
@@ -111,7 +117,9 @@ internal sealed class BenchmarkSession : IDisposable
     {
         await File.WriteAllTextAsync(path, JsonSerializer.Serialize(new
         {
-            schemaVersion = 2, environment = _environment, settings, transport = new { mode = Transport.Mode, client = Transport.Description, upstream = External ? "unverified external upstream" : Transport.Description, certificate = !Transport.Tls ? "none" : Transport.CertificatePath is null ? "system trust" : "temporary pinned loopback certificate" },
+            schemaVersion = 3, environment = _environment, settings,
+            arrivals = new { mode = ArrivalRate == 0 ? "closed-loop" : "scheduled", ratePerSecond = ArrivalRate, queueCapacity = ArrivalQueueCapacity, drainDeadlineSeconds = 12 },
+            transport = new { mode = Transport.Mode, client = Transport.Description, upstream = External ? "unverified external upstream" : Transport.Description, certificate = !Transport.Tls ? "none" : Transport.CertificatePath is null ? "system trust" : "temporary pinned loopback certificate" },
             latency = new { strategy = "fixed logarithmic histogram; upper-bound nearest rank", relativeError = BoundedLatencyHistogram.RelativeError,
                 absoluteErrorBelowMinimumMs = BoundedLatencyHistogram.MinimumMilliseconds, maximumMs = BoundedLatencyHistogram.MaximumMilliseconds,
                 retainedBytes = new BoundedLatencyHistogram().RetainedBytes },
