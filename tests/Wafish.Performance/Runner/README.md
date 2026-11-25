@@ -123,3 +123,27 @@ Queue delay includes scheduler lateness. Latency percentiles cover dispatched at
 RPS uses elapsed time including drain. Offered RPS uses the configured phase duration.
 Drops remain visible overload measurements; they do not alone fail the process. Request failures still fail it.
 Keep the arrival model and offered rate equal when comparing gateways.
+
+## Paced streaming (R42)
+
+Use `--workload=chunks` or `--workload=events` instead of the default baseline payloads.
+Configure `--stream-chunks=8`, `--stream-bytes=1024`, and `--stream-interval=50` in milliseconds.
+The backend bounds are described in its [streaming guide](../Backend/README.md#paced-streams-r42).
+The selected workload replaces the payload matrix for each selected gateway.
+Transport selection and scheduled arrivals also apply to streams. The functional first suite uses its existing workloads.
+For an external streaming endpoint, use `--external-url` and `--path`.
+
+```bash
+dotnet run --project tests/Wafish.Performance/Runner -c Release --no-build -- \
+  --modes=native,full --workload=events --stream-chunks=8 --stream-interval=50 \
+  --concurrency=2 --duration=10 --warmup=1 --repetitions=3
+```
+
+Reports record first response-body byte latency separately from complete-body service latency.
+They also report response bytes, body read count, sample count, and the largest observed read gap per response.
+A large first-byte delay near completion can indicate buffering.
+Reads can combine or divide backend chunks. Read counts do not claim to measure network packets or emitted chunks.
+First-byte and read-gap statistics include complete, nonempty response bodies only. Failed bodies remain in failure counters.
+Each request uses an eight-KiB pooled read buffer. The client never retains the complete measured body.
+Preflight independently validates the complete bounded payload and event framing before measurement.
+JSON schema version 4 records streaming settings. CSV appends the delivery measurements.

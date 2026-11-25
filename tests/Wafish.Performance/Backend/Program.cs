@@ -37,7 +37,7 @@ app.Use(async (context, next) =>
     }
 });
 app.MapGet("/health", () => Results.Ok());
-app.MapGet("/benchmark/manifest", () => Results.Json(BenchmarkManifest.Create(new { mode = "backend", payloadMode, preparedSizes, maxRequestBytes = 4194304, maxDelayMilliseconds = 30000, transportFaults, transport = transport.Description })));
+app.MapGet("/benchmark/manifest", () => Results.Json(BenchmarkManifest.Create(new { mode = "backend", payloadMode, preparedSizes, maxRequestBytes = 4194304, maxDelayMilliseconds = 30000, transportFaults, streamLimits = new { maxChunks = 256, maxChunkBytes = 65536, maxIntervalMs = 1000, maxDurationMs = 4000, maxBytes = 4194304 }, transport = transport.Description })));
 app.MapGet("/api/perf/plain", () => Results.Bytes(plain, "text/plain"));
 app.MapGet("/api/perf/json-small", () => Results.Bytes(smallJson, "application/json"));
 app.MapGet("/api/perf/payload/{size:int}", (int size, HttpContext context) =>
@@ -65,6 +65,21 @@ app.MapGet("/api/perf/delay/{milliseconds:int}", async (int milliseconds, HttpCo
 {
     await Task.Delay(Math.Clamp(milliseconds, 0, 30_000), context.RequestAborted);
     return Results.Bytes(plain, "text/plain");
+});
+app.MapGet("/api/perf/stream/{kind}/{chunks:int}/{chunkBytes:int}/{intervalMs:int}", async (string kind, int chunks, int chunkBytes, int intervalMs, HttpContext context) =>
+{
+    BenchmarkStreamWorkload workload;
+    try { workload = new(kind, chunks, chunkBytes, intervalMs); }
+    catch (ArgumentException) { context.Response.StatusCode = 400; return; }
+    context.Response.ContentType = kind == "events" ? "text/event-stream" : "text/plain";
+    context.Response.Headers.CacheControl = "no-store";
+    var chunk = workload.CreateChunk();
+    for (var index = 0; index < workload.Chunks; index++)
+    {
+        if (index > 0) await Task.Delay(workload.IntervalMs, context.RequestAborted);
+        await context.Response.Body.WriteAsync(chunk, context.RequestAborted);
+        await context.Response.Body.FlushAsync(context.RequestAborted);
+    }
 });
 app.MapGet("/api/perf/status/{statusCode:int}", (int statusCode) => Results.StatusCode(Math.Clamp(statusCode, 100, 599)));
 app.MapGet("/api/perf/flaky/{failCount:int}", (int failCount, BackendState state) => state.NextFlakyAttempt() <= Math.Max(0, failCount)

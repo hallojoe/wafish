@@ -12,6 +12,7 @@ internal sealed class BenchmarkSession : IDisposable
     private string? _directory;
     private object _environment = null!;
     private readonly string _root;
+    public BenchmarkStreamWorkload? Streaming { get; }
     public int ArrivalRate { get; }
     public int ArrivalQueueCapacity { get; }
     public bool External { get; }
@@ -45,6 +46,15 @@ internal sealed class BenchmarkSession : IDisposable
         Enhanced = Transport.Address(BenchmarkOptions.Read(args, "--enhanced-url", $"{Transport.Scheme}://127.0.0.1:5302"), "--enhanced-url");
         if (new[] { Backend.Port, Native.Port, Enhanced.Port }.Distinct().Count() != 3 || Backend.Port == 0 || Native.Port == 0 || Enhanced.Port == 0)
             throw new ArgumentException("Managed listener ports must be distinct and nonzero.");
+        var workload = BenchmarkOptions.Read(args, "--workload", "baseline");
+        if (workload != "baseline")
+        {
+            if (External) throw new ArgumentException("Use --path for external streaming endpoints.");
+            Streaming = new BenchmarkStreamWorkload(workload,
+                int.Parse(BenchmarkOptions.Read(args, "--stream-chunks", "8"), System.Globalization.CultureInfo.InvariantCulture),
+                int.Parse(BenchmarkOptions.Read(args, "--stream-bytes", "1024"), System.Globalization.CultureInfo.InvariantCulture),
+                int.Parse(BenchmarkOptions.Read(args, "--stream-interval", "50"), System.Globalization.CultureInfo.InvariantCulture));
+        }
         ArrivalRate = int.Parse(BenchmarkOptions.Read(args, "--arrival-rate", "0"), System.Globalization.CultureInfo.InvariantCulture);
         ArrivalQueueCapacity = int.Parse(BenchmarkOptions.Read(args, "--arrival-queue", "128"), System.Globalization.CultureInfo.InvariantCulture);
         if (ArrivalRate is < 0 or > 100000 || ArrivalQueueCapacity is < 1 or > 65536)
@@ -117,7 +127,7 @@ internal sealed class BenchmarkSession : IDisposable
     {
         await File.WriteAllTextAsync(path, JsonSerializer.Serialize(new
         {
-            schemaVersion = 3, environment = _environment, settings,
+            schemaVersion = 4, environment = _environment, settings, streaming = Streaming,
             arrivals = new { mode = ArrivalRate == 0 ? "closed-loop" : "scheduled", ratePerSecond = ArrivalRate, queueCapacity = ArrivalQueueCapacity, drainDeadlineSeconds = 12 },
             transport = new { mode = Transport.Mode, client = Transport.Description, upstream = External ? "unverified external upstream" : Transport.Description, certificate = !Transport.Tls ? "none" : Transport.CertificatePath is null ? "system trust" : "temporary pinned loopback certificate" },
             latency = new { strategy = "fixed logarithmic histogram; upper-bound nearest rank", relativeError = BoundedLatencyHistogram.RelativeError,

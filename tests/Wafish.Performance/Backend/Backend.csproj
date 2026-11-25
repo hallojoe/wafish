@@ -8,6 +8,7 @@
   <ItemGroup>
     <Compile Include="../Shared/BenchmarkTransport.cs" Link="BenchmarkTransport.cs" />
     <Compile Include="../Shared/BenchmarkServerTransport.cs" Link="BenchmarkServerTransport.cs" />
+    <Compile Include="../Shared/BenchmarkStreamWorkload.cs" Link="BenchmarkStreamWorkload.cs" />
     <Compile Include="../Shared/BenchmarkOptions.cs" Link="BenchmarkOptions.cs" />
     <Compile Include="../Shared/BenchmarkManifest.cs" Link="BenchmarkManifest.cs" />
   </ItemGroup>

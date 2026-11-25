@@ -13,31 +13,30 @@ Both scores range from 1 (low) to 10 (essential).
 Order accounts for dependencies, not only scores. Scores are judgments, not defect severity ratings.
 The scope remains one gateway host with optional administration and UI.
 Tenant isolation, mandatory passkeys, or central gateway management would change these priorities.
-R36–R55 remain optional proposals. No feature becomes a release requirement because it appears here.
+Remaining items within R36–R55 are optional proposals. Listing a feature does not make it a release requirement.
 R56 records a release discrepancy found during cleanup; it does not authorize publication.
 
 | Order | ID | Remaining task | Value / 10 | Need / 10 |
 |---|---|---|---|---|
 | 1 | R56 | [Reconcile the release version and package publication](#r56) | 9 | 9 |
-| 2 | R42 | [Add paced streaming benchmarks](#r42) | 8 | 6 |
-| 3 | R47 | [Benchmark selected plugin combinations](#r47) | 8 | 6 |
-| 4 | R45 | [Enforce CI performance budgets](#r45) | 9 | 7 |
-| 5 | R38 | [Combine burst and sustained quotas](#r38) | 8 | 6 |
-| 6 | R36 | [Share local quotas across named route groups](#r36) | 7 | 6 |
-| 7 | R40 | [Measure compression savings](#r40) | 7 | 6 |
-| 8 | R41 | [Configure allowed compression algorithms](#r41) | 7 | 5 |
-| 9 | R50 | [Demonstrate blue-green deployment](#r50) | 7 | 5 |
-| 10 | R48 | [Benchmark multiple destinations](#r48) | 6 | 5 |
-| 11 | R46 | [Add WebAuthn authentication](#r46) | 8 | 5 |
-| 12 | R37 | [Partition quotas by trusted tenant](#r37) | 8 | 4 |
-| 13 | R39 | [Assign weighted request costs](#r39) | 6 | 4 |
-| 14 | R49 | [Add optional network fault injection](#r49) | 6 | 4 |
-| 15 | R51 | [Demonstrate service discovery](#r51) | 6 | 4 |
-| 16 | R55 | [Save operator views](#r55) | 5 | 3 |
-| 17 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
-| 18 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
-| 19 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
-| 20 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
+| 2 | R47 | [Benchmark selected plugin combinations](#r47) | 8 | 6 |
+| 3 | R45 | [Enforce CI performance budgets](#r45) | 9 | 7 |
+| 4 | R38 | [Combine burst and sustained quotas](#r38) | 8 | 6 |
+| 5 | R36 | [Share local quotas across named route groups](#r36) | 7 | 6 |
+| 6 | R40 | [Measure compression savings](#r40) | 7 | 6 |
+| 7 | R41 | [Configure allowed compression algorithms](#r41) | 7 | 5 |
+| 8 | R50 | [Demonstrate blue-green deployment](#r50) | 7 | 5 |
+| 9 | R48 | [Benchmark multiple destinations](#r48) | 6 | 5 |
+| 10 | R46 | [Add WebAuthn authentication](#r46) | 8 | 5 |
+| 11 | R37 | [Partition quotas by trusted tenant](#r37) | 8 | 4 |
+| 12 | R39 | [Assign weighted request costs](#r39) | 6 | 4 |
+| 13 | R49 | [Add optional network fault injection](#r49) | 6 | 4 |
+| 14 | R51 | [Demonstrate service discovery](#r51) | 6 | 4 |
+| 15 | R55 | [Save operator views](#r55) | 5 | 3 |
+| 16 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
+| 17 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
+| 18 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
+| 19 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
 
 ## Completion rule
 
@@ -160,7 +159,7 @@ Verification: [R44 evidence](tests/Wafish.Regression/evidence/performance-r44/RE
 
 ### R42: Add paced streaming benchmarks
 
-Status: TODO. Value: 8/10. Need: 6/10.
+Status: COMPLETE. Value: 8/10. Need: 6/10.
 
 Measure early delivery and buffering for streaming workloads.
 
@@ -169,6 +168,8 @@ Source: [Backend FEAT-01](docs/archive/2026-11-planning/tests/Wafish.Performance
 Provide chunked and event-stream responses with controlled chunk sizes and intervals.
 
 Acceptance: The harness can measure first-byte latency and buffering without an external service.
+
+Verification: [R42 evidence](tests/Wafish.Regression/evidence/performance-r42/README.md).
 
 <a id="r47"></a>
 

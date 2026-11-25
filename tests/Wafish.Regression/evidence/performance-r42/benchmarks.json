@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "suite": "main",
+  "cases": [
+    {
+      "name": "Benchmarks: fixed-memory histograms bound percentile error without losing samples",
+      "group": "benchmarks",
+      "durationMs": 217.4993,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Benchmarks: explicit addresses reject non-loopback and ambiguous origins",
+      "group": "benchmarks",
+      "durationMs": 29.6004,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Benchmarks: normalized manifests hash composition and redact nested secrets",
+      "group": "benchmarks",
+      "durationMs": 122.8954,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Benchmarks: workload preflight rejects wrong status, payload, size, and stalled reads",
+      "group": "benchmarks",
+      "durationMs": 734.0011,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Benchmarks: isolated backend cancellation drains work and identifies payload allocation",
+      "group": "benchmarks",
+      "durationMs": 2190.6801,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Benchmarks: opt-in transport faults truncate bodies and cancel stalled reads",
+      "group": "benchmarks",
+      "durationMs": 1902.5193,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Benchmarks: native forwarding preflight detects backend failure on isolated addresses",
+      "group": "benchmarks",
+      "durationMs": 5126.4174,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Benchmarks: matched transport modes enforce protocols and pin local TLS certificates",
+      "group": "benchmarks",
+      "durationMs": 44614.355,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Benchmarks: scheduled arrivals expose overload with bounded queues and separate latency",
+      "group": "benchmarks",
+      "durationMs": 3980.9951,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Benchmarks: paced streams deliver early bytes, cancel work, and report buffering",
+      "group": "benchmarks",
+      "durationMs": 18962.0295,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Benchmarks: managed comparisons export effective manifests and clean only owned data",
+      "group": "benchmarks",
+      "durationMs": 39837.0712,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    }
+  ]
+}

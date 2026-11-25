@@ -76,3 +76,17 @@ The backend binds only to an explicitly validated loopback address.
 Counters classify injected disconnects as aborted and caller-cancelled stalls as cancelled.
 Reset through `/api/perf/control/reset` after active requests reach zero. Reset during active work returns 409.
 The benchmark manifest includes the fault-mode setting. These endpoints require explicit fault workloads, not normal success preflight.
+
+## Paced streams (R42)
+
+`/api/perf/stream/chunks/{count}/{bytes}/{intervalMs}` flushes each synthetic byte chunk.
+`/api/perf/stream/events/{count}/{bytes}/{intervalMs}` flushes each `data: ...\n\n` event.
+The first chunk is immediate. Later chunks wait for the requested interval.
+`bytes` counts payload bytes; event framing adds eight bytes per chunk.
+HTTP/1.1 uses chunked transfer. HTTP/2 uses data frames.
+
+Bounds: 1–256 chunks, 1–65,536 payload bytes, and 0–1,000 ms between chunks.
+Total encoded output cannot exceed four MiB. Total scheduled delay cannot exceed four seconds.
+Invalid settings return HTTP 400. Requests carry no complete content length and use `Cache-Control: no-store`.
+Disconnecting the client cancels writes and delays. Existing backend counters record cancellation.
+Payloads contain synthetic `x` bytes only.
