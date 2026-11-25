@@ -1,6 +1,6 @@
 # Wafish remaining work
 
-Updated: 2026-11-15.
+Updated: 2026-11-26.
 
 This is the single active backlog. R01–R35 and the approved review fixes are complete.
 Completed plans and design records are in the [planning archive](docs/archive/2026-11-planning/README.md).
@@ -27,7 +27,7 @@ R56 records a release discrepancy found during cleanup; it does not authorize pu
 | 7 | R38 | [Combine burst and sustained quotas](#r38) | 8 | 6 |
 | 8 | R36 | [Share local quotas across named route groups](#r36) | 7 | 6 |
 | 9 | R40 | [Measure compression savings](#r40) | 7 | 6 |
-| 10 | R41 | [Configure compression algorithms and levels](#r41) | 7 | 5 |
+| 10 | R41 | [Configure allowed compression algorithms](#r41) | 7 | 5 |
 | 11 | R50 | [Demonstrate blue-green deployment](#r50) | 7 | 5 |
 | 12 | R48 | [Benchmark multiple destinations](#r48) | 6 | 5 |
 | 13 | R46 | [Add WebAuthn authentication](#r46) | 8 | 5 |
@@ -49,23 +49,69 @@ Retain task IDs when priorities change.
 R45 follows representative measurements and repeatability checks; use R42–R44 and R47 where relevant.
 Publication requires a separate release decision after checking the feed and artifact identity.
 
+## Backlog audit: 2026-11-26
+
+Reviewed source commit `3d5a2eb387dab858a70039d7c5fbbf8a86fa0345`, tests, documentation, and GitHub release and workflow records.
+No remaining task meets all its acceptance criteria.
+R41 and R56 are partly complete. The other 19 numbered tasks remain valid optional proposals.
+IDEA-01 remains deferred. Existing related features do not complete the proposed demonstrations or extensions.
+Ratings remain planning judgments; this audit does not promote optional work into release requirements.
+
+| Task | Result | Evidence and remaining work |
+|---|---|---|
+| R36 | Still valid | [Local limiter keys](src/Wafish.Plugin.RateLimit/Middleware/RateLimitMiddleware.cs) include route identity. Named groups across routes are absent. |
+| R37 | Still valid | [Redis middleware](src/Wafish.Plugin.RateLimit.Redis/Middleware/RedisRateLimitMiddleware.cs) partitions by route and client IP. Trusted tenant claims are absent. |
+| R38 | Still valid | [Redis Lua](src/Wafish.Plugin.RateLimit.Redis/RedisLuaRateLimitStore.cs) supports single quotas, including token-bucket bursts. Two independent allowances lack one atomic decision. |
+| R39 | Still valid | [Runtime store](src/Wafish.Runtime/Infrastructure/State/InMemoryRateLimiterStore.cs) calls `AcquireAsync(1, ...)`. Configurable request costs are absent. |
+| R40 | Still valid | [Compression middleware](src/Wafish.Plugin.Compression/CompressionMiddleware.cs) has no input/output byte metrics. Allocation checks do not provide operator savings metrics. |
+| R41 | Partial | [Schema](src/Wafish.Plugin.Compression/CompressionPlugin.cs) already exposes `compressionLevel`. Allowed algorithms and separate algorithm levels remain absent. |
+| R42 | Still valid | [Backend](tests/Wafish.Performance/Backend/Program.cs) has payload, delay, and fault endpoints. Paced streams and runner first-byte measurements remain absent. |
+| R43 | Still valid | [Address validation](tests/Wafish.Performance/Shared/BenchmarkOptions.cs) requires HTTP. [Native upstream](tests/Wafish.Performance/NativeYarp/Program.cs) uses exact HTTP/1.1. Matched HTTP/2 and TLS modes are absent. |
+| R44 | Still valid | [Runner](tests/Wafish.Performance/Runner/Program.cs) workers await each full response. Scheduled arrivals, bounded queues, and dropped-arrival reports are absent. |
+| R45 | Still valid | [Runner](tests/Wafish.Performance/Runner/Program.cs) reports comparisons without baseline tolerances. [CI verification](.github/workflows/verify.yml) has no performance budget gate. |
+| R46 | Still valid; conditional | [Authentication](src/Wafish.Administration/Modules/Dashboard/Controllers/DashboardAuthController.cs) supports passwords and TOTP. WebAuthn enrollment, challenges, revocation, and recovery are absent. |
+| R47 | Still valid | [Benchmark host](tests/Wafish.Performance/EnhancedYarp/Program.cs) has fixed modes and manifests. Selected plugin combinations and a bounded combination matrix remain absent. |
+| R48 | Still valid | [Native baseline](tests/Wafish.Performance/NativeYarp/Program.cs) accepts one configurable backend. Destination lists, policy selection, and distribution reports are absent. |
+| R49 | Still valid; narrower scope | [Benchmark faults](tests/Wafish.Performance/Backend/Program.cs) already cover stalls and disconnects. [AppHost](Wafish.AppHost/AppHost.cs) lacks an optional network fault resource and recovery walkthrough. |
+| R50 | Still valid | [Sample guide](samples/SampleGateway/README.md) lacks a blue-green walkthrough. Existing configuration rollback APIs do not demonstrate health-checked cutover and rollback. |
+| R51 | Still valid | [AppHost](Wafish.AppHost/AppHost.cs) uses gRPC registration. An HTTP JSON discovery catalog profile and refresh-failure demonstration remain absent. |
+| R52 | Still valid | [Sample controller](samples/SampleLocalService/Controllers/LocalServiceController.cs) returns complete ping and echo responses. Cancellable chunk streaming remains absent. |
+| R53 | Still valid; narrower scope | [AppHost](Wafish.AppHost/AppHost.cs) configures redaction. [Service defaults](samples/SampleServiceDefaults/Extensions.cs) lack a diagnostic view of exporters and instrumentation. |
+| R54 | Still valid | [Sample controller](samples/SampleLocalService/Controllers/LocalServiceController.cs) has no order operation or idempotency-key store. Gateway configuration receipts serve another purpose. |
+| R55 | Still valid | [Log filters](src/Wafish.ReactUi/ClientApp/src/pages/observe.tsx) use component state. Named views and authenticated per-user persistence remain absent. |
+| R56 | Partial | [Publication rehearsal](https://github.com/hallojoe/wafish/actions/runs/45721202092) passed. Uploads were skipped. Release metadata still conflicts with source metadata. |
+| IDEA-01 | Still deferred | [Split mode](samples/SampleGateway/appsettings.examples/README.md) separates ports within one process. Independent administration and its management protocol remain outside the current scope. |
+
+Verification was read-only source inspection and registry/workflow queries. No application tests or benchmarks were rerun for this documentation update.
+The successful publication rehearsal verifies packages and consumers on Linux; it does not prove publication or complete cross-platform release acceptance.
+
 ## Task details
 
 <a id="r56"></a>
 
 ### R56: Reconcile the release version and package publication
 
-Status: TODO. Value: 9/10. Need: 9/10.
+Status: PARTIAL. Value: 9/10. Need: 9/10.
 
 The GitHub v1.0.0 tag differs from the candidate version in source and release notes.
 
 Evidence: [GitHub release v1.0.0](https://github.com/hallojoe/wafish/releases/tag/v1.0.0),
 [source version](src/Directory.Build.props), and [candidate release notes](docs/release-notes-1.0.0-rc.1.md).
 The source and release notes still identify `1.0.0-rc.1`; the notes say publication is pending.
-Package-feed state was not verified during cleanup.
+The live release remains stable `v1.0.0`, with no attached assets.
+Its tag points to `b5e32e121133cc680e903f0c585c673e1e4f9a11`, whose package metadata also specifies `1.0.0-rc.1`.
+
+The [manual publication run](https://github.com/hallojoe/wafish/actions/runs/45721202092) passed on 2026-11-26, Copenhagen time.
+It used source commit `3d5a2eb387dab858a70039d7c5fbbf8a86fa0345`, version `1.0.0-rc.1`, registry `both`, and `dry-run=true`.
+NuGet authentication and both registry uploads were skipped. `NUGET_USER` was empty in that run.
+All 19 package version-index requests to NuGet.org returned HTTP 404 during this audit.
+The checked URL format was `https://api.nuget.org/v3-flatcontainer/<lowercase-package-id>/index.json`.
+No published versions were found there. GitHub Packages inventory and NuGet trusted-publisher settings remain unverified.
 
 Publishing automation is implemented: [workflow setup](docs/package-publishing.md).
-Trusted-publisher setup, version reconciliation, and actual publication remain pending.
+Package creation and the Linux rehearsal are complete. Version reconciliation and confirmed publication remain open.
+For NuGet.org publication, set `NUGET_USER` and verify the trusted-publisher policy.
+The workflow validates the source version; it does not increment or replace it.
 
 Acceptance:
 
@@ -161,6 +207,7 @@ Protect against short bursts and sustained excess traffic atomically.
 Source: [Wafish.Plugin.RateLimit.Redis FEAT-02](docs/archive/2026-11-planning/src/Wafish.Plugin.RateLimit.Redis/PLAN.md#feat-02-combine-burst-and-sustained-quotas).
 
 Evidence: [RedisLuaRateLimitStore.cs](src/Wafish.Plugin.RateLimit.Redis/RedisLuaRateLimitStore.cs) evaluates one quota per acquisition.
+Its token bucket already supports `burstBalance`. This does not enforce two independent quota windows.
 
 Support a short burst allowance and a longer sustained allowance in one atomic decision.
 Define Redis Cluster key placement and expiry rules.
@@ -198,9 +245,9 @@ Acceptance: Operators can identify routes where compression increases cost witho
 
 <a id="r41"></a>
 
-### R41: Configure compression algorithms and levels
+### R41: Configure allowed compression algorithms
 
-Status: TODO. Value: 7/10. Need: 5/10.
+Status: PARTIAL. Value: 7/10. Need: 5/10.
 
 Control route CPU and bandwidth tradeoffs.
 
@@ -208,8 +255,10 @@ Source: [Wafish.Plugin.Compression FEAT-02](docs/archive/2026-11-planning/src/Wa
 
 Evidence: [CompressionMiddleware.cs](src/Wafish.Plugin.Compression/CompressionMiddleware.cs), `SelectEncoding`, always considers Brotli and Gzip.
 
-Allow route policy to select supported algorithms and their compression levels.
-This permits explicit CPU and bandwidth tradeoffs.
+Already implemented: one route-level `compressionLevel` setting, supporting `Optimal`, `Fastest`, and `NoCompression`.
+The middleware applies that setting to either selected encoding.
+Remaining: let route policy select allowed algorithms and configure their levels separately.
+Preserve the current shared-level setting as the compatibility default.
 
 Acceptance: Disabled algorithms are never selected.
 Quality values, identity fallback, and Vary handling remain correct.
@@ -238,7 +287,8 @@ Measure load balancing across matched destinations.
 
 Source: [NativeYarp FEAT-02](docs/archive/2026-11-planning/tests/Wafish.Performance/NativeYarp/PLAN.md#feat-02-add-a-multiple-destination-baseline).
 
-Evidence: [Program.cs](tests/Wafish.Performance/NativeYarp/Program.cs) configures one fixed destination.
+Evidence: [Program.cs](tests/Wafish.Performance/NativeYarp/Program.cs) configures one destination through `--backend-url`.
+Its address is configurable; the destination count remains fixed at one.
 
 Support a bounded configurable destination list and explicit YARP load-balancing policy.
 Compare the same destinations and transport settings with EnhancedYarp.
@@ -284,7 +334,8 @@ Apply larger quota charges to expensive routes.
 
 Source: [Wafish.Plugin.RateLimit FEAT-02](docs/archive/2026-11-planning/src/Wafish.Plugin.RateLimit/PLAN.md#feat-02-support-weighted-request-costs).
 
-Evidence: [RateLimitMiddleware.cs](src/Wafish.Plugin.RateLimit/Middleware/RateLimitMiddleware.cs) always acquires one permit.
+Evidence: [RateLimitMiddleware.cs](src/Wafish.Plugin.RateLimit/Middleware/RateLimitMiddleware.cs) delegates permit acquisition to the runtime store.
+[InMemoryRateLimiterStore.cs](src/Wafish.Runtime/Infrastructure/State/InMemoryRateLimiterStore.cs) calls `AcquireAsync(1, cancellationToken)`.
 
 Allow validated route policy to assign a request cost for token and window algorithms.
 Take costs from trusted configuration rather than caller headers.
@@ -303,6 +354,8 @@ Make resilience demonstrations repeatable with controlled network failures.
 Source: [Wafish.AppHost FEAT-01](docs/archive/2026-11-planning/Wafish.AppHost/PLAN.md#feat-01-add-optional-network-fault-injection).
 
 Provide a local resource that can delay or interrupt backend traffic on request.
+Existing loopback benchmark stall and disconnect fixtures already cover transport failures in regression tests.
+Reuse those fixtures where suitable. This task concerns the optional AppHost resource and its repeatable demonstration.
 
 Acceptance: A repeatable scenario demonstrates retries and circuit recovery without changing production defaults.
 
@@ -368,6 +421,7 @@ Make local telemetry setup easier to inspect.
 Source: [SampleServiceDefaults FEAT-01](docs/archive/2026-11-planning/samples/SampleServiceDefaults/PLAN.md#feat-01-add-redacted-telemetry-diagnostics).
 
 Expose an opt-in local diagnostic view of enabled exporters and instrumentation.
+Telemetry redaction defaults already exist. The missing work is the diagnostic view, not basic redaction setup.
 
 Acceptance: The view reports configuration state without revealing credentials or payload data.
 
