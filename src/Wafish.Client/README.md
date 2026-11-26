@@ -54,7 +54,7 @@ A revision conflict requires registration refresh before another update.
 Register a custom `TimeProvider` before `AddWafishClient` to control registration backoff and heartbeat timers.
 Shutdown cancels and joins heartbeat work before unregistering.
 
-Verification: [review evidence](../../tests/Wafish.Regression/evidence/review141516/README.md).
+Verification: [review evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-review141516-readme-md).
 
 ## Structured registration results
 

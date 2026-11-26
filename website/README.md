@@ -85,18 +85,11 @@ Browser checks cover WebGL, static fallbacks, keyboard controls, notes, search, 
 Offline verification blocks external network requests and checks the packaged deck and documentation.
 Review new visuals at desktop, mobile, and projector sizes before publishing.
 
-## Verification record
+## Archived release notes and evidence
 
-Verified locally on 2026-11-15:
+The release-notes route reads one marked section from root `ARCHIVE.md`.
+`src/lib/archive.ts` rejects missing, duplicate, reversed, and overlapping boundaries.
+Keep section markers stable when editing archived release notes.
+Links to other archived records resolve to GitHub. Current guides retain their public routes.
 
-- Static type checks: no errors or warnings.
-- Five scenario checks and eight website browser checks passed.
-- Links and assets passed across 29 HTML pages; search indexes 25 documents.
-- The 26-slide PDF and offline edition passed export and network-isolation checks.
-- Desktop, mobile, presentation, and PDF layouts received visual review.
-- The onboarding sample forwarded a real backend response and passed host readiness.
-- Administration build, lint, 81 unit tests, and 30 browser tests passed after logo integration.
-- The packed React UI NuGet icon matches the new root PNG.
-
-The existing administration coverage baseline remains below 80% overall.
-This work changes its branding only; it does not claim increased application coverage.
+Historical website checks are preserved in [ARCHIVE.md](../ARCHIVE.md#archive-website-readme-md).

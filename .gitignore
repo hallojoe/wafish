@@ -391,3 +391,7 @@ src/Wafish.ReactUi/ClientApp/coverage/
 
 # Local browser inspection state
 .playwright-cli/
+
+# APM dependency and generated skill installations
+apm_modules/
+/.agents/skills/

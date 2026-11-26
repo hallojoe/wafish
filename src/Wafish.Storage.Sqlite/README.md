@@ -58,7 +58,7 @@ Existing timestamp text and offsets remain unchanged. New proxy log timestamps u
 SQLite interprets offset-free legacy timestamps as UTC. Comparisons have millisecond precision.
 Malformed timestamps produce no comparable instant and remain outside time-range queries.
 
-[Verification for review items 8–10](../../tests/Wafish.Regression/evidence/review8910/README.md).
+[Verification for review items 8–10](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-review8910-readme-md).
 
 ## Review items 14–16
 
@@ -69,7 +69,7 @@ Migration pages contain at most 256 records and support composite keys and WITHO
 Readers normalize parsed timestamps to UTC. Proxy-log range comparisons retain indexed `julianday` semantics.
 Register `TimeProvider` before storage registration to control recent-log windows and retention cutoffs.
 
-Verification: [review evidence](../../tests/Wafish.Regression/evidence/review141516/README.md).
+Verification: [review evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-review141516-readme-md).
 
 ## Query bounds and ordering
 
@@ -90,7 +90,7 @@ Retention operations retain their existing limits and behavior. Repeated reads n
 Consumers requesting zero, negative, or oversized read limits must account for normalization.
 
 The provider-neutral suite accepts an isolated fixture factory and uses repository interfaces only.
-See [contract checks](../../tests/Wafish.Regression/StorageConformanceChecks.cs) and [verification](../../tests/Wafish.Regression/evidence/storage-reliability/README.md).
+See [contract checks](../../tests/Wafish.Regression/StorageConformanceChecks.cs) and [verification](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-storage-reliability-readme-md).
 
 ## Recovery and offline verification
 

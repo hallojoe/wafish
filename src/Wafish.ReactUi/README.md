@@ -61,12 +61,12 @@ Vite emits an asset manifest. Builds and packing reject missing entry, styleshee
 The package icon is staged from the canonical root `logo.png`.
 Browser fixtures use ports 5219–5224, including three prefixed authentication hosts.
 
-[Verification](../../tests/Wafish.Regression/evidence/review111213/README.md).
+[Verification](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-review111213-readme-md).
 
 Browser verification covers HTTP and HTTPS with nested prefixes for JWT, Basic authentication, and API keys.
 Two-factor changes invalidate the current JWT session. The workspace requires a new sign-in.
 The browser runner owns fixture process and temporary-state cleanup.
-See [verification](../../tests/Wafish.Regression/evidence/administration-lifecycle/README.md).
+See [verification](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-administration-lifecycle-readme-md).
 
 Mutation errors accept named `outcome` fields and legacy `status` values.
 Unknown revisions remain hidden. Validation, conflicts, storage failures, and activation failures retain distinct messages.
@@ -84,7 +84,7 @@ Overview events update the same locale-specific query that the page displays.
 Browser checks cover validation dialogs, realtime disconnection, and mobile navigation with keyboard and axe assertions.
 Large-list and plugin profiles verify pagination and seeded bindings.
 Process-selected failure profiles verify real mutation envelopes and delayed draft preservation.
-See [infrastructure evidence](../../tests/Wafish.Regression/evidence/regression-infrastructure/README.md).
+See [infrastructure evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-regression-infrastructure-readme-md).
 
 ## Build identity
 

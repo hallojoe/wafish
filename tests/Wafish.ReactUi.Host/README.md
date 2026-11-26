@@ -85,4 +85,4 @@ Failures activate after startup. They use the actual mutation pipeline and revis
 Profiles have no HTTP fault-control endpoints and require no external backend.
 Browser checks use additional HTTPS hosts on ports 5228–5233 for these six profiles.
 Port 0 requests an isolated operating-system port for C# fixture tests.
-See [infrastructure evidence](../Wafish.Regression/evidence/regression-infrastructure/README.md).
+See [infrastructure evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-regression-infrastructure-readme-md).

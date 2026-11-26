@@ -66,7 +66,7 @@ The post-transition watcher is cancelled and joined before manager shutdown comp
 A rejected late commit disposes its candidate. Failed pipeline construction releases its provider.
 Shutdown does not forcibly dispose providers used by long requests. Such requests can delay completion.
 
-[Verification](../../tests/Wafish.Regression/evidence/review111213/README.md).
+[Verification](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-review111213-readme-md).
 
 ## Review items 14–16
 
@@ -74,7 +74,7 @@ Register a custom `TimeProvider` before `AddWafishRuntime` to control policy clo
 The default is `TimeProvider.System`. Circuit recovery and idle cleanup use monotonic elapsed time.
 Plugin fallback providers expose service availability from both scopes for constructor selection.
 
-Verification: [review evidence](../../tests/Wafish.Regression/evidence/review141516/README.md).
+Verification: [review evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-review141516-readme-md).
 
 ## Lifetime stress verification
 
@@ -82,7 +82,7 @@ Direct domain disposal drains active requests. Copied leases share one release o
 External resources stop before their provider dependencies are disposed.
 External hosts support asynchronous disposal and deactivation. Repeated cleanup shares its completion task.
 Stop and disposal failures remain observable after cleanup; retained reports do not retain plugin-defined exception instances.
-See [bounds, verification, and compatibility](../../tests/Wafish.Regression/evidence/lifetime-stress/README.md).
+See [bounds, verification, and compatibility](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-lifetime-stress-readme-md).
 
 ## Resource contract enforcement
 

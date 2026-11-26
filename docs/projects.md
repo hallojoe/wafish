@@ -6,7 +6,7 @@ Project documentation has two roles:
 - **AGENTS.md:** source map, implementation boundaries, and verification commands.
 
 The [root backlog](../PLAN.md) contains all remaining tasks, ratings, and acceptance checks.
-The [planning archive](archive/2026-11-planning/README.md) preserves completed plans and review history.
+The [planning archive](../ARCHIVE.md#archive-docs-archive-2026-11-planning-readme-md) preserves completed plans and review history.
 AGENTS.md contains repository instructions. These projects do not need a separate reusable SKILL.md workflow.
 Project READMEs describe the source projects. Current NuGet packaging still includes the root README.
 

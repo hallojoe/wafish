@@ -1,13 +1,6 @@
 <div align="center">
 <img src="cover-en.png" alt="Wafish — The reverse proxy & API gateway for .NET" width="100%"/>
 
-<br/>
-
-<img src="logo.png" alt="Wafish" width="240" style="border-radius: 15px;"/>
-
-**Wafish — Full-featured API Gateway powered by YARP**
-
-Plugin Architecture · Dashboard · Dynamic Routing · WAF · Service Discovery · AI Assistant · 2FA · IP Isolation
 
 [![NuGet](https://img.shields.io/nuget/v/Wafish.svg)](https://www.nuget.org/packages/Wafish)
 [![NuGet](https://img.shields.io/nuget/v/Wafish.ReactUi.svg)](https://www.nuget.org/packages/Wafish.ReactUi)
@@ -29,8 +22,9 @@ Plugin Architecture · Dashboard · Dynamic Routing · WAF · Service Discovery 
 
 ## Release candidate
 
-Candidate `1.0.0-rc.1` supports Linux, Windows, and macOS with .NET 10. Publication is pending.
-See [release notes](docs/release-notes-1.0.0-rc.1.md) for the completed scope, support boundaries, and verification.
+Source package metadata identifies candidate `1.0.0-rc.1`. Check [release reconciliation](PLAN.md#r56) before publication.
+Archived checks cover Linux, Windows, and macOS with .NET 10.
+See [release notes](ARCHIVE.md#archive-docs-release-notes-1-0-0-rc-1-md) for the completed scope, support boundaries, and verification.
 Maintainers can use the [package publishing workflows](docs/package-publishing.md).
 
 ## Wafish vs. Bare YARP
@@ -330,235 +324,38 @@ NuGet versions are defined in `Directory.Packages.props` for source, sample, tes
 Keep package references versionless in project files.
 The administration UI and API labels use English.
 
+## Development tools and agent skills
+
+Use the .NET 10 SDK selected by `global.json`, Node.js 24, and npm.
+Use Python 3 for repository verification scripts.
+Aspire CLI is optional for AppHost orchestration. APM CLI is required for agent skill setup.
+APM 0.38.1 was used to validate this setup.
+
+```bash
+dotnet --version
+node --version
+npm --version
+dotnet tool restore
+apm install --frozen
+apm compile
+```
+
+[apm.yml](apm.yml) is the agent entry point. [apm.lock.yaml](apm.lock.yaml) pins resolved dependencies and deployment records.
+Microsoft .NET and Aspire skills use pinned Git repository references.
+Local [Wafish skills](.apm/skills/) cover builds, tests, diagnostics, plugins, benchmarks, and packages.
+Edit [.apm/instructions/wafish.instructions.md](.apm/instructions/wafish.instructions.md) for global instructions, then compile.
+The generated root [AGENTS.md](AGENTS.md) uses a managed section. Scoped project instructions remain authoritative within their scope.
+Downloaded dependencies and generated skill installations are ignored.
+
+For dependency updates, change the Git revision deliberately, run `apm install`, and review the lockfile and imported instructions.
+Run `apm audit --ci` and `apm compile --validate` before committing updates.
+
+## Work and history
+
+- [PLAN.md](PLAN.md): unresolved work and deferred proposals.
+- [ARCHIVE.md](ARCHIVE.md): previous plans, reviews, release notes, and verification narratives.
+- [Package publishing](docs/package-publishing.md): current packaging and publication procedure.
+
 ## License
 
 [MIT](LICENSE)
-
-## Changelog
-
-### 2026-11-14 — Complete need-7 operational features
-
-- Add instance leases, graceful draining, and optional registration readiness.
-- Add latency histograms, route/tag cache purge, and audited WAF detection and exclusion policies.
-- Add plugin drain diagnostics, storage capability checks, provider-owned backups, and redacted diagnostic bundles.
-
-See [contracts and limits](docs/registration-operations-contracts.md) and [verification](tests/Wafish.Regression/evidence/need-seven/README.md).
-
-### 2026-11-14 — Generated protocol checks
-
-- Correct six WAF false positives and reject mixed-encoding traversal. Retain explicit broad-rule limits.
-- Validate complete compression quality fields and malformed-list fallback.
-- Add seeded WAF, cache-header, encoding, and concurrent metric checks.
-- Pass 214 main and 35 administration cases with 100% changed production-line coverage.
-
-### 2026-11-14 — Regression infrastructure and workspace states
-
-- Add case listing, exact selections, JSON reports, and seeded fault replay.
-- Share isolated browser fixture setup and add large, plugin, and real failure profiles.
-- Preserve bounded audit history during background loading. Fix realtime overview query updates.
-- Show assistant loading and error states. Verify drafts, stale reads, keyboard focus, and accessibility.
-- Pass 209 main, 35 administration, 81 frontend, and 30 browser tests.
-
-### 2026-11-14 — Mutation and lifecycle contracts
-
-- Share HTTP mutation errors and revision fields. Read named application results from `outcome`.
-- Add structured registration results, retry guidance, gRPC deadlines, and caller cancellation.
-- Verify protobuf compatibility and reject new abstract requirements on existing plugin interfaces.
-- Prevent resource restarts during shutdown. Join accepted audit writes before releasing storage.
-- Pass 200 main, 35 administration, 32 frontend, and 23 browser cases.
-- [Migration and verification](tests/Wafish.Regression/evidence/mutation-contracts/README.md).
-
-### 2026-11-14 — Runtime lifetime and shutdown verification
-
-- Drain request leases before disposal. Copied leases release ownership once.
-- Stop and dispose external plugins before releasing their dependencies. Completed shutdown tasks release collectible references.
-- Correct local limiter retry guidance and verify probe limits, partition churn, and shutdown accounting.
-- Release build, 187 main tests, and 34 administration tests pass. Changed source coverage is 89.69%.
-- [Verification and compatibility](tests/Wafish.Regression/evidence/lifetime-stress/README.md).
-
-### 2026-11-14 — Storage recovery and offline verification
-
-- Verify migration rollback and recovery after forced process termination.
-- Bound history and log queries. Define stable ordering and prevent offset overflow.
-- Add provider-neutral storage contract checks.
-- Inspect and verify backup copies without changing source files.
-- Verify 178 main and 33 administration cases. See [evidence](tests/Wafish.Regression/evidence/storage-reliability/README.md).
-
-### 2026-11-14 — Administration lifecycle and HTTPS verification
-
-- Protect plugin controller actions through the shared authorization scope.
-- Revoke JWT sessions on sign-out, two-factor changes, expiry, and host restart.
-- Close revoked realtime connections and recheck credentials on existing hubs.
-- Add HTTPS browser fixtures and parent-owned cleanup after failures.
-- Verify 168 main, 32 administration, and 23 browser cases. See [evidence](tests/Wafish.Regression/evidence/administration-lifecycle/README.md).
-
-### 2026-11-14 — Consistent Wafish names
-
-- Align API names, assemblies, packages, project paths, resources, scripts, and documentation.
-- Rebuild consumers and sign in again. See [migration steps](docs/naming-migration.md).
-
-### 2026-11-14 — Async configuration and retry deadlines
-
-- Await configuration preparation and support cancellation before persistence.
-- Preserve commit ownership after persistence starts.
-- Honor bounded Retry-After delays within a configurable total deadline.
-- Correct the administration authorization namespace check.
-- Verify 168 main and 24 administration cases. See [evidence](tests/Wafish.Regression/evidence/async-retry/README.md).
-
-### 2026-11-14 — Redis and discovery recovery
-
-- Retry failed Redis connection creation with bounded backoff and one shared replacement.
-- Verify deployment isolation, interrupted Lua operations, and shared quotas after restart.
-- Preserve discovery failures per binding. Add jittered retries, freshness diagnostics, and configurable stale destination policies.
-- Correct Eureka and Kubernetes parsing. Add provider fixtures and live proxy expiry checks.
-- Complete protobuf and regression reflection namespace alignment with `Wafish`.
-- Verify 159 regression cases and seven live Redis scenario groups. See [evidence](tests/Wafish.Regression/evidence/recovery/README.md).
-
-### 2026-11-14 — Review items 11–13
-
-- Included deployment path bases in UI, API, and asset URLs.
-- Tracked frontend build inputs and rejected incomplete assets before embedding or packing.
-- Joined retired plugin domains and watcher tasks during shutdown.
-- Deprecated ineffective cache switches and made compression fallback independent of write chunk size.
-- Fixed notification queue cleanup when shutdown precedes background execution.
-- Verified 163 .NET regressions, 20 browser checks, and 93.85% changed C# source coverage.
-- [Verification and compatibility evidence](tests/Wafish.Regression/evidence/review111213/README.md).
-
-### 2026-11-14 — Review items 8–10
-
-- Preserved interrupted log batches and counted exhausted retries, overflow, and shutdown losses.
-- Added notification delivery, failure, suppression, and discard counters.
-- Corrected indexed SQLite UTC comparisons and batch orphan-cluster cleanup.
-- Recorded failed and cancelled metric attempts once, with explicit retry semantics.
-- Verified 157 regression executions and 86.67% changed production-line coverage.
-- [Verification and compatibility evidence](tests/Wafish.Regression/evidence/review8910/README.md).
-
-### 2026-11-14 — Complete review items 1–3
-
-- Limit authentication attempts and verify real HTTPS cookie flows.
-- Reject invalid CIDR rules and remove request secrets from WAF rejection logs.
-- Require complete bounded request replay and stop retries when response transmission begins.
-- Bound decoded log capture and local limiter admission. Preserve active limiter leases during cleanup.
-- Add live Kestrel/YARP streaming, plugin-combination, and cancellation regressions.
-- Release build, 110 main checks, and 24 administration checks pass. Changed source coverage is 91.64%.
-- See [verification evidence](tests/Wafish.Regression/evidence/review123/README.md) and [consumer migration notes](docs/security.md#consumer-changes-for-review-fixes).
-
-### 2026-11-14 — Replace the outdated native database component
-
-- Replace the retired SQLCipher bundle with SQLite3MC 2.7.0 and SQLite 3.54.1.
-- Preserve existing plaintext files and SQLCipher 4 encrypted databases without changing default encryption settings.
-- Verify old database fixtures, migrations, writes, reopening, wrong-key rejection, and native version requirements.
-- Preserve encryption and committed WAL writes in backups. Return HTTP 503 when backup creation fails.
-- Add native storage checks to Linux, Windows, and macOS CI jobs.
-- Resolve the documented database release blocker. See [migration guidance](docs/security.md#native-sqlite-replacement-sec-14).
-
-
-### 2026-11-14 — Remove the old Razor interface
-
-- Remove the Razor project, page routes, static assets, hosting wrappers, and React fallback link.
-- Keep React at `/console` with the existing administration APIs and authentication.
-- Update sample and performance hosts, package publishing, and migration instructions.
-- Preserve all 87 non-page controller contracts.
-- Verify React-only publishing and deployment isolation. See [removal evidence](tests/Wafish.Regression/evidence/ui08/README.md).
-
-
-### 2026-11-14 — React administration workspace
-
-- Implement the approved React UI with TypeScript, Tailwind, shadcn/ui, and Radix components.
-- Add responsive navigation, light/dark themes, and English translations.
-- Implement configuration, plugins, observation, history, settings, and optional AI workflows.
-- Preserve form drafts and distinguish validation, conflict, storage, and activation failures.
-- Use cookie JWT sessions and memory-only Basic/API-key credentials, including authenticated realtime updates.
-- Persist two-factor state atomically. Reject login when existing state cannot be read safely.
-- Preserve disabled routes across restart, export, import, rollback, and rename.
-- Repair Razor JSON workers and load fallback assets during Aspire development.
-- Embed production assets. Add a Node.js container build stage and continuous verification workflow.
-- See [hosting instructions](docs/react-ui.md) and [verification evidence](tests/Wafish.Regression/evidence/ui/README.md).
-
-### 2026-11-14 — Aspire development topology
-
-- Add an AppHost with dynamic HTTP/gRPC endpoints, two backend identities, persistent SQLite, and secret injection.
-- Add health checks and correlated telemetry without changing gateway retry behavior.
-- Verify load balancing, process restart, optional Redis, shared limits across two gateways, and outage recovery.
-- Add external-endpoint performance-runner mode. Preserve the existing managed mode.
-- Remove unconditional registration-client TLS certificate acceptance.
-- Document [operation and recovery](docs/aspire.md) with [verification evidence](tests/Wafish.Regression/evidence/aspire/README.md).
-
-
-Track pending work and acceptance checks in [PLAN.md](PLAN.md).
-Deferred proposals are recorded in the [backlog](PLAN.md#idea-01).
-Earlier release history remains in [CHANGELOG.md](CHANGELOG.md).
-
-### 2026-11-14 — Administration and proxy security
-
-- Apply shared authentication and network checks across REST, gRPC, dashboard APIs, hubs, and MCP.
-- Remove working sample credentials and restrict default listeners to loopback.
-- Bound response-cache memory and stream compressed responses.
-- Inspect unknown-length request bodies and enforce byte limits.
-- Make Redis outage behavior explicit. Verify shared counters and reconnection with Redis.
-- Document [security configuration](docs/security.md), secret injection, and the unresolved native SQLCipher release blocker.
-
-### 2026-11-14 — Atomic configuration updates
-
-- Validate isolated candidates before storing and publishing configuration.
-- Commit routes, clusters, destinations, binding identities, and revisions in one SQLite transaction.
-- Preserve active configuration when storage fails. Report stored and active revisions when activation fails.
-- Add structured outcomes and HTTP error codes. Show actionable errors in the existing dashboard.
-- Make gRPC multi-route registration and deregistration atomic.
-- Verify restart recovery, concurrent readers, write failures, renamed bindings, and plugin lifecycle behavior.
-- Publish [migration instructions](docs/architecture.md#configuration-transactions-arch-06-and-arch-07) and [verification evidence](tests/Wafish.Regression/evidence/arch04-09/README.md).
-
-### 2026-11-14 — Runtime pipeline and optional features
-
-- Moved gateway pipeline composition and deployment middleware into the runtime package.
-- Verified proxy-only caching, transforms, health endpoints, and endpoint-role isolation.
-- Removed stale transfer headers from cached responses.
-- Added explicit, independent AI and MCP registration.
-- Disabled AI controls and endpoints when AI services are not registered.
-
-### 2026-11-14 — Administration and presentation separation
-
-- Added `Wafish.Administration` for administration APIs, authentication, history, realtime hubs, models, and services.
-- Added administration registration and endpoint mapping without Razor services or dashboard assets.
-- Kept the existing dashboard entry points as presentation wrappers over administration services.
-- Separated login rendering and database settings APIs while preserving all 102 controller method/path contracts.
-- Verified 44 main regression checks, eight API-only checks, and browser login, cluster creation, navigation, and localization.
-- Added [hosting and migration instructions](docs/architecture.md#administration-extraction-arch-03).
-
-### 2026-11-13 — .NET 10 and urgent security fixes
-
-- Target .NET 10 across libraries, samples, regression checks, and performance tools.
-- Added SDK selection and updated Docker images, debugger paths, and benchmark paths.
-- Updated Microsoft.Data.Sqlite.Core to 10.0.15, preserving the SQLCipher provider for encrypted storage.
-- Added encrypted-storage checks for reopening databases and rejecting missing or incorrect keys.
-- Native SQLCipher dependency review remains tracked under SEC-10.
-- Disabled registration now removes both REST and gRPC registration endpoints.
-- Invalid authentication configuration is rejected. Empty dashboard API keys no longer grant access.
-- Gateway authentication reads nested dashboard settings and respects explicit control-plane configuration.
-- gRPC enforces its selected authentication mode.
-- Shared caching bypasses authenticated requests and excludes private or cookie-setting responses.
-- Added security regression checks and preserved baseline evidence.
-- Restored legacy plugin-state import and corrected logging setup in runtime test fixtures.
-- Extracted runtime services into Wafish.Runtime. Proxy startup no longer requires dashboard registration.
-- Fixed response-header callback ordering in the extracted proxy pipeline.
-- Verified Debug and Release builds, 42 regression checks, and published dashboard startup with encrypted storage.
-
-### 2026-11-13 — Improvement planning
-
-- Added phase plans for architecture, security, Aspire, and UI, with urgent security fixes first.
-- Added task identifiers, dependencies, status tracking, and completion checks.
-- Recorded historical review results separately from current source findings.
-- Recorded decisions to permit breaking changes and reject configuration updates when persistence fails.
-- Deferred separate administration processes and replacement UI selection to their respective design milestones.
-
-See the [backlog](PLAN.md) for remaining tasks.
-See the [planning archive](docs/archive/2026-11-planning/README.md) for completed work and verification history.
-
-## Review completion: items 14–16
-
-Public packages now have package consistency checks and initial API snapshots.
-Isolated consumers verify runtime, administration, React assets, and encrypted SQLite.
-The manual `Verify` workflow runs live Redis checks and strict dependency audits, with retained JSON test reports.
-UTC migration and injected clocks support consistent storage and controlled policy timing.
-Metric stores retire obsolete identities and bound retained series.
-See [verification and platform limits](tests/Wafish.Regression/evidence/review141516/README.md).

@@ -132,7 +132,7 @@ Do not use `--force` for normal shutdown.
 - Certificate failures: fix platform trust; do not disable validation.
 
 Verified with Aspire CLI 13.6.4 and AppHost/hosting packages 13.6.5.
-See [verification evidence](../tests/Wafish.Regression/evidence/aspire/README.md).
+See [verification evidence](../ARCHIVE.md#archive-tests-wafish-regression-evidence-aspire-readme-md).
 
 ## Topology identity and restart checks
 

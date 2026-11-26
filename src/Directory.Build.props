@@ -7,7 +7,7 @@
     <Company>Wafish</Company>
     <Copyright>Copyright © Wafish $([System.DateTime]::Now.Year)</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReleaseNotes>First public release candidate. Includes completed R01–R35 scope. See docs/release-notes-1.0.0-rc.1.md for compatibility and operational limits.</PackageReleaseNotes>
+    <PackageReleaseNotes>First public release candidate. Includes completed R01–R35 scope. See ARCHIVE.md#archive-docs-release-notes-1-0-0-rc-1-md for compatibility and operational limits.</PackageReleaseNotes>
     <PackageIcon>logo.png</PackageIcon>
     <PackageProjectUrl>https://github.com/hallojoe/wafish</PackageProjectUrl>
     <RepositoryUrl>https://github.com/hallojoe/wafish</RepositoryUrl>

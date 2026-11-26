@@ -17,7 +17,7 @@ The first public candidate is `1.0.0-rc.1`. Package publication is pending.
 Linux, Windows, and macOS passed the hosted package and storage checks with .NET 10.
 Use matching versions of all Wafish packages.
 
-The [release notes](../release-notes-1.0.0-rc.1.md) describe support boundaries and completed verification.
+The [release notes](../../ARCHIVE.md#archive-docs-release-notes-1-0-0-rc-1-md) describe support boundaries and completed verification.
 Do not use a local performance run as a production capacity estimate.
 
 ## Where YARP ends and Wafish begins

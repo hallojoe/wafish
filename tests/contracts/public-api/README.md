@@ -11,4 +11,4 @@ Retain these source snapshots for review and keep migration notes for intentiona
 
 Items 14–16 preserve existing public constructors and add clock-aware overloads.
 Stored legacy offsetless timestamps now mean UTC. Metric retention resets removed identities and limits series admission.
-See [migration notes](../../../docs/security.md) and [verification](../../Wafish.Regression/evidence/review141516/README.md).
+See [migration notes](../../../docs/security.md) and [verification](../../../ARCHIVE.md#archive-tests-wafish-regression-evidence-review141516-readme-md).

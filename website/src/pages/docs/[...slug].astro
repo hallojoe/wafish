@@ -48,7 +48,7 @@ const groups = [...new Set(documents.map((item) => item.group))];
       </header>
       <div class="prose" set:html={rendered.html} />
       <div class="doc-source" data-pagefind-ignore>
-        Source: <a href={`${github}/blob/main/${doc.source}`}>{doc.source} ↗</a>
+        Source: <a href={`${github}/blob/main/${doc.source}${doc.section ? `#${doc.section}` : ""}`}>{doc.source} ↗</a>
       </div>
       <nav
         class="doc-pager"

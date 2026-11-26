@@ -1,0 +1,84 @@
+name: wafish
+version: 1.0.0
+description: Repository skills and development instructions for Wafish
+author: Casper
+targets:
+- codex
+dependencies:
+  apm:
+  - git: https://github.com/dotnet/skills.git
+    path: plugins/dotnet/skills/setup-local-sdk
+    ref: a273ceb823340c260b796ef49113b399430472a9
+    alias: setup-local-sdk
+  - git: https://github.com/dotnet/skills.git
+    path: plugins/dotnet/skills/csharp-refactoring
+    ref: a273ceb823340c260b796ef49113b399430472a9
+    alias: csharp-refactoring
+  - git: https://github.com/dotnet/skills.git
+    path: plugins/dotnet/skills/msbuild
+    ref: a273ceb823340c260b796ef49113b399430472a9
+    alias: msbuild
+  - git: https://github.com/dotnet/skills.git
+    path: plugins/dotnet-aspnetcore/skills/dotnet-webapi
+    ref: a273ceb823340c260b796ef49113b399430472a9
+    alias: dotnet-webapi
+  - git: https://github.com/dotnet/skills.git
+    path: plugins/dotnet-diag/skills/analyzing-dotnet-performance
+    ref: a273ceb823340c260b796ef49113b399430472a9
+    alias: analyzing-dotnet-performance
+  - git: https://github.com/dotnet/skills.git
+    path: plugins/dotnet-diag/skills/dotnet-trace-collect
+    ref: a273ceb823340c260b796ef49113b399430472a9
+    alias: dotnet-trace-collect
+  - git: https://github.com/dotnet/skills.git
+    path: plugins/dotnet-diag/skills/dump-collect
+    ref: a273ceb823340c260b796ef49113b399430472a9
+    alias: dump-collect
+  - git: https://github.com/dotnet/skills.git
+    path: plugins/dotnet-advanced/skills/nuget-trusted-publishing
+    ref: a273ceb823340c260b796ef49113b399430472a9
+    alias: nuget-trusted-publishing
+  - git: https://github.com/microsoft/aspire-skills.git
+    path: skills/aspire
+    ref: e529b608336cd41c1b1262aa76d00d9e4ef1bff8
+    alias: aspire
+  - git: https://github.com/microsoft/aspire-skills.git
+    path: skills/aspire-init
+    ref: e529b608336cd41c1b1262aa76d00d9e4ef1bff8
+    alias: aspire-init
+  - git: https://github.com/microsoft/aspire-skills.git
+    path: skills/aspireify
+    ref: e529b608336cd41c1b1262aa76d00d9e4ef1bff8
+    alias: aspireify
+  - git: https://github.com/microsoft/aspire-skills.git
+    path: skills/aspire-project-v2-migration
+    ref: e529b608336cd41c1b1262aa76d00d9e4ef1bff8
+    alias: aspire-project-v2-migration
+  - git: https://github.com/microsoft/aspire-skills.git
+    path: skills/aspire-orchestration
+    ref: e529b608336cd41c1b1262aa76d00d9e4ef1bff8
+    alias: aspire-orchestration
+  - git: https://github.com/microsoft/aspire-skills.git
+    path: skills/aspire-deployment
+    ref: e529b608336cd41c1b1262aa76d00d9e4ef1bff8
+    alias: aspire-deployment
+  - git: https://github.com/microsoft/aspire-skills.git
+    path: skills/aspire-monitoring
+    ref: e529b608336cd41c1b1262aa76d00d9e4ef1bff8
+    alias: aspire-monitoring
+  - git: https://github.com/microsoft/aspire-skills.git
+    path: skills/aspire-terminals
+    ref: e529b608336cd41c1b1262aa76d00d9e4ef1bff8
+    alias: aspire-terminals
+  mcp: []
+includes:
+- .apm/instructions/
+- .apm/skills/
+scripts: {}
+compilation:
+  strategy: single-file
+  output: AGENTS.md
+  resolve_links: false
+  source_attribution: true
+  agents_md:
+    mode: managed_section

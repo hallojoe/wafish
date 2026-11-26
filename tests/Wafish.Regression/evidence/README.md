@@ -1,11 +1,7 @@
 # Verification evidence
 
-These records describe specific source revisions and runs. They are not live CI status.
-Use the [active backlog](../../../PLAN.md) for remaining work.
-
-- [Release candidate](release-candidate/README.md): platform and package verification.
-- [Framework migration archive](archive/framework-migration/README.md): original .NET migration, audit, and pre-fix results.
-
-Other evidence directories retain their original scenario names and links.
-The reusable frontend build check now lives in [scripts/check-frontend-build.py](../../../scripts/check-frontend-build.py).
-Run it from the repository root.
+Historical narratives are consolidated in [ARCHIVE.md](../../../ARCHIVE.md).
+Raw logs, JSON, scripts, and other evidence retain their original paths.
+These artifacts describe specific revisions and runs. They do not establish current CI status.
+Use [PLAN.md](../../../PLAN.md) for remaining work.
+Run [the frontend check](../../../scripts/check-frontend-build.py) from the repository root.

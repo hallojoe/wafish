@@ -69,7 +69,7 @@ Retention operations retain their existing limits and behavior. Repeated reads n
 Consumers requesting zero, negative, or oversized read limits must account for normalization.
 
 The provider-neutral suite accepts an isolated fixture factory and uses repository interfaces only.
-See [contract checks](../../tests/Wafish.Regression/StorageConformanceChecks.cs) and [verification](../../tests/Wafish.Regression/evidence/storage-reliability/README.md).
+See [contract checks](../../tests/Wafish.Regression/StorageConformanceChecks.cs) and [verification](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-storage-reliability-readme-md).
 
 ## Atomic configuration receipts
 

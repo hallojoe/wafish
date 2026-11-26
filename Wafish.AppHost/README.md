@@ -56,7 +56,7 @@ The default topology needs no container runtime. Redis and SonarQube require one
 The resource table links to the gateway console at `/console` and backend details at `/api/local-service/instance`.
 The gRPC endpoint appears only in resource details. It requires an HTTP/2 client and cannot open in a browser.
 Service root paths have no page and return HTTP 404.
-See [browser-link verification](../tests/Wafish.Regression/evidence/aspire-dashboard-links/README.md).
+See [browser-link verification](../ARCHIVE.md#archive-tests-wafish-regression-evidence-aspire-dashboard-links-readme-md).
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../PLAN.md).
 

@@ -93,7 +93,7 @@ Unreadable or invalid existing state rejects login. Failed saves return an error
 
 ## Verification and limits
 
-See [UI evidence](../tests/Wafish.Regression/evidence/ui/README.md) for commands and results.
+See [UI evidence](../ARCHIVE.md#archive-tests-wafish-regression-evidence-ui-readme-md) for commands and results.
 Automated accessibility checks supplement keyboard, focus, responsive, and localization checks.
 They do not replace testing with every assistive technology.
 External AI-provider and notification delivery require deployment-specific credentials and endpoints.

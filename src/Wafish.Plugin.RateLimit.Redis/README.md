@@ -62,4 +62,4 @@ A cancelled or interrupted command can already have consumed a permit.
 The default `keyPrefix` is `wafish:rl`. Changing the prefix starts separate counters.
 See [naming migration](../../docs/naming-migration.md#repository-branding-and-configured-names) before upgrading shared deployments.
 
-Verification: [Redis and discovery recovery](../../tests/Wafish.Regression/evidence/recovery/README.md).
+Verification: [Redis and discovery recovery](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-recovery-readme-md).
