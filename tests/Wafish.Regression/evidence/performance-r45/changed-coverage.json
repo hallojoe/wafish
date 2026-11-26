@@ -1,0 +1,39 @@
+{
+  "base": "adb955c",
+  "covered": 94,
+  "executable": 111,
+  "files": [
+    {
+      "file": "tests/Wafish.Performance/Runner/Program.cs",
+      "covered": 3,
+      "executable": 3,
+      "uncovered": []
+    },
+    {
+      "file": "tests/Wafish.Performance/Shared/BenchmarkBudget.cs",
+      "covered": 91,
+      "executable": 108,
+      "uncovered": [
+        30,
+        31,
+        47,
+        60,
+        67,
+        69,
+        75,
+        76,
+        116,
+        122,
+        123,
+        125,
+        136,
+        137,
+        148,
+        150,
+        159
+      ]
+    }
+  ],
+  "missingFiles": [],
+  "percent": 84.68
+}

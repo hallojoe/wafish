@@ -45,3 +45,6 @@ Record implementation evidence when completing a plan item.
 Preserve explicit loopback addresses, bounded preflight, and configuration hashes.
 Never delete databases outside the current session directory.
 Verify changes with the regression `--benchmarks` group after a Release solution build.
+
+Budget checks use saved managed reports and explicit tolerances. Keep noise, request failures, and regressions distinct.
+Do not automatically replace reviewed baselines or loosen tolerances to make a comparison pass.

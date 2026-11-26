@@ -56,3 +56,6 @@ These local measurements do not establish production capacity.
 `BenchmarkStreamWorkload` defines payload and timing limits for synthetic streams.
 `BenchmarkBodyMeasurement` reads bodies through a pooled buffer and records delivery observations.
 `BenchmarkPluginMatrix` validates explicit combinations and supplies versioned benchmark presets.
+
+`BenchmarkBudget` compares compatible repeated managed runs against explicit metric tolerances.
+See the [budget guide](../Runner/README.md#performance-budgets-r45) for noise rules and exit codes.

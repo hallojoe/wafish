@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "suite": "main",
+  "cases": [
+    {
+      "name": "Benchmarks: performance budgets separate regressions, request failures, noise, and incompatible runs",
+      "group": "benchmarks",
+      "durationMs": 478.0449,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    }
+  ]
+}

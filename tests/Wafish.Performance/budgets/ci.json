@@ -1,0 +1,11 @@
+{
+  "minimumRepetitions": 5,
+  "maximumSpreadPercent": 30,
+  "metrics": [
+    { "metric": "requestsPerSecond", "percent": 20, "absolute": 0 },
+    { "metric": "p95Ms", "percent": 20, "absolute": 1 },
+    { "metric": "p99Ms", "percent": 25, "absolute": 2 },
+    { "metric": "workingSetMb", "percent": 20, "absolute": 16 },
+    { "metric": "droppedPercent", "percent": 0, "absolute": 0 }
+  ]
+}

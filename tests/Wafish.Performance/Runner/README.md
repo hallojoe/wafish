@@ -189,3 +189,46 @@ These presets measure selected combinations under successful traffic. They do no
 Preflight warms cache entries, even with zero warmup. Compare those rows as warm-cache workloads.
 Streaming responses use `no-store`, so their cache bindings do not store response bodies.
 Use the functional first suite for rejection, retry, and circuit recovery scenarios.
+
+## Performance budgets (R45)
+
+Compare two saved managed reports without starting hosts:
+
+```bash
+dotnet run --project tests/Wafish.Performance/Runner -c Release --no-build -- \
+  --compare-baseline=baseline.json --compare-candidate=candidate.json \
+  --budgets=tests/Wafish.Performance/budgets/ci.json \
+  --comparison-output=comparison.json
+```
+
+Both reports must use schema 5 and the baseline or plugin suite.
+Use identical addresses, host configurations, workloads, runtime, hardware, and repetition settings.
+Backend configuration hashes also match, including payload allocation mode.
+Source revision and capture time can differ. External and functional reports are excluded.
+Input files are limited to 16 MiB. Comparisons contain at most 10,000 measurement rows.
+
+The [CI policy](../budgets/ci.json) requires five repetitions and limits full-range spread to 30% of the median.
+Each metric has a percentage allowance and an absolute allowance. The larger allowance applies.
+Throughput decreases consume the budget. Latency, memory, and dropped-arrival increases consume their budgets.
+`droppedPercent` includes queue drops and cancellation before dispatch, expressed as percentage points.
+Additional supported metrics are `firstByteP95Ms` and `scheduledP95Ms`.
+
+A median change within budget passes when both runs satisfy the spread limit.
+An over-budget change becomes a regression only when the complete repetition ranges also exceed the allowance.
+Overlapping ranges or excessive spread produce `noise`. This range check is conservative, not a statistical confidence interval.
+Request failures take precedence. Every metric retains its individual result in JSON.
+
+| Exit code | Result |
+|---|---|
+| 0 | Passed |
+| 1 | Request failure or missing completed responses |
+| 2 | Clear performance regression |
+| 3 | Measurement noise; repeat under controlled conditions |
+| 4 | Invalid policy or incompatible reports |
+
+The manual [performance workflow](../../../.github/workflows/performance.yml) requires an explicit, reviewed baseline commit.
+It builds both revisions, measures them sequentially on one worker, and uploads reports even after failure.
+Any nonzero comparison code fails the job. No unstable result silently passes.
+The baseline must support report schema 5. Baseline updates require a separate review.
+The initial policy provides explicit engineering tolerances; it does not establish production capacity.
+For reliable decisions, repeat measurements on a quiet worker with representative traffic before changing these tolerances.

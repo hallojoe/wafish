@@ -1,0 +1,57 @@
+name: Performance budgets
+on:
+  workflow_dispatch:
+    inputs:
+      baseline:
+        description: 'Reviewed baseline commit with benchmark report schema 5'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: candidate
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.baseline }}
+          path: baseline
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Build both revisions before measurement
+        run: |
+          dotnet build baseline/Wafish.slnx -c Release
+          dotnet build candidate/Wafish.slnx -c Release
+      - name: Measure matching workloads on this worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          for revision in baseline candidate; do
+            dotnet run --project "$revision/tests/Wafish.Performance/Runner" -c Release --no-build -- \
+              --modes=native,full --duration=10 --warmup=3 --concurrency=16 --repetitions=5 \
+              --results-directory="$GITHUB_WORKSPACE/results/$revision"
+          done
+      - name: Enforce explicit budgets
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet run --project candidate/tests/Wafish.Performance/Runner -c Release --no-build -- \
+            --compare-baseline "$GITHUB_WORKSPACE"/results/baseline/*.json \
+            --compare-candidate "$GITHUB_WORKSPACE"/results/candidate/*.json \
+            --budgets=candidate/tests/Wafish.Performance/budgets/ci.json \
+            --comparison-output="$GITHUB_WORKSPACE/results/comparison.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-budget-results
+          path: results
+          retention-days: 30
+          if-no-files-found: error

@@ -5,6 +5,7 @@ internal static partial class BenchmarkReliabilityChecks
 {
     public static async Task RunAsync(Func<string, Func<Task>, Task> run)
     {
+        await run("Benchmarks: performance budgets separate regressions, request failures, noise, and incompatible runs", PerformanceBudgetsAsync);
         await run("Benchmarks: fixed-memory histograms bound percentile error without losing samples", HistogramAsync);
         await run("Benchmarks: explicit addresses reject non-loopback and ambiguous origins", OptionsAsync);
         await run("Benchmarks: normalized manifests hash composition and redact nested secrets", ManifestAsync);

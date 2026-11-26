@@ -6,6 +6,12 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
+if (args.Any(arg => arg.StartsWith("--compare-", StringComparison.Ordinal) || arg.StartsWith("--budgets", StringComparison.Ordinal)))
+{
+    Environment.ExitCode = await BenchmarkBudget.RunAsync(args);
+    return;
+}
+
 var root = FindRepositoryRoot();
 using var session = await BenchmarkSession.CreateAsync(args, root);
 var resultsDirectory = session.ResultsDirectory;
