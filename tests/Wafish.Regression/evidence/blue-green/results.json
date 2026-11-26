@@ -1,0 +1,26 @@
+{
+  "result": "passed",
+  "checks": [
+    {
+      "stage": "blue",
+      "routeId": "blue-green",
+      "persistedVersion": 2
+    },
+    {
+      "stage": "unhealthy-green-rejected"
+    },
+    {
+      "stage": "green",
+      "routeId": "blue-green",
+      "persistedVersion": 3
+    },
+    {
+      "stage": "stale-update-rejected"
+    },
+    {
+      "stage": "blue",
+      "routeId": "blue-green",
+      "persistedVersion": 4
+    }
+  ]
+}

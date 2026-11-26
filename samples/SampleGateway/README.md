@@ -58,3 +58,8 @@ Orchestrated hosts never open a browser automatically.
 ## Minimal composition
 
 Use [MinimalGateway](../MinimalGateway/README.md) for runtime and SQLite without administration, AI, registration, or Aspire.
+
+## Blue-green deployment
+
+Run the [blue-green walkthrough](blue-green.md) for a health-checked cutover and rollback using existing configuration APIs.
+The isolated check preserves the route identity and rejects unhealthy targets and stale updates.
