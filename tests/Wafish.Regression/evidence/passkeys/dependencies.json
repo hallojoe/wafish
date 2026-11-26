@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "parameters": "--vulnerable --include-transitive",
+  "sources": [
+    "https://data.nuget.org/v3/index.json"
+  ],
+  "projects": [
+    {
+      "path": "/home/casko/code/wafish/src/Wafish.Administration/Wafish.Administration.csproj",
+      "frameworks": [
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        }
+      ]
+    }
+  ]
+}

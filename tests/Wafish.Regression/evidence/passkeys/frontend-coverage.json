@@ -1,0 +1,39 @@
+{
+  "base": "d6c5eb3",
+  "files": [
+    {
+      "file": "src/Wafish.ReactUi/ClientApp/src/api/client.ts",
+      "covered": 0,
+      "executable": 0,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.ReactUi/ClientApp/src/api/passkeys.ts",
+      "covered": 15,
+      "executable": 15,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.ReactUi/ClientApp/src/components/auth.tsx",
+      "covered": 15,
+      "executable": 15,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.ReactUi/ClientApp/src/components/passkeys.tsx",
+      "covered": 23,
+      "executable": 23,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.ReactUi/ClientApp/src/pages/settings.tsx",
+      "covered": 0,
+      "executable": 0,
+      "uncovered": []
+    }
+  ],
+  "covered": 53,
+  "executable": 53,
+  "missingFiles": [],
+  "percent": 100.0
+}

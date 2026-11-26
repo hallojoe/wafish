@@ -336,3 +336,12 @@ Realtime connections require Read and recheck permissions each second.
 Credential-management checks protect two-factor settings, AI credentials, webhook secrets, and database downloads.
 Audit denials include the actor and operation. Permission rules do not isolate routes, tenants, or AI conversations.
 Plugin code and direct in-process callers remain trusted. See [configuration](../src/Wafish.Administration/README.md#operation-permissions).
+
+## Optional passkey login
+
+JWT administration can enable [WebAuthn passkeys](../src/Wafish.Administration/README.md#optional-passkeys-r46).
+The configured origin and relying-party host are explicit trust boundaries.
+Enroll only through an authenticated session with credential-management permission.
+Protect the credential state file against replacement. It determines which public keys can authenticate the account.
+Passkey user verification replaces password and TOTP entry for that login method.
+Keep the configured password recovery path and its TOTP secret available.

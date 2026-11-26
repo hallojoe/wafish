@@ -86,3 +86,7 @@ Profiles have no HTTP fault-control endpoints and require no external backend.
 Browser checks use additional HTTPS hosts on ports 5228–5233 for these six profiles.
 Port 0 requests an isolated operating-system port for C# fixture tests.
 See [infrastructure evidence](../Wafish.Regression/evidence/regression-infrastructure/README.md).
+
+The opt-in `passkeys` fixture profile enables WebAuthn for `https://localhost:<fixture-port>`.
+Its credential file remains inside the owned temporary directory.
+Browser tests use a virtual authenticator to verify enrollment, login, revocation, and password recovery.

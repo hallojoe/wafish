@@ -16,6 +16,7 @@ import {
   Inspect,
   StateBadge,
 } from "@/components/workspace";
+import { PasskeyPanel } from "@/components/passkeys";
 import { SettingsPanel, ObjectEditor } from "@/components/json-form";
 function ReadPanel({ title, path }: { title: string; path: string }) {
   const query = useApi(path);
@@ -243,6 +244,7 @@ export function AccountPage() {
             </dl>
           </QueryState>
         </Panel>
+        {jwt && config.passkeys && <PasskeyPanel />}
         {jwt && (
           <Panel title="Two-factor authentication">
             <QueryState query={factor}>

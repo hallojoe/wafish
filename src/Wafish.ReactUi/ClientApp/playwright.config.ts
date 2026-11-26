@@ -38,6 +38,7 @@ export default defineConfig({
     "DefaultJwt",
     "DefaultJwt",
     "DefaultJwt",
+    "DefaultJwt",
   ].map((mode, index) => ({
     command: `dotnet run --project tests/Wafish.ReactUi.Host -c Release --no-launch-profile${index || process.env.UI_TEST_NO_BUILD === "true" ? " --no-build" : ""}`,
     cwd: "../../..",
@@ -59,6 +60,7 @@ export default defineConfig({
           "version-conflict",
           "delayed-failure",
           "activation-failure",
+          "passkeys",
         ][index - 9] ?? "baseline",
       UI_TEST_PORT: String(5219 + index),
       UI_TEST_PATH_BASE: index >= 3 ? "/edge" : "",

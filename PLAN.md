@@ -19,16 +19,15 @@ R56 records a release discrepancy found during cleanup; it does not authorize pu
 | Order | ID | Remaining task | Value / 10 | Need / 10 |
 |---|---|---|---|---|
 | 1 | R56 | [Reconcile the release version and package publication](#r56) | 9 | 9 |
-| 2 | R46 | [Add WebAuthn authentication](#r46) | 8 | 5 |
-| 3 | R37 | [Partition quotas by trusted tenant](#r37) | 8 | 4 |
-| 4 | R39 | [Assign weighted request costs](#r39) | 6 | 4 |
-| 5 | R49 | [Add optional network fault injection](#r49) | 6 | 4 |
-| 6 | R51 | [Demonstrate service discovery](#r51) | 6 | 4 |
-| 7 | R55 | [Save operator views](#r55) | 5 | 3 |
-| 8 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
-| 9 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
-| 10 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
-| 11 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
+| 2 | R37 | [Partition quotas by trusted tenant](#r37) | 8 | 4 |
+| 3 | R39 | [Assign weighted request costs](#r39) | 6 | 4 |
+| 4 | R49 | [Add optional network fault injection](#r49) | 6 | 4 |
+| 5 | R51 | [Demonstrate service discovery](#r51) | 6 | 4 |
+| 6 | R55 | [Save operator views](#r55) | 5 | 3 |
+| 7 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
+| 8 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
+| 9 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
+| 10 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
 
 ## Completion rule
 
@@ -305,7 +304,7 @@ Verification: [R48 evidence](tests/Wafish.Regression/evidence/performance-r48/RE
 
 ### R46: Add WebAuthn authentication
 
-Status: TODO. Value: 8/10. Need: 5/10.
+Status: COMPLETE. Value: 8/10. Need: 5/10.
 
 Add passkeys when stronger operator login requirements justify the work.
 
@@ -314,6 +313,8 @@ Source: [Wafish.Administration FEAT-01](docs/archive/2026-11-planning/src/Wafish
 Support registered authenticators as an additional administration login method.
 
 Acceptance: Enrollment, challenge expiry, revocation, and recovery have integration tests.
+
+Verification: [R46 evidence](tests/Wafish.Regression/evidence/passkeys/README.md).
 
 <a id="r37"></a>
 

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "suite": "main",
+  "cases": [
+    {
+      "name": "Administration: API contracts remain unchanged after removing Razor pages",
+      "group": "dashboard",
+      "durationMs": 362.5382,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    }
+  ]
+}

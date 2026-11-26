@@ -36,7 +36,7 @@ internal sealed class UiTestFixtureOptions
         if (string.IsNullOrWhiteSpace(Password)) throw new InvalidOperationException("UI_TEST_PASSWORD is required for this test-only host.");
         if (Port is < 0 or > 65535) throw new ArgumentOutOfRangeException(nameof(Port));
         if (AuthMode is not ("DefaultJwt" or "BasicAuth" or "ApiKey")) throw new ArgumentException("Unknown UI_TEST_AUTH.");
-        if (Profile is not ("baseline" or "large" or "plugins" or "storage-failure" or "version-conflict" or "delayed-failure" or "activation-failure")) throw new ArgumentException("Unknown UI_TEST_PROFILE.");
+        if (Profile is not ("baseline" or "large" or "plugins" or "storage-failure" or "version-conflict" or "delayed-failure" or "activation-failure" or "passkeys")) throw new ArgumentException("Unknown UI_TEST_PROFILE.");
         if (!string.IsNullOrEmpty(PathBase) && (!PathBase.StartsWith('/') || PathBase.EndsWith('/'))) throw new ArgumentException("UI_TEST_PATH_BASE requires a leading slash and no trailing slash.");
         if (string.IsNullOrWhiteSpace(ApiPrefix) || string.IsNullOrWhiteSpace(UiPrefix)) throw new ArgumentException("Fixture prefixes cannot be empty.");
     }

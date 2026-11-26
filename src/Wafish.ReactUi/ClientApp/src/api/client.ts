@@ -3,6 +3,7 @@ export interface AppConfig {
   uiBase: string;
   apiBase: string;
   authMode: string;
+  passkeys?: boolean;
   apiKeyHeader: string;
   locale: string;
   ai: boolean;

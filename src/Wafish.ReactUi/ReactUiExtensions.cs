@@ -89,6 +89,7 @@ public static class ReactUiExtensions
             {
                 uiBase = context.Request.PathBase.Add(new PathString(uiBase)).ToUriComponent(),
                 apiBase = context.Request.PathBase.Add(new PathString(apiBase)).ToUriComponent(), authMode = dashboard.Auth.AuthMode.ToString(),
+                passkeys = dashboard.Auth.Passkeys.Enabled,
                 apiKeyHeader = dashboard.Auth.ApiKeyHeaderName, locale = "en-US",
                 ai = features.Ai, mcp = features.Mcp, build = ReactUiBuildInfo.Current
             });

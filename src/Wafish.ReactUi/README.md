@@ -96,3 +96,13 @@ The configured UI prefix and PathBase also apply to this endpoint. Control-plane
 The shell includes the same metadata in `app-config.build`. Responses use `Cache-Control: no-store`.
 The hash covers ordered embedded resource names, lengths, and bytes, excluding timestamps and machine paths.
 Identical assets produce identical hashes. Keep UI and administration packages on matching releases.
+
+## Passkeys
+
+Configured JWT hosts expose passkey registration and revocation on Account, plus a passkey sign-in button.
+Password recovery remains available. Revocation signs out all sessions.
+The browser uses native WebAuthn JSON conversion methods and requires a secure context.
+Older browsers without these methods retain password sign-in.
+See [configuration and limits](../Wafish.Administration/README.md#optional-passkeys-r46),
+[browser conversion](https://developer.mozilla.org/en-US/docs/Web/API/PublicKeyCredential/parseCreationOptionsFromJSON_static),
+and [credential serialization](https://developer.mozilla.org/en-US/docs/Web/API/PublicKeyCredential/toJSON).

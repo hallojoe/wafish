@@ -1,0 +1,89 @@
+{
+  "base": "d6c5eb3",
+  "covered": 179,
+  "executable": 191,
+  "files": [
+    {
+      "file": "src/Wafish.Administration/AdministrationServiceCollectionExtensions.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Administration/Infrastructure/Auth/AdministrationSecurityValidator.cs",
+      "covered": 2,
+      "executable": 2,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Administration/Infrastructure/Auth/DashboardAuthFilter.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Administration/Infrastructure/Auth/DashboardPasskeyService.cs",
+      "covered": 118,
+      "executable": 126,
+      "uncovered": [
+        37,
+        38,
+        39,
+        46,
+        116,
+        123,
+        124,
+        138
+      ]
+    },
+    {
+      "file": "src/Wafish.Administration/Infrastructure/Auth/DashboardSessionStore.cs",
+      "covered": 5,
+      "executable": 5,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Administration/Infrastructure/DashboardAuthOptions.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Administration/Infrastructure/DashboardPasskeyOptions.cs",
+      "covered": 3,
+      "executable": 3,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Administration/Modules/Dashboard/Controllers/DashboardPasskeysController.cs",
+      "covered": 42,
+      "executable": 46,
+      "uncovered": [
+        63,
+        64,
+        66,
+        74
+      ]
+    },
+    {
+      "file": "src/Wafish.ReactUi/ReactUiExtensions.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "tests/Wafish.ReactUi.Host/UiTestFixture.cs",
+      "covered": 4,
+      "executable": 4,
+      "uncovered": []
+    },
+    {
+      "file": "tests/Wafish.ReactUi.Host/UiTestFixtureOptions.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    }
+  ],
+  "missingFiles": [],
+  "percent": 93.72
+}

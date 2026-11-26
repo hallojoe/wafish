@@ -140,3 +140,67 @@ See [change-set contracts](../../docs/configuration-policy-contracts.md) for API
 
 Binding previews validate proposed replacements against all stored bindings under the publication gate.
 Named quota conflicts return HTTP 400 with `ValidationRejected`; previews and failed saves leave stored and active settings unchanged.
+
+## Optional passkeys (R46)
+
+JWT administration can use registered WebAuthn authenticators as an additional sign-in method.
+Passkeys are disabled by default. API-key, Basic, anonymous, and custom-delegate authentication do not enable them.
+
+```json
+{
+  "Gateway": {
+    "Dashboard": {
+      "Auth": {
+        "AuthMode": "DefaultJwt",
+        "Passkeys": {
+          "Enabled": true,
+          "RelyingPartyId": "gateway.example.com",
+          "Origin": "https://gateway.example.com",
+          "StatePath": "/protected/wafish/passkeys.json"
+        }
+      }
+    }
+  }
+}
+```
+
+Supply the existing JWT password and signing secret through protected host configuration.
+The origin includes its non-default port, if any. Its hostname must equal the relying-party ID.
+HTTPS is required, except HTTP localhost for development. Configuration changes require a restart.
+A changed origin, relying party, or account cannot reuse the old credential file.
+
+Sign in with the existing password, then open Account and register a named authenticator.
+Enrollment and revocation require `CredentialManagement` and an active JWT session.
+Enrollment challenges are bound to that session. Authenticator user verification is required for enrollment and login.
+Passkey login can replace password and TOTP entry. Password login retains its configured TOTP requirement for recovery.
+Revoking any passkey invalidates all sessions and pending ceremonies. Password recovery can register a replacement.
+
+Credential state contains public keys, names, and signature counters. Private keys remain with authenticators.
+Use a protected persistent directory owned by one gateway process. Do not share the file between hosts.
+Writes replace the file atomically. New Unix files allow only owner read/write access.
+Protect the directory against replacement or modification by other users. On Windows, configure an equivalent filesystem ACL.
+Corrupt, oversized, or reassigned state rejects startup rather than silently discarding credentials.
+Back up this file with the host's protected configuration.
+
+Challenges expire after two minutes and are consumed once, including failed completions.
+The service permits at most 128 pending challenges and eight credentials.
+Login attempts use the existing authentication throttles. Restart discards pending challenges and sessions.
+The server verifies challenge, origin, relying party, user verification, signature, and signature counter through
+[FIDO2 .NET 4.3.3](https://github.com/passwordless-lib/fido2-net-lib/releases/tag/4.3.3).
+No attestation-provider trust policy is imposed. This is optional account authentication, not device inventory or attested hardware enforcement.
+
+Endpoints use the configured administration prefix:
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `api/passkeys` | List credential names and IDs |
+| GET | `api/passkeys/credential?id=...` | Read one public descriptor |
+| POST | `api/passkeys/registration/options` | Start session-bound enrollment |
+| POST | `api/passkeys/registration` | Verify enrollment; returns 201 and Location |
+| POST | `api/passkeys/login/options` | Start public login |
+| POST | `api/passkeys/login` | Verify assertion and issue the existing session cookie |
+| POST | `api/passkeys/revoke` | Revoke a credential and invalidate sessions |
+
+Only the two login endpoints bypass session authorization. The control-plane network policy still applies.
+Disabled passkey actions return 404 after their applicable authorization checks.
+Verification failures return 400, unavailable operations return 409, and throttling returns 429 with retry information.

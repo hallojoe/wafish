@@ -10,7 +10,7 @@ namespace Wafish.Dashboard.Infrastructure.Auth;
 /// <summary>
 /// Async auth filter for Dashboard controllers.
 /// Applies to administration and built-in plugin controllers.
-/// Skips login/logout actions. Returns HTTP 401 for unauthorized API calls.
+/// Skips password and passkey login entry points and logout. Returns HTTP 401 for unauthorized API calls.
 /// Uses IDashboardAuthorizationService for unified authorization check.
 /// </summary>
 internal sealed class DashboardAuthFilter : IAsyncAuthorizationFilter
@@ -49,6 +49,8 @@ internal sealed class DashboardAuthFilter : IAsyncAuthorizationFilter
         {
             return;
         }
+
+        if (ci == typeof(Modules.Dashboard.Controllers.DashboardPasskeysController) && actionName is "LoginOptions" or "Login") return;
 
         // Use authorization service for unified check
         if (await _authService.IsAuthorizedAsync(context.HttpContext))

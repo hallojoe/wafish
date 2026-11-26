@@ -32,6 +32,16 @@ public sealed class DashboardSessionStore(TimeProvider? clock = null) : IDisposa
         }
     }
 
+    internal bool TryCommit(string token, long generation, Action commit)
+    {
+        lock (_gate)
+        {
+            if (_disposed || generation != _generation || !_sessions.TryGetValue(Key(token), out var session) || session.Lifetime.IsCancellationRequested) return false;
+            commit();
+            return true;
+        }
+    }
+
     internal bool IsActive(string token)
     {
         lock (_gate) return !_disposed && _sessions.TryGetValue(Key(token), out var session) && !session.Lifetime.IsCancellationRequested;
