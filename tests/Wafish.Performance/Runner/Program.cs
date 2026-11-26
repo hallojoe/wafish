@@ -25,7 +25,7 @@ if (durationSeconds <= 0 || warmupSeconds < 0 || concurrency is <= 0 or > 4096 |
 if (durationSeconds > 3600 || warmupSeconds > 3600 || soakSeconds > 3600) throw new ArgumentException("Each phase is limited to one hour.");
 if (suite == "first" && session.Streaming is not null) throw new ArgumentException("Streaming workloads require the baseline suite.");
 if (suite == "first" && session.ArrivalRate != 0) throw new ArgumentException("Scheduled arrivals require the baseline suite or external mode.");
-if (suite is not ("baseline" or "first")) throw new ArgumentException("Unknown benchmark suite.");
+if (suite is not ("baseline" or "first" or "plugins")) throw new ArgumentException("Unknown benchmark suite.");
 
 var externalUrl = ReadStringArgument(args, "--external-url", "");
 if (!string.IsNullOrWhiteSpace(externalUrl))
@@ -41,7 +41,7 @@ if (!string.IsNullOrWhiteSpace(externalUrl))
     }
 
     var scenario = Scenario.Get("external", ReadStringArgument(args, "--path", "/api/local-service/instance"));
-    await BenchmarkPreflight.VerifyAsync(endpoint, scenario.Method, scenario.Path, scenario.Body, knownWorkload: false, transport: session.Transport);
+    await BenchmarkPreflight.VerifyAsync(endpoint, scenario.Method, scenario.Path, scenario.Body, knownWorkload: false, transport: session.Transport, acceptGzip: session.AcceptGzip);
     Console.WriteLine($"External endpoint: {endpoint}. The runner does not manage processes or databases.");
     if (warmupSeconds > 0)
     {
@@ -94,6 +94,11 @@ try
         new GatewayCase("Wafish WAF", session.Enhanced.Port, "EnhancedYarp", ["--mode=waf"])
     };
 
+    if (suite == "plugins")
+        gateways = new[] { new GatewayCase("Native YARP", session.Native.Port, "NativeYarp", []) }
+            .Concat(session.PluginSets.Select(set => new GatewayCase("Plugins: " + set.Name, session.Enhanced.Port,
+                "EnhancedYarp", ["--mode=plugins", "--plugins=" + set.Name]))).ToArray();
+
     if (session.Modes is { } selected && selected.Any(mode => !gateways.Any(gateway => (gateway.Arguments.FirstOrDefault() ?? "--mode=native")[7..] == mode)))
         throw new ArgumentException("--modes contains an unknown baseline mode.");
     foreach (var gateway in gateways.Where(gateway => session.Modes is null || session.Modes.Contains((gateway.Arguments.FirstOrDefault() ?? "--mode=native")[7..])))
@@ -104,7 +109,7 @@ try
         await WaitForHealthyAsync(new Uri(BenchmarkSession.Current.AddressForPort(gateway.Port), "/health").ToString(), process);
         await session.CaptureHostAsync(gateway.Name, session.AddressForPort(gateway.Port));
 
-        var scenarios = session.Streaming is { } streamWorkload ? new[] { Scenario.Get(streamWorkload.Kind, streamWorkload.Path) } : gateway.Name == "Wafish WAF"
+        var scenarios = session.Streaming is { } streamWorkload ? new[] { Scenario.Get(streamWorkload.Kind, streamWorkload.Path) } : suite == "plugins" ? new[] { Scenario.Get("cacheable-json", "/api/perf/cacheable-json") } : gateway.Name == "Wafish WAF"
             ? new[] { Scenario.Get("plain", "/api/perf/plain"), Scenario.Get("json-small", "/api/perf/json-small") }
             : new[]
             {
@@ -115,7 +120,7 @@ try
 
         foreach (var scenario in scenarios)
         {
-            await BenchmarkPreflight.VerifyAsync(session.AddressForPort(gateway.Port), scenario.Method, scenario.Path, scenario.Body, transport: BenchmarkSession.Current.Transport);
+            await BenchmarkPreflight.VerifyAsync(session.AddressForPort(gateway.Port), scenario.Method, scenario.Path, scenario.Body, transport: BenchmarkSession.Current.Transport, acceptGzip: BenchmarkSession.Current.AcceptGzip);
             Console.WriteLine($"[{gateway.Name}] {scenario.Name}: warmup {warmupSeconds}s, test {durationSeconds}s x {repetitions}, concurrency {concurrency}");
             await RunLoadAsync(gateway.Port, scenario, concurrency, TimeSpan.FromSeconds(warmupSeconds), null);
             for (var repetition = 1; repetition <= repetitions; repetition++)
@@ -189,6 +194,7 @@ static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int
         {
             using var request = new HttpRequestMessage(scenario.Method, scenario.Path);
             session.Transport.ConfigureRequest(request);
+            if (session.AcceptGzip) request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
             if (scenario.Body != null) request.Content = new StringContent(scenario.Body, Encoding.UTF8, "application/json");
             using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             deadline.CancelAfter(TimeSpan.FromSeconds(10));
@@ -309,7 +315,7 @@ static async Task RunExtendedCaseAsync(string group, string mode, Scenario scena
     processes.Add(process);
     await WaitForHealthyAsync(new Uri(BenchmarkSession.Current.Enhanced, "/health").ToString(), process);
     await BenchmarkSession.Current.CaptureHostAsync("EnhancedYarp", BenchmarkSession.Current.Enhanced);
-    await BenchmarkPreflight.VerifyAsync(BenchmarkSession.Current.Enhanced, scenario.Method, scenario.Path, scenario.Body, transport: BenchmarkSession.Current.Transport);
+    await BenchmarkPreflight.VerifyAsync(BenchmarkSession.Current.Enhanced, scenario.Method, scenario.Path, scenario.Body, transport: BenchmarkSession.Current.Transport, acceptGzip: BenchmarkSession.Current.AcceptGzip);
     await RunLoadAsync(BenchmarkSession.Current.Enhanced.Port, scenario, concurrency, TimeSpan.FromSeconds(warmupSeconds), null);
     await ResetBackendAsync();
     var result = await RunLoadAsync(BenchmarkSession.Current.Enhanced.Port, scenario, concurrency, TimeSpan.FromSeconds(durationSeconds), process, allowPolicyRejections: allowNonSuccess);
@@ -328,7 +334,7 @@ static async Task RunFunctionalCaseAsync(string group, string mode, string path,
     processes.Add(process);
     await WaitForHealthyAsync(new Uri(BenchmarkSession.Current.Enhanced, "/health").ToString(), process);
     await BenchmarkSession.Current.CaptureHostAsync("EnhancedYarp", BenchmarkSession.Current.Enhanced);
-    await BenchmarkPreflight.VerifyAsync(BenchmarkSession.Current.Enhanced, HttpMethod.Get, "/api/perf/plain", transport: BenchmarkSession.Current.Transport);
+    await BenchmarkPreflight.VerifyAsync(BenchmarkSession.Current.Enhanced, HttpMethod.Get, "/api/perf/plain", transport: BenchmarkSession.Current.Transport, acceptGzip: BenchmarkSession.Current.AcceptGzip);
     await ResetBackendAsync();
     using var client = BenchmarkSession.Current.Transport.CreateClient();
     var started = Stopwatch.GetTimestamp();
@@ -350,7 +356,7 @@ static async Task RunCircuitCaseAsync(List<ExtendedResult> records, List<Process
     processes.Add(process);
     await WaitForHealthyAsync(new Uri(BenchmarkSession.Current.Enhanced, "/health").ToString(), process);
     await BenchmarkSession.Current.CaptureHostAsync("EnhancedYarp", BenchmarkSession.Current.Enhanced);
-    await BenchmarkPreflight.VerifyAsync(BenchmarkSession.Current.Enhanced, HttpMethod.Get, "/api/perf/plain", transport: BenchmarkSession.Current.Transport);
+    await BenchmarkPreflight.VerifyAsync(BenchmarkSession.Current.Enhanced, HttpMethod.Get, "/api/perf/plain", transport: BenchmarkSession.Current.Transport, acceptGzip: BenchmarkSession.Current.AcceptGzip);
     await ResetBackendAsync();
     using var client = BenchmarkSession.Current.Transport.CreateClient();
     var statuses = new List<int>();
@@ -531,6 +537,8 @@ static string BuildMarkdown(List<BenchmarkResult> summary, int duration, int war
     sb.AppendLine($"- Transport: {BenchmarkSession.Current.Transport.Description}; upstream: {(BenchmarkSession.Current.External ? "unverified" : "matched") }.");
     sb.AppendLine($"- Runtime: {Environment.Version}");
     sb.AppendLine($"- Concurrency: {concurrency}");
+    if (BenchmarkSession.Current.PluginSets.Length > 0)
+        sb.AppendLine("- Plugin sets: " + string.Join("; ", BenchmarkSession.Current.PluginSets.Select(set => set.Name)) + "; common Accept-Encoding: gzip. Effective settings and order are in JSON host manifests.");
     sb.AppendLine($"- Arrivals: {(BenchmarkSession.Current.ArrivalRate == 0 ? "closed-loop" : "scheduled")}; target: {BenchmarkSession.Current.ArrivalRate}/s; queue: {BenchmarkSession.Current.ArrivalQueueCapacity}.");
     sb.AppendLine("- Service latency starts at dispatch. Scheduled latency starts at the intended arrival. Queue delay includes scheduler lag.");
     sb.AppendLine("- Latency: fixed-memory histogram; upper-bound percentiles, ≤1% relative error above 1 μs.");

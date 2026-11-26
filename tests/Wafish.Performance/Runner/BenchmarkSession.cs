@@ -12,6 +12,8 @@ internal sealed class BenchmarkSession : IDisposable
     private string? _directory;
     private object _environment = null!;
     private readonly string _root;
+    public BenchmarkPluginSelection[] PluginSets { get; }
+    public bool AcceptGzip => PluginSets.Length > 0;
     public BenchmarkStreamWorkload? Streaming { get; }
     public int ArrivalRate { get; }
     public int ArrivalQueueCapacity { get; }
@@ -46,6 +48,11 @@ internal sealed class BenchmarkSession : IDisposable
         Enhanced = Transport.Address(BenchmarkOptions.Read(args, "--enhanced-url", $"{Transport.Scheme}://127.0.0.1:5302"), "--enhanced-url");
         if (new[] { Backend.Port, Native.Port, Enhanced.Port }.Distinct().Count() != 3 || Backend.Port == 0 || Native.Port == 0 || Enhanced.Port == 0)
             throw new ArgumentException("Managed listener ports must be distinct and nonzero.");
+        var suite = BenchmarkOptions.Read(args, "--suite", "baseline");
+        var matrix = BenchmarkOptions.Read(args, "--plugin-sets", suite == "plugins" ? BenchmarkPluginMatrix.DefaultSets : "");
+        if (suite != "plugins" && matrix.Length > 0) throw new ArgumentException("--plugin-sets requires --suite=plugins.");
+        if (suite == "plugins" && External) throw new ArgumentException("Plugin combinations require managed hosts.");
+        PluginSets = suite == "plugins" ? BenchmarkPluginMatrix.Parse(matrix) : [];
         var workload = BenchmarkOptions.Read(args, "--workload", "baseline");
         if (workload != "baseline")
         {
@@ -64,6 +71,7 @@ internal sealed class BenchmarkSession : IDisposable
         ResultsDirectory = Path.GetFullPath(BenchmarkOptions.Read(args, "--results-directory", Path.Combine(root, "tests", "Wafish.Performance", "results")));
         var modes = BenchmarkOptions.Read(args, "--modes", "");
         Modes = string.IsNullOrWhiteSpace(modes) ? null : modes.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        if (PluginSets.Length > 0 && Modes is not null) throw new ArgumentException("Use --plugin-sets instead of --modes for plugin comparisons.");
         if (Transport.Tls && external.Length == 0)
         {
             var path = Path.Combine(DataDirectory, "loopback.pfx");
@@ -127,7 +135,8 @@ internal sealed class BenchmarkSession : IDisposable
     {
         await File.WriteAllTextAsync(path, JsonSerializer.Serialize(new
         {
-            schemaVersion = 4, environment = _environment, settings, streaming = Streaming,
+            schemaVersion = 5, environment = _environment, settings, streaming = Streaming,
+            pluginSets = PluginSets, acceptEncoding = AcceptGzip ? "gzip" : "identity",
             arrivals = new { mode = ArrivalRate == 0 ? "closed-loop" : "scheduled", ratePerSecond = ArrivalRate, queueCapacity = ArrivalQueueCapacity, drainDeadlineSeconds = 12 },
             transport = new { mode = Transport.Mode, client = Transport.Description, upstream = External ? "unverified external upstream" : Transport.Description, certificate = !Transport.Tls ? "none" : Transport.CertificatePath is null ? "system trust" : "temporary pinned loopback certificate" },
             latency = new { strategy = "fixed logarithmic histogram; upper-bound nearest rank", relativeError = BoundedLatencyHistogram.RelativeError,

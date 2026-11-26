@@ -90,3 +90,8 @@ Total encoded output cannot exceed four MiB. Total scheduled delay cannot exceed
 Invalid settings return HTTP 400. Requests carry no complete content length and use `Cache-Control: no-store`.
 Disconnecting the client cancels writes and delays. Existing backend counters record cancellation.
 Payloads contain synthetic `x` bytes only.
+
+## Cacheable comparison payload
+
+`/api/perf/cacheable-json` returns the small JSON payload with `Cache-Control: public, max-age=60`.
+The plugin combination suite uses it to measure actual warm-cache behavior. Other payloads retain their existing headers.

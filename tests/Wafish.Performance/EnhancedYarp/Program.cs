@@ -27,13 +27,15 @@ Directory.CreateDirectory(dataRoot);
 builder.WebHost.ConfigureBenchmarkListener(listener, transport);
 
 var mode = BenchmarkOptions.Read(args, "--mode", "full");
-if (mode is not ("core" or "storage" or "services" or "host-native" or "minimal" or "full" or "waf" or "waf-attack"
+if (mode is not ("core" or "storage" or "services" or "host-native" or "minimal" or "full" or "waf" or "waf-attack" or "plugins"
     or "retry" or "circuit" or "rate-fixed" or "rate-sliding" or "rate-token" or "rate-concurrency"
     or "log-meta" or "log-request" or "log-response" or "log-bodies" or "log-sqlite"))
 {
     throw new ArgumentException("Unknown benchmark mode.");
 }
 
+var pluginSelection = mode == "plugins" ? BenchmarkPluginMatrix.ParseSet(BenchmarkOptions.Read(args, "--plugins", "none")) : null;
+if (mode != "plugins" && BenchmarkOptions.Read(args, "--plugins", "").Length > 0) throw new ArgumentException("--plugins requires --mode=plugins.");
 var retryEnabled = mode.StartsWith("retry", StringComparison.OrdinalIgnoreCase);
 var circuitEnabled = mode.StartsWith("circuit", StringComparison.OrdinalIgnoreCase);
 
@@ -124,10 +126,10 @@ app.MapGet("/benchmark/manifest", () =>
     var bindings = snapshot?.RoutePlugins.Values.SelectMany(value => value).Concat(snapshot.ClusterPlugins.Values.SelectMany(value => value))
         .OrderBy(binding => binding.Scope).ThenBy(binding => binding.ScopeId).ThenBy(binding => binding.Order).ThenBy(binding => binding.PluginId)
         .Select(binding => new { binding.PluginId, version = manager?.GetManifest(binding.PluginId)?.Version,
-            binding.Scope, binding.ScopeId, binding.SchemaVersion, binding.Order, configuration = JsonSerializer.Deserialize<JsonElement>(binding.ConfigJson) }).ToArray();
+            binding.Scope, binding.ScopeId, binding.SchemaVersion, binding.Order, manifestOrder = manager?.GetManifest(binding.PluginId)?.Order, configuration = JsonSerializer.Deserialize<JsonElement>(binding.ConfigJson) }).ToArray();
     var configuration = BenchmarkManifest.Create(new
     {
-        mode, effectivePolicies, proxyVersion = typeof(IProxyConfigProvider).Assembly.GetName().Version?.ToString(),
+        mode, pluginSelection, presetVersion = 1, effectivePolicies, proxyVersion = typeof(IProxyConfigProvider).Assembly.GetName().Version?.ToString(),
         listener = listener.ToString(), routes = proxy.Routes.Select(route => new { route.RouteId, route.ClusterId, route.Match, route.Order, route.Transforms }),
         clusters = proxy.Clusters.Select(cluster => new { cluster.ClusterId, cluster.Destinations, cluster.LoadBalancingPolicy, cluster.HttpClient, cluster.HttpRequest, cluster.SessionAffinity, cluster.HealthCheck }), bindings,
         clientTransport = transport.Description, upstreamTransport = transport.Description
@@ -161,7 +163,8 @@ if (!coreOnly && !storageOnly && !servicesOnly && !nativeHost && mode != "minima
         {
             Id = $"route:{route.RouteUid}:{pluginId}", PluginId = pluginId,
             PluginVersion = manifest.Version, Scope = PluginBindingScope.Route,
-            ScopeId = "perf", RouteUid = route.RouteUid, ConfigJson = json, SchemaVersion = schema.Version
+            ScopeId = "perf", RouteUid = route.RouteUid, ConfigJson = json, SchemaVersion = schema.Version,
+            Order = mode == "plugins" ? manifest.Order : 0
         });
         var active = app.Services.GetRequiredService<IGatewaySnapshotPublisher>().Current;
         if (!active.RoutePlugins.TryGetValue("perf", out var plugins) || !plugins.Any(p => p.PluginId == pluginId))
@@ -169,6 +172,9 @@ if (!coreOnly && !storageOnly && !servicesOnly && !nativeHost && mode != "minima
             throw new InvalidOperationException($"Benchmark binding {pluginId} did not activate.");
         }
     }
+    if (pluginSelection is not null)
+        foreach (var plugin in pluginSelection.Plugins)
+            await BindRouteAsync(plugin, JsonSerializer.Deserialize<JsonElement>(BenchmarkPluginMatrix.Configuration(plugin)));
     if (mode is "waf" or "waf-attack")
     {
         await BindRouteAsync("waf", new { enabled = true });
@@ -264,6 +270,25 @@ if (!coreOnly && !storageOnly && !servicesOnly && !nativeHost && mode != "minima
     var plans = app.Services.GetRequiredService<GatewayPluginExecutionPlanProvider>().Current;
     effectivePolicies = snapshot.RoutePlugins.Values.SelectMany(x => x).Concat(snapshot.ClusterPlugins.Values.SelectMany(x => x))
         .Select(binding => binding.PluginId).Distinct().Order().ToArray();
+    if (pluginSelection is not null)
+    {
+        if (!effectivePolicies.ToHashSet(StringComparer.Ordinal).SetEquals(pluginSelection.Plugins))
+            throw new InvalidOperationException("Effective plugins differ from the selected combination.");
+        foreach (var plugin in pluginSelection.Plugins)
+        {
+            var active = plugin switch
+            {
+                "waf" => plans.WafByRoute.TryGetValue("perf", out var config) && config.Enabled,
+                "rate-limit" => plans.RateLimitByRoute.TryGetValue("perf", out var config) && config.Enabled,
+                "response-cache" => plans.ResponseCacheByRoute.TryGetValue("perf", out var config) && config.Enabled,
+                "compression" => plans.CompressionByRoute.TryGetValue("perf", out var config) && config.Enabled,
+                "traffic-metrics" => plans.TrafficMetricsByRoute.TryGetValue("perf", out var config) && config.Enabled,
+                "request-retry" => plans.RetryByRoute.TryGetValue("perf", out var config) && config.Enabled,
+                _ => false
+            };
+            if (!active) throw new InvalidOperationException("Selected benchmark plugin is inactive: " + plugin);
+        }
+    }
     if (mode is "waf" or "waf-attack" && (!plans.WafByRoute.TryGetValue("perf", out var waf) || !waf.Enabled))
     {
         throw new InvalidOperationException("WAF benchmark policy is inactive.");

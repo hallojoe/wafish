@@ -1,0 +1,135 @@
+{
+  "base": "e92d2d7",
+  "covered": 333,
+  "executable": 367,
+  "files": [
+    {
+      "file": "tests/Wafish.Performance/Backend/Program.cs",
+      "covered": 25,
+      "executable": 25,
+      "uncovered": []
+    },
+    {
+      "file": "tests/Wafish.Performance/EnhancedYarp/Program.cs",
+      "covered": 21,
+      "executable": 33,
+      "uncovered": [
+        30,
+        276,
+        279,
+        280,
+        281,
+        282,
+        283,
+        284,
+        285,
+        286,
+        287,
+        288
+      ]
+    },
+    {
+      "file": "tests/Wafish.Performance/NativeYarp/Program.cs",
+      "covered": 7,
+      "executable": 7,
+      "uncovered": []
+    },
+    {
+      "file": "tests/Wafish.Performance/Runner/BenchmarkSession.cs",
+      "covered": 28,
+      "executable": 35,
+      "uncovered": [
+        44,
+        67,
+        68,
+        138,
+        139,
+        140,
+        141
+      ]
+    },
+    {
+      "file": "tests/Wafish.Performance/Runner/Program.cs",
+      "covered": 82,
+      "executable": 89,
+      "uncovered": [
+        28,
+        35,
+        212,
+        214,
+        215,
+        216,
+        417
+      ]
+    },
+    {
+      "file": "tests/Wafish.Performance/Shared/BenchmarkArrivalSchedule.cs",
+      "covered": 48,
+      "executable": 50,
+      "uncovered": [
+        14,
+        15
+      ]
+    },
+    {
+      "file": "tests/Wafish.Performance/Shared/BenchmarkBodyMeasurement.cs",
+      "covered": 14,
+      "executable": 14,
+      "uncovered": []
+    },
+    {
+      "file": "tests/Wafish.Performance/Shared/BenchmarkForwarderHttpClientFactory.cs",
+      "covered": 4,
+      "executable": 4,
+      "uncovered": []
+    },
+    {
+      "file": "tests/Wafish.Performance/Shared/BenchmarkOptions.cs",
+      "covered": 2,
+      "executable": 2,
+      "uncovered": []
+    },
+    {
+      "file": "tests/Wafish.Performance/Shared/BenchmarkPluginMatrix.cs",
+      "covered": 25,
+      "executable": 25,
+      "uncovered": []
+    },
+    {
+      "file": "tests/Wafish.Performance/Shared/BenchmarkPreflight.cs",
+      "covered": 3,
+      "executable": 6,
+      "uncovered": [
+        13,
+        18,
+        21
+      ]
+    },
+    {
+      "file": "tests/Wafish.Performance/Shared/BenchmarkServerTransport.cs",
+      "covered": 8,
+      "executable": 9,
+      "uncovered": [
+        11
+      ]
+    },
+    {
+      "file": "tests/Wafish.Performance/Shared/BenchmarkStreamWorkload.cs",
+      "covered": 19,
+      "executable": 20,
+      "uncovered": [
+        36
+      ]
+    },
+    {
+      "file": "tests/Wafish.Performance/Shared/BenchmarkTransport.cs",
+      "covered": 47,
+      "executable": 48,
+      "uncovered": [
+        60
+      ]
+    }
+  ],
+  "missingFiles": [],
+  "percent": 90.74
+}

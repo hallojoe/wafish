@@ -71,3 +71,12 @@ The runner assigns a private directory for every host instance.
 Readiness waits for validated bindings and required running resources.
 The manifest includes effective routes, clusters, plugin versions, settings, and resource states.
 Transient resource identifiers and timestamps do not affect the configuration hash.
+
+## Explicit plugin sets (R47)
+
+`--mode=plugins --plugins=waf+rate-limit` installs an explicit route plugin combination.
+Use `--plugins=none` for an unbound Wafish comparison.
+Supported IDs, preset settings, and runner examples are in the [combination guide](../Runner/README.md#plugin-combinations-r47).
+Each binding uses its manifest order and passes schema validation.
+Health remains unavailable until the selected plugins match the active plans and their resources are ready.
+Manifests record requested selection and effective binding configuration for each run.

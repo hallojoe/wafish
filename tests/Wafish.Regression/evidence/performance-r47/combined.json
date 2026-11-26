@@ -1,0 +1,609 @@
+{
+  "schemaVersion": 5,
+  "environment": {
+    "capturedUtc": "2026-11-26T00:05:22.7642999+00:00",
+    "runtime": ".NET 10.0.14",
+    "operatingSystem": "Omarchy",
+    "processArchitecture": "X64",
+    "osArchitecture": "X64",
+    "logicalProcessors": 8,
+    "cpuModel": "11th Gen Intel(R) Core(TM) i7-1185G7 @ 3.00GHz",
+    "serverGc": false,
+    "sourceRevision": "e41df3c6966fb4e4feb2542b1c33f8bcdc5431cd",
+    "workingTreeDirty": true
+  },
+  "settings": {
+    "processMeasurementsAvailable": true,
+    "durationSeconds": 1,
+    "warmupSeconds": 0,
+    "concurrency": 2,
+    "repetitions": 1,
+    "suite": "plugins",
+    "requestTimeoutSeconds": 10,
+    "clientTransport": "HTTP/2.0 exact TLS"
+  },
+  "streaming": {
+    "kind": "events",
+    "chunks": 3,
+    "chunkBytes": 128,
+    "intervalMs": 50,
+    "encodedChunkBytes": 136,
+    "totalBytes": 408,
+    "path": "/api/perf/stream/events/3/128/50"
+  },
+  "pluginSets": [
+    {
+      "name": "none",
+      "plugins": []
+    },
+    {
+      "name": "compression\u002Bresponse-cache",
+      "plugins": [
+        "compression",
+        "response-cache"
+      ]
+    },
+    {
+      "name": "rate-limit\u002Brequest-retry\u002Btraffic-metrics\u002Bwaf",
+      "plugins": [
+        "rate-limit",
+        "request-retry",
+        "traffic-metrics",
+        "waf"
+      ]
+    }
+  ],
+  "acceptEncoding": "gzip",
+  "arrivals": {
+    "mode": "scheduled",
+    "ratePerSecond": 20,
+    "queueCapacity": 8,
+    "drainDeadlineSeconds": 12
+  },
+  "transport": {
+    "mode": "https2",
+    "client": "HTTP/2.0 exact TLS",
+    "upstream": "HTTP/2.0 exact TLS",
+    "certificate": "temporary pinned loopback certificate"
+  },
+  "latency": {
+    "strategy": "fixed logarithmic histogram; upper-bound nearest rank",
+    "relativeError": 0.01,
+    "absoluteErrorBelowMinimumMs": 0.001,
+    "maximumMs": 86400000,
+    "retainedBytes": 20256
+  },
+  "hosts": [
+    {
+      "name": "Backend",
+      "endpoint": "https://127.0.0.1:39101/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "689d7286066e19f5756dabeaa45ff00cb3766bc4ed7863c3936128cecc046da7",
+        "configuration": {
+          "maxDelayMilliseconds": 30000,
+          "maxRequestBytes": 4194304,
+          "mode": "backend",
+          "payloadMode": "precomputed",
+          "preparedSizes": [
+            0,
+            1024,
+            65536,
+            1048576,
+            4194304
+          ],
+          "streamLimits": {
+            "maxBytes": 4194304,
+            "maxChunkBytes": 65536,
+            "maxChunks": 256,
+            "maxDurationMs": 4000,
+            "maxIntervalMs": 1000
+          },
+          "transport": "HTTP/2.0 exact TLS",
+          "transportFaults": false
+        }
+      }
+    },
+    {
+      "name": "Native YARP",
+      "endpoint": "https://127.0.0.1:51171/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "cc9c236cb6c614cb15c634ac95f1221209fb1483f286fcfd77f573ba81c850dc",
+        "configuration": {
+          "clientTransport": "HTTP/2.0 exact TLS",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "https://127.0.0.1:39101/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "2.0",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "metadata": null,
+              "sessionAffinity": null
+            }
+          ],
+          "listener": "https://127.0.0.1:51171/",
+          "mode": "native",
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "authorizationPolicy": null,
+              "clusterId": "backend",
+              "corsPolicy": null,
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "maxRequestBodySize": null,
+              "metadata": null,
+              "order": null,
+              "outputCachePolicy": null,
+              "rateLimiterPolicy": null,
+              "routeId": "perf",
+              "timeout": null,
+              "timeoutPolicy": null,
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/2.0 exact TLS"
+        }
+      }
+    },
+    {
+      "name": "Plugins: none",
+      "endpoint": "https://127.0.0.1:51609/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "3152a6b27884b99ef9db8b9067ff379db977de7b3394906d46f3e19bcc9b6810",
+        "configuration": {
+          "bindings": [],
+          "clientTransport": "HTTP/2.0 exact TLS",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "https://127.0.0.1:39101/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "2.0",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [],
+          "listener": "https://127.0.0.1:51609/",
+          "mode": "plugins",
+          "pluginSelection": {
+            "name": "none",
+            "plugins": []
+          },
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/2.0 exact TLS"
+        },
+        "resources": []
+      }
+    },
+    {
+      "name": "Plugins: compression\u002Bresponse-cache",
+      "endpoint": "https://127.0.0.1:51609/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "ede57c696646f88f4b47e4c1e57e46bdaf8d863e84dd2311a27a7b84c840d2de",
+        "configuration": {
+          "bindings": [
+            {
+              "configuration": {
+                "enabled": true,
+                "maxBodyBytes": 1048576,
+                "ttlSeconds": 60
+              },
+              "manifestOrder": 300,
+              "order": 300,
+              "pluginId": "response-cache",
+              "schemaVersion": 1,
+              "scope": 1,
+              "scopeId": "perf",
+              "version": "1.0"
+            },
+            {
+              "configuration": {
+                "compressionLevel": "Fastest",
+                "enabled": true,
+                "minResponseSize": 0
+              },
+              "manifestOrder": 350,
+              "order": 350,
+              "pluginId": "compression",
+              "schemaVersion": 1,
+              "scope": 1,
+              "scopeId": "perf",
+              "version": "1.0"
+            }
+          ],
+          "clientTransport": "HTTP/2.0 exact TLS",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "https://127.0.0.1:39101/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "2.0",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [
+            "compression",
+            "response-cache"
+          ],
+          "listener": "https://127.0.0.1:51609/",
+          "mode": "plugins",
+          "pluginSelection": {
+            "name": "compression\u002Bresponse-cache",
+            "plugins": [
+              "compression",
+              "response-cache"
+            ]
+          },
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/2.0 exact TLS"
+        },
+        "resources": []
+      }
+    },
+    {
+      "name": "Plugins: rate-limit\u002Brequest-retry\u002Btraffic-metrics\u002Bwaf",
+      "endpoint": "https://127.0.0.1:51609/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "71c3783af6755086ced497cd648c927c14bc227c86f358854e8aa86ec8e9231d",
+        "configuration": {
+          "bindings": [
+            {
+              "configuration": {
+                "enabled": true
+              },
+              "manifestOrder": 100,
+              "order": 100,
+              "pluginId": "waf",
+              "schemaVersion": 1,
+              "scope": 1,
+              "scopeId": "perf",
+              "version": "1.0"
+            },
+            {
+              "configuration": {
+                "algorithm": "FixedWindow",
+                "enabled": true,
+                "partitionKey": "Global",
+                "permitLimit": 1000000,
+                "queueLimit": 0,
+                "window": "1s"
+              },
+              "manifestOrder": 200,
+              "order": 200,
+              "pluginId": "rate-limit",
+              "schemaVersion": 1,
+              "scope": 1,
+              "scopeId": "perf",
+              "version": "1.0"
+            },
+            {
+              "configuration": {
+                "backoffBaseMs": 10,
+                "backoffJitterMs": 0,
+                "enabled": true,
+                "maxRetries": 2,
+                "timeoutSeconds": 5,
+                "totalTimeoutSeconds": 10
+              },
+              "manifestOrder": 400,
+              "order": 400,
+              "pluginId": "request-retry",
+              "schemaVersion": 1,
+              "scope": 1,
+              "scopeId": "perf",
+              "version": "1.0"
+            },
+            {
+              "configuration": {
+                "enabled": true,
+                "includeRequestBytes": true,
+                "includeResponseBytes": true
+              },
+              "manifestOrder": 600,
+              "order": 600,
+              "pluginId": "traffic-metrics",
+              "schemaVersion": 1,
+              "scope": 1,
+              "scopeId": "perf",
+              "version": "1.0"
+            }
+          ],
+          "clientTransport": "HTTP/2.0 exact TLS",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "https://127.0.0.1:39101/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "2.0",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [
+            "rate-limit",
+            "request-retry",
+            "traffic-metrics",
+            "waf"
+          ],
+          "listener": "https://127.0.0.1:51609/",
+          "mode": "plugins",
+          "pluginSelection": {
+            "name": "rate-limit\u002Brequest-retry\u002Btraffic-metrics\u002Bwaf",
+            "plugins": [
+              "rate-limit",
+              "request-retry",
+              "traffic-metrics",
+              "waf"
+            ]
+          },
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/2.0 exact TLS"
+        },
+        "resources": []
+      }
+    }
+  ],
+  "results": [
+    {
+      "gateway": "Native YARP",
+      "scenario": "events",
+      "repetition": 1,
+      "requestsPerSecond": 18.574370619060556,
+      "p50Ms": 101.96995181546924,
+      "p95Ms": 104.0195478469602,
+      "p99Ms": 106.11034075868409,
+      "errorRatePercent": 0,
+      "cpuPercent": 2.9022454092282115,
+      "workingSetMb": 129.08984375,
+      "requests": 20,
+      "failures": 0,
+      "policyRejections": 0,
+      "transportFailures": 0,
+      "configurationHash": "cc9c236cb6c614cb15c634ac95f1221209fb1483f286fcfd77f573ba81c850dc",
+      "arrivals": {
+        "offered": 20,
+        "started": 20,
+        "dropped": 0,
+        "cancelledBeforeStart": 0,
+        "offeredPerSecond": 20,
+        "queueP50Ms": 14.077282672002116,
+        "queueP95Ms": 23.151947047466162,
+        "queueP99Ms": 24.33292902626996
+      },
+      "completedResponses": 20,
+      "scheduledP95Ms": 125.6669467750018,
+      "scheduledP99Ms": 126.92361624275183,
+      "responseBytes": 8160,
+      "bodyReads": 60,
+      "firstByteSamples": 20,
+      "firstByteP50Ms": 1.254368103679604,
+      "firstByteP95Ms": 1.8307844114678882,
+      "firstByteP99Ms": 7.446477974124705,
+      "readGapP95Ms": 51.32127332779392
+    },
+    {
+      "gateway": "Plugins: none",
+      "scenario": "events",
+      "repetition": 1,
+      "requestsPerSecond": 18.683652598031955,
+      "p50Ms": 101.96995181546924,
+      "p95Ms": 104.0195478469602,
+      "p99Ms": 107.17144416627093,
+      "errorRatePercent": 0,
+      "cpuPercent": 4.0870501735477776,
+      "workingSetMb": 188.2265625,
+      "requests": 20,
+      "failures": 0,
+      "policyRejections": 0,
+      "transportFailures": 0,
+      "configurationHash": "3152a6b27884b99ef9db8b9067ff379db977de7b3394906d46f3e19bcc9b6810",
+      "arrivals": {
+        "offered": 20,
+        "started": 20,
+        "dropped": 0,
+        "cancelledBeforeStart": 0,
+        "offeredPerSecond": 20,
+        "queueP50Ms": 10.548701220871191,
+        "queueP95Ms": 19.163790682095694,
+        "queueP99Ms": 20.546177470653703
+      },
+      "completedResponses": 20,
+      "scheduledP95Ms": 120.76346580194497,
+      "scheduledP99Ms": 121.97110045996442,
+      "responseBytes": 8160,
+      "bodyReads": 60,
+      "firstByteSamples": 20,
+      "firstByteP50Ms": 1.135563080644121,
+      "firstByteP95Ms": 1.6247282075846974,
+      "firstByteP99Ms": 5.051464807823734,
+      "readGapP95Ms": 51.32127332779392
+    },
+    {
+      "gateway": "Plugins: compression\u002Bresponse-cache",
+      "scenario": "events",
+      "repetition": 1,
+      "requestsPerSecond": 14.901536236624475,
+      "p50Ms": 104.0195478469602,
+      "p95Ms": 208.74261821633075,
+      "p99Ms": 210.83004439849404,
+      "errorRatePercent": 0,
+      "cpuPercent": 2.887172645845992,
+      "workingSetMb": 192.37109375,
+      "requests": 20,
+      "failures": 0,
+      "policyRejections": 0,
+      "transportFailures": 0,
+      "configurationHash": "ede57c696646f88f4b47e4c1e57e46bdaf8d863e84dd2311a27a7b84c840d2de",
+      "arrivals": {
+        "offered": 20,
+        "started": 20,
+        "dropped": 0,
+        "cancelledBeforeStart": 0,
+        "offeredPerSecond": 20,
+        "queueP50Ms": 123.19081146456406,
+        "queueP95Ms": 232.88753174400313,
+        "queueP99Ms": 235.21640706144316
+      },
+      "completedResponses": 20,
+      "scheduledP95Ms": 379.2220253632326,
+      "scheduledP99Ms": 394.6199602733015,
+      "responseBytes": 8160,
+      "bodyReads": 60,
+      "firstByteSamples": 20,
+      "firstByteP50Ms": 3.2604450505796634,
+      "firstByteP95Ms": 107.17144416627093,
+      "firstByteP99Ms": 109.32559019401299,
+      "readGapP95Ms": 51.32127332779392
+    },
+    {
+      "gateway": "Plugins: rate-limit\u002Brequest-retry\u002Btraffic-metrics\u002Bwaf",
+      "scenario": "events",
+      "repetition": 1,
+      "requestsPerSecond": 18.651114124302214,
+      "p50Ms": 102.98965133362394,
+      "p95Ms": 104.0195478469602,
+      "p99Ms": 106.11034075868409,
+      "errorRatePercent": 0,
+      "cpuPercent": 3.263944971752888,
+      "workingSetMb": 194.1640625,
+      "requests": 20,
+      "failures": 0,
+      "policyRejections": 0,
+      "transportFailures": 0,
+      "configurationHash": "71c3783af6755086ced497cd648c927c14bc227c86f358854e8aa86ec8e9231d",
+      "arrivals": {
+        "offered": 20,
+        "started": 20,
+        "dropped": 0,
+        "cancelledBeforeStart": 0,
+        "offeredPerSecond": 20,
+        "queueP50Ms": 11.886540571061328,
+        "queueP95Ms": 20.14133660489531,
+        "queueP99Ms": 21.168747194191983
+      },
+      "completedResponses": 20,
+      "scheduledP95Ms": 123.19081146456406,
+      "scheduledP99Ms": 123.19081146456406,
+      "responseBytes": 8160,
+      "bodyReads": 60,
+      "firstByteSamples": 20,
+      "firstByteP50Ms": 1.0486734530451747,
+      "firstByteP95Ms": 1.4855537037606212,
+      "firstByteP99Ms": 5.524712665800154,
+      "readGapP95Ms": 51.32127332779392
+    }
+  ]
+}
