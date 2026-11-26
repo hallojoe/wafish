@@ -89,3 +89,20 @@ Unrelated groups and ungrouped routes retain separate allowances.
 Group names and client values are hashed in runtime limiter keys.
 Changing a group's settings starts a fresh local allowance. Existing idle partitions follow normal bounded cleanup.
 Groups share permits only inside one gateway process. Use Redis for allowances shared across replicas.
+
+## Weighted request costs (R39)
+
+Set `requestCost` to charge an expensive route more permits per request. The default is `1`.
+Fixed windows, sliding windows, and token buckets support costs from 1 to 1,000,000.
+The cost must fit `permitLimit`, or `tokenLimit` for token buckets. Concurrency requires a cost of `1`.
+Invalid costs fail validation before persistence or activation.
+
+Routes in one `quotaGroup` can have different costs. All other quota settings must match.
+For example, two routes can share five permits, with costs of one and three.
+The expensive route consumes three permits atomically. A rejected request consumes none.
+Changing only the cost retains the existing allowance. Request headers cannot change the charge.
+
+`queueLimit` counts queued permits, not queued requests. Cancellation releases queued ownership.
+Rejected requests return HTTP 429 with a positive `Retry-After` hint.
+The built-in store supports weighted acquisition through `IWeightedRateLimiterStore`.
+Custom legacy stores remain compatible with cost one. Higher costs return HTTP 503 with retry guidance.

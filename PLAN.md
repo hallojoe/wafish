@@ -19,14 +19,13 @@ R56 records a release discrepancy found during cleanup; it does not authorize pu
 | Order | ID | Remaining task | Value / 10 | Need / 10 |
 |---|---|---|---|---|
 | 1 | R56 | [Reconcile the release version and package publication](#r56) | 9 | 9 |
-| 2 | R39 | [Assign weighted request costs](#r39) | 6 | 4 |
-| 3 | R49 | [Add optional network fault injection](#r49) | 6 | 4 |
-| 4 | R51 | [Demonstrate service discovery](#r51) | 6 | 4 |
-| 5 | R55 | [Save operator views](#r55) | 5 | 3 |
-| 6 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
-| 7 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
-| 8 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
-| 9 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
+| 2 | R49 | [Add optional network fault injection](#r49) | 6 | 4 |
+| 3 | R51 | [Demonstrate service discovery](#r51) | 6 | 4 |
+| 4 | R55 | [Save operator views](#r55) | 5 | 3 |
+| 5 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
+| 6 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
+| 7 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
+| 8 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
 
 ## Completion rule
 
@@ -335,20 +334,22 @@ Verification: [R37 evidence](tests/Wafish.Regression/evidence/tenant-quotas/READ
 
 ### R39: Assign weighted request costs
 
-Status: TODO. Value: 6/10. Need: 4/10.
+Status: COMPLETE. Value: 6/10. Need: 4/10.
 
 Apply larger quota charges to expensive routes.
 
 Source: [Wafish.Plugin.RateLimit FEAT-02](docs/archive/2026-11-planning/src/Wafish.Plugin.RateLimit/PLAN.md#feat-02-support-weighted-request-costs).
 
-Evidence: [RateLimitMiddleware.cs](src/Wafish.Plugin.RateLimit/Middleware/RateLimitMiddleware.cs) delegates permit acquisition to the runtime store.
-[InMemoryRateLimiterStore.cs](src/Wafish.Runtime/Infrastructure/State/InMemoryRateLimiterStore.cs) calls `AcquireAsync(1, cancellationToken)`.
+The built-in runtime store acquires configured costs atomically.
+The original single-permit interface remains compatible.
 
 Allow validated route policy to assign a request cost for token and window algorithms.
 Take costs from trusted configuration rather than caller headers.
 
 Acceptance: An expensive route consumes its configured allowance.
 Invalid costs fail validation, and rejection reports usable retry information.
+
+Verification: [R39 evidence](tests/Wafish.Regression/evidence/weighted-costs/README.md).
 
 <a id="r49"></a>
 

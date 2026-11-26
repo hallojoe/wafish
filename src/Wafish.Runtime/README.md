@@ -121,3 +121,7 @@ See [registration and operations](../../docs/registration-operations-contracts.m
 
 Versioned change sets combine routes, clusters, and plugin bindings in one transaction.
 See [change-set contracts](../../docs/configuration-policy-contracts.md) for API examples, revisions, permissions, and recovery.
+
+Weighted local quotas use the optional `IWeightedRateLimiterStore` capability.
+The built-in store acquires the configured permits atomically and retains ownership while queued.
+The original `IRateLimiterStore` contract still acquires one permit.

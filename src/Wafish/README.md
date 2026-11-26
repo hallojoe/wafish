@@ -119,3 +119,7 @@ See [route encoding policy](../Wafish.Plugin.Compression/README.md#route-encodin
 
 Redis route quotas can select [trusted tenant partitions](../Wafish.Plugin.RateLimit.Redis/README.md#trusted-tenant-partitions-r37).
 The host authenticates requests before forwarding. A bounded allowlist prevents caller-controlled quota-key growth.
+
+Local `requestCost` configuration validates against window or token capacity before activation.
+Named quota groups permit different route costs while retaining identical allowance settings.
+See [weighted quotas](../Wafish.Plugin.RateLimit/README.md#weighted-request-costs-r39).

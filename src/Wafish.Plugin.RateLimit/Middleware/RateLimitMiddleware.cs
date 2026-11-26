@@ -84,8 +84,20 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
             ? $"global:{partitionValue}:{configFingerprint}"
             : $"{routeScopeId}:{partitionValue}:{configFingerprint}";
 
+        var capacity = config.Algorithm == RateLimitAlgorithm.TokenBucket ? config.TokenLimit : config.PermitLimit;
+        if (config.RequestCost is < 1 or > 1000000 || config.RequestCost > Math.Max(1, capacity) ||
+            config.Algorithm == RateLimitAlgorithm.Concurrency && config.RequestCost != 1 ||
+            config.RequestCost > 1 && _limiterStore is not IWeightedRateLimiterStore)
+        {
+            context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+            context.Response.Headers.RetryAfter = "1";
+            await context.Response.WriteAsJsonAsync(new { error = "Weighted rate limit unavailable" }, context.RequestAborted);
+            return;
+        }
         TryCleanup();
-        using var lease = await _limiterStore.AcquireAsync(limiterKey, () => CreateLimiter(limiterKey, config), context.RequestAborted);
+        using var lease = _limiterStore is IWeightedRateLimiterStore weighted
+            ? await weighted.AcquireWeightedAsync(limiterKey, config.RequestCost, () => CreateLimiter(limiterKey, config), context.RequestAborted)
+            : await _limiterStore.AcquireAsync(limiterKey, () => CreateLimiter(limiterKey, config), context.RequestAborted);
 
         if (lease == null || !lease.IsAcquired)
         {
@@ -132,6 +144,7 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
         config = new RouteRateLimitConfig
         {
             Enabled = true,
+            RequestCost = compiled.RequestCost,
             QuotaGroup = compiled.QuotaGroup,
             Algorithm = compiled.Algorithm,
             PermitLimit = compiled.PermitLimit,
@@ -273,6 +286,7 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
     {
         public string QuotaGroup { get; set; } = string.Empty;
         public bool Enabled { get; set; }
+        public int RequestCost { get; set; } = 1;
         public RateLimitAlgorithm Algorithm { get; set; } = RateLimitAlgorithm.FixedWindow;
         public int PermitLimit { get; set; } = 100;
         public string Window { get; set; } = "1m";

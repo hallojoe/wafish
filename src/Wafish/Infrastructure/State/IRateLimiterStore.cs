@@ -21,6 +21,12 @@ public interface IRateLimiterStore
     void Cleanup(TimeSpan staleThreshold, int maxCount);
 }
 
+/// <summary>Optional atomic acquisition of a configured number of permits.</summary>
+public interface IWeightedRateLimiterStore : IRateLimiterStore
+{
+    ValueTask<RateLimitLease?> AcquireWeightedAsync(string key, int permits, Func<RateLimiter> factory, CancellationToken cancellationToken = default);
+}
+
 /// <summary>Wrapper tracking last access time for stale-eviction cleanup strategy.</summary>
 public sealed class RateLimiterEntry
 {

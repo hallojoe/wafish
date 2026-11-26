@@ -4,7 +4,7 @@ using Wafish.Infrastructure.State;
 namespace Wafish.Dashboard.Infrastructure.State;
 
 /// <summary>Bounded admission with ownership held through queued acquisition and downstream work.</summary>
-public sealed class InMemoryRateLimiterStore : IRateLimiterStore, IDisposable
+public sealed class InMemoryRateLimiterStore : IRateLimiterStore, IWeightedRateLimiterStore, IDisposable
 {
     private readonly TimeProvider _time;
     public InMemoryRateLimiterStore() : this(TimeProvider.System) { }
@@ -33,8 +33,12 @@ public sealed class InMemoryRateLimiterStore : IRateLimiterStore, IDisposable
         return entry;
     }
 
-    public async ValueTask<RateLimitLease?> AcquireAsync(string key, Func<RateLimiter> factory, CancellationToken cancellationToken = default)
+    public ValueTask<RateLimitLease?> AcquireAsync(string key, Func<RateLimiter> factory, CancellationToken cancellationToken = default)
+        => AcquireWeightedAsync(key, 1, factory, cancellationToken);
+
+    public async ValueTask<RateLimitLease?> AcquireWeightedAsync(string key, int permits, Func<RateLimiter> factory, CancellationToken cancellationToken = default)
     {
+        if (permits < 1) throw new ArgumentOutOfRangeException(nameof(permits));
         Entry? entry;
         lock (_gate)
         {
@@ -50,7 +54,7 @@ public sealed class InMemoryRateLimiterStore : IRateLimiterStore, IDisposable
         }
         try
         {
-            var lease = await entry.Value.Limiter.AcquireAsync(1, cancellationToken);
+            var lease = await entry.Value.Limiter.AcquireAsync(permits, cancellationToken);
             return new OwnedLease(lease, () => Release(entry));
         }
         catch { Release(entry); throw; }

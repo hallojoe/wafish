@@ -1,0 +1,51 @@
+{
+  "base": "63ff5b7",
+  "covered": 20,
+  "executable": 24,
+  "files": [
+    {
+      "file": "src/Wafish.Plugin.RateLimit/Middleware/RateLimitMiddleware.cs",
+      "covered": 10,
+      "executable": 13,
+      "uncovered": [
+        88,
+        89,
+        90
+      ]
+    },
+    {
+      "file": "src/Wafish.Plugin.RateLimit/RateLimitPlugin.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Runtime/Infrastructure/State/InMemoryRateLimiterStore.cs",
+      "covered": 3,
+      "executable": 3,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish/Infrastructure/State/IRateLimiterStore.cs",
+      "covered": 0,
+      "executable": 0,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish/Models/PluginExecutionConfigs.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish/Services/RateLimitQuotaGroups.cs",
+      "covered": 5,
+      "executable": 6,
+      "uncovered": [
+        26
+      ]
+    }
+  ],
+  "missingFiles": [],
+  "percent": 83.33
+}
