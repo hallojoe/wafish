@@ -40,6 +40,11 @@ app.MapGet("/health", () => Results.Ok());
 app.MapGet("/benchmark/manifest", () => Results.Json(BenchmarkManifest.Create(new { mode = "backend", payloadMode, preparedSizes, maxRequestBytes = 4194304, maxDelayMilliseconds = 30000, transportFaults, streamLimits = new { maxChunks = 256, maxChunkBytes = 65536, maxIntervalMs = 1000, maxDurationMs = 4000, maxBytes = 4194304 }, transport = transport.Description })));
 app.MapGet("/api/perf/plain", () => Results.Bytes(plain, "text/plain"));
 app.MapGet("/api/perf/json-small", () => Results.Bytes(smallJson, "application/json"));
+app.MapGet("/api/perf/cacheable-json", (HttpContext context) =>
+{
+    context.Response.Headers.CacheControl = "public, max-age=60";
+    return Results.Bytes(smallJson, "application/json");
+});
 app.MapGet("/api/perf/payload/{size:int}", (int size, HttpContext context) =>
 {
     var length = Math.Clamp(size, 0, 4 * 1024 * 1024);

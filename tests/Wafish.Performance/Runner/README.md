@@ -147,3 +147,45 @@ First-byte and read-gap statistics include complete, nonempty response bodies on
 Each request uses an eight-KiB pooled read buffer. The client never retains the complete measured body.
 Preflight independently validates the complete bounded payload and event framing before measurement.
 JSON schema version 4 records streaming settings. CSV appends the delivery measurements.
+
+## Plugin combinations (R47)
+
+Use `--suite=plugins` with an explicit list of up to eight sets.
+Separate sets with semicolons and plugins with plus signs. Quote the argument in the shell.
+Use `none` for the Wafish host without enabled route plugins. Native YARP is always included for comparison.
+Duplicate sets, repeated plugins, empty entries, and unknown IDs fail before managed hosts start.
+
+```bash
+dotnet run --project tests/Wafish.Performance/Runner -c Release --no-build -- \
+  --suite=plugins '--plugin-sets=none;waf+rate-limit;response-cache+compression' \
+  --duration=10 --warmup=3 --concurrency=16 --repetitions=3
+```
+
+Supported IDs are `waf`, `rate-limit`, `response-cache`, `compression`, `traffic-metrics`, and `request-retry`.
+The default sets are `none;waf;waf+rate-limit;response-cache+compression`.
+The harness does not generate a power set. `--modes` and external endpoints are not supported with this suite.
+
+All sets receive `/api/perf/cacheable-json` and `Accept-Encoding: gzip`.
+The synthetic backend response explicitly permits public caching for 60 seconds.
+Transport, scheduled arrivals, and streaming workload options can also be selected.
+Preflight decompresses and validates the payload. Measured requests read encoded bytes without client decompression.
+Response-byte metrics therefore describe encoded body bytes, excluding transport headers and framing.
+
+Each set starts a fresh host with private storage. Bindings use manifest order and validated preset settings.
+Readiness requires exactly the selected bindings, active execution plans, and healthy plugin resources.
+JSON schema version 5 records requested sets, effective settings, versions, order, and configuration hashes.
+CSV and Markdown rows identify each set by its canonical name. Hashes link rows to effective manifests.
+
+| Plugin | Preset |
+|---|---|
+| WAF | Enabled, default rules |
+| Rate limit | Fixed window, 1,000,000 permits/second, global partition, no queue |
+| Response cache | 60-second TTL, one-MiB body limit |
+| Compression | Gzip negotiation, `Fastest`, zero minimum size |
+| Traffic metrics | Request and response bytes enabled |
+| Retry | Two retries, 10 ms backoff, no jitter, five-second attempt and ten-second total deadlines |
+
+These presets measure selected combinations under successful traffic. They do not represent every production policy.
+Preflight warms cache entries, even with zero warmup. Compare those rows as warm-cache workloads.
+Streaming responses use `no-store`, so their cache bindings do not store response bodies.
+Use the functional first suite for rejection, retry, and circuit recovery scenarios.

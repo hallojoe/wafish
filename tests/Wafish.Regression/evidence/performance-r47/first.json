@@ -1,0 +1,2027 @@
+{
+  "schemaVersion": 5,
+  "environment": {
+    "capturedUtc": "2026-11-26T00:04:21.6806169+00:00",
+    "runtime": ".NET 10.0.14",
+    "operatingSystem": "Omarchy",
+    "processArchitecture": "X64",
+    "osArchitecture": "X64",
+    "logicalProcessors": 8,
+    "cpuModel": "11th Gen Intel(R) Core(TM) i7-1185G7 @ 3.00GHz",
+    "serverGc": false,
+    "sourceRevision": "e41df3c6966fb4e4feb2542b1c33f8bcdc5431cd",
+    "workingTreeDirty": true
+  },
+  "settings": {
+    "processMeasurementsAvailable": true,
+    "durationSeconds": 1,
+    "warmupSeconds": 0,
+    "soakSeconds": 1,
+    "suite": "first",
+    "requestTimeoutSeconds": 10,
+    "clientTransport": "HTTP/1.1 exact cleartext"
+  },
+  "streaming": null,
+  "pluginSets": [],
+  "acceptEncoding": "identity",
+  "arrivals": {
+    "mode": "closed-loop",
+    "ratePerSecond": 0,
+    "queueCapacity": 128,
+    "drainDeadlineSeconds": 12
+  },
+  "transport": {
+    "mode": "http1",
+    "client": "HTTP/1.1 exact cleartext",
+    "upstream": "HTTP/1.1 exact cleartext",
+    "certificate": "none"
+  },
+  "latency": {
+    "strategy": "fixed logarithmic histogram; upper-bound nearest rank",
+    "relativeError": 0.01,
+    "absoluteErrorBelowMinimumMs": 0.001,
+    "maximumMs": 86400000,
+    "retainedBytes": 20256
+  },
+  "hosts": [
+    {
+      "name": "Backend",
+      "endpoint": "http://127.0.0.1:39435/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "d4cd79b7c34adac516735a60e9dea672305f84e0f0e447c5094c7ac7867b0473",
+        "configuration": {
+          "maxDelayMilliseconds": 30000,
+          "maxRequestBytes": 4194304,
+          "mode": "backend",
+          "payloadMode": "precomputed",
+          "preparedSizes": [
+            0,
+            1024,
+            65536,
+            1048576,
+            4194304
+          ],
+          "streamLimits": {
+            "maxBytes": 4194304,
+            "maxChunkBytes": 65536,
+            "maxChunks": 256,
+            "maxDurationMs": 4000,
+            "maxIntervalMs": 1000
+          },
+          "transport": "HTTP/1.1 exact cleartext",
+          "transportFaults": false
+        }
+      }
+    },
+    {
+      "name": "EnhancedYarp",
+      "endpoint": "http://127.0.0.1:40317/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "545af50b7969faac5867ec2094f959796c5e0d651766169f8cf6ff15e878295b",
+        "configuration": {
+          "bindings": [],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:39435/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [],
+          "listener": "http://127.0.0.1:40317/",
+          "mode": "full",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": []
+      }
+    },
+    {
+      "name": "EnhancedYarp",
+      "endpoint": "http://127.0.0.1:40317/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "545af50b7969faac5867ec2094f959796c5e0d651766169f8cf6ff15e878295b",
+        "configuration": {
+          "bindings": [],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:39435/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [],
+          "listener": "http://127.0.0.1:40317/",
+          "mode": "full",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": []
+      }
+    },
+    {
+      "name": "EnhancedYarp",
+      "endpoint": "http://127.0.0.1:40317/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "545af50b7969faac5867ec2094f959796c5e0d651766169f8cf6ff15e878295b",
+        "configuration": {
+          "bindings": [],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:39435/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [],
+          "listener": "http://127.0.0.1:40317/",
+          "mode": "full",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": []
+      }
+    },
+    {
+      "name": "EnhancedYarp",
+      "endpoint": "http://127.0.0.1:40317/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "545af50b7969faac5867ec2094f959796c5e0d651766169f8cf6ff15e878295b",
+        "configuration": {
+          "bindings": [],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:39435/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [],
+          "listener": "http://127.0.0.1:40317/",
+          "mode": "full",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": []
+      }
+    },
+    {
+      "name": "EnhancedYarp",
+      "endpoint": "http://127.0.0.1:40317/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "545af50b7969faac5867ec2094f959796c5e0d651766169f8cf6ff15e878295b",
+        "configuration": {
+          "bindings": [],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:39435/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [],
+          "listener": "http://127.0.0.1:40317/",
+          "mode": "full",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": []
+      }
+    },
+    {
+      "name": "EnhancedYarp",
+      "endpoint": "http://127.0.0.1:40317/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "545af50b7969faac5867ec2094f959796c5e0d651766169f8cf6ff15e878295b",
+        "configuration": {
+          "bindings": [],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:39435/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [],
+          "listener": "http://127.0.0.1:40317/",
+          "mode": "full",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": []
+      }
+    },
+    {
+      "name": "EnhancedYarp",
+      "endpoint": "http://127.0.0.1:40317/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "545af50b7969faac5867ec2094f959796c5e0d651766169f8cf6ff15e878295b",
+        "configuration": {
+          "bindings": [],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:39435/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [],
+          "listener": "http://127.0.0.1:40317/",
+          "mode": "full",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": []
+      }
+    },
+    {
+      "name": "EnhancedYarp",
+      "endpoint": "http://127.0.0.1:40317/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "545af50b7969faac5867ec2094f959796c5e0d651766169f8cf6ff15e878295b",
+        "configuration": {
+          "bindings": [],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:39435/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [],
+          "listener": "http://127.0.0.1:40317/",
+          "mode": "full",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": []
+      }
+    },
+    {
+      "name": "EnhancedYarp",
+      "endpoint": "http://127.0.0.1:40317/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "545af50b7969faac5867ec2094f959796c5e0d651766169f8cf6ff15e878295b",
+        "configuration": {
+          "bindings": [],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:39435/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [],
+          "listener": "http://127.0.0.1:40317/",
+          "mode": "full",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": []
+      }
+    },
+    {
+      "name": "EnhancedYarp",
+      "endpoint": "http://127.0.0.1:40317/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "545af50b7969faac5867ec2094f959796c5e0d651766169f8cf6ff15e878295b",
+        "configuration": {
+          "bindings": [],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:39435/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [],
+          "listener": "http://127.0.0.1:40317/",
+          "mode": "full",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": []
+      }
+    },
+    {
+      "name": "EnhancedYarp",
+      "endpoint": "http://127.0.0.1:40317/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "ff9f12096b94403ae5b96966a97e1e2101f43c0135df9628729842cd991e7293",
+        "configuration": {
+          "bindings": [
+            {
+              "configuration": {
+                "maxBodyBufferBytes": 262144,
+                "maxBodyLength": 262144,
+                "requestBodyCaptureEnabled": false,
+                "responseBodyCaptureEnabled": false
+              },
+              "manifestOrder": 500,
+              "order": 0,
+              "pluginId": "proxy-log",
+              "schemaVersion": 1,
+              "scope": 1,
+              "scopeId": "perf",
+              "version": "1.0"
+            }
+          ],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:39435/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [
+            "proxy-log"
+          ],
+          "listener": "http://127.0.0.1:40317/",
+          "mode": "log-meta",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": [
+          {
+            "pluginId": "proxy-log",
+            "resourceType": "channel-writer",
+            "running": true,
+            "health": "Healthy"
+          }
+        ]
+      }
+    },
+    {
+      "name": "EnhancedYarp",
+      "endpoint": "http://127.0.0.1:40317/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "1086f103b2aa5d8a83e89f472f912d64b71b52d1f3c11c3d01e85406eaf4cc52",
+        "configuration": {
+          "bindings": [
+            {
+              "configuration": {
+                "maxBodyBufferBytes": 262144,
+                "maxBodyLength": 262144,
+                "requestBodyCaptureEnabled": true,
+                "responseBodyCaptureEnabled": false
+              },
+              "manifestOrder": 500,
+              "order": 0,
+              "pluginId": "proxy-log",
+              "schemaVersion": 1,
+              "scope": 1,
+              "scopeId": "perf",
+              "version": "1.0"
+            }
+          ],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:39435/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [
+            "proxy-log"
+          ],
+          "listener": "http://127.0.0.1:40317/",
+          "mode": "log-request",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": [
+          {
+            "pluginId": "proxy-log",
+            "resourceType": "channel-writer",
+            "running": true,
+            "health": "Healthy"
+          }
+        ]
+      }
+    },
+    {
+      "name": "EnhancedYarp",
+      "endpoint": "http://127.0.0.1:40317/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "72e87170aca0ea875bcda0622c2a9787419dc7dcc5963b0bb38fbc383224a174",
+        "configuration": {
+          "bindings": [
+            {
+              "configuration": {
+                "maxBodyBufferBytes": 262144,
+                "maxBodyLength": 262144,
+                "requestBodyCaptureEnabled": false,
+                "responseBodyCaptureEnabled": true
+              },
+              "manifestOrder": 500,
+              "order": 0,
+              "pluginId": "proxy-log",
+              "schemaVersion": 1,
+              "scope": 1,
+              "scopeId": "perf",
+              "version": "1.0"
+            }
+          ],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:39435/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [
+            "proxy-log"
+          ],
+          "listener": "http://127.0.0.1:40317/",
+          "mode": "log-response",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": [
+          {
+            "pluginId": "proxy-log",
+            "resourceType": "channel-writer",
+            "running": true,
+            "health": "Healthy"
+          }
+        ]
+      }
+    },
+    {
+      "name": "EnhancedYarp",
+      "endpoint": "http://127.0.0.1:40317/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "cd763126ed7165b27d5e75044cea65d97a20bcf105c0f0ab19673c162e573cf1",
+        "configuration": {
+          "bindings": [
+            {
+              "configuration": {
+                "maxBodyBufferBytes": 262144,
+                "maxBodyLength": 262144,
+                "requestBodyCaptureEnabled": true,
+                "responseBodyCaptureEnabled": true
+              },
+              "manifestOrder": 500,
+              "order": 0,
+              "pluginId": "proxy-log",
+              "schemaVersion": 1,
+              "scope": 1,
+              "scopeId": "perf",
+              "version": "1.0"
+            }
+          ],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:39435/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [
+            "proxy-log"
+          ],
+          "listener": "http://127.0.0.1:40317/",
+          "mode": "log-sqlite",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": [
+          {
+            "pluginId": "proxy-log",
+            "resourceType": "channel-writer",
+            "running": true,
+            "health": "Healthy"
+          }
+        ]
+      }
+    },
+    {
+      "name": "EnhancedYarp",
+      "endpoint": "http://127.0.0.1:40317/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "a981ee68ce3c5fa9ff5ee2c6c785861141c49520135f062fafe646a500334c2e",
+        "configuration": {
+          "bindings": [
+            {
+              "configuration": {
+                "enabled": true
+              },
+              "manifestOrder": 100,
+              "order": 0,
+              "pluginId": "waf",
+              "schemaVersion": 1,
+              "scope": 1,
+              "scopeId": "perf",
+              "version": "1.0"
+            }
+          ],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:39435/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [
+            "waf"
+          ],
+          "listener": "http://127.0.0.1:40317/",
+          "mode": "waf",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": []
+      }
+    },
+    {
+      "name": "EnhancedYarp",
+      "endpoint": "http://127.0.0.1:40317/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "f13d479314b2058d06cee9df7cddb497efe1d776db478bd7f8c1d1da7aa41c53",
+        "configuration": {
+          "bindings": [
+            {
+              "configuration": {
+                "enabled": true
+              },
+              "manifestOrder": 100,
+              "order": 0,
+              "pluginId": "waf",
+              "schemaVersion": 1,
+              "scope": 1,
+              "scopeId": "perf",
+              "version": "1.0"
+            }
+          ],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:39435/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [
+            "waf"
+          ],
+          "listener": "http://127.0.0.1:40317/",
+          "mode": "waf-attack",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": []
+      }
+    },
+    {
+      "name": "EnhancedYarp",
+      "endpoint": "http://127.0.0.1:40317/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "5c6c704042789e3bdec816b4f24bd7bbd2b960d0757a218d137f87327c80fbd0",
+        "configuration": {
+          "bindings": [
+            {
+              "configuration": {
+                "algorithm": "FixedWindow",
+                "enabled": true,
+                "partitionKey": "Global",
+                "permitLimit": 100,
+                "queueLimit": 0,
+                "tokenLimit": 100,
+                "tokensPerPeriod": 100,
+                "window": "1s"
+              },
+              "manifestOrder": 200,
+              "order": 0,
+              "pluginId": "rate-limit",
+              "schemaVersion": 1,
+              "scope": 1,
+              "scopeId": "perf",
+              "version": "1.0"
+            }
+          ],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:39435/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [
+            "rate-limit"
+          ],
+          "listener": "http://127.0.0.1:40317/",
+          "mode": "rate-fixed",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": []
+      }
+    },
+    {
+      "name": "EnhancedYarp",
+      "endpoint": "http://127.0.0.1:40317/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "d79ef2349bcecbe1ce4389022c62ad38f5e14a467a3c86933d487d563fad48e8",
+        "configuration": {
+          "bindings": [
+            {
+              "configuration": {
+                "algorithm": "SlidingWindow",
+                "enabled": true,
+                "partitionKey": "Global",
+                "permitLimit": 100,
+                "queueLimit": 0,
+                "tokenLimit": 100,
+                "tokensPerPeriod": 100,
+                "window": "1s"
+              },
+              "manifestOrder": 200,
+              "order": 0,
+              "pluginId": "rate-limit",
+              "schemaVersion": 1,
+              "scope": 1,
+              "scopeId": "perf",
+              "version": "1.0"
+            }
+          ],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:39435/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [
+            "rate-limit"
+          ],
+          "listener": "http://127.0.0.1:40317/",
+          "mode": "rate-sliding",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": []
+      }
+    },
+    {
+      "name": "EnhancedYarp",
+      "endpoint": "http://127.0.0.1:40317/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "77fd03765b888d7059b53a1cc9a8ac580bfa289808b531b40ee5cb08cfc42607",
+        "configuration": {
+          "bindings": [
+            {
+              "configuration": {
+                "algorithm": "TokenBucket",
+                "enabled": true,
+                "partitionKey": "Global",
+                "permitLimit": 100,
+                "queueLimit": 0,
+                "tokenLimit": 100,
+                "tokensPerPeriod": 100,
+                "window": "1s"
+              },
+              "manifestOrder": 200,
+              "order": 0,
+              "pluginId": "rate-limit",
+              "schemaVersion": 1,
+              "scope": 1,
+              "scopeId": "perf",
+              "version": "1.0"
+            }
+          ],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:39435/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [
+            "rate-limit"
+          ],
+          "listener": "http://127.0.0.1:40317/",
+          "mode": "rate-token",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": []
+      }
+    },
+    {
+      "name": "EnhancedYarp",
+      "endpoint": "http://127.0.0.1:40317/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "5d169298dcadfdd45c7bd2535281314379da1527da80963a0a539734c682b40a",
+        "configuration": {
+          "bindings": [
+            {
+              "configuration": {
+                "algorithm": "Concurrency",
+                "enabled": true,
+                "partitionKey": "Global",
+                "permitLimit": 100,
+                "queueLimit": 0,
+                "tokenLimit": 100,
+                "tokensPerPeriod": 100,
+                "window": "1s"
+              },
+              "manifestOrder": 200,
+              "order": 0,
+              "pluginId": "rate-limit",
+              "schemaVersion": 1,
+              "scope": 1,
+              "scopeId": "perf",
+              "version": "1.0"
+            }
+          ],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:39435/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [
+            "rate-limit"
+          ],
+          "listener": "http://127.0.0.1:40317/",
+          "mode": "rate-concurrency",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": []
+      }
+    },
+    {
+      "name": "EnhancedYarp",
+      "endpoint": "http://127.0.0.1:40317/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "3bb4119625d0c56df8058b25fe1406ebdae89300155a7f238756c74e01c05cb4",
+        "configuration": {
+          "bindings": [
+            {
+              "configuration": {
+                "backoffBaseMs": 1,
+                "backoffJitterMs": 1,
+                "enabled": true,
+                "maxRetries": 2,
+                "retryOnStatusCodes": [
+                  502,
+                  503,
+                  504
+                ]
+              },
+              "manifestOrder": 400,
+              "order": 0,
+              "pluginId": "request-retry",
+              "schemaVersion": 1,
+              "scope": 1,
+              "scopeId": "perf",
+              "version": "1.0"
+            }
+          ],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:39435/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [
+            "request-retry"
+          ],
+          "listener": "http://127.0.0.1:40317/",
+          "mode": "retry",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": []
+      }
+    },
+    {
+      "name": "EnhancedYarp",
+      "endpoint": "http://127.0.0.1:40317/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "c9a1693d7db1a46776e7a83f37bdc2eba0f055b4b8f1acf6f6a7af10d21dfd9e",
+        "configuration": {
+          "bindings": [
+            {
+              "configuration": {
+                "enabled": true,
+                "failureRatio": 0.75,
+                "failureStatusCodes": [
+                  500,
+                  502,
+                  503,
+                  504
+                ],
+                "failureThreshold": 3,
+                "halfOpenMaxAttempts": 1,
+                "minimumThroughput": 4,
+                "recoveryTimeoutSeconds": 2,
+                "samplingDurationSeconds": 30
+              },
+              "manifestOrder": 300,
+              "order": 0,
+              "pluginId": "circuit-breaker",
+              "schemaVersion": 1,
+              "scope": 2,
+              "scopeId": "backend",
+              "version": "1.0"
+            }
+          ],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:39435/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [
+            "circuit-breaker"
+          ],
+          "listener": "http://127.0.0.1:40317/",
+          "mode": "circuit",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": []
+      }
+    },
+    {
+      "name": "EnhancedYarp",
+      "endpoint": "http://127.0.0.1:40317/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "545af50b7969faac5867ec2094f959796c5e0d651766169f8cf6ff15e878295b",
+        "configuration": {
+          "bindings": [],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:39435/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [],
+          "listener": "http://127.0.0.1:40317/",
+          "mode": "full",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": []
+      }
+    }
+  ],
+  "results": [
+    {
+      "group": "Wafish full",
+      "scenario": "concurrency-1",
+      "concurrency": 1,
+      "requestsPerSecond": 3056.372911832026,
+      "p50Ms": 0.3053443757803778,
+      "p95Ms": 0.44565843285416934,
+      "p99Ms": 0.5658679536053727,
+      "nonSuccessPercent": 0,
+      "backendRequests": 3062,
+      "statuses": "load",
+      "passed": true,
+      "notes": "All responses successful; expected 429: 0; transport failures: 0",
+      "configurationHash": "545af50b7969faac5867ec2094f959796c5e0d651766169f8cf6ff15e878295b"
+    },
+    {
+      "group": "Wafish full",
+      "scenario": "concurrency-16",
+      "concurrency": 16,
+      "requestsPerSecond": 15199.039585336153,
+      "p50Ms": 0.9123070713273931,
+      "p95Ms": 1.8126578331365226,
+      "p99Ms": 3.530594786352074,
+      "nonSuccessPercent": 0,
+      "backendRequests": 15214,
+      "statuses": "load",
+      "passed": true,
+      "notes": "All responses successful; expected 429: 0; transport failures: 0",
+      "configurationHash": "545af50b7969faac5867ec2094f959796c5e0d651766169f8cf6ff15e878295b"
+    },
+    {
+      "group": "Wafish full",
+      "scenario": "concurrency-64",
+      "concurrency": 64,
+      "requestsPerSecond": 18609.858716101102,
+      "p50Ms": 3.196201402391593,
+      "p95Ms": 5.923239759237706,
+      "p99Ms": 9.549601604208636,
+      "nonSuccessPercent": 0,
+      "backendRequests": 18779,
+      "statuses": "load",
+      "passed": true,
+      "notes": "All responses successful; expected 429: 0; transport failures: 0",
+      "configurationHash": "545af50b7969faac5867ec2094f959796c5e0d651766169f8cf6ff15e878295b"
+    },
+    {
+      "group": "Wafish full",
+      "scenario": "concurrency-128",
+      "concurrency": 128,
+      "requestsPerSecond": 16995.162347632202,
+      "p50Ms": 7.085068285899072,
+      "p95Ms": 12.246714636905057,
+      "p99Ms": 20.959155637813843,
+      "nonSuccessPercent": 0,
+      "backendRequests": 17041,
+      "statuses": "load",
+      "passed": true,
+      "notes": "All responses successful; expected 429: 0; transport failures: 0",
+      "configurationHash": "545af50b7969faac5867ec2094f959796c5e0d651766169f8cf6ff15e878295b"
+    },
+    {
+      "group": "Wafish full",
+      "scenario": "response-1024",
+      "concurrency": 32,
+      "requestsPerSecond": 16486.008118647318,
+      "p50Ms": 1.7419285489170109,
+      "p95Ms": 3.4956384023287854,
+      "p99Ms": 5.982472156830083,
+      "nonSuccessPercent": 0,
+      "backendRequests": 16505,
+      "statuses": "load",
+      "passed": true,
+      "notes": "All responses successful; expected 429: 0; transport failures: 0",
+      "configurationHash": "545af50b7969faac5867ec2094f959796c5e0d651766169f8cf6ff15e878295b"
+    },
+    {
+      "group": "Wafish full",
+      "scenario": "request-1024",
+      "concurrency": 32,
+      "requestsPerSecond": 12537.638628228959,
+      "p50Ms": 2.347856505245216,
+      "p95Ms": 4.394587324926341,
+      "p99Ms": 6.945464450445124,
+      "nonSuccessPercent": 0,
+      "backendRequests": 12556,
+      "statuses": "load",
+      "passed": true,
+      "notes": "All responses successful; expected 429: 0; transport failures: 0",
+      "configurationHash": "545af50b7969faac5867ec2094f959796c5e0d651766169f8cf6ff15e878295b"
+    },
+    {
+      "group": "Wafish full",
+      "scenario": "response-65536",
+      "concurrency": 32,
+      "requestsPerSecond": 12145.295624628734,
+      "p50Ms": 2.418998905210651,
+      "p95Ms": 4.664942998985056,
+      "p99Ms": 7.826323188653353,
+      "nonSuccessPercent": 0,
+      "backendRequests": 12245,
+      "statuses": "load",
+      "passed": true,
+      "notes": "All responses successful; expected 429: 0; transport failures: 0",
+      "configurationHash": "545af50b7969faac5867ec2094f959796c5e0d651766169f8cf6ff15e878295b"
+    },
+    {
+      "group": "Wafish full",
+      "scenario": "request-65536",
+      "concurrency": 32,
+      "requestsPerSecond": 7267.779136563486,
+      "p50Ms": 4.098910940945931,
+      "p95Ms": 7.014919094949576,
+      "p99Ms": 13.394051437151063,
+      "nonSuccessPercent": 0,
+      "backendRequests": 7282,
+      "statuses": "load",
+      "passed": true,
+      "notes": "All responses successful; expected 429: 0; transport failures: 0",
+      "configurationHash": "545af50b7969faac5867ec2094f959796c5e0d651766169f8cf6ff15e878295b"
+    },
+    {
+      "group": "Wafish full",
+      "scenario": "response-1048576",
+      "concurrency": 32,
+      "requestsPerSecond": 2382.7564254287054,
+      "p50Ms": 12.743980360489097,
+      "p95Ms": 23.85347419495143,
+      "p99Ms": 29.10577163083559,
+      "nonSuccessPercent": 0,
+      "backendRequests": 2401,
+      "statuses": "load",
+      "passed": true,
+      "notes": "All responses successful; expected 429: 0; transport failures: 0",
+      "configurationHash": "545af50b7969faac5867ec2094f959796c5e0d651766169f8cf6ff15e878295b"
+    },
+    {
+      "group": "Wafish full",
+      "scenario": "request-1048576",
+      "concurrency": 32,
+      "requestsPerSecond": 780.7422954257779,
+      "p50Ms": 38.841765071830714,
+      "p95Ms": 64.5192068822542,
+      "p99Ms": 104.0195478469602,
+      "nonSuccessPercent": 0,
+      "backendRequests": 791,
+      "statuses": "load",
+      "passed": true,
+      "notes": "All responses successful; expected 429: 0; transport failures: 0",
+      "configurationHash": "545af50b7969faac5867ec2094f959796c5e0d651766169f8cf6ff15e878295b"
+    },
+    {
+      "group": "log-meta",
+      "scenario": "plain",
+      "concurrency": 32,
+      "requestsPerSecond": 12852.529190926043,
+      "p50Ms": 2.211787033826849,
+      "p95Ms": 3.978362576514951,
+      "p99Ms": 8.390877767570121,
+      "nonSuccessPercent": 0,
+      "backendRequests": 12865,
+      "statuses": "load",
+      "passed": true,
+      "notes": "All responses successful; expected 429: 0; transport failures: 0",
+      "configurationHash": "ff9f12096b94403ae5b96966a97e1e2101f43c0135df9628729842cd991e7293"
+    },
+    {
+      "group": "log-request",
+      "scenario": "post-64kb",
+      "concurrency": 32,
+      "requestsPerSecond": 4122.81473590665,
+      "p50Ms": 7.014919094949576,
+      "p95Ms": 14.648876798388917,
+      "p99Ms": 21.594239012795242,
+      "nonSuccessPercent": 0,
+      "backendRequests": 4128,
+      "statuses": "load",
+      "passed": true,
+      "notes": "All responses successful; expected 429: 0; transport failures: 0",
+      "configurationHash": "1086f103b2aa5d8a83e89f472f912d64b71b52d1f3c11c3d01e85406eaf4cc52"
+    },
+    {
+      "group": "log-response",
+      "scenario": "response-64kb",
+      "concurrency": 32,
+      "requestsPerSecond": 6872.375792280695,
+      "p50Ms": 3.637575338973328,
+      "p95Ms": 10.340850133193994,
+      "p99Ms": 26.08819342937483,
+      "nonSuccessPercent": 0,
+      "backendRequests": 6890,
+      "statuses": "load",
+      "passed": true,
+      "notes": "All responses successful; expected 429: 0; transport failures: 0",
+      "configurationHash": "72e87170aca0ea875bcda0622c2a9787419dc7dcc5963b0bb38fbc383224a174"
+    },
+    {
+      "group": "log-sqlite",
+      "scenario": "post-64kb",
+      "concurrency": 32,
+      "requestsPerSecond": 3695.340215829782,
+      "p50Ms": 7.983632284745286,
+      "p95Ms": 15.0927524142569,
+      "p99Ms": 20.34274997094426,
+      "nonSuccessPercent": 0,
+      "backendRequests": 3710,
+      "statuses": "load",
+      "passed": true,
+      "notes": "All responses successful; expected 429: 0; transport failures: 0",
+      "configurationHash": "cd763126ed7165b27d5e75044cea65d97a20bcf105c0f0ab19673c162e573cf1"
+    },
+    {
+      "group": "waf-normal",
+      "scenario": "normal",
+      "concurrency": 32,
+      "requestsPerSecond": 14695.322112237445,
+      "p50Ms": 1.9434145441793558,
+      "p95Ms": 3.8999731168659455,
+      "p99Ms": 8.144103293668666,
+      "nonSuccessPercent": 0,
+      "backendRequests": 14722,
+      "statuses": "load",
+      "passed": true,
+      "notes": "All responses successful; expected 429: 0; transport failures: 0",
+      "configurationHash": "a981ee68ce3c5fa9ff5ee2c6c785861141c49520135f062fafe646a500334c2e"
+    },
+    {
+      "group": "waf-attack",
+      "scenario": "/api/perf/plain?q=%27%20OR%201%3D1--",
+      "concurrency": 1,
+      "requestsPerSecond": 1,
+      "p50Ms": 12.2426,
+      "p95Ms": 12.2426,
+      "p99Ms": 12.2426,
+      "nonSuccessPercent": 100,
+      "backendRequests": 0,
+      "statuses": "Forbidden",
+      "passed": true,
+      "notes": "Expected status 403, backend calls 0",
+      "configurationHash": "f13d479314b2058d06cee9df7cddb497efe1d776db478bd7f8c1d1da7aa41c53"
+    },
+    {
+      "group": "rate-fixed",
+      "scenario": "plain",
+      "concurrency": 64,
+      "requestsPerSecond": 25023.86600064122,
+      "p50Ms": 2.2788063927388365,
+      "p95Ms": 4.854358391165275,
+      "p99Ms": 10.654188233079903,
+      "nonSuccessPercent": 0,
+      "backendRequests": 199,
+      "statuses": "load",
+      "passed": true,
+      "notes": "Expected policy rejections included; expected 429: 24871; transport failures: 0",
+      "configurationHash": "5c6c704042789e3bdec816b4f24bd7bbd2b960d0757a218d137f87327c80fbd0"
+    },
+    {
+      "group": "rate-sliding",
+      "scenario": "plain",
+      "concurrency": 64,
+      "requestsPerSecond": 26118.14893932826,
+      "p50Ms": 2.3015944566662245,
+      "p95Ms": 4.181299050858944,
+      "p99Ms": 7.520942753865953,
+      "nonSuccessPercent": 0,
+      "backendRequests": 199,
+      "statuses": "load",
+      "passed": true,
+      "notes": "Expected policy rejections included; expected 429: 25967; transport failures: 0",
+      "configurationHash": "d79ef2349bcecbe1ce4389022c62ad38f5e14a467a3c86933d487d563fad48e8"
+    },
+    {
+      "group": "rate-token",
+      "scenario": "plain",
+      "concurrency": 64,
+      "requestsPerSecond": 25954.44050397208,
+      "p50Ms": 2.2339049041651173,
+      "p95Ms": 4.2653431617812085,
+      "p99Ms": 10.548701220871191,
+      "nonSuccessPercent": 0,
+      "backendRequests": 199,
+      "statuses": "load",
+      "passed": true,
+      "notes": "Expected policy rejections included; expected 429: 25816; transport failures: 0",
+      "configurationHash": "77fd03765b888d7059b53a1cc9a8ac580bfa289808b531b40ee5cb08cfc42607"
+    },
+    {
+      "group": "rate-concurrency",
+      "scenario": "plain",
+      "concurrency": 64,
+      "requestsPerSecond": 16821.357088130466,
+      "p50Ms": 3.530594786352074,
+      "p95Ms": 6.163747045654191,
+      "p99Ms": 14.218055498722137,
+      "nonSuccessPercent": 0,
+      "backendRequests": 16890,
+      "statuses": "load",
+      "passed": true,
+      "notes": "Expected policy rejections included; expected 429: 0; transport failures: 0",
+      "configurationHash": "5d169298dcadfdd45c7bd2535281314379da1527da80963a0a539734c682b40a"
+    },
+    {
+      "group": "retry",
+      "scenario": "/api/perf/flaky/2",
+      "concurrency": 1,
+      "requestsPerSecond": 1,
+      "p50Ms": 9.4528,
+      "p95Ms": 9.4528,
+      "p99Ms": 9.4528,
+      "nonSuccessPercent": 0,
+      "backendRequests": 3,
+      "statuses": "OK",
+      "passed": true,
+      "notes": "Expected status 200, backend calls 3",
+      "configurationHash": "3bb4119625d0c56df8058b25fe1406ebdae89300155a7f238756c74e01c05cb4"
+    },
+    {
+      "group": "circuit",
+      "scenario": "open-half-open-closed",
+      "concurrency": 1,
+      "requestsPerSecond": 7,
+      "p50Ms": 0,
+      "p95Ms": 0,
+      "p99Ms": 0,
+      "nonSuccessPercent": 0,
+      "backendRequests": 4,
+      "statuses": "503/503/503/503/503/503/200",
+      "passed": true,
+      "notes": "3 backend failures, 3 open rejections, successful half-open probe",
+      "configurationHash": "c9a1693d7db1a46776e7a83f37bdc2eba0f055b4b8f1acf6f6a7af10d21dfd9e"
+    },
+    {
+      "group": "soak",
+      "scenario": "plain-1s",
+      "concurrency": 64,
+      "requestsPerSecond": 19675.301638560635,
+      "p50Ms": 2.981154754490904,
+      "p95Ms": 5.579959792458156,
+      "p99Ms": 9.455051093275877,
+      "nonSuccessPercent": 0,
+      "backendRequests": 19716,
+      "statuses": "load",
+      "passed": true,
+      "notes": "All responses successful; expected 429: 0; transport failures: 0",
+      "configurationHash": "545af50b7969faac5867ec2094f959796c5e0d651766169f8cf6ff15e878295b"
+    }
+  ]
+}

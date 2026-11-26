@@ -51,3 +51,8 @@ done
 JSON reports record both transport legs. CSV rows retain their host configuration hash.
 Keep workload, concurrency, telemetry, and machine settings unchanged across comparisons.
 These local measurements do not establish production capacity.
+
+`BenchmarkArrivalSchedule` uses fixed arrival times, bounded workers, and a bounded queue.
+`BenchmarkStreamWorkload` defines payload and timing limits for synthetic streams.
+`BenchmarkBodyMeasurement` reads bodies through a pooled buffer and records delivery observations.
+`BenchmarkPluginMatrix` validates explicit combinations and supplies versioned benchmark presets.
