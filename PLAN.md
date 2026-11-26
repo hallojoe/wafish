@@ -19,9 +19,8 @@ R56 records a release discrepancy found during cleanup; it does not authorize pu
 | Order | ID | Remaining task | Value / 10 | Need / 10 |
 |---|---|---|---|---|
 | 1 | R56 | [Reconcile the release version and package publication](#r56) | 9 | 9 |
-| 2 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
-| 3 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
-| 4 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
+| 2 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
+| 3 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
 
 ## Completion rule
 
@@ -425,7 +424,7 @@ Verification: [R52 evidence](tests/Wafish.Regression/evidence/cancellable-stream
 
 ### R53: Show redacted telemetry configuration
 
-Status: TODO. Value: 5/10. Need: 3/10.
+Status: COMPLETE. Value: 5/10. Need: 3/10.
 
 Make local telemetry setup easier to inspect.
 
@@ -435,6 +434,8 @@ Expose an opt-in local diagnostic view of enabled exporters and instrumentation.
 Telemetry redaction defaults already exist. The missing work is the diagnostic view, not basic redaction setup.
 
 Acceptance: The view reports configuration state without revealing credentials or payload data.
+
+Verification: [R53 evidence](tests/Wafish.Regression/evidence/telemetry-diagnostics/README.md).
 
 <a id="r54"></a>
 

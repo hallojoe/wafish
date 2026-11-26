@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "suite": "main",
+  "cases": [
+    {
+      "name": "Sample telemetry diagnostics: opt-in local startup configuration excludes exporter secrets and payload data",
+      "group": "sample-telemetry-diagnostics",
+      "durationMs": 754.5304,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    }
+  ]
+}

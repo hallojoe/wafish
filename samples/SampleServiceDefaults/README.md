@@ -79,3 +79,16 @@ See [registration and operations](../../docs/registration-operations-contracts.m
 
 The metrics pipeline also includes `Wafish.Plugin.Compression` byte and response counters.
 See [compression measurements](../../src/Wafish.Plugin.Compression/README.md#compression-measurements-r40) for bounded labels and savings calculations.
+
+## Local telemetry configuration view
+
+Set `Sample:TelemetryDiagnostics=true` and run in `Development`.
+`GET /diagnostics/telemetry` then reports the startup configuration registered by this library.
+Only direct loopback requests are accepted. Forwarded requests return HTTP 403.
+The endpoint is absent when disabled or outside Development. Responses use `Cache-Control: no-store`.
+
+The response lists metric and trace instrumentation, logging registration, probe filtering, and OTLP exporter registration.
+It contains no endpoint URLs, headers, credentials, connection strings, application names, or payload data.
+`connectivityVerified` remains false: exporter registration does not establish collector reachability or successful delivery.
+The snapshot describes this library's registrations. Additional host instrumentation is outside its scope.
+Configuration changes after startup do not change the captured registration state. Restart to apply exporter changes.

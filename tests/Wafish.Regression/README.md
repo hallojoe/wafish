@@ -162,3 +162,5 @@ Run `python3 scripts/check-service-discovery.py` with the AppHost stopped for re
 
 `--group sample-streaming` checks bounded SSE delivery, cancellation, identity, capacity, cache bypass, and compression behavior.
 It uses the actual cache, compression, and retry plugin bindings through a real HTTP gateway.
+
+`--group sample-telemetry-diagnostics` verifies opt-in local telemetry registration without exposing configuration secrets.

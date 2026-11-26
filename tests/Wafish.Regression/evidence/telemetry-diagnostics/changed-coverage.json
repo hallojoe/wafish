@@ -1,0 +1,21 @@
+{
+  "base": "accbc55",
+  "covered": 19,
+  "executable": 19,
+  "files": [
+    {
+      "file": "samples/SampleServiceDefaults/Extensions.cs",
+      "covered": 2,
+      "executable": 2,
+      "uncovered": []
+    },
+    {
+      "file": "samples/SampleServiceDefaults/TelemetryDiagnostics.cs",
+      "covered": 17,
+      "executable": 17,
+      "uncovered": []
+    }
+  ],
+  "missingFiles": [],
+  "percent": 100.0
+}
