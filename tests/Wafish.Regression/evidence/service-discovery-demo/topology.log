@@ -1,0 +1,12 @@
+dotnet-coverage v18.12.0.0 [linux-x64 - .NET 10.0.14]
+
+SessionId: ca40a6d1-a5da-4dff-b50a-51f9203e1a22
+{
+  "addition": true,
+  "removal": true,
+  "stableIdentities": true,
+  "refreshFailureVisible": true,
+  "staleTrafficRejected": true,
+  "recovery": true
+}
+Code coverage results: /tmp/wafish-r51-topology-coverage.xml.

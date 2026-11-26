@@ -73,3 +73,9 @@ SonarQube readiness accepts only an exact `UP` status. Invalid, unavailable, and
 `EnableFaultInjection=true` adds a private loopback proxy targeting `backend-one`.
 The default routes remain unchanged. A separate demonstration route exercises retry and circuit recovery.
 See [SampleFaultProxy](../samples/SampleFaultProxy/README.md) for controls and the isolated verification command.
+
+## Optional service-discovery catalog
+
+`EnableDiscoveryDemo=true` adds a private loopback catalog for both sample backends.
+The profile retains the default gRPC registration example.
+See [SampleDiscoveryCatalog](../samples/SampleDiscoveryCatalog/README.md) for endpoint changes and stale-policy verification.

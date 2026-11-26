@@ -156,3 +156,6 @@ See [candidate evidence](evidence/release-candidate/README.md).
 
 `--group sample-faults` checks the optional loopback fault proxy, private controls, bounds, and cancellation.
 Run `python3 scripts/check-network-faults.py` with the AppHost stopped for the complete Aspire retry and circuit recovery scenario.
+
+`--group sample-discovery` checks the bounded HTTP JSON catalog and private membership controls.
+Run `python3 scripts/check-service-discovery.py` with the AppHost stopped for real discovery refresh and stale-policy verification.

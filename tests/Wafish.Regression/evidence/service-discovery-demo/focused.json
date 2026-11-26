@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "suite": "main",
+  "cases": [
+    {
+      "name": "Sample discovery: private bounded catalog controls add, remove, fail, and restore stable endpoints",
+      "group": "sample-discovery",
+      "durationMs": 1305.7849,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    }
+  ]
+}

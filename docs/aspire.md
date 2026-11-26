@@ -163,3 +163,9 @@ Set `EnableFaultInjection=true` to add the optional `fault-proxy` resource.
 It supports bounded request delays and connection resets against `backend-one`.
 The [fault demonstration](../samples/SampleFaultProxy/README.md) installs real retry and circuit-breaker bindings in private storage.
 The default topology and production gateway configuration remain unchanged.
+
+## HTTP JSON service discovery
+
+Set `EnableDiscoveryDemo=true` to add the optional `discovery-catalog` resource.
+The [discovery demonstration](../samples/SampleDiscoveryCatalog/README.md) exercises a real HTTP JSON plugin binding.
+It verifies endpoint addition, removal, stable destination IDs, visible refresh failures, stale rejection, and recovery.

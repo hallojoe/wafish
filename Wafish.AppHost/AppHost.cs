@@ -78,6 +78,18 @@ if (builder.Configuration.GetValue<bool>("EnableFaultInjection"))
         .WaitFor(backends[0]);
 }
 
+if (builder.Configuration.GetValue<bool>("EnableDiscoveryDemo"))
+{
+    builder.AddProject<Projects.SampleDiscoveryCatalog>("discovery-catalog", project =>
+        { project.ExcludeLaunchProfile = true; project.ExcludeKestrelEndpoints = true; })
+        .WithHttpEndpoint(name: "http", env: "CATALOG_HTTP_PORT", isProxied: false)
+        .WithEnvironment("Catalog__Backends__backend-one", backends[0].GetEndpoint("http"))
+        .WithEnvironment("Catalog__Backends__backend-two", backends[1].GetEndpoint("http"))
+        .WithEnvironment("Catalog__ControlKey", password)
+        .WithHttpHealthCheck("/health")
+        .WaitFor(backends[0]).WaitFor(backends[1]);
+}
+
 IResourceBuilder<ProjectResource>? secondGateway = null;
 if (builder.Configuration.GetValue<bool>("EnableSecondGateway"))
 {

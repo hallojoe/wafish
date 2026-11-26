@@ -1,0 +1,29 @@
+{
+  "base": "144c4c8",
+  "covered": 61,
+  "executable": 62,
+  "files": [
+    {
+      "file": "Wafish.AppHost/AppHost.cs",
+      "covered": 11,
+      "executable": 11,
+      "uncovered": []
+    },
+    {
+      "file": "samples/SampleDiscoveryCatalog/CatalogApplication.cs",
+      "covered": 49,
+      "executable": 50,
+      "uncovered": [
+        13
+      ]
+    },
+    {
+      "file": "samples/SampleDiscoveryCatalog/Program.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    }
+  ],
+  "missingFiles": [],
+  "percent": 98.39
+}

@@ -8,6 +8,7 @@
     <Project Path="samples/MinimalGateway/MinimalGateway.csproj" />
     <Project Path="samples/SampleGateway/SampleGateway.csproj" />
     <Project Path="samples/SampleFaultProxy/SampleFaultProxy.csproj" />
+    <Project Path="samples/SampleDiscoveryCatalog/SampleDiscoveryCatalog.csproj" />
     <Project Path="samples/SampleLocalService/SampleLocalService.csproj" />
     <Project Path="samples/SampleServiceDefaults/SampleServiceDefaults.csproj" />
   </Folder>

@@ -7,6 +7,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../../samples/SampleDiscoveryCatalog/SampleDiscoveryCatalog.csproj" />
     <ProjectReference Include="../../samples/SampleFaultProxy/SampleFaultProxy.csproj" />
     <ProjectReference Include="../../samples/SampleLocalService/SampleLocalService.csproj" />
     <Compile Include="../../Wafish.AppHost/TopologyState.cs" Link="Samples/TopologyState.cs" />

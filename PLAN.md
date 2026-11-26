@@ -19,12 +19,11 @@ R56 records a release discrepancy found during cleanup; it does not authorize pu
 | Order | ID | Remaining task | Value / 10 | Need / 10 |
 |---|---|---|---|---|
 | 1 | R56 | [Reconcile the release version and package publication](#r56) | 9 | 9 |
-| 2 | R51 | [Demonstrate service discovery](#r51) | 6 | 4 |
-| 3 | R55 | [Save operator views](#r55) | 5 | 3 |
-| 4 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
-| 5 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
-| 6 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
-| 7 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
+| 2 | R55 | [Save operator views](#r55) | 5 | 3 |
+| 3 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
+| 4 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
+| 5 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
+| 6 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
 
 ## Completion rule
 
@@ -372,19 +371,21 @@ Verification: [R49 evidence](tests/Wafish.Regression/evidence/network-faults/REA
 
 ### R51: Demonstrate service discovery
 
-Status: TODO. Value: 6/10. Need: 4/10.
+Status: COMPLETE. Value: 6/10. Need: 4/10.
 
 Demonstrate discovery changes without changing the default sample.
 
 Source: [Wafish.AppHost FEAT-02](docs/archive/2026-11-planning/Wafish.AppHost/PLAN.md#feat-02-add-a-service-discovery-demonstration-profile).
 
-Evidence: [AppHost.cs](Wafish.AppHost/AppHost.cs) currently demonstrates registration through gRPC.
+The optional catalog profile retains the default gRPC registration example.
 
 Add an opt-in HTTP JSON discovery catalog for the sample backends.
 Exercise endpoint addition, removal, stale discovery, and recovery through real plugin bindings.
 
 Acceptance: The default topology remains unchanged.
 The discovery profile demonstrates stable destination identity and visible refresh failures.
+
+Verification: [R51 evidence](tests/Wafish.Regression/evidence/service-discovery-demo/README.md).
 
 <a id="r55"></a>
 
