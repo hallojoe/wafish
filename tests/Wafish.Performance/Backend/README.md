@@ -95,3 +95,9 @@ Payloads contain synthetic `x` bytes only.
 
 `/api/perf/cacheable-json` returns the small JSON payload with `Cache-Control: public, max-age=60`.
 The plugin combination suite uses it to measure actual warm-cache behavior. Other payloads retain their existing headers.
+
+## Destination identity
+
+The runner supplies a bounded `--backend-id` for each managed destination.
+`X-Benchmark-Destination` identifies that backend in responses and its configuration manifest.
+The header is present for all benchmark modes, including single-destination comparisons.

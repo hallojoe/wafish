@@ -1,0 +1,564 @@
+{
+  "schemaVersion": 5,
+  "environment": {
+    "capturedUtc": "2026-11-26T00:51:17.6503006+00:00",
+    "runtime": ".NET 10.0.14",
+    "operatingSystem": "Omarchy",
+    "processArchitecture": "X64",
+    "osArchitecture": "X64",
+    "logicalProcessors": 8,
+    "cpuModel": "11th Gen Intel(R) Core(TM) i7-1185G7 @ 3.00GHz",
+    "serverGc": false,
+    "sourceRevision": "ef81b13cf8d4eb027442990aadd56f5d4dc710bf",
+    "workingTreeDirty": true
+  },
+  "settings": {
+    "processMeasurementsAvailable": true,
+    "durationSeconds": 1,
+    "warmupSeconds": 0,
+    "concurrency": 1,
+    "repetitions": 1,
+    "suite": "baseline",
+    "requestTimeoutSeconds": 10,
+    "clientTransport": "HTTP/1.1 exact cleartext"
+  },
+  "streaming": null,
+  "destinations": {
+    "count": 3,
+    "policy": "RoundRobin",
+    "entries": [
+      {
+        "id": "backend-1",
+        "address": "http://127.0.0.1:57121"
+      },
+      {
+        "id": "backend-2",
+        "address": "http://127.0.0.1:34373"
+      },
+      {
+        "id": "backend-3",
+        "address": "http://127.0.0.1:52147"
+      }
+    ]
+  },
+  "pluginSets": [],
+  "acceptEncoding": "identity",
+  "arrivals": {
+    "mode": "closed-loop",
+    "ratePerSecond": 0,
+    "queueCapacity": 128,
+    "drainDeadlineSeconds": 12
+  },
+  "transport": {
+    "mode": "http1",
+    "client": "HTTP/1.1 exact cleartext",
+    "upstream": "HTTP/1.1 exact cleartext",
+    "certificate": "none"
+  },
+  "latency": {
+    "strategy": "fixed logarithmic histogram; upper-bound nearest rank",
+    "relativeError": 0.01,
+    "absoluteErrorBelowMinimumMs": 0.001,
+    "maximumMs": 86400000,
+    "retainedBytes": 20256
+  },
+  "hosts": [
+    {
+      "name": "backend-1",
+      "endpoint": "http://127.0.0.1:57121/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "4bc3d8de0cfba2721b4a65ed8f92e31ae796f63756df97eaaa4d355b0effdc17",
+        "configuration": {
+          "backendId": "backend-1",
+          "maxDelayMilliseconds": 30000,
+          "maxRequestBytes": 4194304,
+          "mode": "backend",
+          "payloadMode": "precomputed",
+          "preparedSizes": [
+            0,
+            1024,
+            65536,
+            1048576,
+            4194304
+          ],
+          "streamLimits": {
+            "maxBytes": 4194304,
+            "maxChunkBytes": 65536,
+            "maxChunks": 256,
+            "maxDurationMs": 4000,
+            "maxIntervalMs": 1000
+          },
+          "transport": "HTTP/1.1 exact cleartext",
+          "transportFaults": false
+        }
+      }
+    },
+    {
+      "name": "backend-2",
+      "endpoint": "http://127.0.0.1:34373/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "3166eb9f61fb84b47349af0bf2e28f94bd528df1aeb45324a0bdcd3da25e0c86",
+        "configuration": {
+          "backendId": "backend-2",
+          "maxDelayMilliseconds": 30000,
+          "maxRequestBytes": 4194304,
+          "mode": "backend",
+          "payloadMode": "precomputed",
+          "preparedSizes": [
+            0,
+            1024,
+            65536,
+            1048576,
+            4194304
+          ],
+          "streamLimits": {
+            "maxBytes": 4194304,
+            "maxChunkBytes": 65536,
+            "maxChunks": 256,
+            "maxDurationMs": 4000,
+            "maxIntervalMs": 1000
+          },
+          "transport": "HTTP/1.1 exact cleartext",
+          "transportFaults": false
+        }
+      }
+    },
+    {
+      "name": "backend-3",
+      "endpoint": "http://127.0.0.1:52147/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "a6399af1eed47e467e57da8835b1383614002238045e8dc6641f26bb05afa82a",
+        "configuration": {
+          "backendId": "backend-3",
+          "maxDelayMilliseconds": 30000,
+          "maxRequestBytes": 4194304,
+          "mode": "backend",
+          "payloadMode": "precomputed",
+          "preparedSizes": [
+            0,
+            1024,
+            65536,
+            1048576,
+            4194304
+          ],
+          "streamLimits": {
+            "maxBytes": 4194304,
+            "maxChunkBytes": 65536,
+            "maxChunks": 256,
+            "maxDurationMs": 4000,
+            "maxIntervalMs": 1000
+          },
+          "transport": "HTTP/1.1 exact cleartext",
+          "transportFaults": false
+        }
+      }
+    },
+    {
+      "name": "Native YARP",
+      "endpoint": "http://127.0.0.1:49523/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "ffc9494e161e2e65b3218352c55c067e7bec71aae0940b373109ab805bbd6afb",
+        "configuration": {
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend-1": {
+                  "address": "http://127.0.0.1:57121/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                },
+                "backend-2": {
+                  "address": "http://127.0.0.1:34373/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                },
+                "backend-3": {
+                  "address": "http://127.0.0.1:52147/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": "RoundRobin",
+              "metadata": null,
+              "sessionAffinity": null
+            }
+          ],
+          "listener": "http://127.0.0.1:49523/",
+          "mode": "native",
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "authorizationPolicy": null,
+              "clusterId": "backend",
+              "corsPolicy": null,
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "maxRequestBodySize": null,
+              "metadata": null,
+              "order": null,
+              "outputCachePolicy": null,
+              "rateLimiterPolicy": null,
+              "routeId": "perf",
+              "timeout": null,
+              "timeoutPolicy": null,
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        }
+      }
+    },
+    {
+      "name": "Wafish full",
+      "endpoint": "http://127.0.0.1:56903/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "eb6e32ed1d9dd1d62b6d5478db31dc1c0761afe48fbff2aa29e09565d2cd824e",
+        "configuration": {
+          "bindings": [],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend-1": {
+                  "address": "http://127.0.0.1:57121/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                },
+                "backend-2": {
+                  "address": "http://127.0.0.1:34373/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                },
+                "backend-3": {
+                  "address": "http://127.0.0.1:52147/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": "RoundRobin",
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [],
+          "listener": "http://127.0.0.1:56903/",
+          "mode": "full",
+          "pluginSelection": null,
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": []
+      }
+    }
+  ],
+  "results": [
+    {
+      "gateway": "Native YARP",
+      "scenario": "plain",
+      "repetition": 1,
+      "requestsPerSecond": 1357.4627663434276,
+      "p50Ms": 0.6188814471422334,
+      "p95Ms": 1.254368103679604,
+      "p99Ms": 2.9224142284980923,
+      "errorRatePercent": 0,
+      "cpuPercent": 12.102379442583866,
+      "workingSetMb": 98.640625,
+      "requests": 1360,
+      "failures": 0,
+      "policyRejections": 0,
+      "transportFailures": 0,
+      "destinationResponses": {
+        "backend-1": 453,
+        "backend-2": 453,
+        "backend-3": 454,
+        "__unknown__": 0
+      },
+      "configurationHash": "ffc9494e161e2e65b3218352c55c067e7bec71aae0940b373109ab805bbd6afb",
+      "arrivals": {
+        "offered": 1360,
+        "started": 1360,
+        "dropped": 0,
+        "cancelledBeforeStart": 0,
+        "offeredPerSecond": 1360,
+        "queueP50Ms": 0,
+        "queueP95Ms": 0,
+        "queueP99Ms": 0
+      },
+      "completedResponses": 1360,
+      "scheduledP95Ms": 1.254368103679604,
+      "scheduledP99Ms": 2.9224142284980923,
+      "responseBytes": 2720,
+      "bodyReads": 1360,
+      "firstByteSamples": 1360,
+      "firstByteP50Ms": 0.6127539080616171,
+      "firstByteP95Ms": 1.2296520965391669,
+      "firstByteP99Ms": 2.8934794341565273,
+      "readGapP95Ms": 0.001
+    },
+    {
+      "gateway": "Native YARP",
+      "scenario": "json-small",
+      "repetition": 1,
+      "requestsPerSecond": 1959.006391957999,
+      "p50Ms": 0.4282689943258717,
+      "p95Ms": 0.9493503967746413,
+      "p99Ms": 2.4922969910374397,
+      "errorRatePercent": 0,
+      "cpuPercent": 17.36619186748481,
+      "workingSetMb": 111.98828125,
+      "requests": 1960,
+      "failures": 0,
+      "policyRejections": 0,
+      "transportFailures": 0,
+      "destinationResponses": {
+        "backend-1": 654,
+        "backend-2": 653,
+        "backend-3": 653,
+        "__unknown__": 0
+      },
+      "configurationHash": "ffc9494e161e2e65b3218352c55c067e7bec71aae0940b373109ab805bbd6afb",
+      "arrivals": {
+        "offered": 1960,
+        "started": 1960,
+        "dropped": 0,
+        "cancelledBeforeStart": 0,
+        "offeredPerSecond": 1960,
+        "queueP50Ms": 0,
+        "queueP95Ms": 0,
+        "queueP99Ms": 0
+      },
+      "completedResponses": 1960,
+      "scheduledP95Ms": 0.9493503967746413,
+      "scheduledP99Ms": 2.4922969910374397,
+      "responseBytes": 346920,
+      "bodyReads": 1960,
+      "firstByteSamples": 1960,
+      "firstByteP50Ms": 0.42402870725333835,
+      "firstByteP95Ms": 0.9399508878956845,
+      "firstByteP99Ms": 2.4676207832053856,
+      "readGapP95Ms": 0.001
+    },
+    {
+      "gateway": "Native YARP",
+      "scenario": "post-1kb",
+      "repetition": 1,
+      "requestsPerSecond": 2273.1521949301914,
+      "p50Ms": 0.35449534097784957,
+      "p95Ms": 0.7256871686584576,
+      "p99Ms": 2.4431888942627578,
+      "errorRatePercent": 0,
+      "cpuPercent": 20.848880522481437,
+      "workingSetMb": 115.12890625,
+      "requests": 2276,
+      "failures": 0,
+      "policyRejections": 0,
+      "transportFailures": 0,
+      "destinationResponses": {
+        "backend-1": 759,
+        "backend-2": 759,
+        "backend-3": 758,
+        "__unknown__": 0
+      },
+      "configurationHash": "ffc9494e161e2e65b3218352c55c067e7bec71aae0940b373109ab805bbd6afb",
+      "arrivals": {
+        "offered": 2276,
+        "started": 2276,
+        "dropped": 0,
+        "cancelledBeforeStart": 0,
+        "offeredPerSecond": 2276,
+        "queueP50Ms": 0,
+        "queueP95Ms": 0,
+        "queueP99Ms": 0
+      },
+      "completedResponses": 2276,
+      "scheduledP95Ms": 0.7256871686584576,
+      "scheduledP99Ms": 2.4431888942627578,
+      "responseBytes": 2330624,
+      "bodyReads": 2276,
+      "firstByteSamples": 2276,
+      "firstByteP50Ms": 0.3509854861166827,
+      "firstByteP95Ms": 0.7185021471865917,
+      "firstByteP99Ms": 2.4431888942627578,
+      "readGapP95Ms": 0.001
+    },
+    {
+      "gateway": "Wafish full",
+      "scenario": "plain",
+      "repetition": 1,
+      "requestsPerSecond": 1701.1830918792798,
+      "p50Ms": 0.5277952569079107,
+      "p95Ms": 0.8943310178682414,
+      "p99Ms": 1.6247282075846974,
+      "errorRatePercent": 0,
+      "cpuPercent": 17.61654178663406,
+      "workingSetMb": 141.5078125,
+      "requests": 1702,
+      "failures": 0,
+      "policyRejections": 0,
+      "transportFailures": 0,
+      "destinationResponses": {
+        "backend-1": 567,
+        "backend-2": 567,
+        "backend-3": 568,
+        "__unknown__": 0
+      },
+      "configurationHash": "eb6e32ed1d9dd1d62b6d5478db31dc1c0761afe48fbff2aa29e09565d2cd824e",
+      "arrivals": {
+        "offered": 1702,
+        "started": 1702,
+        "dropped": 0,
+        "cancelledBeforeStart": 0,
+        "offeredPerSecond": 1702,
+        "queueP50Ms": 0,
+        "queueP95Ms": 0,
+        "queueP99Ms": 0
+      },
+      "completedResponses": 1702,
+      "scheduledP95Ms": 0.8943310178682414,
+      "scheduledP99Ms": 1.6247282075846974,
+      "responseBytes": 3404,
+      "bodyReads": 1702,
+      "firstByteSamples": 1702,
+      "firstByteP50Ms": 0.5277952569079107,
+      "firstByteP95Ms": 0.8943310178682414,
+      "firstByteP99Ms": 1.6086417896878193,
+      "readGapP95Ms": 0.001
+    },
+    {
+      "gateway": "Wafish full",
+      "scenario": "json-small",
+      "repetition": 1,
+      "requestsPerSecond": 2380.784538999221,
+      "p50Ms": 0.36523690430481937,
+      "p95Ms": 0.7551529777115373,
+      "p99Ms": 1.135563080644121,
+      "errorRatePercent": 0,
+      "cpuPercent": 27.247534098164117,
+      "workingSetMb": 148.7734375,
+      "requests": 2381,
+      "failures": 0,
+      "policyRejections": 0,
+      "transportFailures": 0,
+      "destinationResponses": {
+        "backend-1": 794,
+        "backend-2": 793,
+        "backend-3": 794,
+        "__unknown__": 0
+      },
+      "configurationHash": "eb6e32ed1d9dd1d62b6d5478db31dc1c0761afe48fbff2aa29e09565d2cd824e",
+      "arrivals": {
+        "offered": 2381,
+        "started": 2381,
+        "dropped": 0,
+        "cancelledBeforeStart": 0,
+        "offeredPerSecond": 2381,
+        "queueP50Ms": 0,
+        "queueP95Ms": 0,
+        "queueP99Ms": 0
+      },
+      "completedResponses": 2381,
+      "scheduledP95Ms": 0.7627045074886527,
+      "scheduledP99Ms": 1.135563080644121,
+      "responseBytes": 421437,
+      "bodyReads": 2381,
+      "firstByteSamples": 2381,
+      "firstByteP50Ms": 0.3616206973315043,
+      "firstByteP95Ms": 0.7551529777115373,
+      "firstByteP99Ms": 1.1243198818258624,
+      "readGapP95Ms": 0.001
+    },
+    {
+      "gateway": "Wafish full",
+      "scenario": "post-1kb",
+      "repetition": 1,
+      "requestsPerSecond": 2151.5417216132964,
+      "p50Ms": 0.3954992309693151,
+      "p95Ms": 0.7780348680891747,
+      "p99Ms": 1.305300478705092,
+      "errorRatePercent": 0,
+      "cpuPercent": 20.745581191206274,
+      "workingSetMb": 144.1328125,
+      "requests": 2152,
+      "failures": 0,
+      "policyRejections": 0,
+      "transportFailures": 0,
+      "destinationResponses": {
+        "backend-1": 718,
+        "backend-2": 717,
+        "backend-3": 717,
+        "__unknown__": 0
+      },
+      "configurationHash": "eb6e32ed1d9dd1d62b6d5478db31dc1c0761afe48fbff2aa29e09565d2cd824e",
+      "arrivals": {
+        "offered": 2152,
+        "started": 2152,
+        "dropped": 0,
+        "cancelledBeforeStart": 0,
+        "offeredPerSecond": 2152,
+        "queueP50Ms": 0,
+        "queueP95Ms": 0,
+        "queueP99Ms": 0
+      },
+      "completedResponses": 2152,
+      "scheduledP95Ms": 0.7780348680891747,
+      "scheduledP99Ms": 1.3183534834921427,
+      "responseBytes": 2203648,
+      "bodyReads": 2152,
+      "firstByteSamples": 2152,
+      "firstByteP50Ms": 0.3954992309693151,
+      "firstByteP95Ms": 0.7703315525635391,
+      "firstByteP99Ms": 1.305300478705092,
+      "readGapP95Ms": 0.001
+    }
+  ]
+}

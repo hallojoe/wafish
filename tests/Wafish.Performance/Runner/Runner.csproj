@@ -13,6 +13,7 @@
     <Compile Include="../Shared/BenchmarkStreamWorkload.cs" Link="BenchmarkStreamWorkload.cs" />
     <Compile Include="../Shared/BenchmarkBodyMeasurement.cs" Link="BenchmarkBodyMeasurement.cs" />
     <Compile Include="../Shared/BenchmarkPluginMatrix.cs" Link="BenchmarkPluginMatrix.cs" />
+    <Compile Include="../Shared/BenchmarkDestinations.cs" Link="BenchmarkDestinations.cs" />
     <Compile Include="../Shared/BenchmarkOptions.cs" Link="BenchmarkOptions.cs" />
     <Compile Include="../Shared/BenchmarkManifest.cs" Link="BenchmarkManifest.cs" />
     <Compile Include="../Shared/BoundedLatencyHistogram.cs" Link="BoundedLatencyHistogram.cs" />

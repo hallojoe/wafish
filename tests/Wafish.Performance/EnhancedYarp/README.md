@@ -80,3 +80,8 @@ Supported IDs, preset settings, and runner examples are in the [combination guid
 Each binding uses its manifest order and passes schema validation.
 Health remains unavailable until the selected plugins match the active plans and their resources are ready.
 Manifests record requested selection and effective binding configuration for each run.
+
+## Multiple destinations
+
+The [destination comparison](../Runner/README.md#multiple-destinations-r48) applies the same backend list and balancing policy to every mode.
+Both native-host and Wafish configurations retain explicit transport settings and configuration hashes.

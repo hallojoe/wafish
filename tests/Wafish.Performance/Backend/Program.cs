@@ -12,6 +12,9 @@ if (payloadMode is not ("precomputed" or "generated")) throw new ArgumentExcepti
 builder.WebHost.ConfigureBenchmarkListener(address, transport);
 builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 4 * 1024 * 1024);
 builder.Services.AddSingleton<BackendState>();
+var backendId = BenchmarkOptions.Read(args, "--backend-id", "backend");
+if (backendId.Length is < 1 or > 32 || backendId.Any(c => !char.IsAsciiLetterOrDigit(c) && c != '-'))
+    throw new ArgumentException("Backend ID must contain 1..32 ASCII letters, digits, or hyphens.");
 var app = builder.Build();
 
 var plain = "OK"u8.ToArray();
@@ -23,6 +26,7 @@ int[] preparedSizes = [0, 1024, 65536, 1048576, 4194304];
 var payloads = payloadMode == "precomputed" ? preparedSizes.ToDictionary(size => size, size => Encoding.ASCII.GetBytes(new string('x', size))) : [];
 app.Use(async (context, next) =>
 {
+    context.Response.Headers["X-Benchmark-Destination"] = backendId;
     context.Response.Headers["X-Benchmark-Protocol"] = context.Request.Protocol;
     var measured = context.Request.Path.StartsWithSegments("/api/perf") && !context.Request.Path.StartsWithSegments("/api/perf/control");
     var state = context.RequestServices.GetRequiredService<BackendState>();
@@ -37,7 +41,7 @@ app.Use(async (context, next) =>
     }
 });
 app.MapGet("/health", () => Results.Ok());
-app.MapGet("/benchmark/manifest", () => Results.Json(BenchmarkManifest.Create(new { mode = "backend", payloadMode, preparedSizes, maxRequestBytes = 4194304, maxDelayMilliseconds = 30000, transportFaults, streamLimits = new { maxChunks = 256, maxChunkBytes = 65536, maxIntervalMs = 1000, maxDurationMs = 4000, maxBytes = 4194304 }, transport = transport.Description })));
+app.MapGet("/benchmark/manifest", () => Results.Json(BenchmarkManifest.Create(new { mode = "backend", backendId, payloadMode, preparedSizes, maxRequestBytes = 4194304, maxDelayMilliseconds = 30000, transportFaults, streamLimits = new { maxChunks = 256, maxChunkBytes = 65536, maxIntervalMs = 1000, maxDurationMs = 4000, maxBytes = 4194304 }, transport = transport.Description })));
 app.MapGet("/api/perf/plain", () => Results.Bytes(plain, "text/plain"));
 app.MapGet("/api/perf/json-small", () => Results.Bytes(smallJson, "application/json"));
 app.MapGet("/api/perf/cacheable-json", (HttpContext context) =>

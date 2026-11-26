@@ -21,7 +21,7 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 builder.Logging.ClearProviders();
 using var transport = BenchmarkTransport.Read(args);
 var listener = transport.Address(BenchmarkOptions.Read(args, "--listen-url", $"{transport.Scheme}://127.0.0.1:5302"), "--listen-url");
-var backend = transport.Address(BenchmarkOptions.Read(args, "--backend-url", $"{transport.Scheme}://127.0.0.1:5300"), "--backend-url");
+var destinations = BenchmarkDestinations.Read(args, transport);
 var dataRoot = Path.GetFullPath(BenchmarkOptions.Read(args, "--data-root", Environment.GetEnvironmentVariable("BENCHMARK_DATA_ROOT") ?? Environment.CurrentDirectory));
 Directory.CreateDirectory(dataRoot);
 builder.WebHost.ConfigureBenchmarkListener(listener, transport);
@@ -53,10 +53,13 @@ builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
     ["Gateway:ProxyLog:LogMaxBodyBufferBytes"] = (256 * 1024).ToString(),
     ["ReverseProxy:Routes:perf:ClusterId"] = "backend",
     ["ReverseProxy:Routes:perf:Match:Path"] = "/api/perf/{**catch-all}",
-    ["ReverseProxy:Clusters:backend:Destinations:backend:Address"] = backend.ToString(),
+    ["ReverseProxy:Clusters:backend:LoadBalancingPolicy"] = destinations.Policy,
     ["ReverseProxy:Clusters:backend:HttpRequest:Version"] = transport.Version.ToString(),
     ["ReverseProxy:Clusters:backend:HttpRequest:VersionPolicy"] = "RequestVersionExact"
 });
+
+builder.Configuration.AddInMemoryCollection(destinations.Addresses.Select((address, index) =>
+    new KeyValuePair<string, string?>("ReverseProxy:Clusters:backend:Destinations:" + destinations.Id(index) + ":Address", address.ToString())));
 
 var coreOnly = mode == "core";
 var storageOnly = mode == "storage";
@@ -76,10 +79,9 @@ if (nativeHost)
         {
             ClusterId = "backend",
             HttpRequest = new ForwarderRequestConfig { Version = transport.Version, VersionPolicy = HttpVersionPolicy.RequestVersionExact },
-            Destinations = new Dictionary<string, Yarp.ReverseProxy.Configuration.DestinationConfig>
-            {
-                ["backend"] = new() { Address = backend.ToString() }
-            }
+            LoadBalancingPolicy = destinations.Policy,
+            Destinations = destinations.Addresses.Select((address, index) => (address, index)).ToDictionary(
+                item => destinations.Id(item.index), item => new DestinationConfig { Address = item.address.ToString() })
         }]);
 }
 else

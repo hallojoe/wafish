@@ -58,3 +58,9 @@ Reports retain these manifests beside each measured configuration hash.
 Secrets in named credential fields are redacted before hashing.
 
 Set `--listen-url` and `--backend-url` to select isolated addresses.
+
+## Multiple destinations
+
+Use `--backend-urls` and `--load-balancing` for the [matched destination comparison](../Runner/README.md#multiple-destinations-r48).
+The native host still references only YARP packages and shared benchmark sources.
+No additional proxy middleware is used to report distribution.

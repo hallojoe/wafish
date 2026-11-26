@@ -1,0 +1,57 @@
+{
+  "base": "ef81b13",
+  "covered": 50,
+  "executable": 58,
+  "files": [
+    {
+      "file": "tests/Wafish.Performance/Backend/Program.cs",
+      "covered": 4,
+      "executable": 5,
+      "uncovered": [
+        17
+      ]
+    },
+    {
+      "file": "tests/Wafish.Performance/EnhancedYarp/Program.cs",
+      "covered": 6,
+      "executable": 7,
+      "uncovered": [
+        56
+      ]
+    },
+    {
+      "file": "tests/Wafish.Performance/NativeYarp/Program.cs",
+      "covered": 4,
+      "executable": 4,
+      "uncovered": []
+    },
+    {
+      "file": "tests/Wafish.Performance/Runner/BenchmarkSession.cs",
+      "covered": 5,
+      "executable": 7,
+      "uncovered": [
+        54,
+        142
+      ]
+    },
+    {
+      "file": "tests/Wafish.Performance/Runner/Program.cs",
+      "covered": 15,
+      "executable": 19,
+      "uncovered": [
+        220,
+        222,
+        471,
+        647
+      ]
+    },
+    {
+      "file": "tests/Wafish.Performance/Shared/BenchmarkDestinations.cs",
+      "covered": 16,
+      "executable": 16,
+      "uncovered": []
+    }
+  ],
+  "missingFiles": [],
+  "percent": 86.21
+}

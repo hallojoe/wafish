@@ -232,3 +232,31 @@ Any nonzero comparison code fails the job. No unstable result silently passes.
 The baseline must support report schema 5. Baseline updates require a separate review.
 The initial policy provides explicit engineering tolerances; it does not establish production capacity.
 For reliable decisions, repeat measurements on a quiet worker with representative traffic before changing these tolerances.
+
+## Multiple destinations (R48)
+
+Use `--backend-urls` for one to eight comma-separated loopback origins.
+The runner starts an isolated backend at each origin and passes the same list to every gateway.
+`--backend-url` remains the single-destination shorthand. These two options cannot be combined.
+All backend, native, and enhanced listener ports must differ.
+
+```bash
+dotnet run --project tests/Wafish.Performance/Runner -c Release --no-build -- \
+  --backend-urls=http://127.0.0.1:5300,http://127.0.0.1:5303 \
+  --native-url=http://127.0.0.1:5301 --enhanced-url=http://127.0.0.1:5302 \
+  --load-balancing=RoundRobin --modes=native,host-native,full \
+  --duration=10 --warmup=3 --concurrency=16 --repetitions=3
+```
+
+`--load-balancing` accepts `PowerOfTwoChoices`, `RoundRobin`, `LeastRequests`, `Random`, or `FirstAlphabetical`.
+The default remains YARP's `PowerOfTwoChoices`.
+See [YARP policy definitions](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/yarp/load-balancing?view=aspnetcore-10.0).
+Transport selection applies to every backend connection and client connection.
+Multiple destinations require a managed baseline or plugins suite. The legacy first suite remains single-destination.
+
+JSON reports record destination IDs, addresses, count, policy, and per-result `destinationResponses`.
+These counters count completed responses carrying the backend identity header.
+They exclude warmup and preflight traffic. Missing or unknown identities use one bounded `__unknown__` bucket.
+Cached responses can repeat an earlier backend identity; these counters do not measure actual backend executions.
+Retries count the returned response identity, not failed upstream attempts.
+Use the adjacent host manifests to confirm equivalent destination and policy settings.

@@ -19,7 +19,8 @@ internal sealed class BenchmarkSession : IDisposable
     public int ArrivalQueueCapacity { get; }
     public bool External { get; }
     public BenchmarkTransport Transport { get; }
-    public Uri Backend { get; }
+    public BenchmarkDestinations Destinations { get; }
+    public Uri Backend => Destinations.Addresses[0];
     public Uri Native { get; }
     public Uri Enhanced { get; }
     public string PayloadMode { get; }
@@ -43,12 +44,14 @@ internal sealed class BenchmarkSession : IDisposable
         External = external.Length != 0;
         var mode = BenchmarkOptions.Read(args, "--transport", external.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ? "https1" : "http1");
         Transport = new BenchmarkTransport(mode);
-        Backend = Transport.Address(BenchmarkOptions.Read(args, "--backend-url", $"{Transport.Scheme}://127.0.0.1:5300"), "--backend-url");
+        Destinations = BenchmarkDestinations.Read(args, Transport);
         Native = Transport.Address(BenchmarkOptions.Read(args, "--native-url", $"{Transport.Scheme}://127.0.0.1:5301"), "--native-url");
         Enhanced = Transport.Address(BenchmarkOptions.Read(args, "--enhanced-url", $"{Transport.Scheme}://127.0.0.1:5302"), "--enhanced-url");
-        if (new[] { Backend.Port, Native.Port, Enhanced.Port }.Distinct().Count() != 3 || Backend.Port == 0 || Native.Port == 0 || Enhanced.Port == 0)
+        if (Destinations.Addresses.Select(a => a.Port).Concat([Native.Port, Enhanced.Port]).Distinct().Count() != Destinations.Addresses.Length + 2 || Native.Port == 0 || Enhanced.Port == 0)
             throw new ArgumentException("Managed listener ports must be distinct and nonzero.");
         var suite = BenchmarkOptions.Read(args, "--suite", "baseline");
+        if (Destinations.Addresses.Length > 1 && (External || suite == "first"))
+            throw new ArgumentException("Multiple destinations require a managed baseline or plugins suite.");
         var matrix = BenchmarkOptions.Read(args, "--plugin-sets", suite == "plugins" ? BenchmarkPluginMatrix.DefaultSets : "");
         if (suite != "plugins" && matrix.Length > 0) throw new ArgumentException("--plugin-sets requires --suite=plugins.");
         if (suite == "plugins" && External) throw new ArgumentException("Plugin combinations require managed hosts.");
@@ -136,6 +139,8 @@ internal sealed class BenchmarkSession : IDisposable
         await File.WriteAllTextAsync(path, JsonSerializer.Serialize(new
         {
             schemaVersion = 5, environment = _environment, settings, streaming = Streaming,
+            destinations = new { count = Destinations.Addresses.Length, policy = Destinations.Policy,
+                entries = Destinations.Addresses.Select((address, index) => new { id = Destinations.Id(index), address }) },
             pluginSets = PluginSets, acceptEncoding = AcceptGzip ? "gzip" : "identity",
             arrivals = new { mode = ArrivalRate == 0 ? "closed-loop" : "scheduled", ratePerSecond = ArrivalRate, queueCapacity = ArrivalQueueCapacity, drainDeadlineSeconds = 12 },
             transport = new { mode = Transport.Mode, client = Transport.Description, upstream = External ? "unverified external upstream" : Transport.Description, certificate = !Transport.Tls ? "none" : Transport.CertificatePath is null ? "system trust" : "temporary pinned loopback certificate" },

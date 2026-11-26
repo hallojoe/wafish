@@ -19,17 +19,16 @@ R56 records a release discrepancy found during cleanup; it does not authorize pu
 | Order | ID | Remaining task | Value / 10 | Need / 10 |
 |---|---|---|---|---|
 | 1 | R56 | [Reconcile the release version and package publication](#r56) | 9 | 9 |
-| 2 | R48 | [Benchmark multiple destinations](#r48) | 6 | 5 |
-| 3 | R46 | [Add WebAuthn authentication](#r46) | 8 | 5 |
-| 4 | R37 | [Partition quotas by trusted tenant](#r37) | 8 | 4 |
-| 5 | R39 | [Assign weighted request costs](#r39) | 6 | 4 |
-| 6 | R49 | [Add optional network fault injection](#r49) | 6 | 4 |
-| 7 | R51 | [Demonstrate service discovery](#r51) | 6 | 4 |
-| 8 | R55 | [Save operator views](#r55) | 5 | 3 |
-| 9 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
-| 10 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
-| 11 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
-| 12 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
+| 2 | R46 | [Add WebAuthn authentication](#r46) | 8 | 5 |
+| 3 | R37 | [Partition quotas by trusted tenant](#r37) | 8 | 4 |
+| 4 | R39 | [Assign weighted request costs](#r39) | 6 | 4 |
+| 5 | R49 | [Add optional network fault injection](#r49) | 6 | 4 |
+| 6 | R51 | [Demonstrate service discovery](#r51) | 6 | 4 |
+| 7 | R55 | [Save operator views](#r55) | 5 | 3 |
+| 8 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
+| 9 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
+| 10 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
+| 11 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
 
 ## Completion rule
 
@@ -288,20 +287,19 @@ Verification: [R50 evidence](tests/Wafish.Regression/evidence/blue-green/README.
 
 ### R48: Benchmark multiple destinations
 
-Status: TODO. Value: 6/10. Need: 5/10.
+Status: COMPLETE. Value: 6/10. Need: 5/10.
 
 Measure load balancing across matched destinations.
 
 Source: [NativeYarp FEAT-02](docs/archive/2026-11-planning/tests/Wafish.Performance/NativeYarp/PLAN.md#feat-02-add-a-multiple-destination-baseline).
 
-Evidence: [Program.cs](tests/Wafish.Performance/NativeYarp/Program.cs) configures one destination through `--backend-url`.
-Its address is configurable; the destination count remains fixed at one.
-
-Support a bounded configurable destination list and explicit YARP load-balancing policy.
+Support one to eight explicit backend origins and an explicit YARP load-balancing policy.
 Compare the same destinations and transport settings with EnhancedYarp.
 
 Acceptance: Reports identify destination count and distribution.
 The baseline keeps its independence from Wafish packages.
+
+Verification: [R48 evidence](tests/Wafish.Regression/evidence/performance-r48/README.md).
 
 <a id="r46"></a>
 

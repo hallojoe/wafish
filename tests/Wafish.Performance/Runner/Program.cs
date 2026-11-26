@@ -83,10 +83,15 @@ if (suite.Equals("first", StringComparison.OrdinalIgnoreCase))
 
 try
 {
-    var backend = StartService("Backend", Path.Combine(root, "tests", "Wafish.Performance", "Backend", "bin", "Release", "net10.0", "Backend.dll"), root);
-    processes.Add(backend);
-    await WaitForHealthyAsync(new Uri(BenchmarkSession.Current.Backend, "/health").ToString(), backend);
-    await BenchmarkSession.Current.CaptureHostAsync("Backend", BenchmarkSession.Current.Backend);
+    for (var index = 0; index < session.Destinations.Addresses.Length; index++)
+    {
+        var address = session.Destinations.Addresses[index];
+        var backend = StartService("Backend", Path.Combine(root, "tests", "Wafish.Performance", "Backend", "bin", "Release", "net10.0", "Backend.dll"), root,
+            ["--backend-id=" + session.Destinations.Id(index)], address);
+        processes.Add(backend);
+        await WaitForHealthyAsync(new Uri(address, "/health").ToString(), backend);
+        await session.CaptureHostAsync(session.Destinations.Id(index), address);
+    }
 
     var gateways = new[]
     {
@@ -188,6 +193,8 @@ static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int
     var scheduledLatencies = new BoundedLatencyHistogram();
     var firstBytes = new BoundedLatencyHistogram();
     var readGaps = new BoundedLatencyHistogram();
+    var distribution = new long[session.Destinations.Addresses.Length + 1];
+    var destinationIds = Enumerable.Range(0, session.Destinations.Addresses.Length).Select(session.Destinations.Id).ToArray();
     long responseBytes = 0, bodyReads = 0;
     long completed = 0, responses = 0, failed = 0, policyRejections = 0, transportFailures = 0;
     var startedAt = Stopwatch.GetTimestamp();
@@ -210,6 +217,9 @@ static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int
             var delivery = await BenchmarkBodyMeasurement.ReadAsync(body, requestStart, deadline.Token);
             Interlocked.Add(ref responseBytes, delivery.Bytes); Interlocked.Add(ref bodyReads, delivery.Reads);
             if (delivery.Reads > 0) { firstBytes.Record(delivery.FirstByteMs); readGaps.Record(delivery.MaximumReadGapMs); }
+            var destinationId = response.Headers.TryGetValues("X-Benchmark-Destination", out var identities) ? identities.FirstOrDefault() : null;
+            var destinationIndex = Array.IndexOf(destinationIds, destinationId);
+            Interlocked.Increment(ref distribution[destinationIndex < 0 ? distribution.Length - 1 : destinationIndex]);
             Interlocked.Increment(ref responses);
             if (allowPolicyRejections && response.StatusCode == HttpStatusCode.TooManyRequests)
                 Interlocked.Increment(ref policyRejections);
@@ -240,6 +250,7 @@ static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int
         completed == 0 ? 100 : failed * 100d / completed,
         cpuPercent, memoryMb, completed, failed, policyRejections, transportFailures)
     {
+        DestinationResponses = destinationIds.Append("__unknown__").Select((id, index) => (id, index)).ToDictionary(item => item.id, item => distribution[item.index]),
         ConfigurationHash = session.ConfigurationHash(port), Arrivals = arrivals, CompletedResponses = responses,
         ScheduledP95Ms = scheduledLatencies.Percentile(.95), ScheduledP99Ms = scheduledLatencies.Percentile(.99),
         ResponseBytes = responseBytes, BodyReads = bodyReads, FirstByteSamples = firstBytes.Count,
@@ -441,7 +452,7 @@ static string BuildExtendedMarkdown(IEnumerable<ExtendedResult> records, int dur
     return sb.ToString();
 }
 
-static Process StartService(string name, string dll, string workingDirectory, IReadOnlyList<string>? arguments = null)
+static Process StartService(string name, string dll, string workingDirectory, IReadOnlyList<string>? arguments = null, Uri? listenerOverride = null)
 {
     if (!File.Exists(dll))
     {
@@ -457,11 +468,12 @@ static Process StartService(string name, string dll, string workingDirectory, IR
     foreach (var argument in arguments ?? []) info.ArgumentList.Add(argument);
     var session = BenchmarkSession.Current;
     var project = Path.GetFileNameWithoutExtension(dll);
-    var address = project == "Backend" ? session.Backend : project == "NativeYarp" ? session.Native : session.Enhanced;
+    var address = listenerOverride ?? (project == "Backend" ? session.Backend : project == "NativeYarp" ? session.Native : session.Enhanced);
     info.ArgumentList.Add("--transport=" + session.Transport.Mode);
     if (session.Transport.CertificatePath is { } certificatePath) info.Environment[BenchmarkTransport.CertificateEnvironment] = certificatePath;
     info.ArgumentList.Add("--listen-url=" + address);
-    info.ArgumentList.Add("--backend-url=" + session.Backend);
+    info.ArgumentList.Add("--backend-urls=" + string.Join(',', session.Destinations.Addresses.Select(a => a.ToString())));
+    info.ArgumentList.Add("--load-balancing=" + session.Destinations.Policy);
     info.ArgumentList.Add("--payload-mode=" + session.PayloadMode);
     info.ArgumentList.Add("--data-root=" + Path.Combine(session.DataDirectory, Guid.NewGuid().ToString("N")));
     var process = Process.Start(info) ?? throw new InvalidOperationException($"Unable to start {name}.");
@@ -616,6 +628,7 @@ sealed record Scenario(string Name, HttpMethod Method, string Path, string? Body
 }
 sealed record BenchmarkResult(string Gateway, string Scenario, int Repetition, double RequestsPerSecond, double P50Ms, double P95Ms, double P99Ms, double ErrorRatePercent, double CpuPercent, double WorkingSetMb, long Requests, long Failures, long PolicyRejections, long TransportFailures)
 {
+    public IReadOnlyDictionary<string, long> DestinationResponses { get; init; } = new Dictionary<string, long>();
     public string? ConfigurationHash { get; init; }
     public ArrivalStatistics Arrivals { get; init; } = new(0, 0, 0, 0, 0, 0, 0, 0);
     public long CompletedResponses { get; init; }
@@ -631,6 +644,7 @@ sealed record BenchmarkResult(string Gateway, string Scenario, int Repetition, d
 }
 sealed record ExtendedResult(string Group, string Scenario, int Concurrency, double RequestsPerSecond, double P50Ms, double P95Ms, double P99Ms, double NonSuccessPercent, long BackendRequests, string Statuses, bool Passed, string Notes)
 {
+    public IReadOnlyDictionary<string, long> DestinationResponses { get; init; } = new Dictionary<string, long>();
     public string? ConfigurationHash { get; init; } = BenchmarkSession.Current.ConfigurationHash(BenchmarkSession.Current.Enhanced.Port);
     public static ExtendedResult FromLoad(string group, string scenario, int concurrency, BenchmarkResult result, long backendRequests, bool passed, string notes) =>
         new(group, scenario, concurrency, result.RequestsPerSecond, result.P50Ms, result.P95Ms, result.P99Ms, result.ErrorRatePercent, backendRequests, "load", passed, $"{notes}; expected 429: {result.PolicyRejections}; transport failures: {result.TransportFailures}");
