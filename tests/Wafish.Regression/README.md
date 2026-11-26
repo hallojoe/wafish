@@ -153,3 +153,6 @@ See [verification evidence](evidence/need-six/README.md).
 The solution includes the collectible plugin fixture so Release builds produce the required Release assembly.
 Legacy database tests dispose reopened connections before reading file headers, including on Windows.
 See [candidate evidence](evidence/release-candidate/README.md).
+
+`--group sample-faults` checks the optional loopback fault proxy, private controls, bounds, and cancellation.
+Run `python3 scripts/check-network-faults.py` with the AppHost stopped for the complete Aspire retry and circuit recovery scenario.

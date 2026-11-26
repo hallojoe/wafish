@@ -1,0 +1,29 @@
+{
+  "base": "d950a44",
+  "covered": 78,
+  "executable": 79,
+  "files": [
+    {
+      "file": "Wafish.AppHost/AppHost.cs",
+      "covered": 10,
+      "executable": 10,
+      "uncovered": []
+    },
+    {
+      "file": "samples/SampleFaultProxy/FaultProxyApplication.cs",
+      "covered": 67,
+      "executable": 68,
+      "uncovered": [
+        15
+      ]
+    },
+    {
+      "file": "samples/SampleFaultProxy/Program.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    }
+  ],
+  "missingFiles": [],
+  "percent": 98.73
+}

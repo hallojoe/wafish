@@ -66,6 +66,18 @@ foreach (var instance in new[] { "backend-one", "backend-two" })
     backend.WithEnvironment("Gateway__Registration__DestinationAddress", backend.GetEndpoint("http"));
 }
 
+// Opt-in loopback HTTP faults use the existing private topology credential.
+if (builder.Configuration.GetValue<bool>("EnableFaultInjection"))
+{
+    builder.AddProject<Projects.SampleFaultProxy>("fault-proxy", project =>
+        { project.ExcludeLaunchProfile = true; project.ExcludeKestrelEndpoints = true; })
+        .WithHttpEndpoint(name: "http", env: "FAULT_HTTP_PORT", isProxied: false)
+        .WithEnvironment("Fault__Target", backends[0].GetEndpoint("http"))
+        .WithEnvironment("Fault__ControlKey", password)
+        .WithHttpHealthCheck("/health")
+        .WaitFor(backends[0]);
+}
+
 IResourceBuilder<ProjectResource>? secondGateway = null;
 if (builder.Configuration.GetValue<bool>("EnableSecondGateway"))
 {

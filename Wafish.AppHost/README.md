@@ -67,3 +67,9 @@ The default identifier is `default`. Use `UseLegacyTopologyState=true` to reopen
 The compatibility option requires the default identifier and never deletes existing volumes.
 Run `python scripts/check-topology.py` for controlled restart verification.
 SonarQube readiness accepts only an exact `UP` status. Invalid, unavailable, and timed-out responses remain unhealthy.
+
+## Optional network faults
+
+`EnableFaultInjection=true` adds a private loopback proxy targeting `backend-one`.
+The default routes remain unchanged. A separate demonstration route exercises retry and circuit recovery.
+See [SampleFaultProxy](../samples/SampleFaultProxy/README.md) for controls and the isolated verification command.

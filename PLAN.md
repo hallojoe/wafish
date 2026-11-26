@@ -19,13 +19,12 @@ R56 records a release discrepancy found during cleanup; it does not authorize pu
 | Order | ID | Remaining task | Value / 10 | Need / 10 |
 |---|---|---|---|---|
 | 1 | R56 | [Reconcile the release version and package publication](#r56) | 9 | 9 |
-| 2 | R49 | [Add optional network fault injection](#r49) | 6 | 4 |
-| 3 | R51 | [Demonstrate service discovery](#r51) | 6 | 4 |
-| 4 | R55 | [Save operator views](#r55) | 5 | 3 |
-| 5 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
-| 6 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
-| 7 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
-| 8 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
+| 2 | R51 | [Demonstrate service discovery](#r51) | 6 | 4 |
+| 3 | R55 | [Save operator views](#r55) | 5 | 3 |
+| 4 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
+| 5 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
+| 6 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
+| 7 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
 
 ## Completion rule
 
@@ -355,7 +354,7 @@ Verification: [R39 evidence](tests/Wafish.Regression/evidence/weighted-costs/REA
 
 ### R49: Add optional network fault injection
 
-Status: TODO. Value: 6/10. Need: 4/10.
+Status: COMPLETE. Value: 6/10. Need: 4/10.
 
 Make resilience demonstrations repeatable with controlled network failures.
 
@@ -366,6 +365,8 @@ Existing loopback benchmark stall and disconnect fixtures already cover transpor
 Reuse those fixtures where suitable. This task concerns the optional AppHost resource and its repeatable demonstration.
 
 Acceptance: A repeatable scenario demonstrates retries and circuit recovery without changing production defaults.
+
+Verification: [R49 evidence](tests/Wafish.Regression/evidence/network-faults/README.md).
 
 <a id="r51"></a>
 

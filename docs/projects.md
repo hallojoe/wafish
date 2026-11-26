@@ -36,6 +36,7 @@ Arrows show main dependencies or labeled runtime relationships, not every projec
 | Project | Purpose | Documentation |
 | --- | --- | --- |
 | `SampleGateway` | This executable combines the gateway runtime, SQLite storage, administration APIs, and the React workspace. | [README](../samples/SampleGateway/README.md) · [AGENTS](../samples/SampleGateway/AGENTS.md) |
+| `SampleFaultProxy` | This optional loopback proxy injects bounded network faults for Aspire resilience demonstrations. | [README](../samples/SampleFaultProxy/README.md) |
 | `SampleLocalService` | This executable is a small backend that registers itself with a gateway. | [README](../samples/SampleLocalService/README.md) · [AGENTS](../samples/SampleLocalService/AGENTS.md) |
 | `SampleServiceDefaults` | This library adds shared telemetry, service discovery, and health defaults to the sample hosts. | [README](../samples/SampleServiceDefaults/README.md) · [AGENTS](../samples/SampleServiceDefaults/AGENTS.md) |
 | `Wafish.Administration` | This project provides administration APIs, authentication, realtime updates, and optional AI and MCP services. | [README](../src/Wafish.Administration/README.md) · [AGENTS](../src/Wafish.Administration/AGENTS.md) |

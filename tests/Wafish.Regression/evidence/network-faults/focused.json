@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "suite": "main",
+  "cases": [
+    {
+      "name": "Sample network faults: bounded resets, delays, cancellation, and private controls preserve real forwarding",
+      "group": "sample-faults",
+      "durationMs": 4155.5552,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    }
+  ]
+}

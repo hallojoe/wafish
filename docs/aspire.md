@@ -156,3 +156,10 @@ Run `python scripts/check-topology.py` when the target AppHost is stopped.
 The check owns a temporary topology and verifies gateway, backend, and AppHost restarts.
 It checks persisted route identity, both registered backends, and unchanged generated credentials.
 It removes only its generated test parameter and temporary local directory.
+
+## Controlled network faults
+
+Set `EnableFaultInjection=true` to add the optional `fault-proxy` resource.
+It supports bounded request delays and connection resets against `backend-one`.
+The [fault demonstration](../samples/SampleFaultProxy/README.md) installs real retry and circuit-breaker bindings in private storage.
+The default topology and production gateway configuration remain unchanged.
