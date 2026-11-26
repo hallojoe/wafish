@@ -1,0 +1,41 @@
+{
+  "base": "530c9d4",
+  "covered": 106,
+  "executable": 112,
+  "files": [
+    {
+      "file": "src/Wafish.Administration/AdministrationServiceCollectionExtensions.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Administration/Infrastructure/DashboardOptions.cs",
+      "covered": 0,
+      "executable": 0,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Administration/Infrastructure/OperatorViews.cs",
+      "covered": 76,
+      "executable": 80,
+      "uncovered": [
+        37,
+        39,
+        111,
+        116
+      ]
+    },
+    {
+      "file": "src/Wafish.Administration/Modules/Dashboard/Controllers/OperatorViewsController.cs",
+      "covered": 29,
+      "executable": 31,
+      "uncovered": [
+        34,
+        62
+      ]
+    }
+  ],
+  "missingFiles": [],
+  "percent": 94.64
+}

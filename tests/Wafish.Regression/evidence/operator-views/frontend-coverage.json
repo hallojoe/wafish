@@ -1,0 +1,23 @@
+{
+  "base": "530c9d4",
+  "files": [
+    {
+      "file": "src/Wafish.ReactUi/ClientApp/src/components/operator-views.tsx",
+      "covered": 36,
+      "executable": 36,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.ReactUi/ClientApp/src/pages/observe.tsx",
+      "covered": 14,
+      "executable": 15,
+      "uncovered": [
+        454
+      ]
+    }
+  ],
+  "covered": 50,
+  "executable": 51,
+  "missingFiles": [],
+  "percent": 98.04
+}

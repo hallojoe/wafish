@@ -231,6 +231,7 @@ public static class AdministrationServiceCollectionExtensions
         services.TryAddSingleton<IDashboardPermissionService, DashboardPermissionService>();
         services.AddSingleton<DashboardSessionStore>();
         services.AddSingleton<DashboardPasskeyService>();
+        services.AddSingleton<OperatorViewStore>();
         services.TryAddSingleton<JwtSecretProvider>();
         services.AddSingleton<IConfigureOptions<MvcOptions>, DashboardMvcOptionsSetup>();
 

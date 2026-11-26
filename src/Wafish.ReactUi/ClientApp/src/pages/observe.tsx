@@ -1,4 +1,9 @@
 import { useState } from "react";
+import {
+  OperatorViews,
+  logColumns,
+  auditColumns,
+} from "@/components/operator-views";
 import { Link } from "react-router";
 import {
   Activity,
@@ -301,6 +306,14 @@ export function TrafficPage() {
   );
 }
 export function LogsPage({ audit = false }: { audit?: boolean }) {
+  const [columnSettings, setColumnSettings] = useState({
+    logs: logColumns.map((column) => column.key),
+    audit: auditColumns.map((column) => column.key),
+  });
+  const workspace = audit ? "audit" : "logs";
+  const columns = columnSettings[workspace];
+  const setColumns = (value: string[]) =>
+    setColumnSettings((current) => ({ ...current, [workspace]: value }));
   const [page, setPage] = useState(1);
   const [historical, setHistorical] = useState(false);
   const [filter, setFilter] = useState("");
@@ -346,6 +359,30 @@ export function LogsPage({ audit = false }: { audit?: boolean }) {
         )}
       </PageTitle>
       <Panel title={audit ? "Audit" : "Logs"}>
+        <OperatorViews
+          key={workspace}
+          workspace={workspace}
+          filters={{
+            historical: !audit && historical,
+            search: filter,
+            route: audit ? "" : route,
+            minimumStatus: !audit && status ? Number(status) : null,
+          }}
+          columns={columns}
+          onColumns={setColumns}
+          onApply={(view) => {
+            setHistorical(view.filters.historical);
+            setFilter(view.filters.search);
+            setRoute(view.filters.route);
+            setStatus(
+              view.filters.minimumStatus === null
+                ? ""
+                : String(view.filters.minimumStatus),
+            );
+            setColumns(view.columns);
+            setPage(1);
+          }}
+        />
         <div className="toolbar mb-5">
           {!audit && (
             <Field label="Source">
@@ -400,32 +437,31 @@ export function LogsPage({ audit = false }: { audit?: boolean }) {
         <QueryState query={query}>
           <Records
             data={data}
-            columns={
-              audit
-                ? [
-                    { key: "timestamp", label: "Time" },
-                    { key: "action", label: "Operation" },
-                    { key: "message", label: "Description" },
-                    { key: "operatorName", label: "Account" },
-                  ]
-                : [
-                    { key: "timestamp", label: "Time" },
-                    { key: "method", label: "Method" },
-                    {
-                      key: "path",
-                      label: "Path",
-                      render: (row) =>
-                        text(
-                          field(row, "upstreamPath") ??
-                            field(row, "path") ??
-                            field(row, "message"),
-                        ),
-                    },
-                    { key: "routeId", label: "Route" },
-                    { key: "statusCode", label: "Status" },
-                    { key: "elapsedMs", label: "Duration" },
-                  ]
-            }
+            columns={(audit
+              ? [
+                  { key: "timestamp", label: "Time" },
+                  { key: "action", label: "Operation" },
+                  { key: "message", label: "Description" },
+                  { key: "operatorName", label: "Account" },
+                ]
+              : [
+                  { key: "timestamp", label: "Time" },
+                  { key: "method", label: "Method" },
+                  {
+                    key: "path",
+                    label: "Path",
+                    render: (row: unknown) =>
+                      text(
+                        field(row, "upstreamPath") ??
+                          field(row, "path") ??
+                          field(row, "message"),
+                      ),
+                  },
+                  { key: "routeId", label: "Route" },
+                  { key: "statusCode", label: "Status" },
+                  { key: "elapsedMs", label: "Duration" },
+                ]
+            ).filter((column) => columns.includes(column.key))}
             actions={(row) => (
               <Button
                 variant="ghost"

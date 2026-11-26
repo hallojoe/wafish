@@ -204,3 +204,32 @@ Endpoints use the configured administration prefix:
 Only the two login endpoints bypass session authorization. The control-plane network policy still applies.
 Disabled passkey actions return 404 after their applicable authorization checks.
 Verification failures return 400, unavailable operations return 409, and throttling returns 429 with retry information.
+
+## Saved operator views (R55)
+
+Authenticated accounts can save named log and audit views through `api/operator-views`.
+GET lists the current account's views. POST creates one and returns HTTP 201 with its location.
+GET, PUT, and DELETE on `api/operator-views/{id}` access only the current account's view.
+An identifier owned by another account returns HTTP 404.
+Personal preference writes require `Read` permission. They do not change gateway configuration.
+
+The server derives ownership from validated authentication, never from request fields.
+Custom authorization must provide one authenticated identity with a stable subject or name claim.
+Anonymous or unidentified custom callers cannot own private views.
+Shared credentials represent one shared account. Operators using the same credentials share that account's views.
+Distinct authenticated accounts have separate preferences.
+
+Views store only names, workspace identifiers, bounded filters, column choices, and update times.
+They contain no authentication tokens, passwords, or API keys.
+Limits are 20 views per account, 128 accounts per file, and 4 MiB of protected state.
+Deleting an account's final view releases its file slot.
+Names have a 64-character limit. Filter text and route IDs have limits of 200 and 128 characters.
+Column names are restricted to the selected workspace. Unknown request fields are rejected.
+
+`Gateway:Dashboard:OperatorViewsStatePath` optionally selects a dedicated file.
+The default is `Auth:TwoFactorStatePath` with `.views` appended.
+Give each gateway its own file. Persist its ASP.NET Core Data Protection keys across restarts.
+Writes use protected content, private file permissions on Unix, and atomic replacement.
+Storage failures return HTTP 503 and preserve the previous committed file.
+Corrupt or oversized state is rejected without being overwritten.
+Responses disable caching.

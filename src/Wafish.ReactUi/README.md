@@ -106,3 +106,16 @@ Older browsers without these methods retain password sign-in.
 See [configuration and limits](../Wafish.Administration/README.md#optional-passkeys-r46),
 [browser conversion](https://developer.mozilla.org/en-US/docs/Web/API/PublicKeyCredential/parseCreationOptionsFromJSON_static),
 and [credential serialization](https://developer.mozilla.org/en-US/docs/Web/API/PublicKeyCredential/toJSON).
+
+## Saved operator views
+
+Open **Saved views** in the Logs or Audit workspace.
+Choose visible columns, set filters, enter a name, and select **Save view**.
+Select a saved view and use **Load view** to restore its filters and columns.
+Saving a selected view updates it. Choose **New view** to create another.
+Saved views remain available after sign-in. Deleting a view does not change the current filter draft.
+Failed saves preserve unsaved edits.
+
+Preferences use the authenticated administration API and are not stored in browser local storage.
+Signing out or losing a session clears the query cache.
+Account ownership and storage limits are documented in [Administration](../Wafish.Administration/README.md#saved-operator-views-r55).

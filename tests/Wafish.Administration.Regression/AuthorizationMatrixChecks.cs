@@ -62,7 +62,7 @@ internal static class AuthorizationMatrixChecks
                     foreach (var state in new[] { "anonymous", "invalid", "authorized" })
                     {
                         clock.Advance();
-                        var path = "/" + Regex.Replace(action.Route, "\\{[^}]+\\}", "matrix");
+                        var path = "/" + Regex.Replace(action.Route, "\\{[^}]+\\}", match => match.Value.Contains(":guid", StringComparison.Ordinal) ? "11111111-1111-1111-1111-111111111111" : "matrix");
                         using var request = new HttpRequestMessage(new HttpMethod(action.Method), path);
                         request.Headers.Add("X-Test-Authorization-Probe", "true");
                         if (state != "anonymous")

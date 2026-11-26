@@ -43,6 +43,9 @@ public enum DashboardAuthMode
 /// </example>
 public class DashboardOptions
 {
+    /// <summary>Optional protected saved-view file. Defaults beside the configured two-factor state file.</summary>
+    public string? OperatorViewsStatePath { get; set; }
+
     /// <summary>Config section name.</summary>
     public const string SectionName = "Gateway:Dashboard";
 

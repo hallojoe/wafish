@@ -345,3 +345,8 @@ Enroll only through an authenticated session with credential-management permissi
 Protect the credential state file against replacement. It determines which public keys can authenticate the account.
 Passkey user verification replaces password and TOTP entry for that login method.
 Keep the configured password recovery path and its TOTP secret available.
+
+Saved operator views use server-derived account ownership and protected bounded persistence.
+Anonymous callers cannot own views. Distinct accounts cannot read, update, or delete each other's identifiers.
+Shared credentials identify one shared account, including its preferences.
+The [saved-view contract](../src/Wafish.Administration/README.md#saved-operator-views-r55) documents limits and storage configuration.

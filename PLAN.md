@@ -19,11 +19,10 @@ R56 records a release discrepancy found during cleanup; it does not authorize pu
 | Order | ID | Remaining task | Value / 10 | Need / 10 |
 |---|---|---|---|---|
 | 1 | R56 | [Reconcile the release version and package publication](#r56) | 9 | 9 |
-| 2 | R55 | [Save operator views](#r55) | 5 | 3 |
-| 3 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
-| 4 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
-| 5 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
-| 6 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
+| 2 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
+| 3 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
+| 4 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
+| 5 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
 
 ## Completion rule
 
@@ -391,7 +390,7 @@ Verification: [R51 evidence](tests/Wafish.Regression/evidence/service-discovery-
 
 ### R55: Save operator views
 
-Status: TODO. Value: 5/10. Need: 3/10.
+Status: COMPLETE. Value: 5/10. Need: 3/10.
 
 Reduce repeated filter and column setup for operators.
 
@@ -400,6 +399,8 @@ Source: [Wafish.ReactUi FEAT-01](docs/archive/2026-11-planning/src/Wafish.ReactU
 Persist named filters and column choices through an authenticated per-user API.
 
 Acceptance: Views restore after sign-in without storing credentials or sharing private preferences between users.
+
+Verification: [R55 evidence](tests/Wafish.Regression/evidence/operator-views/README.md).
 
 <a id="r52"></a>
 

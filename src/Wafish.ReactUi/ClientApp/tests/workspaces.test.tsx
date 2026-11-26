@@ -284,6 +284,10 @@ describe("stale query results", () => {
       vi.stubGlobal(
         "fetch",
         vi.fn((path: string, init: RequestInit) => {
+          if (path.includes("operator-views"))
+            return Promise.resolve(
+              Response.json({ available: false, views: [] }),
+            );
           signals.push(init.signal!);
           return (path.includes("needle") ? fresh : old).promise.then(
             (response) => response.clone(),

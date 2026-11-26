@@ -1,0 +1,10 @@
+npm notice run @wafish/react-ui@0.0.0 test:e2e
+npm notice run node scripts/run-browser-tests.mjs operator-views.spec.ts
+
+Running 1 test using 1 worker
+
+(node:13912) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/browser/operator-views.spec.ts:3:1 › saved log views restore filters and columns after sign-out and sign-in (2.0s)
+
+  1 passed (1.5m)

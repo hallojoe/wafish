@@ -35,6 +35,11 @@ internal sealed partial class AdministrationRegressionSuite : IDisposable
         Directory.CreateDirectory(path);
         try
         {
+            if (args is ["--operator-views"])
+            {
+                await OperatorViewChecks.RunAsync(Check, (mode, configure) => StartHost(mode, configure: configure, registration: false), key);
+                return failures.Count == 0 ? 0 : 1;
+            }
             if (args is ["--passkeys"])
             {
                 await PasskeyChecks.RunAsync(Check, (mode, configure) => StartHost(mode, configure: configure, registration: false), key);
@@ -87,6 +92,7 @@ internal sealed partial class AdministrationRegressionSuite : IDisposable
             await CheckOptionalFeaturesAsync();
             await PasskeyChecks.RunAsync(Check, (mode, configure) => StartHost(mode, configure: configure, registration: false), key);
             await QuotaGroupEndpointChecks.RunAsync(Check, () => StartHost("ApiKey", registration: false), key);
+            await OperatorViewChecks.RunAsync(Check, (mode, configure) => StartHost(mode, configure: configure, registration: false), key);
         }
         finally
         {

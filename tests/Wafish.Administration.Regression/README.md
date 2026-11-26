@@ -84,3 +84,6 @@ Verification: 42 cases pass in the original order after the split.
 Run `--need-six` for combined change-set permissions and destination maintenance endpoints.
 
 Use `--quota-groups` to verify named quota previews, saves, updates, and batches through authenticated HTTP requests.
+
+`--operator-views` verifies account isolation, protected persistence, concurrent writes, input bounds, storage failures, and sign-in restoration.
+The authorization matrix includes all five saved-view endpoints.
