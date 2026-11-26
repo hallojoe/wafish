@@ -1,0 +1,31 @@
+{
+  "base": "a9270a4",
+  "covered": 20,
+  "executable": 23,
+  "files": [
+    {
+      "file": "src/Wafish.Plugin.RateLimit.Redis/Middleware/RedisRateLimitMiddleware.cs",
+      "covered": 15,
+      "executable": 18,
+      "uncovered": [
+        63,
+        64,
+        65
+      ]
+    },
+    {
+      "file": "src/Wafish.Plugin.RateLimit.Redis/RedisRateLimitPlugin.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish/Models/PluginExecutionConfigs.cs",
+      "covered": 4,
+      "executable": 4,
+      "uncovered": []
+    }
+  ],
+  "missingFiles": [],
+  "percent": 86.96
+}

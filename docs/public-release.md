@@ -2,7 +2,7 @@
 
 The first public scope is R01–R14 in [PLAN.md](../PLAN.md).
 R15–R18 add operation permissions, idempotent configuration changes, and previews.
-R19–R35 are complete. R36, R38, R40–R41, and benchmark tasks R42–R45 and R47–R48 are complete. The R46 passkey feature and R50 blue-green demonstration are complete.
+R19–R35 are complete. R36–R38, R40–R41, and benchmark tasks R42–R45 and R47–R48 are complete. The R46 passkey feature and R50 blue-green demonstration are complete.
 The remaining R36–R55 proposals remain deferred.
 See [registration and operations](registration-operations-contracts.md) and [R29–R35 contracts](configuration-policy-contracts.md).
 See [R15–R18 verification](../tests/Wafish.Regression/evidence/operation-previews/README.md).

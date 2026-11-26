@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -51,9 +53,33 @@ public sealed class RedisRateLimitMiddleware : GatewayMiddlewareBase
             return;
         }
 
-        var clientIp = ClientIpResolver.GetClientIp(context) ?? "unknown";
+        string partition;
+        if (config.PartitionKey == "Tenant")
+        {
+            var authenticated = context.User.Identities.Where(identity => identity.IsAuthenticated).ToArray();
+            var tenants = authenticated.SelectMany(identity => identity.Claims)
+                .Where(claim => claim.Type == config.TenantClaimType && claim.Issuer == config.TenantClaimIssuer)
+                .Select(claim => claim.Value).Distinct(StringComparer.Ordinal).Take(2).ToArray();
+            if (string.IsNullOrWhiteSpace(config.TenantClaimType) || string.IsNullOrWhiteSpace(config.TenantClaimIssuer) ||
+                config.AllowedTenants is null || config.AllowedTenants.Length is < 1 or > 256 || tenants.Length != 1 ||
+                tenants[0].Length is < 1 or > 128 || !config.AllowedTenants.Contains(tenants[0], StringComparer.Ordinal))
+            {
+                context.Response.StatusCode = authenticated.Length == 0 ? StatusCodes.Status401Unauthorized : StatusCodes.Status403Forbidden;
+                context.Response.Headers["X-RateLimit-Status"] = "tenant-rejected";
+                await context.Response.WriteAsJsonAsync(new { error = "Trusted tenant is required" }, context.RequestAborted);
+                return;
+            }
+            partition = "tenant:" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
+                config.TenantClaimIssuer + "\0" + config.TenantClaimType + "\0" + tenants[0])));
+        }
+        else if (config.PartitionKey == "IpAddress") partition = ClientIpResolver.GetClientIp(context) ?? "unknown";
+        else
+        {
+            context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+            return;
+        }
         var prefix = string.IsNullOrWhiteSpace(config.KeyPrefix) ? "wafish:rl" : config.KeyPrefix;
-        var key = $"{prefix}:{routeId}:{clientIp}";
+        var key = $"{prefix}:{routeId}:{partition}";
 
         DistributedRateLimitResult result;
         try

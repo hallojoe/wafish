@@ -116,3 +116,6 @@ Snapshot compilation rejects conflicts before persistence. See [quota groups](..
 
 Compression execution plans retain the shared compression level and add optional per-algorithm overrides and an encoding allowlist.
 See [route encoding policy](../Wafish.Plugin.Compression/README.md#route-encoding-policy-r41).
+
+Redis route quotas can select [trusted tenant partitions](../Wafish.Plugin.RateLimit.Redis/README.md#trusted-tenant-partitions-r37).
+The host authenticates requests before forwarding. A bounded allowlist prevents caller-controlled quota-key growth.

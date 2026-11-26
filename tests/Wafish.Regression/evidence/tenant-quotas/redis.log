@@ -1,0 +1,10 @@
+PASS: Live Redis combined quotas enforce atomic burst/sustained decisions, reset, expiry, and replica sharing
+PASS: Live Redis isolates algorithm and policy changes on the same logical key
+PASS: Live Redis shares fixed-window, sliding-window, and token-bucket counters across two clients
+PASS: Live Redis isolates deployment prefixes for identical routes and clients
+PASS: Live Redis recovers failed construction with one replacement and shared counters
+PASS: Live Redis classifies an interrupted Lua operation as unavailable
+PASS: Live Redis outage follows each route failure policy
+PASS: Live Redis reconnects after restart and preserves cancellation
+PASS: Live Redis integration
+All regression checks passed.

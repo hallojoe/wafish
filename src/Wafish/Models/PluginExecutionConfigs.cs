@@ -64,6 +64,10 @@ public sealed record RateLimitExecutionConfig
 /// <summary>Compiled route-scoped configuration for the Redis distributed rate-limit plugin.</summary>
 public sealed record RedisRateLimitExecutionConfig
 {
+    public string PartitionKey { get; init; } = "IpAddress";
+    public string TenantClaimType { get; init; } = "";
+    public string TenantClaimIssuer { get; init; } = "";
+    public string[] AllowedTenants { get; init; } = [];
     public int BurstLimit { get; init; } = 10;
     public string FailureMode { get; init; } = "FailClosed";
     public bool Enabled { get; init; } = true;

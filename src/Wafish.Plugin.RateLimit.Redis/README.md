@@ -99,3 +99,40 @@ Custom stores can implement the additive `ICombinedDistributedRateLimitStore` ca
 Existing `IDistributedRateLimitStore` implementations remain compatible with single-quota bindings.
 A combined binding with an unsupported store follows its configured outage policy. The default remains `FailClosed`.
 Redis failures do not fall back to independent acquisitions. Such a fallback could partially consume an allowance.
+
+## Trusted tenant partitions (R37)
+
+`partitionKey` defaults to `IpAddress`, preserving existing keys and behavior.
+Select `Tenant` to share a route quota across authenticated users and addresses belonging to the same tenant.
+
+```json
+{
+  "enabled": true,
+  "partitionKey": "Tenant",
+  "tenantClaimType": "tenant_id",
+  "tenantClaimIssuer": "https://identity.example.com",
+  "allowedTenants": ["tenant-a", "tenant-b"],
+  "algorithm": "FixedWindow",
+  "limit": 100,
+  "windowSeconds": 60,
+  "failureMode": "FailClosed"
+}
+```
+
+Authenticate requests before the gateway proxy pipeline. The authentication handler must verify the token issuer and signature.
+This plugin reads claims only from authenticated identities and requires an exact configured claim issuer and type.
+Caller headers never select the tenant. Configure claim mapping explicitly when the authentication handler changes claim names.
+Multiple matching claims may repeat the same tenant. Conflicting values are rejected.
+
+Unauthenticated requests return 401. Missing, untrusted, ambiguous, and unlisted tenant claims return 403.
+Both responses set `X-RateLimit-Status: tenant-rejected` and stop before Redis or forwarding.
+`FailOpen` applies only to store failures; it never bypasses tenant validation.
+
+The allowlist contains 1–256 distinct tenant values, each at most 128 characters.
+Unlisted values cannot create quota keys. The issuer and claim type are also bounded by the schema.
+Keys contain a SHA-256 digest of the issuer, claim type, and tenant value, not raw tenant values.
+Keys retain the configured deployment prefix and route identity, so separate routes retain separate quotas.
+Replicas with the same policy, prefix, and route identity share the same tenant allowance.
+The existing Redis policy hashes and expiry rules still apply.
+Changing issuer or claim type changes the partition identity. Removing a tenant immediately rejects its requests.
+Old counters expire through their existing bounded lifetime.

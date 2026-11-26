@@ -19,6 +19,7 @@ internal static partial class RedisFailureChecks
 {
     public static async Task RunAsync(Func<string, Func<Task>, Task> run)
     {
+        await run("Redis: trusted tenants share bounded quotas and reject untrusted claims before storage", TenantPartitionsAsync);
         await run("Redis: combined quotas validate settings and preserve unsupported-store outage policy", CombinedPolicyAsync);
         await run("Rate limiting: exhausted permits return JSON and Retry-After without forwarding", async () =>
         {
@@ -87,6 +88,7 @@ internal static partial class RedisFailureChecks
         await using var first = new RedisLuaRateLimitStore(NullLogger<RedisLuaRateLimitStore>.Instance, options);
         await using var second = new RedisLuaRateLimitStore(NullLogger<RedisLuaRateLimitStore>.Instance, options);
         await CombinedLiveAsync(first, second, options.Value.ConnectionString!);
+        await TenantLiveAsync(first, second);
         foreach (var algorithm in new[] { "FixedWindow", "SlidingWindow", "TokenBucket" })
         {
             var key = "test:" + algorithm;
