@@ -19,19 +19,18 @@ R56 records a release discrepancy found during cleanup; it does not authorize pu
 | Order | ID | Remaining task | Value / 10 | Need / 10 |
 |---|---|---|---|---|
 | 1 | R56 | [Reconcile the release version and package publication](#r56) | 9 | 9 |
-| 2 | R41 | [Configure allowed compression algorithms](#r41) | 7 | 5 |
-| 3 | R50 | [Demonstrate blue-green deployment](#r50) | 7 | 5 |
-| 4 | R48 | [Benchmark multiple destinations](#r48) | 6 | 5 |
-| 5 | R46 | [Add WebAuthn authentication](#r46) | 8 | 5 |
-| 6 | R37 | [Partition quotas by trusted tenant](#r37) | 8 | 4 |
-| 7 | R39 | [Assign weighted request costs](#r39) | 6 | 4 |
-| 8 | R49 | [Add optional network fault injection](#r49) | 6 | 4 |
-| 9 | R51 | [Demonstrate service discovery](#r51) | 6 | 4 |
-| 10 | R55 | [Save operator views](#r55) | 5 | 3 |
-| 11 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
-| 12 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
-| 13 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
-| 14 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
+| 2 | R50 | [Demonstrate blue-green deployment](#r50) | 7 | 5 |
+| 3 | R48 | [Benchmark multiple destinations](#r48) | 6 | 5 |
+| 4 | R46 | [Add WebAuthn authentication](#r46) | 8 | 5 |
+| 5 | R37 | [Partition quotas by trusted tenant](#r37) | 8 | 4 |
+| 6 | R39 | [Assign weighted request costs](#r39) | 6 | 4 |
+| 7 | R49 | [Add optional network fault injection](#r49) | 6 | 4 |
+| 8 | R51 | [Demonstrate service discovery](#r51) | 6 | 4 |
+| 9 | R55 | [Save operator views](#r55) | 5 | 3 |
+| 10 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
+| 11 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
+| 12 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
+| 13 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
 
 ## Completion rule
 
@@ -255,21 +254,20 @@ Verification: [R40 evidence](tests/Wafish.Regression/evidence/compression-metric
 
 ### R41: Configure allowed compression algorithms
 
-Status: PARTIAL. Value: 7/10. Need: 5/10.
+Status: COMPLETE. Value: 7/10. Need: 5/10.
 
 Control route CPU and bandwidth tradeoffs.
 
 Source: [Wafish.Plugin.Compression FEAT-02](docs/archive/2026-11-planning/src/Wafish.Plugin.Compression/PLAN.md#feat-02-configure-allowed-compression-algorithms).
 
-Evidence: [CompressionMiddleware.cs](src/Wafish.Plugin.Compression/CompressionMiddleware.cs), `SelectEncoding`, always considers Brotli and Gzip.
-
-Already implemented: one route-level `compressionLevel` setting, supporting `Optimal`, `Fastest`, and `NoCompression`.
-The middleware applies that setting to either selected encoding.
-Remaining: let route policy select allowed algorithms and configure their levels separately.
-Preserve the current shared-level setting as the compatibility default.
+Route policy selects Brotli, Gzip, both, or neither.
+Optional per-algorithm levels override the shared compression level.
+Omitted settings preserve existing behavior.
 
 Acceptance: Disabled algorithms are never selected.
 Quality values, identity fallback, and Vary handling remain correct.
+
+Verification: [R41 evidence](tests/Wafish.Regression/evidence/compression-policy/README.md).
 
 <a id="r50"></a>
 

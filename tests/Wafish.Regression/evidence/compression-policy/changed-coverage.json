@@ -1,0 +1,27 @@
+{
+  "base": "87ccf40",
+  "covered": 7,
+  "executable": 7,
+  "files": [
+    {
+      "file": "src/Wafish.Plugin.Compression/CompressionMiddleware.cs",
+      "covered": 5,
+      "executable": 5,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Plugin.Compression/CompressionPlugin.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish/Models/PluginExecutionConfigs.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    }
+  ],
+  "missingFiles": [],
+  "percent": 100.0
+}

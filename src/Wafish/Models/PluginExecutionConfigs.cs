@@ -123,6 +123,9 @@ public sealed record MetricsExecutionConfig
 /// <summary>Route-scoped response compression configuration stored in a plugin binding.</summary>
 public sealed record CompressionExecutionConfig
 {
+    public string[] AllowedEncodings { get; init; } = ["br", "gzip"];
+    public string? BrotliCompressionLevel { get; init; }
+    public string? GzipCompressionLevel { get; init; }
     public bool Enabled { get; init; } = true;
     public int MinResponseSize { get; init; } = 1024;
     public string CompressionLevel { get; init; } = "Optimal";

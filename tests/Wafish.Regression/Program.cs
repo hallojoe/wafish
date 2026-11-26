@@ -91,6 +91,7 @@ await registry.DefineGroupAsync("client", RegistrationClientChecks.RunAsync);
 await registry.DefineGroupAsync("waf", WafBodyChecks.RunAsync);
 await registry.DefineGroupAsync("streaming", ResponseStreamingChecks.RunAsync);
 await registry.DefineGroupAsync("streaming", CompressionSavingsChecks.RunAsync);
+await registry.DefineGroupAsync("streaming", CompressionPolicyChecks.RunAsync);
 await registry.DefineGroupAsync("rate-limit", RedisFailureChecks.RunAsync);
 await registry.DefineGroupAsync("rate-limit", QuotaGroupChecks.RunAsync);
 await registry.DefineGroupAsync("runtime", RuntimeHostChecks.RunAsync);

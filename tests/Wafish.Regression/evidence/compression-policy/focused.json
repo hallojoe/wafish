@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "suite": "main",
+  "cases": [
+    {
+      "name": "Compression policy: allowed encodings preserve qualities, identity fallback, levels, and Vary",
+      "group": "streaming",
+      "durationMs": 391.9798,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    }
+  ]
+}

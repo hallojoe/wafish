@@ -113,3 +113,6 @@ See [combined Redis quotas](../Wafish.Plugin.RateLimit.Redis/README.md#combined-
 
 Local quota groups require matching execution settings across enabled route bindings.
 Snapshot compilation rejects conflicts before persistence. See [quota groups](../Wafish.Plugin.RateLimit/README.md#named-local-quota-groups-r36).
+
+Compression execution plans retain the shared compression level and add optional per-algorithm overrides and an encoding allowlist.
+See [route encoding policy](../Wafish.Plugin.Compression/README.md#route-encoding-policy-r41).

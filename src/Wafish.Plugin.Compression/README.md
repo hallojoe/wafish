@@ -100,3 +100,27 @@ No route IDs are retained until a metric listener subscribes.
 For completed responses with nonzero input, calculate savings as `100 * (1 - output_bytes / input_bytes)`.
 Use matching route and encoding labels. Negative savings expose compression overhead on small or incompressible bodies.
 Keep aborted responses separate; their partial byte counts do not establish completed-response savings.
+
+## Route encoding policy (R41)
+
+Use `allowedEncodings` to restrict a route to Brotli (`br`), Gzip (`gzip`), or neither.
+An omitted list permits both algorithms. An empty list passes the upstream representation through unchanged.
+Only allowed algorithms participate in quality negotiation. Disabled algorithms never override the configured policy.
+Existing wildcard, duplicate-quality, malformed-header, identity-fallback, and `Vary` behavior remains unchanged.
+
+```json
+{
+  "enabled": true,
+  "allowedEncodings": ["br", "gzip"],
+  "compressionLevel": "Optimal",
+  "brotliCompressionLevel": "Fastest",
+  "gzipCompressionLevel": "Optimal",
+  "minResponseSize": 1024
+}
+```
+
+`brotliCompressionLevel` and `gzipCompressionLevel` override the shared level for their algorithm.
+Each accepts `Optimal`, `Fastest`, or `NoCompression`.
+An omitted override uses the existing `compressionLevel`, which still defaults to `Optimal`.
+Codec levels retain their .NET meanings; they do not promise equal compression ratios across algorithms.
+Unknown encodings, duplicate entries, and invalid levels fail schema validation.
