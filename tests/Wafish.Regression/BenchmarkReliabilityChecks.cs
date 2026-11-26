@@ -14,6 +14,7 @@ internal static partial class BenchmarkReliabilityChecks
         await run("Benchmarks: native forwarding preflight detects backend failure on isolated addresses", NativeAsync);
         await run("Benchmarks: matched transport modes enforce protocols and pin local TLS certificates", MatchedTransportsAsync);
         await run("Benchmarks: scheduled arrivals expose overload with bounded queues and separate latency", ScheduledArrivalsAsync);
+        await run("Benchmarks: paced streams deliver early bytes, cancel work, and report buffering", PacedStreamsAsync);
         await run("Benchmarks: managed comparisons export effective manifests and clean only owned data", RunnerAsync);
     }
     private static async Task HistogramAsync()

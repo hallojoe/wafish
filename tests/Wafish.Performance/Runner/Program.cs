@@ -23,6 +23,7 @@ var processes = new List<Process>();
 if (durationSeconds <= 0 || warmupSeconds < 0 || concurrency is <= 0 or > 4096 || repetitions is <= 0 or > 100 || soakSeconds <= 0)
     throw new ArgumentException("Duration and soak must be positive; warmup nonnegative; concurrency 1..4096; repetitions 1..100.");
 if (durationSeconds > 3600 || warmupSeconds > 3600 || soakSeconds > 3600) throw new ArgumentException("Each phase is limited to one hour.");
+if (suite == "first" && session.Streaming is not null) throw new ArgumentException("Streaming workloads require the baseline suite.");
 if (suite == "first" && session.ArrivalRate != 0) throw new ArgumentException("Scheduled arrivals require the baseline suite or external mode.");
 if (suite is not ("baseline" or "first")) throw new ArgumentException("Unknown benchmark suite.");
 
@@ -103,7 +104,7 @@ try
         await WaitForHealthyAsync(new Uri(BenchmarkSession.Current.AddressForPort(gateway.Port), "/health").ToString(), process);
         await session.CaptureHostAsync(gateway.Name, session.AddressForPort(gateway.Port));
 
-        var scenarios = gateway.Name == "Wafish WAF"
+        var scenarios = session.Streaming is { } streamWorkload ? new[] { Scenario.Get(streamWorkload.Kind, streamWorkload.Path) } : gateway.Name == "Wafish WAF"
             ? new[] { Scenario.Get("plain", "/api/perf/plain"), Scenario.Get("json-small", "/api/perf/json-small") }
             : new[]
             {
@@ -174,6 +175,9 @@ static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int
     using var client = new HttpClient(handler) { BaseAddress = endpoint ?? session.AddressForPort(port), Timeout = TimeSpan.FromSeconds(10) };
     var serviceLatencies = new BoundedLatencyHistogram();
     var scheduledLatencies = new BoundedLatencyHistogram();
+    var firstBytes = new BoundedLatencyHistogram();
+    var readGaps = new BoundedLatencyHistogram();
+    long responseBytes = 0, bodyReads = 0;
     long completed = 0, responses = 0, failed = 0, policyRejections = 0, transportFailures = 0;
     var startedAt = Stopwatch.GetTimestamp();
     var cpuStart = measuredProcess?.TotalProcessorTime ?? TimeSpan.Zero;
@@ -190,7 +194,10 @@ static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int
             deadline.CancelAfter(TimeSpan.FromSeconds(10));
             using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, deadline.Token);
             session.Transport.VerifyResponse(response);
-            await response.Content.CopyToAsync(Stream.Null, deadline.Token);
+            await using var body = await response.Content.ReadAsStreamAsync(deadline.Token);
+            var delivery = await BenchmarkBodyMeasurement.ReadAsync(body, requestStart, deadline.Token);
+            Interlocked.Add(ref responseBytes, delivery.Bytes); Interlocked.Add(ref bodyReads, delivery.Reads);
+            if (delivery.Reads > 0) { firstBytes.Record(delivery.FirstByteMs); readGaps.Record(delivery.MaximumReadGapMs); }
             Interlocked.Increment(ref responses);
             if (allowPolicyRejections && response.StatusCode == HttpStatusCode.TooManyRequests)
                 Interlocked.Increment(ref policyRejections);
@@ -222,7 +229,10 @@ static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int
         cpuPercent, memoryMb, completed, failed, policyRejections, transportFailures)
     {
         ConfigurationHash = session.ConfigurationHash(port), Arrivals = arrivals, CompletedResponses = responses,
-        ScheduledP95Ms = scheduledLatencies.Percentile(.95), ScheduledP99Ms = scheduledLatencies.Percentile(.99)
+        ScheduledP95Ms = scheduledLatencies.Percentile(.95), ScheduledP99Ms = scheduledLatencies.Percentile(.99),
+        ResponseBytes = responseBytes, BodyReads = bodyReads, FirstByteSamples = firstBytes.Count,
+        FirstByteP50Ms = firstBytes.Percentile(.5), FirstByteP95Ms = firstBytes.Percentile(.95),
+        FirstByteP99Ms = firstBytes.Percentile(.99), ReadGapP95Ms = readGaps.Percentile(.95)
     };
 }
 
@@ -502,10 +512,10 @@ static List<BenchmarkResult> BuildSummary(List<BenchmarkResult> results) => resu
 
 static string BuildCsv(List<BenchmarkResult> results, List<BenchmarkResult> summary)
 {
-    var sb = new StringBuilder("Kind,Gateway,Scenario,Repetition,RPS,P50Ms,P95Ms,P99Ms,ErrorRatePercent,CpuPercent,WorkingSetMb,Requests,Failures,PolicyRejections,TransportFailures,ConfigurationHash,Offered,Started,Dropped,CancelledBeforeStart,OfferedRPS,CompletedResponses,QueueP95Ms,QueueP99Ms,ScheduledP95Ms,ScheduledP99Ms\n");
+    var sb = new StringBuilder("Kind,Gateway,Scenario,Repetition,RPS,P50Ms,P95Ms,P99Ms,ErrorRatePercent,CpuPercent,WorkingSetMb,Requests,Failures,PolicyRejections,TransportFailures,ConfigurationHash,Offered,Started,Dropped,CancelledBeforeStart,OfferedRPS,CompletedResponses,QueueP95Ms,QueueP99Ms,ScheduledP95Ms,ScheduledP99Ms,ResponseBytes,BodyReads,FirstByteSamples,FirstByteP50Ms,FirstByteP95Ms,FirstByteP99Ms,ReadGapP95Ms\n");
     foreach (var item in results.Select(x => (Kind: "run", Item: x)).Concat(summary.Select(x => (Kind: "median", Item: x))))
     {
-        sb.AppendLine(string.Join(',', item.Kind, Csv(item.Item.Gateway), Csv(item.Item.Scenario), item.Item.Repetition, F(item.Item.RequestsPerSecond), F(item.Item.P50Ms), F(item.Item.P95Ms), F(item.Item.P99Ms), F(item.Item.ErrorRatePercent), F(item.Item.CpuPercent), F(item.Item.WorkingSetMb), item.Item.Requests, item.Item.Failures, item.Item.PolicyRejections, item.Item.TransportFailures, Csv(item.Item.ConfigurationHash ?? "unavailable"), item.Item.Arrivals.Offered, item.Item.Arrivals.Started, item.Item.Arrivals.Dropped, item.Item.Arrivals.CancelledBeforeStart, F(item.Item.Arrivals.OfferedPerSecond), item.Item.CompletedResponses, F(item.Item.Arrivals.QueueP95Ms), F(item.Item.Arrivals.QueueP99Ms), F(item.Item.ScheduledP95Ms), F(item.Item.ScheduledP99Ms)));
+        sb.AppendLine(string.Join(',', item.Kind, Csv(item.Item.Gateway), Csv(item.Item.Scenario), item.Item.Repetition, F(item.Item.RequestsPerSecond), F(item.Item.P50Ms), F(item.Item.P95Ms), F(item.Item.P99Ms), F(item.Item.ErrorRatePercent), F(item.Item.CpuPercent), F(item.Item.WorkingSetMb), item.Item.Requests, item.Item.Failures, item.Item.PolicyRejections, item.Item.TransportFailures, Csv(item.Item.ConfigurationHash ?? "unavailable"), item.Item.Arrivals.Offered, item.Item.Arrivals.Started, item.Item.Arrivals.Dropped, item.Item.Arrivals.CancelledBeforeStart, F(item.Item.Arrivals.OfferedPerSecond), item.Item.CompletedResponses, F(item.Item.Arrivals.QueueP95Ms), F(item.Item.Arrivals.QueueP99Ms), F(item.Item.ScheduledP95Ms), F(item.Item.ScheduledP99Ms), item.Item.ResponseBytes, item.Item.BodyReads, item.Item.FirstByteSamples, F(item.Item.FirstByteP50Ms), F(item.Item.FirstByteP95Ms), F(item.Item.FirstByteP99Ms), F(item.Item.ReadGapP95Ms)));
     }
 
     return sb.ToString();
@@ -537,6 +547,10 @@ static string BuildMarkdown(List<BenchmarkResult> summary, int duration, int war
     sb.AppendLine("|---|---|---:|---:|---:|---:|---:|---:|---:|");
     foreach (var item in summary)
         sb.AppendLine($"| {item.Gateway} | {item.Scenario} | {item.Arrivals.Offered} | {item.Arrivals.Started} | {item.Arrivals.Dropped} | {item.Arrivals.CancelledBeforeStart} | {item.CompletedResponses} | {item.Arrivals.QueueP95Ms:N2} | {item.ScheduledP95Ms:N2} |");
+    sb.AppendLine().AppendLine("| Gateway | Scenario | Response bytes | Body reads | First-byte samples | First byte P95 ms | Completion P95 ms | Maximum read gap P95 ms |");
+    sb.AppendLine("|---|---|---:|---:|---:|---:|---:|---:|");
+    foreach (var item in summary)
+        sb.AppendLine($"| {item.Gateway} | {item.Scenario} | {item.ResponseBytes} | {item.BodyReads} | {item.FirstByteSamples} | {item.FirstByteP95Ms:N2} | {item.P95Ms:N2} | {item.ReadGapP95Ms:N2} |");
     sb.AppendLine().AppendLine("## Relative throughput versus Native YARP").AppendLine();
     foreach (var scenario in summary.Select(x => x.Scenario).Distinct())
     {
@@ -593,6 +607,13 @@ sealed record BenchmarkResult(string Gateway, string Scenario, int Repetition, d
     public long CompletedResponses { get; init; }
     public double ScheduledP95Ms { get; init; }
     public double ScheduledP99Ms { get; init; }
+    public long ResponseBytes { get; init; }
+    public long BodyReads { get; init; }
+    public long FirstByteSamples { get; init; }
+    public double FirstByteP50Ms { get; init; }
+    public double FirstByteP95Ms { get; init; }
+    public double FirstByteP99Ms { get; init; }
+    public double ReadGapP95Ms { get; init; }
 }
 sealed record ExtendedResult(string Group, string Scenario, int Concurrency, double RequestsPerSecond, double P50Ms, double P95Ms, double P99Ms, double NonSuccessPercent, long BackendRequests, string Statuses, bool Passed, string Notes)
 {

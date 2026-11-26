@@ -38,6 +38,7 @@ internal static class BenchmarkPreflight
             "/api/perf/plain" => bytes.AsSpan().SequenceEqual("OK"u8),
             "/api/perf/echo" => bytes.AsSpan().SequenceEqual(Encoding.UTF8.GetBytes(body ?? "")),
             "/api/perf/json-small" => IsExpectedJson(bytes),
+            _ when route.StartsWith("/api/perf/stream/", StringComparison.Ordinal) => BenchmarkStreamWorkload.ParsePath(route).Matches(bytes),
             _ when route.StartsWith("/api/perf/payload/", StringComparison.Ordinal) && int.TryParse(route.Split('/')[^1], out var size)
                 => bytes.Length == Math.Clamp(size, 0, MaximumBodyBytes) && bytes.All(value => value == (byte)'x'),
             _ => throw new ArgumentException("No payload expectation exists for this managed workload.")
