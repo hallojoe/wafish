@@ -19,22 +19,21 @@ R56 records a release discrepancy found during cleanup; it does not authorize pu
 | Order | ID | Remaining task | Value / 10 | Need / 10 |
 |---|---|---|---|---|
 | 1 | R56 | [Reconcile the release version and package publication](#r56) | 9 | 9 |
-| 2 | R38 | [Combine burst and sustained quotas](#r38) | 8 | 6 |
-| 3 | R36 | [Share local quotas across named route groups](#r36) | 7 | 6 |
-| 4 | R40 | [Measure compression savings](#r40) | 7 | 6 |
-| 5 | R41 | [Configure allowed compression algorithms](#r41) | 7 | 5 |
-| 6 | R50 | [Demonstrate blue-green deployment](#r50) | 7 | 5 |
-| 7 | R48 | [Benchmark multiple destinations](#r48) | 6 | 5 |
-| 8 | R46 | [Add WebAuthn authentication](#r46) | 8 | 5 |
-| 9 | R37 | [Partition quotas by trusted tenant](#r37) | 8 | 4 |
-| 10 | R39 | [Assign weighted request costs](#r39) | 6 | 4 |
-| 11 | R49 | [Add optional network fault injection](#r49) | 6 | 4 |
-| 12 | R51 | [Demonstrate service discovery](#r51) | 6 | 4 |
-| 13 | R55 | [Save operator views](#r55) | 5 | 3 |
-| 14 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
-| 15 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
-| 16 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
-| 17 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
+| 2 | R36 | [Share local quotas across named route groups](#r36) | 7 | 6 |
+| 3 | R40 | [Measure compression savings](#r40) | 7 | 6 |
+| 4 | R41 | [Configure allowed compression algorithms](#r41) | 7 | 5 |
+| 5 | R50 | [Demonstrate blue-green deployment](#r50) | 7 | 5 |
+| 6 | R48 | [Benchmark multiple destinations](#r48) | 6 | 5 |
+| 7 | R46 | [Add WebAuthn authentication](#r46) | 8 | 5 |
+| 8 | R37 | [Partition quotas by trusted tenant](#r37) | 8 | 4 |
+| 9 | R39 | [Assign weighted request costs](#r39) | 6 | 4 |
+| 10 | R49 | [Add optional network fault injection](#r49) | 6 | 4 |
+| 11 | R51 | [Demonstrate service discovery](#r51) | 6 | 4 |
+| 12 | R55 | [Save operator views](#r55) | 5 | 3 |
+| 13 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
+| 14 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
+| 15 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
+| 16 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
 
 ## Completion rule
 
@@ -205,7 +204,7 @@ Verification: [R45 evidence](tests/Wafish.Regression/evidence/performance-r45/RE
 
 ### R38: Combine burst and sustained quotas
 
-Status: TODO. Value: 8/10. Need: 6/10.
+Status: COMPLETE. Value: 8/10. Need: 6/10.
 
 Protect against short bursts and sustained excess traffic atomically.
 
@@ -219,6 +218,8 @@ Define Redis Cluster key placement and expiry rules.
 
 Acceptance: Exceeding either allowance rejects the request.
 Rejected requests do not partially consume another allowance.
+
+Verification: [R38 evidence](tests/Wafish.Regression/evidence/combined-quotas/README.md).
 
 <a id="r36"></a>
 

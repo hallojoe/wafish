@@ -58,8 +58,13 @@ public sealed class RedisRateLimitMiddleware : GatewayMiddlewareBase
         DistributedRateLimitResult result;
         try
         {
-            result = await _store.TryAcquireAsync(config.Algorithm, key, config.Limit, config.WindowSeconds,
-                config.BurstBalance, config.RedisConnectionString, context.RequestAborted);
+            result = string.Equals(config.Algorithm, "DualWindow", StringComparison.OrdinalIgnoreCase)
+                ? _store is ICombinedDistributedRateLimitStore combined
+                    ? await combined.TryAcquireCombinedAsync(key, config.Limit, config.WindowSeconds, config.BurstLimit,
+                        config.RedisConnectionString, context.RequestAborted)
+                    : DistributedRateLimitResult.Unavailable(config.Limit)
+                : await _store.TryAcquireAsync(config.Algorithm, key, config.Limit, config.WindowSeconds,
+                    config.BurstBalance, config.RedisConnectionString, context.RequestAborted);
         }
         catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested) { throw; }
         catch (Exception ex)

@@ -15,10 +15,11 @@ using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Forwarder;
 using Yarp.ReverseProxy.Model;
 
-internal static class RedisFailureChecks
+internal static partial class RedisFailureChecks
 {
     public static async Task RunAsync(Func<string, Func<Task>, Task> run)
     {
+        await run("Redis: combined quotas validate settings and preserve unsupported-store outage policy", CombinedPolicyAsync);
         await run("Rate limiting: exhausted permits return JSON and Retry-After without forwarding", async () =>
         {
             var route = new RouteConfig { RouteId = "local-limit", Match = new() { Path = "/local-limit" } };
@@ -85,6 +86,7 @@ internal static class RedisFailureChecks
         var options = Options.Create(new RedisRateLimitStoreOptions { ConnectionString = $"127.0.0.1:{server.Port}" });
         await using var first = new RedisLuaRateLimitStore(NullLogger<RedisLuaRateLimitStore>.Instance, options);
         await using var second = new RedisLuaRateLimitStore(NullLogger<RedisLuaRateLimitStore>.Instance, options);
+        await CombinedLiveAsync(first, second, options.Value.ConnectionString!);
         foreach (var algorithm in new[] { "FixedWindow", "SlidingWindow", "TokenBucket" })
         {
             var key = "test:" + algorithm;

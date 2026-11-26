@@ -107,3 +107,6 @@ See [registration and operations](../../docs/registration-operations-contracts.m
 
 Versioned change sets combine routes, clusters, and plugin bindings in one transaction.
 See [change-set contracts](../../docs/configuration-policy-contracts.md) for API examples, revisions, permissions, and recovery.
+
+Redis execution plans include `BurstLimit` for the optional atomic `DualWindow` policy.
+See [combined Redis quotas](../Wafish.Plugin.RateLimit.Redis/README.md#combined-burst-and-sustained-allowances-r38).

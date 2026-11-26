@@ -2,7 +2,7 @@
 
 The first public scope is R01–R14 in [PLAN.md](../PLAN.md).
 R15–R18 add operation permissions, idempotent configuration changes, and previews.
-R19–R35 are complete. Benchmark tasks R42–R45 and R47 are complete.
+R19–R35 are complete. R38 and benchmark tasks R42–R45 and R47 are complete.
 The remaining R36–R55 proposals remain deferred.
 See [registration and operations](registration-operations-contracts.md) and [R29–R35 contracts](configuration-policy-contracts.md).
 See [R15–R18 verification](../tests/Wafish.Regression/evidence/operation-previews/README.md).

@@ -1,0 +1,42 @@
+{
+  "base": "e89ba40",
+  "covered": 16,
+  "executable": 18,
+  "files": [
+    {
+      "file": "src/Wafish.Plugin.RateLimit.Redis/IDistributedRateLimitStore.cs",
+      "covered": 0,
+      "executable": 0,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Plugin.RateLimit.Redis/Middleware/RedisRateLimitMiddleware.cs",
+      "covered": 7,
+      "executable": 7,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Plugin.RateLimit.Redis/RedisLuaRateLimitStore.cs",
+      "covered": 7,
+      "executable": 9,
+      "uncovered": [
+        59,
+        60
+      ]
+    },
+    {
+      "file": "src/Wafish.Plugin.RateLimit.Redis/RedisRateLimitPlugin.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish/Models/PluginExecutionConfigs.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    }
+  ],
+  "missingFiles": [],
+  "percent": 88.89
+}

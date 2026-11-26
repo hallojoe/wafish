@@ -12,7 +12,7 @@ public sealed class RedisRateLimitStoreOptions
 }
 
 /// <summary>Atomic Redis counters. Availability is separate from the route's failure policy.</summary>
-public sealed class RedisLuaRateLimitStore : IDistributedRateLimitStore, IAsyncDisposable
+public sealed class RedisLuaRateLimitStore : IDistributedRateLimitStore, ICombinedDistributedRateLimitStore, IAsyncDisposable
 {
     private readonly object _sync = new();
     private readonly Dictionary<string, ConnectionEntry> _connections = new(StringComparer.Ordinal);
@@ -44,11 +44,20 @@ public sealed class RedisLuaRateLimitStore : IDistributedRateLimitStore, IAsyncD
     private bool _disposed;
     private long _lastFailureLog;
 
-    public async ValueTask<DistributedRateLimitResult> TryAcquireAsync(string algorithm, string key, long limit,
+    public ValueTask<DistributedRateLimitResult> TryAcquireAsync(string algorithm, string key, long limit,
         int windowSeconds, int burstBalance, string? redisConnectionString, CancellationToken cancellationToken = default)
+        => AcquireCoreAsync(algorithm, key, limit, windowSeconds, burstBalance, null, redisConnectionString, cancellationToken);
+
+    public ValueTask<DistributedRateLimitResult> TryAcquireCombinedAsync(string key, long sustainedLimit,
+        int sustainedWindowSeconds, int burstLimit, string? redisConnectionString, CancellationToken cancellationToken = default)
+        => AcquireCoreAsync("DualWindow", key, sustainedLimit, sustainedWindowSeconds, 0, burstLimit, redisConnectionString, cancellationToken);
+
+    private async ValueTask<DistributedRateLimitResult> AcquireCoreAsync(string algorithm, string key, long limit,
+        int windowSeconds, int burstBalance, int? combinedBurstLimit, string? redisConnectionString, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (limit <= 0 || windowSeconds <= 0)
+        if (limit <= 0 || windowSeconds <= 0 || (combinedBurstLimit.HasValue &&
+            (limit > 1000000 || windowSeconds is < 2 or > 604800 || combinedBurstLimit.Value is < 1 or > 1000000)))
         {
             return DistributedRateLimitResult.Unavailable(limit);
         }
@@ -89,14 +98,16 @@ public sealed class RedisLuaRateLimitStore : IDistributedRateLimitStore, IAsyncD
             var name = algorithm.ToUpperInvariant();
             RedisValue[] values = name switch
             {
+                "DUALWINDOW" when combinedBurstLimit.HasValue => [limit, windowSeconds * 1000L, combinedBurstLimit.Value],
                 "FIXEDWINDOW" => [limit, windowSeconds],
                 "SLIDINGWINDOW" => [limit, windowSeconds * 1000L, Guid.NewGuid().ToString("N")],
                 "TOKENBUCKET" => [limit, windowSeconds, Math.Max(0, burstBalance)],
                 _ => throw new ArgumentException("Unsupported Redis rate-limit algorithm.")
             };
             var policy = FormattableString.Invariant($"{name}:{limit}:{windowSeconds}:{Math.Max(0, burstBalance)}");
-            key += ":v2:" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(policy)));
-            var script = name switch { "SLIDINGWINDOW" => SlidingWindowScript, "TOKENBUCKET" => TokenBucketScript, _ => FixedWindowScript };
+            if (combinedBurstLimit.HasValue) policy += FormattableString.Invariant($":{combinedBurstLimit.Value}:1000");
+            key += (combinedBurstLimit.HasValue ? ":v3:" : ":v2:") + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(policy)));
+            var script = name switch { "DUALWINDOW" => DualWindowScript, "SLIDINGWINDOW" => SlidingWindowScript, "TOKENBUCKET" => TokenBucketScript, _ => FixedWindowScript };
             var reply = (RedisResult[]?)await multiplexer.GetDatabase().ScriptEvaluateAsync(script, [(RedisKey)key], values).WaitAsync(cancellationToken);
             if (reply is not { Length: 3 })
             {
@@ -104,7 +115,7 @@ public sealed class RedisLuaRateLimitStore : IDistributedRateLimitStore, IAsyncD
             }
 
             var allowed = (long)reply[0] == 1;
-            var capacity = name == "TOKENBUCKET" ? limit + Math.Max(0, burstBalance) : limit;
+            var capacity = combinedBurstLimit.HasValue ? Math.Min(limit, combinedBurstLimit.Value) : name == "TOKENBUCKET" ? limit + Math.Max(0, burstBalance) : limit;
             return new(allowed, capacity, allowed ? Math.Max(0, (long)reply[1]) : 0,
                 allowed ? 0 : Math.Max(1, (long)reply[2]));
         }
@@ -168,6 +179,33 @@ public sealed class RedisLuaRateLimitStore : IDistributedRateLimitStore, IAsyncD
             catch (Exception) { /* A failed connection owns no usable multiplexer. */ }
         }
     }
+
+    // One hash key keeps both windows in the same Redis Cluster slot. Denial performs no writes.
+    // ARGV: sustained limit, sustained milliseconds, burst limit. Burst window: 1000 milliseconds.
+    private const string DualWindowScript = """
+        local time = redis.call('TIME')
+        local now = tonumber(time[1]) * 1000 + math.floor(tonumber(time[2]) / 1000)
+        local limit = tonumber(ARGV[1])
+        local window = tonumber(ARGV[2])
+        local burstLimit = tonumber(ARGV[3])
+        local state = redis.call('HMGET', KEYS[1], 'burstCount', 'burstStart', 'sustainedCount', 'sustainedStart')
+        local burstCount = tonumber(state[1]) or 0
+        local burstStart = tonumber(state[2]) or now
+        local sustainedCount = tonumber(state[3]) or 0
+        local sustainedStart = tonumber(state[4]) or now
+        if now - burstStart >= 1000 then burstCount = 0; burstStart = now end
+        if now - sustainedStart >= window then sustainedCount = 0; sustainedStart = now end
+        local retry = 0
+        if burstCount >= burstLimit then retry = math.max(retry, burstStart + 1000 - now) end
+        if sustainedCount >= limit then retry = math.max(retry, sustainedStart + window - now) end
+        if retry > 0 then return {0, 0, math.max(1, math.ceil(retry / 1000))} end
+        burstCount = burstCount + 1
+        sustainedCount = sustainedCount + 1
+        redis.call('HSET', KEYS[1], 'burstCount', burstCount, 'burstStart', burstStart,
+            'sustainedCount', sustainedCount, 'sustainedStart', sustainedStart)
+        redis.call('PEXPIRE', KEYS[1], math.max(1, math.max(burstStart + 1000, sustainedStart + window) - now))
+        return {1, math.min(burstLimit - burstCount, limit - sustainedCount), 0}
+        """;
 
     // ARGV: [1]=limit, [2]=windowSeconds. Returns { allowed, remaining, retryAfterSeconds }.
     private const string FixedWindowScript = """

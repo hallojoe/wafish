@@ -42,3 +42,12 @@ public interface IDistributedRateLimitStore
         string? redisConnectionString,
         CancellationToken cancellationToken = default);
 }
+
+/// <summary>Optional store capability for atomic burst and sustained fixed-window allowances.</summary>
+public interface ICombinedDistributedRateLimitStore : IDistributedRateLimitStore
+{
+    /// <summary>Consume one permit from both allowances, or consume neither. The burst window is one second.</summary>
+    ValueTask<DistributedRateLimitResult> TryAcquireCombinedAsync(string key, long sustainedLimit,
+        int sustainedWindowSeconds, int burstLimit, string? redisConnectionString,
+        CancellationToken cancellationToken = default);
+}

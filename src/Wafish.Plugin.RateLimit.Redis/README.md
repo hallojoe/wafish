@@ -63,3 +63,39 @@ The default `keyPrefix` is `wafish:rl`. Changing the prefix starts separate coun
 See [naming migration](../../docs/naming-migration.md#repository-branding-and-configured-names) before upgrading shared deployments.
 
 Verification: [Redis and discovery recovery](../../tests/Wafish.Regression/evidence/recovery/README.md).
+
+## Combined burst and sustained allowances (R38)
+
+Use `DualWindow` to enforce two fixed-window allowances in one atomic Redis operation:
+
+```json
+{
+  "enabled": true,
+  "algorithm": "DualWindow",
+  "burstLimit": 10,
+  "limit": 100,
+  "windowSeconds": 60,
+  "failureMode": "FailClosed",
+  "keyPrefix": "wafish:rl"
+}
+```
+
+`burstLimit` applies to a one-second window. `limit` applies to the sustained `windowSeconds` window.
+The sustained window must be 2–604,800 seconds. Each allowance must be 1–1,000,000 requests.
+Supply `burstLimit` and `windowSeconds` explicitly for this algorithm.
+Windows begin on their first accepted request, using Redis server time. They are fixed windows, not sliding windows.
+Each request consumes one permit from both windows. Exhausting either allowance rejects the request without modifying either counter.
+A rejection returns HTTP 429. `Retry-After` covers every exhausted window, rounded up to whole seconds.
+`X-RateLimit-Limit` reports the smaller capacity. `X-RateLimit-Remaining` reports the smaller remaining allowance.
+
+Both counters occupy one Redis hash key, so Redis Cluster never requires a cross-slot operation.
+The key includes a `v3` policy hash containing both allowances and window lengths.
+Accepted requests set expiry to the later window end. Rejections do not extend expiry.
+Changing either allowance starts fresh counters; previous keys retain their bounded expiry.
+Existing single-quota algorithms retain their `v2` key format and behavior.
+See [Redis script atomicity](https://redis.io/docs/latest/develop/programmability/eval-intro/).
+
+Custom stores can implement the additive `ICombinedDistributedRateLimitStore` capability.
+Existing `IDistributedRateLimitStore` implementations remain compatible with single-quota bindings.
+A combined binding with an unsupported store follows its configured outage policy. The default remains `FailClosed`.
+Redis failures do not fall back to independent acquisitions. Such a fallback could partially consume an allowance.

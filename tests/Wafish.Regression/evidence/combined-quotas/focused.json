@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "suite": "main",
+  "cases": [
+    {
+      "name": "Redis: combined quotas validate settings and preserve unsupported-store outage policy",
+      "group": "rate-limit",
+      "durationMs": 108.4297,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    }
+  ]
+}
