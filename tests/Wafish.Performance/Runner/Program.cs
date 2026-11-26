@@ -22,6 +22,8 @@ var results = new List<BenchmarkResult>();
 var processes = new List<Process>();
 if (durationSeconds <= 0 || warmupSeconds < 0 || concurrency is <= 0 or > 4096 || repetitions is <= 0 or > 100 || soakSeconds <= 0)
     throw new ArgumentException("Duration and soak must be positive; warmup nonnegative; concurrency 1..4096; repetitions 1..100.");
+if (durationSeconds > 3600 || warmupSeconds > 3600 || soakSeconds > 3600) throw new ArgumentException("Each phase is limited to one hour.");
+if (suite == "first" && session.ArrivalRate != 0) throw new ArgumentException("Scheduled arrivals require the baseline suite or external mode.");
 if (suite is not ("baseline" or "first")) throw new ArgumentException("Unknown benchmark suite.");
 
 var externalUrl = ReadStringArgument(args, "--external-url", "");
@@ -161,81 +163,67 @@ finally
 
 static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int concurrency, TimeSpan duration, Process? measuredProcess, Uri? endpoint = null, bool allowPolicyRejections = false)
 {
+    var session = BenchmarkSession.Current;
     using var handler = new SocketsHttpHandler
     {
         MaxConnectionsPerServer = concurrency,
         PooledConnectionLifetime = TimeSpan.FromMinutes(5),
-        AutomaticDecompression = DecompressionMethods.None,
-        UseProxy = false
+        AutomaticDecompression = DecompressionMethods.None
     };
-    BenchmarkSession.Current.Transport.ConfigureHandler(handler);
-    using var client = new HttpClient(handler) { BaseAddress = endpoint ?? BenchmarkSession.Current.AddressForPort(port), Timeout = TimeSpan.FromSeconds(10) };
-    client.DefaultRequestHeaders.ConnectionClose = false;
-
-    var latencies = new BoundedLatencyHistogram();
-    long completed = 0;
-    long failed = 0;
-    long policyRejections = 0;
-    long transportFailures = 0;
+    session.Transport.ConfigureHandler(handler);
+    using var client = new HttpClient(handler) { BaseAddress = endpoint ?? session.AddressForPort(port), Timeout = TimeSpan.FromSeconds(10) };
+    var serviceLatencies = new BoundedLatencyHistogram();
+    var scheduledLatencies = new BoundedLatencyHistogram();
+    long completed = 0, responses = 0, failed = 0, policyRejections = 0, transportFailures = 0;
     var startedAt = Stopwatch.GetTimestamp();
     var cpuStart = measuredProcess?.TotalProcessorTime ?? TimeSpan.Zero;
-    var stopAt = Stopwatch.GetTimestamp() + (long)(duration.TotalSeconds * Stopwatch.Frequency);
-    using var runDeadline = new CancellationTokenSource(duration + TimeSpan.FromSeconds(12));
 
-    var workers = Enumerable.Range(0, concurrency).Select(async _ =>
+    async Task SendAsync(long due, CancellationToken cancellationToken)
     {
-        while (Stopwatch.GetTimestamp() < stopAt)
+        var requestStart = Stopwatch.GetTimestamp();
+        try
         {
-            var requestStart = Stopwatch.GetTimestamp();
-            try
-            {
-                using var request = new HttpRequestMessage(scenario.Method, scenario.Path);
-                BenchmarkSession.Current.Transport.ConfigureRequest(request);
-                if (scenario.Body != null)
-                {
-                    request.Content = new StringContent(scenario.Body, Encoding.UTF8, "application/json");
-                    request.Content.Headers.ContentLength = Encoding.UTF8.GetByteCount(scenario.Body);
-                }
-                using var deadline = CancellationTokenSource.CreateLinkedTokenSource(runDeadline.Token);
-                deadline.CancelAfter(TimeSpan.FromSeconds(10));
-                using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, deadline.Token);
-                BenchmarkSession.Current.Transport.VerifyResponse(response);
-                await response.Content.CopyToAsync(Stream.Null, deadline.Token);
-                if (allowPolicyRejections && response.StatusCode == HttpStatusCode.TooManyRequests)
-                {
-                    Interlocked.Increment(ref policyRejections);
-                }
-                else if (!response.IsSuccessStatusCode)
-                {
-                    Interlocked.Increment(ref failed);
-                }
-            }
-            catch
-            {
-                Interlocked.Increment(ref transportFailures);
-                Interlocked.Increment(ref failed);
-            }
-            finally
-            {
-                var elapsedMs = Stopwatch.GetElapsedTime(requestStart).TotalMilliseconds;
-                latencies.Record(elapsedMs);
-                Interlocked.Increment(ref completed);
-            }
+            using var request = new HttpRequestMessage(scenario.Method, scenario.Path);
+            session.Transport.ConfigureRequest(request);
+            if (scenario.Body != null) request.Content = new StringContent(scenario.Body, Encoding.UTF8, "application/json");
+            using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            deadline.CancelAfter(TimeSpan.FromSeconds(10));
+            using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, deadline.Token);
+            session.Transport.VerifyResponse(response);
+            await response.Content.CopyToAsync(Stream.Null, deadline.Token);
+            Interlocked.Increment(ref responses);
+            if (allowPolicyRejections && response.StatusCode == HttpStatusCode.TooManyRequests)
+                Interlocked.Increment(ref policyRejections);
+            else if (!response.IsSuccessStatusCode) Interlocked.Increment(ref failed);
         }
-    }).ToArray();
+        catch (Exception error) when (error is HttpRequestException or IOException or OperationCanceledException or InvalidOperationException)
+        {
+            Interlocked.Increment(ref transportFailures);
+            Interlocked.Increment(ref failed);
+        }
+        finally
+        {
+            serviceLatencies.Record(Stopwatch.GetElapsedTime(requestStart).TotalMilliseconds);
+            scheduledLatencies.Record(Stopwatch.GetElapsedTime(due).TotalMilliseconds);
+            Interlocked.Increment(ref completed);
+        }
+    }
 
-    await Task.WhenAll(workers);
+    var arrivals = await BenchmarkArrivalSchedule.RunAsync(concurrency, duration, session.ArrivalRate, session.ArrivalQueueCapacity, SendAsync);
     var elapsed = Stopwatch.GetElapsedTime(startedAt);
     measuredProcess?.Refresh();
     var cpuEnd = measuredProcess?.TotalProcessorTime ?? cpuStart;
     var cpuPercent = measuredProcess == null ? 0 : (cpuEnd - cpuStart).TotalMilliseconds / elapsed.TotalMilliseconds / Environment.ProcessorCount * 100;
     var memoryMb = measuredProcess?.WorkingSet64 / 1024d / 1024d ?? 0;
 
-    return new BenchmarkResult(
-        "", "", 0, completed / elapsed.TotalSeconds,
-        latencies.Percentile(0.50), latencies.Percentile(0.95), latencies.Percentile(0.99),
+    return new BenchmarkResult("", "", 0, completed / elapsed.TotalSeconds,
+        serviceLatencies.Percentile(.5), serviceLatencies.Percentile(.95), serviceLatencies.Percentile(.99),
         completed == 0 ? 100 : failed * 100d / completed,
-        cpuPercent, memoryMb, completed, failed, policyRejections, transportFailures) { ConfigurationHash = BenchmarkSession.Current.ConfigurationHash(port) };
+        cpuPercent, memoryMb, completed, failed, policyRejections, transportFailures)
+    {
+        ConfigurationHash = session.ConfigurationHash(port), Arrivals = arrivals, CompletedResponses = responses,
+        ScheduledP95Ms = scheduledLatencies.Percentile(.95), ScheduledP99Ms = scheduledLatencies.Percentile(.99)
+    };
 }
 
 static async Task RunFirstBatchAsync(string root, string resultsDirectory, string timestamp, int durationSeconds, int warmupSeconds, int soakSeconds)
@@ -514,10 +502,10 @@ static List<BenchmarkResult> BuildSummary(List<BenchmarkResult> results) => resu
 
 static string BuildCsv(List<BenchmarkResult> results, List<BenchmarkResult> summary)
 {
-    var sb = new StringBuilder("Kind,Gateway,Scenario,Repetition,RPS,P50Ms,P95Ms,P99Ms,ErrorRatePercent,CpuPercent,WorkingSetMb,Requests,Failures,PolicyRejections,TransportFailures,ConfigurationHash\n");
+    var sb = new StringBuilder("Kind,Gateway,Scenario,Repetition,RPS,P50Ms,P95Ms,P99Ms,ErrorRatePercent,CpuPercent,WorkingSetMb,Requests,Failures,PolicyRejections,TransportFailures,ConfigurationHash,Offered,Started,Dropped,CancelledBeforeStart,OfferedRPS,CompletedResponses,QueueP95Ms,QueueP99Ms,ScheduledP95Ms,ScheduledP99Ms\n");
     foreach (var item in results.Select(x => (Kind: "run", Item: x)).Concat(summary.Select(x => (Kind: "median", Item: x))))
     {
-        sb.AppendLine(string.Join(',', item.Kind, Csv(item.Item.Gateway), Csv(item.Item.Scenario), item.Item.Repetition, F(item.Item.RequestsPerSecond), F(item.Item.P50Ms), F(item.Item.P95Ms), F(item.Item.P99Ms), F(item.Item.ErrorRatePercent), F(item.Item.CpuPercent), F(item.Item.WorkingSetMb), item.Item.Requests, item.Item.Failures, item.Item.PolicyRejections, item.Item.TransportFailures, Csv(item.Item.ConfigurationHash ?? "unavailable")));
+        sb.AppendLine(string.Join(',', item.Kind, Csv(item.Item.Gateway), Csv(item.Item.Scenario), item.Item.Repetition, F(item.Item.RequestsPerSecond), F(item.Item.P50Ms), F(item.Item.P95Ms), F(item.Item.P99Ms), F(item.Item.ErrorRatePercent), F(item.Item.CpuPercent), F(item.Item.WorkingSetMb), item.Item.Requests, item.Item.Failures, item.Item.PolicyRejections, item.Item.TransportFailures, Csv(item.Item.ConfigurationHash ?? "unavailable"), item.Item.Arrivals.Offered, item.Item.Arrivals.Started, item.Item.Arrivals.Dropped, item.Item.Arrivals.CancelledBeforeStart, F(item.Item.Arrivals.OfferedPerSecond), item.Item.CompletedResponses, F(item.Item.Arrivals.QueueP95Ms), F(item.Item.Arrivals.QueueP99Ms), F(item.Item.ScheduledP95Ms), F(item.Item.ScheduledP99Ms)));
     }
 
     return sb.ToString();
@@ -533,6 +521,8 @@ static string BuildMarkdown(List<BenchmarkResult> summary, int duration, int war
     sb.AppendLine($"- Transport: {BenchmarkSession.Current.Transport.Description}; upstream: {(BenchmarkSession.Current.External ? "unverified" : "matched") }.");
     sb.AppendLine($"- Runtime: {Environment.Version}");
     sb.AppendLine($"- Concurrency: {concurrency}");
+    sb.AppendLine($"- Arrivals: {(BenchmarkSession.Current.ArrivalRate == 0 ? "closed-loop" : "scheduled")}; target: {BenchmarkSession.Current.ArrivalRate}/s; queue: {BenchmarkSession.Current.ArrivalQueueCapacity}.");
+    sb.AppendLine("- Service latency starts at dispatch. Scheduled latency starts at the intended arrival. Queue delay includes scheduler lag.");
     sb.AppendLine("- Latency: fixed-memory histogram; upper-bound percentiles, ≤1% relative error above 1 μs.");
     sb.AppendLine("- Full environment and configuration manifests: adjacent JSON report.");
     sb.AppendLine($"- Warmup: {warmup}s; duration: {duration}s; repetitions: {repetitions}; result: median RPS run").AppendLine();
@@ -543,6 +533,10 @@ static string BuildMarkdown(List<BenchmarkResult> summary, int duration, int war
         sb.AppendLine($"| {item.Gateway} | {item.Scenario} | {item.RequestsPerSecond:N0} | {item.P50Ms:N2} | {item.P95Ms:N2} | {item.P99Ms:N2} | {item.ErrorRatePercent:N3} | {item.CpuPercent:N1} | {item.WorkingSetMb:N1} |");
     }
 
+    sb.AppendLine().AppendLine("| Gateway | Scenario | Offered | Started | Dropped | Cancelled before start | Responses | Queue P95 ms | Scheduled P95 ms |");
+    sb.AppendLine("|---|---|---:|---:|---:|---:|---:|---:|---:|");
+    foreach (var item in summary)
+        sb.AppendLine($"| {item.Gateway} | {item.Scenario} | {item.Arrivals.Offered} | {item.Arrivals.Started} | {item.Arrivals.Dropped} | {item.Arrivals.CancelledBeforeStart} | {item.CompletedResponses} | {item.Arrivals.QueueP95Ms:N2} | {item.ScheduledP95Ms:N2} |");
     sb.AppendLine().AppendLine("## Relative throughput versus Native YARP").AppendLine();
     foreach (var scenario in summary.Select(x => x.Scenario).Distinct())
     {
@@ -557,7 +551,7 @@ static string BuildMarkdown(List<BenchmarkResult> summary, int duration, int war
             sb.AppendLine($"- {item.Gateway} / {scenario}: {(item.RequestsPerSecond / baseline.RequestsPerSecond - 1) * 100:N1}% RPS, {(item.P99Ms / baseline.P99Ms - 1) * 100:N1}% P99 latency.");
         }
     }
-    sb.AppendLine().AppendLine("> Same-machine closed-loop benchmark. Use the relative differences to assess middleware overhead; do not treat these numbers as production capacity planning without cross-machine load generation.");
+    sb.AppendLine().AppendLine("> Same-machine benchmark. The report records the arrival model. Use the relative differences to assess middleware overhead; do not treat these numbers as production capacity planning without cross-machine load generation.");
     return sb.ToString();
 }
 
@@ -593,7 +587,13 @@ sealed record Scenario(string Name, HttpMethod Method, string Path, string? Body
     public static Scenario Post(string name, string path, string body) => new(name, HttpMethod.Post, path, body);
 }
 sealed record BenchmarkResult(string Gateway, string Scenario, int Repetition, double RequestsPerSecond, double P50Ms, double P95Ms, double P99Ms, double ErrorRatePercent, double CpuPercent, double WorkingSetMb, long Requests, long Failures, long PolicyRejections, long TransportFailures)
-{ public string? ConfigurationHash { get; init; } }
+{
+    public string? ConfigurationHash { get; init; }
+    public ArrivalStatistics Arrivals { get; init; } = new(0, 0, 0, 0, 0, 0, 0, 0);
+    public long CompletedResponses { get; init; }
+    public double ScheduledP95Ms { get; init; }
+    public double ScheduledP99Ms { get; init; }
+}
 sealed record ExtendedResult(string Group, string Scenario, int Concurrency, double RequestsPerSecond, double P50Ms, double P95Ms, double P99Ms, double NonSuccessPercent, long BackendRequests, string Statuses, bool Passed, string Notes)
 {
     public string? ConfigurationHash { get; init; } = BenchmarkSession.Current.ConfigurationHash(BenchmarkSession.Current.Enhanced.Port);

@@ -89,3 +89,37 @@ Short verification runs establish correctness, not production throughput.
 
 Use `--transport=http1|h2c|https1|https2` for matching client and upstream protocols.
 See [transport setup](../Shared/README.md#matched-transports-r43) for certificate handling and comparison commands.
+
+## Scheduled arrivals (R44)
+
+`--arrival-rate=100` offers 100 requests per second independently of response completion.
+`--concurrency` bounds active workers. `--arrival-queue=128` bounds waiting requests.
+A full queue drops the new arrival; it never blocks the producer.
+Late scheduler wakeups preserve the intended arrival timestamps. Arrivals missed past the phase end count as dropped.
+`--arrival-rate=0` preserves the default closed-loop model.
+
+Rate bounds are 0–100,000 per second. Queue capacity is 1–65,536 requests.
+Each phase is limited to one hour. Each dispatched request retains its ten-second deadline.
+Queued work drains after the offered-load phase, with an overall twelve-second drain deadline.
+Unstarted requests at that deadline count as `cancelledBeforeStart`.
+
+Use scheduled arrivals with the baseline suite or external mode. The functional `first` suite remains closed-loop.
+
+```bash
+dotnet run --project tests/Wafish.Performance/Runner -c Release --no-build -- \
+  --modes=native,full --arrival-rate=1000 --arrival-queue=128 \
+  --concurrency=16 --duration=10 --warmup=2 --repetitions=3
+```
+
+JSON schema version 3 and CSV/Markdown reports separate:
+
+- Offered arrivals, started attempts, queue drops, and cancellation before dispatch.
+- Completed response bodies, request failures, policy rejections, and transport failures.
+- Queue delay, service latency from dispatch, and latency from the scheduled arrival.
+
+`offered = started + dropped + cancelledBeforeStart` after drain.
+`requests` counts finished attempts, including failures. `completedResponses` counts complete response bodies, including HTTP errors.
+Queue delay includes scheduler lateness. Latency percentiles cover dispatched attempts; dropped requests have no response latency.
+RPS uses elapsed time including drain. Offered RPS uses the configured phase duration.
+Drops remain visible overload measurements; they do not alone fail the process. Request failures still fail it.
+Keep the arrival model and offered rate equal when comparing gateways.
