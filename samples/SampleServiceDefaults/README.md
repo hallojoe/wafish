@@ -76,3 +76,6 @@ Set `Sample:RegistrationReadiness=true` to require local client registration for
 The option defaults to false. `/alive` remains independent. Health probes make no registration calls.
 
 See [registration and operations](../../docs/registration-operations-contracts.md) for limits, configuration, and compatibility.
+
+The metrics pipeline also includes `Wafish.Plugin.Compression` byte and response counters.
+See [compression measurements](../../src/Wafish.Plugin.Compression/README.md#compression-measurements-r40) for bounded labels and savings calculations.

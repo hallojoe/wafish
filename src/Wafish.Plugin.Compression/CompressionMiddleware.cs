@@ -18,14 +18,30 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
         AppendVary(context.Response.Headers);
         context.Response.OnStarting(() => { AppendVary(context.Response.Headers); return Task.CompletedTask; });
         var encoding = SelectEncoding(context.Request.Headers.AcceptEncoding.ToArray());
+        var original = context.Response.Body;
+        using var counted = new CompressionCountingStream(original);
+        var completed = false;
         if (encoding == null || HttpMethods.IsHead(context.Request.Method) || context.Request.Headers.ContainsKey("Range") ||
             HasNoTransform(context.Request.Headers))
-        { await next(context); return; }
-        var original = context.Response.Body;
-        await using var stream = new CompressionWriteStream(context, original, config, encoding);
+        {
+            context.Response.Body = counted;
+            try { await next(context); completed = true; }
+            finally
+            {
+                context.Response.Body = original;
+                CompressionMeasurements.Record(routeId, "identity", completed, counted.BytesWritten, counted.BytesWritten);
+            }
+            return;
+        }
+        var stream = new CompressionWriteStream(context, counted, config, encoding);
         context.Response.Body = stream;
-        try { await next(context); await stream.CompleteAsync(context.RequestAborted); }
-        finally { context.Response.Body = original; }
+        try { await next(context); await stream.CompleteAsync(context.RequestAborted); completed = true; }
+        finally
+        {
+            context.Response.Body = original;
+            try { await stream.DisposeAsync(); }
+            finally { CompressionMeasurements.Record(routeId, stream.SelectedEncoding, completed, stream.InputBytes, counted.BytesWritten); }
+        }
     }
 
     private static string? SelectEncoding(string?[] values)
@@ -96,11 +112,14 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
         private int _count;
         private Stream? _output;
         private bool _completed;
+        public long InputBytes { get; private set; }
+        public string SelectedEncoding { get; private set; } = "identity";
 
         private async ValueTask SelectAsync(bool compress, CancellationToken token)
         {
             if (compress)
             {
+                SelectedEncoding = encoding;
                 context.Response.Headers.ContentEncoding = encoding;
                 context.Response.ContentLength = null;
                 // A strong entity tag identifies the original representation only.
@@ -153,10 +172,12 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
                 {
                     _prefix ??= new byte[Math.Max(1, config.MinResponseSize)];
                     buffer.CopyTo(_prefix.AsMemory(_count)); _count += buffer.Length;
+                    InputBytes += buffer.Length;
                     return;
                 }
             }
             await _output!.WriteAsync(buffer, cancellationToken);
+            InputBytes += buffer.Length;
         }
         public async Task CompleteAsync(CancellationToken token)
         {

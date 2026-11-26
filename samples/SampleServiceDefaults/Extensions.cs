@@ -59,6 +59,7 @@ public static class Extensions
                     .AddHttpClientInstrumentation()
                     .AddMeter("Yarp.ReverseProxy")
                     .AddMeter("Wafish.Plugin.Metrics")
+                    .AddMeter("Wafish.Plugin.Compression")
                     .AddRuntimeInstrumentation();
             })
             .WithTracing(tracing =>

@@ -70,3 +70,33 @@ Measured managed allocations remain below sixteen MiB for the complete 256-MiB w
 The focused run allocated approximately 233 KiB for JSON and 87 KiB for excluded binary.
 Native codec state and process RSS are outside this managed-allocation measurement.
 Existing bounded prefix buffering required no code change.
+
+## Compression measurements (R40)
+
+Subscribe to meter `Wafish.Plugin.Compression`, or use the sample service defaults:
+
+```csharp
+metrics.AddMeter("Wafish.Plugin.Compression");
+```
+
+| Counter | Unit | Meaning |
+|---|---|---|
+| `wafish.compression.input_bytes` | `By` | Body bytes accepted by the compression layer |
+| `wafish.compression.output_bytes` | `By` | Body bytes accepted by its downstream stream |
+| `wafish.compression.responses` | `{response}` | Completed or aborted middleware invocations |
+
+Output includes compression headers and trailers. It excludes HTTP headers, transport framing, and TLS overhead.
+Counters measure successful writes, not declared `Content-Length` values or confirmed client delivery.
+A failed partial stream write can make the count a lower bound.
+No response body is retained for measurement. Existing prefix-buffer limits remain unchanged.
+
+Dimensions are `wafish.route.id`, `compression.encoding`, and `compression.outcome`.
+Encodings are `br`, `gzip`, and `identity`; identity means this plugin passed the representation through.
+Outcomes are `completed` and `aborted`. Disabled compression bindings emit no measurements.
+Route admission retains at most 128 distinct configured route IDs per process lifetime.
+Further routes use the reserved `__other__` label. Request paths, query values, users, and headers never become labels.
+No route IDs are retained until a metric listener subscribes.
+
+For completed responses with nonzero input, calculate savings as `100 * (1 - output_bytes / input_bytes)`.
+Use matching route and encoding labels. Negative savings expose compression overhead on small or incompressible bodies.
+Keep aborted responses separate; their partial byte counts do not establish completed-response savings.

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "suite": "main",
+  "cases": [
+    {
+      "name": "Compression metrics: actual bytes include framing, bypasses, aborted writes, and bounded route labels",
+      "group": "streaming",
+      "durationMs": 150.7781,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    }
+  ]
+}

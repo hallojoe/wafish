@@ -1,0 +1,39 @@
+{
+  "base": "8cf1bbe",
+  "covered": 45,
+  "executable": 56,
+  "files": [
+    {
+      "file": "samples/SampleServiceDefaults/Extensions.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Plugin.Compression/CompressionMeasurements.cs",
+      "covered": 27,
+      "executable": 38,
+      "uncovered": [
+        42,
+        43,
+        49,
+        50,
+        52,
+        53,
+        55,
+        56,
+        57,
+        58,
+        59
+      ]
+    },
+    {
+      "file": "src/Wafish.Plugin.Compression/CompressionMiddleware.cs",
+      "covered": 17,
+      "executable": 17,
+      "uncovered": []
+    }
+  ],
+  "missingFiles": [],
+  "percent": 80.36
+}
