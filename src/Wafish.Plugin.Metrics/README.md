@@ -56,7 +56,7 @@ Native statistics include 499 in their error total. These measured statuses do n
 Byte totals use declared content lengths, not measured wire traffic.
 Both plugins share one middleware installation. Cluster metrics also work without traffic metrics.
 
-[Verification for review items 8–10](../../tests/Wafish.Regression/evidence/review8910/README.md).
+[Verification for review items 8–10](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-review8910-readme-md).
 
 ## Review items 14–16
 
@@ -67,7 +67,7 @@ Each route, cluster, and destination scope admits at most 10,000 series.
 Existing series continue updating at capacity; new series are ignored until slots become available.
 Reads and updates share a lock, preserving coherent snapshots during concurrent activity.
 
-Verification: [review evidence](../../tests/Wafish.Regression/evidence/review141516/README.md).
+Verification: [review evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-review141516-readme-md).
 
 ## Concurrent snapshot checks
 

@@ -53,14 +53,14 @@ Responses varying on excluded headers bypass storage. Credentials and private re
 Removing deprecated settings from stored bindings does not reduce response isolation.
 `enabled`, `ttlSeconds`, `maxBodyBytes`, and `cacheStatusCodes` retain their existing behavior.
 
-[Verification](../../tests/Wafish.Regression/evidence/review111213/README.md).
+[Verification](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-review111213-readme-md).
 
 ## Review items 14–16
 
 Cache lifetime and response age use monotonic time from the injected `TimeProvider`.
 UTC clock adjustments do not extend or shorten cache freshness. Stored wall timestamps use UTC.
 
-Verification: [review evidence](../../tests/Wafish.Regression/evidence/review141516/README.md).
+Verification: [review evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-review141516-readme-md).
 
 ## Generated header checks
 

@@ -64,12 +64,12 @@ Missing subscriptions and cooldown filtering count as suppressed.
 Partial endpoint delivery counts as one failed event. Counters measure events, not endpoint attempts.
 Snapshots can change during active dispatch. At rest, every submitted event has one accounting category.
 
-[Verification for review items 8–10](../../tests/Wafish.Regression/evidence/review8910/README.md).
+[Verification for review items 8–10](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-review8910-readme-md).
 
 Plugin mutations await asynchronous snapshot refresh after commit.
 Install, uninstall, and upgrade controller methods now return `Task<IActionResult>`. Their HTTP contracts remain unchanged.
 The authorization filter uses the corrected `Wafish.Dashboard` namespace.
-See [verification](../../tests/Wafish.Regression/evidence/async-retry/README.md).
+See [verification](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-async-retry-readme-md).
 
 ## Session lifecycle
 
@@ -86,14 +86,14 @@ Credential changes take effect during the next check; in-progress requests can f
 
 Authorization covers built-in plugin controllers, including circuit-breaker actions.
 Only the authentication controller's login and logout actions bypass credential checks.
-See [verification](../../tests/Wafish.Regression/evidence/administration-lifecycle/README.md).
+See [verification](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-administration-lifecycle-readme-md).
 
 ## Shutdown verification
 
 Real overview and traffic connections close during host shutdown.
 Queued and in-flight notification counts remain balanced, including cancelled deliveries.
 Tests verify credential exclusion and reject success audit records before persistence commits.
-See [shutdown evidence](../../tests/Wafish.Regression/evidence/lifetime-stress/README.md).
+See [shutdown evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-lifetime-stress-readme-md).
 
 ## Shared mutation responses
 

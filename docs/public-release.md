@@ -1,19 +1,9 @@
 # Public package release scope
 
-The first public scope is R01–R14 in [PLAN.md](../PLAN.md).
-R15–R18 add operation permissions, idempotent configuration changes, and previews.
-R19–R35 are complete. Benchmark tasks R42–R44 and R47 are complete.
-The remaining R36–R55 proposals remain deferred.
-See [registration and operations](registration-operations-contracts.md) and [R29–R35 contracts](configuration-policy-contracts.md).
-See [R15–R18 verification](../tests/Wafish.Regression/evidence/operation-previews/README.md).
-
-## Candidate and supported scope
-
-Candidate: `1.0.0-rc.1`, prepared on 2026-11-15. This is a prerelease, not a published package.
-Confirmed support: Linux, Windows, and macOS with .NET 10. Hosted package, storage, and consumer checks passed on all three.
-A passed package job alone does not establish complete host support.
+Use matching package versions and the .NET 10 SDK and runtime.
+Check [release reconciliation](../PLAN.md#r56) before publication or claims about feed availability.
+Historical candidate scope and platform results are in [the archive](../ARCHIVE.md#archive-docs-public-release-md).
 Reviewed API snapshots define the first-release contract until publication.
-See [release notes](release-notes-1.0.0-rc.1.md) for features, limits, and candidate verification.
 
 ## Consumer entry points
 
@@ -43,7 +33,3 @@ Run `python3 scripts/verify-packages.py` against each candidate before publicati
 Review baseline updates separately. Additive API changes must preserve previous declarations and interface requirements.
 Document intentional source, binary, configuration, or behavioral breaks before changing their baselines.
 Assign a new package version before publication. Never replace an already published package version.
-This work does not publish packages or push commits.
-
-Hosted checks verified native SQLite, encryption, isolated package consumers, and consumer hosts on Linux, Windows, and macOS.
-The full regression and browser suites also passed on Linux. Other architectures remain outside this verification record.

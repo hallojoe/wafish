@@ -51,14 +51,14 @@ Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in
 Live Kestrel checks cover retry, cache, compression, YARP replay, response-start boundaries, and disconnect cancellation.
 
 Review items 4–7 add deterministic publication barriers, atomic binding batches, live circuit retries, and lifecycle checks.
-Run `--review-lifecycle` for focused checks. [Evidence](evidence/review4567/README.md) includes managed benchmarks and live Redis verification.
+Run `--review-lifecycle` for focused checks. [Evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-review4567-readme-md) includes managed benchmarks and live Redis verification.
 
 Review items 8–10 add log shutdown accounting, notification classification, UTC queries, orphan cleanup, and metrics finalization.
-Run `--review-accounting` for ten focused checks. [Evidence](evidence/review8910/README.md) records full regression and coverage results.
+Run `--review-accounting` for ten focused checks. [Evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-review8910-readme-md) records full regression and coverage results.
 
 Review items 11–13 add prefixed shell checks, owned domain shutdown, cache-key compatibility, and compression threshold cases.
 Run `--review-deployment` for six focused checks.
-[Evidence](evidence/review111213/README.md) also records browser, asset validation, and package checks.
+[Evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-review111213-readme-md) also records browser, asset validation, and package checks.
 
 ## Machine-readable results
 
@@ -73,21 +73,21 @@ Use `--review-release` for controlled-clock, retention, and UTC migration checks
 Run `--recovery` for controlled connection failures, provider fixtures, per-binding health, stale policies, and live proxy expiry.
 Run `--redis` for live connection replacement, deployment key isolation, interrupted Lua operations, and restart recovery.
 The standard runner includes all `--recovery` cases.
-[Verification evidence](evidence/recovery/README.md) records commands, results, and changed-source coverage.
+[Verification evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-recovery-readme-md) records commands, results, and changed-source coverage.
 
 `--async-policy` runs nine configuration cancellation, concurrency, and retry deadline groups.
-See [verification](evidence/async-retry/README.md).
+See [verification](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-async-retry-readme-md).
 
 `--storage-reliability` runs ten storage contract, recovery, query-budget, and backup-verification groups.
 It includes a forced child-process stop against isolated test databases.
-See [verification](evidence/storage-reliability/README.md).
+See [verification](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-storage-reliability-readme-md).
 
 ## Lifetime stress selection
 
 Run `dotnet run --project tests/Wafish.Regression -c Release -- --lifetime-stress` for nine focused groups.
 Checks cover domain replacement, collectible unloading, circuit probes, native limiter boundaries, and partition churn.
 The collectible fixture builds as a separate assembly and loads only through collectible contexts.
-See [evidence](evidence/lifetime-stress/README.md).
+See [evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-lifetime-stress-readme-md).
 
 ## Contract selection
 
@@ -120,7 +120,7 @@ Scheduled cases also include seeds, ordered operations, and replay commands, inc
 Tests do not include fixture passwords in schedule traces.
 `--ui-fixtures` verifies isolated profiles, authentication modes, HTTPS, failed starts, and failure responses.
 
-See [infrastructure evidence](evidence/regression-infrastructure/README.md).
+See [infrastructure evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-regression-infrastructure-readme-md).
 
 `--protocol-properties` checks the WAF corpus, seeded decoding, cache-header combinations, compression negotiation, and concurrent metrics.
 Use `--seed <integer>` to reproduce generated WAF and metric inputs.
@@ -141,15 +141,15 @@ These cover restart retries, rollback, activation failures, receipt limits, cand
 
 Run `--group need-seven` for registration leases, readiness, storage capabilities, backups, histograms, cache purge, WAF policies, and diagnostics.
 Checks include controlled clocks, held requests, pending fills, provider timeouts, and restart persistence.
-See [contracts](../../docs/registration-operations-contracts.md) and [evidence](evidence/need-seven/README.md).
+See [contracts](../../docs/registration-operations-contracts.md) and [evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-need-seven-readme-md).
 
 ## Need-6 follow-up
 
 Run `--group need-six` for cache sharing, recovery jitter, combined change sets, gateway failover, maintenance, and EndpointSlice contracts.
-See [verification evidence](evidence/need-six/README.md).
+See [verification evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-need-six-readme-md).
 
 ## Release candidate verification
 
 The solution includes the collectible plugin fixture so Release builds produce the required Release assembly.
 Legacy database tests dispose reopened connections before reading file headers, including on Windows.
-See [candidate evidence](evidence/release-candidate/README.md).
+See [candidate evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-release-candidate-readme-md).

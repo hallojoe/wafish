@@ -58,7 +58,7 @@ Circuit outcomes belong to the selected forwarding attempt. Retry does not recor
 Retry backoff uses `TimeProvider` from request services, with `TimeProvider.System` as fallback.
 Request, attempt, and total deadlines also use the registered time provider.
 
-Verification: [review evidence](../../tests/Wafish.Regression/evidence/review141516/README.md).
+Verification: [review evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-review141516-readme-md).
 
 ## Total deadline and upstream timing
 
@@ -74,7 +74,7 @@ The larger of upstream delay and local backoff applies. Invalid or past values u
 A zero maximum disables the upstream delay contribution.
 All timers use the registered `TimeProvider`. Tests can register `Random` for repeatable jitter.
 These defaults introduce a total deadline for existing configured retry bindings.
-See [verification](../../tests/Wafish.Regression/evidence/async-retry/README.md).
+See [verification](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-async-retry-readme-md).
 
 ## Shared retry budget
 

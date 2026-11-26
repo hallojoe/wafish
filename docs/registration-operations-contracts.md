@@ -161,4 +161,4 @@ This prevents repeated timeouts from creating unbounded background work.
 Plugins must still implement cooperative health probes. A held probe retains its runtime-domain lease until completion.
 
 Paths above are relative to the configured administration base path.
-See [HTTP examples](registration-operations.http) and [verification](../tests/Wafish.Regression/evidence/need-seven/README.md).
+See [HTTP examples](registration-operations.http) and [verification](../ARCHIVE.md#archive-tests-wafish-regression-evidence-need-seven-readme-md).

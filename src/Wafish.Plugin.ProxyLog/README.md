@@ -61,20 +61,20 @@ At rest, submitted entries equal pending, written, and discarded entries combine
 Counters cover persistence-enabled submissions and survive writer restarts within the store lifetime.
 These memory queues cannot survive process termination.
 
-[Verification for review items 8–10](../../tests/Wafish.Regression/evidence/review8910/README.md).
+[Verification for review items 8–10](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-review8910-readme-md).
 
 ## Review items 14–16
 
 Injected `TimeProvider` controls batch flush, retry delays, cleanup scheduling, and the shutdown drain timer.
 Captured event timestamps use UTC. The drain timer is joined before its cancellation source is disposed.
 
-Verification: [review evidence](../../tests/Wafish.Regression/evidence/review141516/README.md).
+Verification: [review evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-review141516-readme-md).
 
 ## Drain fault verification
 
 Regression checks cover storage retry exhaustion, transient recovery, cancellation, and shutdown draining.
 Persisted and discarded counts account for all submitted records after shutdown.
-See [lifetime and accounting evidence](../../tests/Wafish.Regression/evidence/lifetime-stress/README.md).
+See [lifetime and accounting evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-lifetime-stress-readme-md).
 
 ## Route redaction
 

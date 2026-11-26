@@ -54,7 +54,7 @@ Unrelated configuration changes preserve the last discovered destinations. Remov
 Injected `TimeProvider` controls refresh intervals and loop delays.
 Refresh intervals use monotonic elapsed time; resource health timestamps use UTC.
 
-Verification: [review evidence](../../tests/Wafish.Regression/evidence/review141516/README.md).
+Verification: [review evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-review141516-readme-md).
 
 ## Failure health and stale destinations
 
@@ -97,7 +97,7 @@ Existing requests retain their captured runtime configuration.
 It also reports stale status and whether traffic was rejected.
 Resource health includes failing, stale, and rejected binding counts. Failure diagnostics omit provider exception messages.
 
-Verification: [Redis and discovery recovery](../../tests/Wafish.Regression/evidence/recovery/README.md).
+Verification: [Redis and discovery recovery](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-recovery-readme-md).
 
 ## Kubernetes EndpointSlice
 

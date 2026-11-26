@@ -59,7 +59,7 @@ The authorization matrix checks all 87 mapped administration actions across four
 It tests anonymous, invalid, and authorized credentials without invoking action side effects.
 `--authorization-matrix` selects the matrix. `--sessions` also runs cleanup and session lifecycle checks.
 Session tests use controlled time and real HTTP/WebSocket connections.
-See [verification](../Wafish.Regression/evidence/administration-lifecycle/README.md).
+See [verification](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-administration-lifecycle-readme-md).
 
 Shutdown checks hold authenticated overview and traffic sockets while notifications remain queued or in flight.
 They verify connection closure, exact notification accounting, and credential exclusion.
@@ -79,6 +79,6 @@ See [feature contracts](../../docs/registration-operations-contracts.md).
 `Program.cs` starts `AdministrationRegressionSuite`. The suite owns credentials, the report, and the shared temporary directory.
 Authentication, configuration, backups, realtime, and optional-service checks have separate source files.
 Fixture helpers retain host creation, HTTP, websocket, and assertion behavior. Scenario names, order, flags, and cleanup remain unchanged.
-Verification: 42 cases pass in the original order after the split.
+Historical split verification is preserved in [ARCHIVE.md](../../ARCHIVE.md#archive-tests-wafish-administration-regression-readme-md).
 
 Run `--need-six` for combined change-set permissions and destination maintenance endpoints.

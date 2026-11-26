@@ -50,7 +50,7 @@ At lower thresholds, reaching the threshold selects compression. Completing belo
 An early flush selects uncompressed output for unknown lengths, preserving prompt streaming.
 The schema description exposes this fallback. Existing encoding, media-type, and HTTP exclusion rules remain effective.
 
-[Verification](../../tests/Wafish.Regression/evidence/review111213/README.md).
+[Verification](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-review111213-readme-md).
 
 ## Encoding negotiation
 

@@ -3,6 +3,7 @@ import path from "node:path";
 import { createMarkdownProcessor } from "@astrojs/markdown-remark";
 import { load } from "cheerio";
 import { url, github } from "./site";
+import { extractArchiveSection } from "./archive";
 
 export const documents = [
   ["", "Welcome", "Start here", "docs/guide/index.md"],
@@ -118,9 +119,10 @@ export const documents = [
     "release-notes",
     "1.0.0-rc.1 release notes",
     "Release",
-    "docs/release-notes-1.0.0-rc.1.md",
+    "ARCHIVE.md",
+    "archive-docs-release-notes-1-0-0-rc-1-md",
   ],
-].map(([slug, title, group, source]) => ({ slug, title, group, source }));
+].map(([slug, title, group, source, section]) => ({ slug, title, group, source, section }));
 export const docUrl = (slug: string) => url(`docs/${slug ? slug + "/" : ""}`);
 // Astro bundles server modules into a temporary directory; cwd stays the website project.
 const root = path.resolve("..");
@@ -129,8 +131,9 @@ const processor = createMarkdownProcessor({
 });
 export async function renderDocument(document: (typeof documents)[number]) {
   let markdown = await readFile(path.join(root, document.source), "utf8");
+  if (document.section) markdown = extractArchiveSection(markdown, document.section);
   markdown = markdown
-    .replace(/^# .+\r?\n/, "")
+    .replace(/^# .+\r?\n/m, "")
     .replace(/^\[README\].+\r?\n/m, "");
   markdown = markdown.replace(
     /```mermaid\r?\n([\s\S]*?)```/g,
@@ -142,21 +145,26 @@ export async function renderDocument(document: (typeof documents)[number]) {
   $("a[href], img[src]").each((_, element) => {
     const attr = element.tagName === "img" ? "src" : "href";
     const value = $(element).attr(attr)!;
-    if (/^(?:[a-z]+:|\/|#)/i.test(value)) return;
+    if (/^(?:[a-z]+:|\/)/i.test(value)) return;
+    if (value.startsWith("#") && !document.section) return;
     const [relative, fragment] = value.split("#");
     const source = path.posix.normalize(
-      path.posix.join(
+      relative ? path.posix.join(
         path.posix.dirname(document.source),
         decodeURIComponent(relative),
-      ),
+      ) : document.source,
     );
-    const entry = documents.find((item) => item.source === source);
+    const entry = documents.find((item) => item.source === source &&
+      (!item.section || fragment === item.section || fragment?.startsWith(item.section + "--")));
+    const targetFragment = entry?.section && fragment
+      ? fragment.slice(entry.section.length).replace(/^--/, "")
+      : fragment;
     const target = entry
       ? docUrl(entry.slug)
       : attr === "src" && source.startsWith("docs/")
         ? url(`images/docs/${path.posix.basename(source)}`)
         : `${github}/blob/main/${source}`;
-    $(element).attr(attr, target + (fragment ? "#" + fragment : ""));
+    $(element).attr(attr, target + (targetFragment ? "#" + targetFragment : ""));
   });
   const headings = $("h2[id]")
     .map((_, element) => ({

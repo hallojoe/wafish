@@ -1,6 +1,6 @@
 # Gateway package boundaries
 
-Decision date: 2026-11-13. Related tasks: ARCH-01 through ARCH-09.
+Historical decisions and extraction evidence are in [ARCHIVE.md](../ARCHIVE.md#archive-docs-architecture-md).
 
 ## Ownership
 
@@ -59,18 +59,11 @@ Build and test after each extraction. Preserve existing controller routes and se
 Start a host that references runtime and SQLite only. Verify configuration, plugins, and forwarding without dashboard dependencies.
 Start the full sample and verify authentication, administration APIs, React pages, and embedded assets.
 
-## Administration extraction: ARCH-03
+## Administration hosting
 
-Completed: 2026-11-14.
-
-Administration controllers, authentication, configuration history, realtime hubs, models, and services now live in `Wafish.Administration`.
-Shared translations moved with administration because APIs also return localized messages.
-Resource names remain unchanged. UI-08 subsequently removes the Razor presentation package.
-
-The initial extraction retained `DashboardPagesController`; UI-08 removes it and its 15 page routes.
-`DashboardAuthController` retains POST login, logout, and authentication APIs.
-`DashboardSettingsController` owns system information and database downloads.
-The extraction preserved 102 controller contracts. After UI-08, all 87 non-page contracts remain unchanged.
+Administration owns controllers, authentication, history, realtime hubs, and shared translations.
+`DashboardAuthController` provides POST login, logout, and authentication APIs.
+`DashboardSettingsController` provides system information and database downloads.
 
 ### Host administration without Razor
 
@@ -123,7 +116,7 @@ AI and MCP require explicit service registration. Configuration alone cannot act
 The sample explicitly registers AI. MCP remains unregistered until its security checks pass.
 Persistence ordering changes remain under ARCH-06 and ARCH-07.
 
-See [ARCH-03 verification](../tests/Wafish.Regression/evidence/arch03/README.md).
+See [ARCH-03 verification](../ARCHIVE.md#archive-tests-wafish-regression-evidence-arch03-readme-md).
 The [backlog](../PLAN.md) records remaining work.
 
 ## Configuration transactions: ARCH-06 and ARCH-07
