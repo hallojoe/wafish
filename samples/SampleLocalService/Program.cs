@@ -22,6 +22,7 @@ else
 // Minimal config: just GatewayUrl in code or appsettings.json
 var identity = SampleInstanceIdentity.Resolve(builder.Configuration);
 builder.Services.AddSingleton(identity);
+builder.Services.AddSingleton<SampleStreamActivity>();
 builder.Services.AddWafishClient(options => options.InstanceId = identity.Value);
 
 // Or with code override (higher priority than config file):

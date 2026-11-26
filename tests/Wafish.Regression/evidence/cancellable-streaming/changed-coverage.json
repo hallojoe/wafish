@@ -1,0 +1,30 @@
+{
+  "base": "95645cc",
+  "covered": 39,
+  "executable": 41,
+  "files": [
+    {
+      "file": "samples/SampleLocalService/Controllers/StreamingController.cs",
+      "covered": 27,
+      "executable": 29,
+      "uncovered": [
+        26,
+        34
+      ]
+    },
+    {
+      "file": "samples/SampleLocalService/Program.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "samples/SampleLocalService/SampleStreamActivity.cs",
+      "covered": 11,
+      "executable": 11,
+      "uncovered": []
+    }
+  ],
+  "missingFiles": [],
+  "percent": 95.12
+}

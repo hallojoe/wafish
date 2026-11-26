@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "suite": "main",
+  "cases": [
+    {
+      "name": "Sample streaming: early events, cancellation, bounds, cache bypass, and identity survive active gateway plugins",
+      "group": "sample-streaming",
+      "durationMs": 4116.0125,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    }
+  ]
+}

@@ -124,6 +124,22 @@ def main():
                         break
                 assert observed == expected, "Endpoint did not identify both registered instances: " + action
 
+            observed = set()
+            for _ in range(16):
+                trace = uuid.uuid4().hex
+                req = urllib.request.Request(address + "/api/local-service/stream?count=2&intervalMs=20",
+                    headers={"traceparent": "00-" + trace + "-" + uuid.uuid4().hex[:16] + "-01"})
+                with urllib.request.urlopen(req, timeout=10) as response:
+                    assert response.headers["Content-Type"].startswith("text/event-stream")
+                    assert response.headers["Cache-Control"] == "no-store, no-transform"
+                    events = [json.loads(line[6:]) for line in response.read().decode().splitlines() if line.startswith("data: ")]
+                    assert [event["sequence"] for event in events] == [0, 1]
+                    assert all(event["instance"] == response.headers["X-Backend-Instance"] and event["traceId"] == trace for event in events)
+                    observed.add(events[0]["instance"])
+                if observed == expected:
+                    break
+            assert observed == expected, "Streaming did not identify both registered backends."
+
         def backends():
             observed = set()
             for _ in range(80):
@@ -163,6 +179,7 @@ def main():
             contracts()
             print("PASS: gateway, both backends, and AppHost restart with stable credentials and persisted route identity.")
             print("PASS: both registered backends preserve ping, echo, POST echo, instance headers, and W3C trace identity through the gateway.")
+            print("PASS: bounded streams preserve event framing, backend identity, and trace context through the gateway.")
             print("PASS: dashboard browser links serve the gateway console and backend instance details before and after restart.")
         finally:
             if owned:

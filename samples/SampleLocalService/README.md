@@ -90,3 +90,17 @@ For remote registration, use trusted HTTPS endpoints. Certificate validation rem
 Verify `/api/local-service/ping`, `/api/local-service/echo?message=test`, and `/api/local-service/instance` through the gateway.
 POST JSON to `/api/local-service/echopost` to verify request bodies.
 `python scripts/check-topology.py` verifies these contracts against both registered Aspire instances.
+
+## Cancellable synthetic streaming
+
+`GET /api/local-service/stream?count=5&intervalMs=250` returns server-sent events.
+Use `curl -N` against either the backend or gateway to observe each flushed event.
+Each event contains a sequence, stream ID, instance identity, and trace ID.
+The endpoint accepts 1–64 events, intervals of 0–1000 milliseconds, and at most ten seconds of scheduled delays.
+Each process allows 16 active streams. Additional streams return HTTP 429 with `Retry-After`.
+
+Disconnecting the client cancels writes and delays. Completion logs contain only event counts and completion status.
+The endpoint sends `Cache-Control: no-store, no-transform` and `Content-Type: text/event-stream`.
+These headers prevent response caching and compression buffering through the corresponding gateway plugins.
+Retries cannot replay a response after streaming has started. A disconnected stream releases backend work without another attempt.
+The `sample-streaming` regression group verifies these behaviors through all three active plugins.

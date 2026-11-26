@@ -19,10 +19,9 @@ R56 records a release discrepancy found during cleanup; it does not authorize pu
 | Order | ID | Remaining task | Value / 10 | Need / 10 |
 |---|---|---|---|---|
 | 1 | R56 | [Reconcile the release version and package publication](#r56) | 9 | 9 |
-| 2 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
-| 3 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
-| 4 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
-| 5 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
+| 2 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
+| 3 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
+| 4 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
 
 ## Completion rule
 
@@ -406,13 +405,12 @@ Verification: [R55 evidence](tests/Wafish.Regression/evidence/operator-views/REA
 
 ### R52: Demonstrate cancellable streaming
 
-Status: TODO. Value: 5/10. Need: 3/10.
+Status: COMPLETE. Value: 5/10. Need: 3/10.
 
 Teach streaming cancellation through a bounded sample.
 
 Source: [SampleLocalService FEAT-02](docs/archive/2026-11-planning/samples/SampleLocalService/PLAN.md#feat-02-demonstrate-cancellable-streaming).
 
-Evidence: [LocalServiceController.cs](samples/SampleLocalService/Controllers/LocalServiceController.cs) returns complete responses.
 
 Add a bounded streaming endpoint with configurable chunk count and interval.
 Observe request cancellation and report only synthetic sample data.
@@ -420,6 +418,8 @@ Observe request cancellation and report only synthetic sample data.
 Acceptance: The first chunk arrives before completion.
 Disconnecting the client stops backend work.
 The sample demonstrates cache, compression, and retry streaming behavior.
+
+Verification: [R52 evidence](tests/Wafish.Regression/evidence/cancellable-streaming/README.md).
 
 <a id="r53"></a>
 

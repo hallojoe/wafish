@@ -159,3 +159,6 @@ Run `python3 scripts/check-network-faults.py` with the AppHost stopped for the c
 
 `--group sample-discovery` checks the bounded HTTP JSON catalog and private membership controls.
 Run `python3 scripts/check-service-discovery.py` with the AppHost stopped for real discovery refresh and stale-policy verification.
+
+`--group sample-streaming` checks bounded SSE delivery, cancellation, identity, capacity, cache bypass, and compression behavior.
+It uses the actual cache, compression, and retry plugin bindings through a real HTTP gateway.
