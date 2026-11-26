@@ -13,11 +13,11 @@ internal static class BenchmarkOptions
         return args[index + 1];
     }
 
-    public static Uri LoopbackAddress(string value, string name)
+    public static Uri LoopbackAddress(string value, string name, string scheme = "http")
     {
-        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri) || uri.Scheme != "http" || !uri.IsLoopback ||
+        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri) || uri.Scheme != scheme || !uri.IsLoopback ||
             uri.UserInfo.Length != 0 || uri.Query.Length != 0 || uri.Fragment.Length != 0 || uri.AbsolutePath != "/")
-            throw new ArgumentException(name + " requires an HTTP loopback origin without credentials, a path, query, or fragment.");
+            throw new ArgumentException(name + " requires a matching HTTP(S) loopback origin without credentials, a path, query, or fragment.");
         return uri;
     }
 }

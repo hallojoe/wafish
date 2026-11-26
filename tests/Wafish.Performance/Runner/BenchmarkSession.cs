@@ -12,6 +12,8 @@ internal sealed class BenchmarkSession : IDisposable
     private string? _directory;
     private object _environment = null!;
     private readonly string _root;
+    public bool External { get; }
+    public BenchmarkTransport Transport { get; }
     public Uri Backend { get; }
     public Uri Native { get; }
     public Uri Enhanced { get; }
@@ -32,9 +34,13 @@ internal sealed class BenchmarkSession : IDisposable
     private BenchmarkSession(string[] args, string root)
     {
         _root = root;
-        Backend = BenchmarkOptions.LoopbackAddress(BenchmarkOptions.Read(args, "--backend-url", "http://127.0.0.1:5300"), "--backend-url");
-        Native = BenchmarkOptions.LoopbackAddress(BenchmarkOptions.Read(args, "--native-url", "http://127.0.0.1:5301"), "--native-url");
-        Enhanced = BenchmarkOptions.LoopbackAddress(BenchmarkOptions.Read(args, "--enhanced-url", "http://127.0.0.1:5302"), "--enhanced-url");
+        var external = BenchmarkOptions.Read(args, "--external-url", "");
+        External = external.Length != 0;
+        var mode = BenchmarkOptions.Read(args, "--transport", external.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ? "https1" : "http1");
+        Transport = new BenchmarkTransport(mode);
+        Backend = Transport.Address(BenchmarkOptions.Read(args, "--backend-url", $"{Transport.Scheme}://127.0.0.1:5300"), "--backend-url");
+        Native = Transport.Address(BenchmarkOptions.Read(args, "--native-url", $"{Transport.Scheme}://127.0.0.1:5301"), "--native-url");
+        Enhanced = Transport.Address(BenchmarkOptions.Read(args, "--enhanced-url", $"{Transport.Scheme}://127.0.0.1:5302"), "--enhanced-url");
         if (new[] { Backend.Port, Native.Port, Enhanced.Port }.Distinct().Count() != 3 || Backend.Port == 0 || Native.Port == 0 || Enhanced.Port == 0)
             throw new ArgumentException("Managed listener ports must be distinct and nonzero.");
         PayloadMode = BenchmarkOptions.Read(args, "--payload-mode", "precomputed");
@@ -42,6 +48,13 @@ internal sealed class BenchmarkSession : IDisposable
         ResultsDirectory = Path.GetFullPath(BenchmarkOptions.Read(args, "--results-directory", Path.Combine(root, "tests", "Wafish.Performance", "results")));
         var modes = BenchmarkOptions.Read(args, "--modes", "");
         Modes = string.IsNullOrWhiteSpace(modes) ? null : modes.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        if (Transport.Tls && external.Length == 0)
+        {
+            var path = Path.Combine(DataDirectory, "loopback.pfx");
+            BenchmarkTransport.CreateCertificate(path);
+            Transport = new BenchmarkTransport(mode, path);
+        }
+
     }
     public static async Task<BenchmarkSession> CreateAsync(string[] args, string root)
     {
@@ -85,7 +98,7 @@ internal sealed class BenchmarkSession : IDisposable
     public Uri AddressForPort(int port) => port == Backend.Port ? Backend : port == Native.Port ? Native : port == Enhanced.Port ? Enhanced : throw new ArgumentException("Unknown managed port.");
     public async Task CaptureHostAsync(string name, Uri endpoint)
     {
-        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+        using var client = Transport.CreateClient(TimeSpan.FromSeconds(5));
         using var response = await client.GetAsync(new Uri(endpoint, "/benchmark/manifest"));
         response.EnsureSuccessStatusCode();
         using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
@@ -98,7 +111,7 @@ internal sealed class BenchmarkSession : IDisposable
     {
         await File.WriteAllTextAsync(path, JsonSerializer.Serialize(new
         {
-            schemaVersion = 1, environment = _environment, settings,
+            schemaVersion = 2, environment = _environment, settings, transport = new { mode = Transport.Mode, client = Transport.Description, upstream = External ? "unverified external upstream" : Transport.Description, certificate = !Transport.Tls ? "none" : Transport.CertificatePath is null ? "system trust" : "temporary pinned loopback certificate" },
             latency = new { strategy = "fixed logarithmic histogram; upper-bound nearest rank", relativeError = BoundedLatencyHistogram.RelativeError,
                 absoluteErrorBelowMinimumMs = BoundedLatencyHistogram.MinimumMilliseconds, maximumMs = BoundedLatencyHistogram.MaximumMilliseconds,
                 retainedBytes = new BoundedLatencyHistogram().RetainedBytes },
@@ -107,6 +120,7 @@ internal sealed class BenchmarkSession : IDisposable
     }
     public void Dispose()
     {
+        Transport.Dispose();
         if (_directory is not null) Directory.Delete(_directory, recursive: true);
     }
 }

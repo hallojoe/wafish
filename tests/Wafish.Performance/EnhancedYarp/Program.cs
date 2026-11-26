@@ -19,11 +19,12 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
     ContentRootPath = AppContext.BaseDirectory
 });
 builder.Logging.ClearProviders();
-var listener = BenchmarkOptions.LoopbackAddress(BenchmarkOptions.Read(args, "--listen-url", "http://127.0.0.1:5302"), "--listen-url");
-var backend = BenchmarkOptions.LoopbackAddress(BenchmarkOptions.Read(args, "--backend-url", "http://127.0.0.1:5300"), "--backend-url");
+using var transport = BenchmarkTransport.Read(args);
+var listener = transport.Address(BenchmarkOptions.Read(args, "--listen-url", $"{transport.Scheme}://127.0.0.1:5302"), "--listen-url");
+var backend = transport.Address(BenchmarkOptions.Read(args, "--backend-url", $"{transport.Scheme}://127.0.0.1:5300"), "--backend-url");
 var dataRoot = Path.GetFullPath(BenchmarkOptions.Read(args, "--data-root", Environment.GetEnvironmentVariable("BENCHMARK_DATA_ROOT") ?? Environment.CurrentDirectory));
 Directory.CreateDirectory(dataRoot);
-builder.WebHost.UseUrls(listener.ToString());
+builder.WebHost.ConfigureBenchmarkListener(listener, transport);
 
 var mode = BenchmarkOptions.Read(args, "--mode", "full");
 if (mode is not ("core" or "storage" or "services" or "host-native" or "minimal" or "full" or "waf" or "waf-attack"
@@ -51,7 +52,7 @@ builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
     ["ReverseProxy:Routes:perf:ClusterId"] = "backend",
     ["ReverseProxy:Routes:perf:Match:Path"] = "/api/perf/{**catch-all}",
     ["ReverseProxy:Clusters:backend:Destinations:backend:Address"] = backend.ToString(),
-    ["ReverseProxy:Clusters:backend:HttpRequest:Version"] = "1.1",
+    ["ReverseProxy:Clusters:backend:HttpRequest:Version"] = transport.Version.ToString(),
     ["ReverseProxy:Clusters:backend:HttpRequest:VersionPolicy"] = "RequestVersionExact"
 });
 
@@ -72,7 +73,7 @@ if (nativeHost)
         [new Yarp.ReverseProxy.Configuration.ClusterConfig
         {
             ClusterId = "backend",
-            HttpRequest = new ForwarderRequestConfig { Version = System.Net.HttpVersion.Version11, VersionPolicy = HttpVersionPolicy.RequestVersionExact },
+            HttpRequest = new ForwarderRequestConfig { Version = transport.Version, VersionPolicy = HttpVersionPolicy.RequestVersionExact },
             Destinations = new Dictionary<string, Yarp.ReverseProxy.Configuration.DestinationConfig>
             {
                 ["backend"] = new() { Address = backend.ToString() }
@@ -92,6 +93,7 @@ else
     }
 }
 
+builder.Services.AddSingleton<IForwarderHttpClientFactory>(new BenchmarkForwarderHttpClientFactory(transport));
 var app = builder.Build();
 app.UseRouting();
 if (coreOnly || storageOnly || servicesOnly || nativeHost)
@@ -128,7 +130,7 @@ app.MapGet("/benchmark/manifest", () =>
         mode, effectivePolicies, proxyVersion = typeof(IProxyConfigProvider).Assembly.GetName().Version?.ToString(),
         listener = listener.ToString(), routes = proxy.Routes.Select(route => new { route.RouteId, route.ClusterId, route.Match, route.Order, route.Transforms }),
         clusters = proxy.Clusters.Select(cluster => new { cluster.ClusterId, cluster.Destinations, cluster.LoadBalancingPolicy, cluster.HttpClient, cluster.HttpRequest, cluster.SessionAffinity, cluster.HealthCheck }), bindings,
-        clientTransport = "HTTP/1.1 cleartext", upstreamTransport = "HTTP/1.1 exact cleartext"
+        clientTransport = transport.Description, upstreamTransport = transport.Description
     });
     var lifecycle = app.Services.GetService<IPluginResourceLifecycleCoordinator>();
     var resources = effectivePolicies.SelectMany(plugin => (lifecycle?.GetRuntimeResources(plugin) ?? [])

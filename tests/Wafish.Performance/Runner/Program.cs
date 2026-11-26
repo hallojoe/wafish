@@ -27,9 +27,9 @@ if (suite is not ("baseline" or "first")) throw new ArgumentException("Unknown b
 var externalUrl = ReadStringArgument(args, "--external-url", "");
 if (!string.IsNullOrWhiteSpace(externalUrl))
 {
-    if (!Uri.TryCreate(externalUrl, UriKind.Absolute, out var endpoint) || endpoint.Scheme is not ("http" or "https") || endpoint.UserInfo.Length != 0)
+    if (!Uri.TryCreate(externalUrl, UriKind.Absolute, out var endpoint) || endpoint.Scheme != session.Transport.Scheme || endpoint.UserInfo.Length != 0)
     {
-        throw new ArgumentException("--external-url requires an HTTP(S) URL without credentials.");
+        throw new ArgumentException("--external-url requires a URL matching --transport, without credentials.");
     }
 
     if (durationSeconds <= 0 || warmupSeconds < 0 || concurrency <= 0 || repetitions <= 0)
@@ -38,7 +38,7 @@ if (!string.IsNullOrWhiteSpace(externalUrl))
     }
 
     var scenario = Scenario.Get("external", ReadStringArgument(args, "--path", "/api/local-service/instance"));
-    await BenchmarkPreflight.VerifyAsync(endpoint, scenario.Method, scenario.Path, scenario.Body, knownWorkload: false);
+    await BenchmarkPreflight.VerifyAsync(endpoint, scenario.Method, scenario.Path, scenario.Body, knownWorkload: false, transport: session.Transport);
     Console.WriteLine($"External endpoint: {endpoint}. The runner does not manage processes or databases.");
     if (warmupSeconds > 0)
     {
@@ -56,7 +56,7 @@ if (!string.IsNullOrWhiteSpace(externalUrl))
         "\nExternal mode does not collect process CPU or memory. Zero values mean unavailable.\n" +
         "Keep telemetry settings identical when comparing hosts. Services remain running after this test.\n");
     await File.WriteAllTextAsync(Path.ChangeExtension(report, ".csv"), BuildCsv(results, summary));
-    await session.WriteAsync(Path.ChangeExtension(report, ".json"), results, new { mode = "external", processMeasurementsAvailable = false, durationSeconds, warmupSeconds, concurrency, repetitions, requestTimeoutSeconds = 10, clientTransport = "HTTP/1.1" });
+    await session.WriteAsync(Path.ChangeExtension(report, ".json"), results, new { mode = "external", processMeasurementsAvailable = false, durationSeconds, warmupSeconds, concurrency, repetitions, requestTimeoutSeconds = 10, clientTransport = BenchmarkSession.Current.Transport.Description });
     Console.WriteLine($"Report: {report}; failures: {results.Sum(r => r.Failures)}");
     if (results.Any(r => r.Failures > 0))
     {
@@ -112,7 +112,7 @@ try
 
         foreach (var scenario in scenarios)
         {
-            await BenchmarkPreflight.VerifyAsync(session.AddressForPort(gateway.Port), scenario.Method, scenario.Path, scenario.Body);
+            await BenchmarkPreflight.VerifyAsync(session.AddressForPort(gateway.Port), scenario.Method, scenario.Path, scenario.Body, transport: BenchmarkSession.Current.Transport);
             Console.WriteLine($"[{gateway.Name}] {scenario.Name}: warmup {warmupSeconds}s, test {durationSeconds}s x {repetitions}, concurrency {concurrency}");
             await RunLoadAsync(gateway.Port, scenario, concurrency, TimeSpan.FromSeconds(warmupSeconds), null);
             for (var repetition = 1; repetition <= repetitions; repetition++)
@@ -146,7 +146,7 @@ try
         Console.WriteLine($"{item.Gateway,-18} {item.Scenario,-12} {item.RequestsPerSecond,10:N0} RPS  P95 {item.P95Ms,7:N2} ms  P99 {item.P99Ms,7:N2} ms  CPU {item.CpuPercent,6:N1}%  Memory {item.WorkingSetMb,7:N1} MB");
     }
 
-    await BenchmarkSession.Current.WriteAsync(Path.ChangeExtension(csvPath, ".json"), results, new { processMeasurementsAvailable = true, durationSeconds, warmupSeconds, concurrency, repetitions, suite, requestTimeoutSeconds = 10, clientTransport = "HTTP/1.1" });
+    await BenchmarkSession.Current.WriteAsync(Path.ChangeExtension(csvPath, ".json"), results, new { processMeasurementsAvailable = true, durationSeconds, warmupSeconds, concurrency, repetitions, suite, requestTimeoutSeconds = 10, clientTransport = BenchmarkSession.Current.Transport.Description });
     Console.WriteLine($"CSV: {csvPath}");
     Console.WriteLine($"Report: {markdownPath}");
 }
@@ -168,6 +168,7 @@ static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int
         AutomaticDecompression = DecompressionMethods.None,
         UseProxy = false
     };
+    BenchmarkSession.Current.Transport.ConfigureHandler(handler);
     using var client = new HttpClient(handler) { BaseAddress = endpoint ?? BenchmarkSession.Current.AddressForPort(port), Timeout = TimeSpan.FromSeconds(10) };
     client.DefaultRequestHeaders.ConnectionClose = false;
 
@@ -189,6 +190,7 @@ static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int
             try
             {
                 using var request = new HttpRequestMessage(scenario.Method, scenario.Path);
+                BenchmarkSession.Current.Transport.ConfigureRequest(request);
                 if (scenario.Body != null)
                 {
                     request.Content = new StringContent(scenario.Body, Encoding.UTF8, "application/json");
@@ -197,6 +199,7 @@ static async Task<BenchmarkResult> RunLoadAsync(int port, Scenario scenario, int
                 using var deadline = CancellationTokenSource.CreateLinkedTokenSource(runDeadline.Token);
                 deadline.CancelAfter(TimeSpan.FromSeconds(10));
                 using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, deadline.Token);
+                BenchmarkSession.Current.Transport.VerifyResponse(response);
                 await response.Content.CopyToAsync(Stream.Null, deadline.Token);
                 if (allowPolicyRejections && response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
@@ -288,7 +291,7 @@ static async Task RunFirstBatchAsync(string root, string resultsDirectory, strin
 
         await File.WriteAllTextAsync(csvPath, BuildExtendedCsv(records), Encoding.UTF8);
         await File.WriteAllTextAsync(markdownPath, BuildExtendedMarkdown(records, durationSeconds, soakSeconds), Encoding.UTF8);
-        await BenchmarkSession.Current.WriteAsync(Path.ChangeExtension(csvPath, ".json"), records, new { processMeasurementsAvailable = true, durationSeconds, warmupSeconds, soakSeconds, suite = "first", requestTimeoutSeconds = 10, clientTransport = "HTTP/1.1" });
+        await BenchmarkSession.Current.WriteAsync(Path.ChangeExtension(csvPath, ".json"), records, new { processMeasurementsAvailable = true, durationSeconds, warmupSeconds, soakSeconds, suite = "first", requestTimeoutSeconds = 10, clientTransport = BenchmarkSession.Current.Transport.Description });
         Console.WriteLine($"CSV: {csvPath}");
         Console.WriteLine($"Report: {markdownPath}");
     }
@@ -308,7 +311,7 @@ static async Task RunExtendedCaseAsync(string group, string mode, Scenario scena
     processes.Add(process);
     await WaitForHealthyAsync(new Uri(BenchmarkSession.Current.Enhanced, "/health").ToString(), process);
     await BenchmarkSession.Current.CaptureHostAsync("EnhancedYarp", BenchmarkSession.Current.Enhanced);
-    await BenchmarkPreflight.VerifyAsync(BenchmarkSession.Current.Enhanced, scenario.Method, scenario.Path, scenario.Body);
+    await BenchmarkPreflight.VerifyAsync(BenchmarkSession.Current.Enhanced, scenario.Method, scenario.Path, scenario.Body, transport: BenchmarkSession.Current.Transport);
     await RunLoadAsync(BenchmarkSession.Current.Enhanced.Port, scenario, concurrency, TimeSpan.FromSeconds(warmupSeconds), null);
     await ResetBackendAsync();
     var result = await RunLoadAsync(BenchmarkSession.Current.Enhanced.Port, scenario, concurrency, TimeSpan.FromSeconds(durationSeconds), process, allowPolicyRejections: allowNonSuccess);
@@ -327,9 +330,9 @@ static async Task RunFunctionalCaseAsync(string group, string mode, string path,
     processes.Add(process);
     await WaitForHealthyAsync(new Uri(BenchmarkSession.Current.Enhanced, "/health").ToString(), process);
     await BenchmarkSession.Current.CaptureHostAsync("EnhancedYarp", BenchmarkSession.Current.Enhanced);
-    await BenchmarkPreflight.VerifyAsync(BenchmarkSession.Current.Enhanced, HttpMethod.Get, "/api/perf/plain");
+    await BenchmarkPreflight.VerifyAsync(BenchmarkSession.Current.Enhanced, HttpMethod.Get, "/api/perf/plain", transport: BenchmarkSession.Current.Transport);
     await ResetBackendAsync();
-    using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+    using var client = BenchmarkSession.Current.Transport.CreateClient();
     var started = Stopwatch.GetTimestamp();
     using var response = await client.GetAsync(new Uri(BenchmarkSession.Current.Enhanced, path));
     await response.Content.CopyToAsync(Stream.Null);
@@ -349,9 +352,9 @@ static async Task RunCircuitCaseAsync(List<ExtendedResult> records, List<Process
     processes.Add(process);
     await WaitForHealthyAsync(new Uri(BenchmarkSession.Current.Enhanced, "/health").ToString(), process);
     await BenchmarkSession.Current.CaptureHostAsync("EnhancedYarp", BenchmarkSession.Current.Enhanced);
-    await BenchmarkPreflight.VerifyAsync(BenchmarkSession.Current.Enhanced, HttpMethod.Get, "/api/perf/plain");
+    await BenchmarkPreflight.VerifyAsync(BenchmarkSession.Current.Enhanced, HttpMethod.Get, "/api/perf/plain", transport: BenchmarkSession.Current.Transport);
     await ResetBackendAsync();
-    using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+    using var client = BenchmarkSession.Current.Transport.CreateClient();
     var statuses = new List<int>();
     for (var i = 0; i < 6; i++)
     {
@@ -374,7 +377,7 @@ static async Task RunCircuitCaseAsync(List<ExtendedResult> records, List<Process
 
 static async Task ResetBackendAsync()
 {
-    using var client = new HttpClient();
+    using var client = BenchmarkSession.Current.Transport.CreateClient();
     using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(5));
     while (true)
     {
@@ -386,7 +389,7 @@ static async Task ResetBackendAsync()
 
 static async Task<BackendCounters> ReadBackendCountersAsync()
 {
-    using var client = new HttpClient();
+    using var client = BenchmarkSession.Current.Transport.CreateClient();
     var json = await client.GetStringAsync(new Uri(BenchmarkSession.Current.Backend, "/api/perf/control/counters"));
     return JsonSerializer.Deserialize<BackendCounters>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new BackendCounters();
 }
@@ -407,6 +410,7 @@ static string BuildExtendedMarkdown(IEnumerable<ExtendedResult> records, int dur
     var rows = records.ToList();
     var sb = new StringBuilder("# Wafish First Batch Performance Results\n\n");
     sb.AppendLine($"- Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+    sb.AppendLine($"- Transport: {BenchmarkSession.Current.Transport.Description}; upstream: {(BenchmarkSession.Current.External ? "unverified" : "matched") }.");
     sb.AppendLine($"- Runtime: {Environment.Version}; processors: {Environment.ProcessorCount}");
     sb.AppendLine("- Latency: fixed-memory histogram; upper-bound percentiles, ≤1% relative error above 1 μs. See the adjacent JSON metadata.");
     sb.AppendLine($"- Regular duration: {durationSeconds}s; soak duration: {soakSeconds}s").AppendLine();
@@ -444,6 +448,8 @@ static Process StartService(string name, string dll, string workingDirectory, IR
     var session = BenchmarkSession.Current;
     var project = Path.GetFileNameWithoutExtension(dll);
     var address = project == "Backend" ? session.Backend : project == "NativeYarp" ? session.Native : session.Enhanced;
+    info.ArgumentList.Add("--transport=" + session.Transport.Mode);
+    if (session.Transport.CertificatePath is { } certificatePath) info.Environment[BenchmarkTransport.CertificateEnvironment] = certificatePath;
     info.ArgumentList.Add("--listen-url=" + address);
     info.ArgumentList.Add("--backend-url=" + session.Backend);
     info.ArgumentList.Add("--payload-mode=" + session.PayloadMode);
@@ -461,7 +467,7 @@ static async Task DrainAsync(StreamReader reader)
 
 static async Task WaitForHealthyAsync(string url, Process process)
 {
-    using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(1) };
+    using var client = BenchmarkSession.Current.Transport.CreateClient(TimeSpan.FromSeconds(1));
     for (var i = 0; i < 60; i++)
     {
         if (process.HasExited)
@@ -524,6 +530,7 @@ static string BuildMarkdown(List<BenchmarkResult> summary, int duration, int war
     sb.AppendLine($"- Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
     sb.AppendLine($"- OS: {Environment.OSVersion}");
     sb.AppendLine($"- Logical processors: {Environment.ProcessorCount}");
+    sb.AppendLine($"- Transport: {BenchmarkSession.Current.Transport.Description}; upstream: {(BenchmarkSession.Current.External ? "unverified" : "matched") }.");
     sb.AppendLine($"- Runtime: {Environment.Version}");
     sb.AppendLine($"- Concurrency: {concurrency}");
     sb.AppendLine("- Latency: fixed-memory histogram; upper-bound percentiles, ≤1% relative error above 1 μs.");

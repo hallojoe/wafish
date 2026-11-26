@@ -84,3 +84,8 @@ It records runtime, operating system, CPU, architectures, GC mode, source revisi
 It also records workload settings, transport, histogram bounds, effective host manifests, and configuration hashes.
 External reports explicitly mark process measurements unavailable.
 Short verification runs establish correctness, not production throughput.
+
+## Matched transports
+
+Use `--transport=http1|h2c|https1|https2` for matching client and upstream protocols.
+See [transport setup](../Shared/README.md#matched-transports-r43) for certificate handling and comparison commands.

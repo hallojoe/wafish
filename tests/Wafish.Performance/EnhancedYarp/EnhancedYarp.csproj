@@ -11,6 +11,9 @@
     <ProjectReference Include="..\..\..\src\Wafish.Storage.Sqlite\Wafish.Storage.Sqlite.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="../Shared/BenchmarkForwarderHttpClientFactory.cs" Link="BenchmarkForwarderHttpClientFactory.cs" />
+    <Compile Include="../Shared/BenchmarkTransport.cs" Link="BenchmarkTransport.cs" />
+    <Compile Include="../Shared/BenchmarkServerTransport.cs" Link="BenchmarkServerTransport.cs" />
     <Compile Include="../Shared/BenchmarkOptions.cs" Link="BenchmarkOptions.cs" />
     <Compile Include="../Shared/BenchmarkManifest.cs" Link="BenchmarkManifest.cs" />
   </ItemGroup>

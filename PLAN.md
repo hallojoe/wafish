@@ -19,27 +19,26 @@ R56 records a release discrepancy found during cleanup; it does not authorize pu
 | Order | ID | Remaining task | Value / 10 | Need / 10 |
 |---|---|---|---|---|
 | 1 | R56 | [Reconcile the release version and package publication](#r56) | 9 | 9 |
-| 2 | R43 | [Add matched HTTP/2 and TLS baselines](#r43) | 8 | 7 |
-| 3 | R44 | [Schedule request arrival rates](#r44) | 8 | 7 |
-| 4 | R42 | [Add paced streaming benchmarks](#r42) | 8 | 6 |
-| 5 | R47 | [Benchmark selected plugin combinations](#r47) | 8 | 6 |
-| 6 | R45 | [Enforce CI performance budgets](#r45) | 9 | 7 |
-| 7 | R38 | [Combine burst and sustained quotas](#r38) | 8 | 6 |
-| 8 | R36 | [Share local quotas across named route groups](#r36) | 7 | 6 |
-| 9 | R40 | [Measure compression savings](#r40) | 7 | 6 |
-| 10 | R41 | [Configure allowed compression algorithms](#r41) | 7 | 5 |
-| 11 | R50 | [Demonstrate blue-green deployment](#r50) | 7 | 5 |
-| 12 | R48 | [Benchmark multiple destinations](#r48) | 6 | 5 |
-| 13 | R46 | [Add WebAuthn authentication](#r46) | 8 | 5 |
-| 14 | R37 | [Partition quotas by trusted tenant](#r37) | 8 | 4 |
-| 15 | R39 | [Assign weighted request costs](#r39) | 6 | 4 |
-| 16 | R49 | [Add optional network fault injection](#r49) | 6 | 4 |
-| 17 | R51 | [Demonstrate service discovery](#r51) | 6 | 4 |
-| 18 | R55 | [Save operator views](#r55) | 5 | 3 |
-| 19 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
-| 20 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
-| 21 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
-| 22 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
+| 2 | R44 | [Schedule request arrival rates](#r44) | 8 | 7 |
+| 3 | R42 | [Add paced streaming benchmarks](#r42) | 8 | 6 |
+| 4 | R47 | [Benchmark selected plugin combinations](#r47) | 8 | 6 |
+| 5 | R45 | [Enforce CI performance budgets](#r45) | 9 | 7 |
+| 6 | R38 | [Combine burst and sustained quotas](#r38) | 8 | 6 |
+| 7 | R36 | [Share local quotas across named route groups](#r36) | 7 | 6 |
+| 8 | R40 | [Measure compression savings](#r40) | 7 | 6 |
+| 9 | R41 | [Configure allowed compression algorithms](#r41) | 7 | 5 |
+| 10 | R50 | [Demonstrate blue-green deployment](#r50) | 7 | 5 |
+| 11 | R48 | [Benchmark multiple destinations](#r48) | 6 | 5 |
+| 12 | R46 | [Add WebAuthn authentication](#r46) | 8 | 5 |
+| 13 | R37 | [Partition quotas by trusted tenant](#r37) | 8 | 4 |
+| 14 | R39 | [Assign weighted request costs](#r39) | 6 | 4 |
+| 15 | R49 | [Add optional network fault injection](#r49) | 6 | 4 |
+| 16 | R51 | [Demonstrate service discovery](#r51) | 6 | 4 |
+| 17 | R55 | [Save operator views](#r55) | 5 | 3 |
+| 18 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
+| 19 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
+| 20 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
+| 21 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
 
 ## Completion rule
 
@@ -52,8 +51,8 @@ Publication requires a separate release decision after checking the feed and art
 ## Backlog audit: 2026-11-26
 
 Reviewed source commit `3d5a2eb387dab858a70039d7c5fbbf8a86fa0345`, tests, documentation, and GitHub release and workflow records.
-No remaining task meets all its acceptance criteria.
-R41 and R56 are partly complete. The other 19 numbered tasks remain valid optional proposals.
+At the audited revision, no remaining task met all its acceptance criteria.
+At that revision, R41 and R56 were partly complete. The other 19 numbered tasks remained valid optional proposals.
 IDEA-01 remains deferred. Existing related features do not complete the proposed demonstrations or extensions.
 Ratings remain planning judgments; this audit does not promote optional work into release requirements.
 
@@ -126,7 +125,7 @@ Acceptance:
 
 ### R43: Add matched HTTP/2 and TLS baselines
 
-Status: TODO. Value: 8/10. Need: 7/10.
+Status: COMPLETE. Value: 8/10. Need: 7/10.
 
 Establish fair HTTP/2 and TLS comparisons before performance claims.
 
@@ -135,6 +134,8 @@ Source: [NativeYarp FEAT-01](docs/archive/2026-11-planning/tests/Wafish.Performa
 Measure transport overhead with explicit, matched client and upstream settings.
 
 Acceptance: Reports compare equivalent transport modes and document certificate setup.
+
+Verification: [R43 evidence](tests/Wafish.Regression/evidence/performance-r43/README.md).
 
 <a id="r44"></a>
 

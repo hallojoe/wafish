@@ -7,6 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../Shared/BenchmarkPreflight.cs" Link="BenchmarkPreflight.cs" />
+    <Compile Include="../Shared/BenchmarkTransport.cs" Link="BenchmarkTransport.cs" />
     <Compile Include="../Shared/BenchmarkOptions.cs" Link="BenchmarkOptions.cs" />
     <Compile Include="../Shared/BenchmarkManifest.cs" Link="BenchmarkManifest.cs" />
     <Compile Include="../Shared/BoundedLatencyHistogram.cs" Link="BoundedLatencyHistogram.cs" />

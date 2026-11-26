@@ -54,8 +54,9 @@ Unknown modes fail startup. Proxy log settings use `Gateway:ProxyLog`.
 
 ## Benchmark isolation and metadata
 
-Listener and upstream options accept loopback HTTP origins only.
-Native and Wafish upstream connections use HTTP/1.1 with an exact version policy.
+Listener and upstream origins must use loopback and match the selected transport.
+The default remains exact HTTP/1.1 over cleartext.
+See [matched transports](../Shared/README.md#matched-transports-r43) for HTTP/2, TLS, and certificate setup.
 The runner validates workload status and payload before measurement.
 Preflight has a five-second deadline and a four-MiB response limit.
 

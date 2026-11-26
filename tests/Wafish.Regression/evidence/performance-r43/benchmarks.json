@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "suite": "main",
+  "cases": [
+    {
+      "name": "Benchmarks: fixed-memory histograms bound percentile error without losing samples",
+      "group": "benchmarks",
+      "durationMs": 90.198,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Benchmarks: explicit addresses reject non-loopback and ambiguous origins",
+      "group": "benchmarks",
+      "durationMs": 8.9075,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Benchmarks: normalized manifests hash composition and redact nested secrets",
+      "group": "benchmarks",
+      "durationMs": 44.723,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Benchmarks: workload preflight rejects wrong status, payload, size, and stalled reads",
+      "group": "benchmarks",
+      "durationMs": 224.7449,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Benchmarks: isolated backend cancellation drains work and identifies payload allocation",
+      "group": "benchmarks",
+      "durationMs": 756.0972,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Benchmarks: opt-in transport faults truncate bodies and cancel stalled reads",
+      "group": "benchmarks",
+      "durationMs": 688.2185,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Benchmarks: native forwarding preflight detects backend failure on isolated addresses",
+      "group": "benchmarks",
+      "durationMs": 1900.5133,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Benchmarks: matched transport modes enforce protocols and pin local TLS certificates",
+      "group": "benchmarks",
+      "durationMs": 41736.5285,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Benchmarks: managed comparisons export effective manifests and clean only owned data",
+      "group": "benchmarks",
+      "durationMs": 40063.2897,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    }
+  ]
+}

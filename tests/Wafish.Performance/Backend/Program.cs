@@ -4,11 +4,12 @@ using Wafish.Performance;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
-var address = BenchmarkOptions.LoopbackAddress(BenchmarkOptions.Read(args, "--listen-url", "http://127.0.0.1:5300"), "--listen-url");
+using var transport = BenchmarkTransport.Read(args);
+var address = transport.Address(BenchmarkOptions.Read(args, "--listen-url", $"{transport.Scheme}://127.0.0.1:5300"), "--listen-url");
 var transportFaults = bool.Parse(BenchmarkOptions.Read(args, "--transport-faults", "false"));
 var payloadMode = BenchmarkOptions.Read(args, "--payload-mode", "precomputed");
 if (payloadMode is not ("precomputed" or "generated")) throw new ArgumentException("Unknown payload mode.");
-builder.WebHost.UseUrls(address.ToString());
+builder.WebHost.ConfigureBenchmarkListener(address, transport);
 builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 4 * 1024 * 1024);
 builder.Services.AddSingleton<BackendState>();
 var app = builder.Build();
@@ -22,6 +23,7 @@ int[] preparedSizes = [0, 1024, 65536, 1048576, 4194304];
 var payloads = payloadMode == "precomputed" ? preparedSizes.ToDictionary(size => size, size => Encoding.ASCII.GetBytes(new string('x', size))) : [];
 app.Use(async (context, next) =>
 {
+    context.Response.Headers["X-Benchmark-Protocol"] = context.Request.Protocol;
     var measured = context.Request.Path.StartsWithSegments("/api/perf") && !context.Request.Path.StartsWithSegments("/api/perf/control");
     var state = context.RequestServices.GetRequiredService<BackendState>();
     if (measured) state.Start();
@@ -35,7 +37,7 @@ app.Use(async (context, next) =>
     }
 });
 app.MapGet("/health", () => Results.Ok());
-app.MapGet("/benchmark/manifest", () => Results.Json(BenchmarkManifest.Create(new { mode = "backend", payloadMode, preparedSizes, maxRequestBytes = 4194304, maxDelayMilliseconds = 30000, transportFaults })));
+app.MapGet("/benchmark/manifest", () => Results.Json(BenchmarkManifest.Create(new { mode = "backend", payloadMode, preparedSizes, maxRequestBytes = 4194304, maxDelayMilliseconds = 30000, transportFaults, transport = transport.Description })));
 app.MapGet("/api/perf/plain", () => Results.Bytes(plain, "text/plain"));
 app.MapGet("/api/perf/json-small", () => Results.Bytes(smallJson, "application/json"));
 app.MapGet("/api/perf/payload/{size:int}", (int size, HttpContext context) =>
