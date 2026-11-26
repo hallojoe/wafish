@@ -72,13 +72,14 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
             return;
         }
 
-        var routeKey = routeId;
-        var routeScopeId = routeUid;
+        var routeScopeId = config.QuotaGroup.Length == 0 ? routeUid : "quota-group:" + Convert.ToHexString(
+            System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(config.QuotaGroup)));
 
         var partitionValue = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
-            System.Text.Encoding.UTF8.GetBytes(GetPartitionValue(context, config.PartitionKey, routeUid.Length > 0 ? routeUid : routeId))));
+            System.Text.Encoding.UTF8.GetBytes(GetPartitionValue(context, config.PartitionKey, routeScopeId.Length > 0 ? routeScopeId : routeId))));
 
         var configFingerprint = $"{config.Algorithm}:{config.PermitLimit}:{config.Window}:{config.QueueLimit}:{config.SegmentsPerWindow}:{config.TokenLimit}:{config.TokensPerPeriod}:{config.ReplenishmentPeriod}";
+        if (config.QuotaGroup.Length > 0) configFingerprint += ":" + config.PartitionKey;
         var limiterKey = string.IsNullOrEmpty(routeScopeId)
             ? $"global:{partitionValue}:{configFingerprint}"
             : $"{routeScopeId}:{partitionValue}:{configFingerprint}";
@@ -131,6 +132,7 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
         config = new RouteRateLimitConfig
         {
             Enabled = true,
+            QuotaGroup = compiled.QuotaGroup,
             Algorithm = compiled.Algorithm,
             PermitLimit = compiled.PermitLimit,
             Window = compiled.Window,
@@ -269,6 +271,7 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
 
     private sealed class RouteRateLimitConfig
     {
+        public string QuotaGroup { get; set; } = string.Empty;
         public bool Enabled { get; set; }
         public RateLimitAlgorithm Algorithm { get; set; } = RateLimitAlgorithm.FixedWindow;
         public int PermitLimit { get; set; } = 100;

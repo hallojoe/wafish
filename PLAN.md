@@ -19,21 +19,20 @@ R56 records a release discrepancy found during cleanup; it does not authorize pu
 | Order | ID | Remaining task | Value / 10 | Need / 10 |
 |---|---|---|---|---|
 | 1 | R56 | [Reconcile the release version and package publication](#r56) | 9 | 9 |
-| 2 | R36 | [Share local quotas across named route groups](#r36) | 7 | 6 |
-| 3 | R40 | [Measure compression savings](#r40) | 7 | 6 |
-| 4 | R41 | [Configure allowed compression algorithms](#r41) | 7 | 5 |
-| 5 | R50 | [Demonstrate blue-green deployment](#r50) | 7 | 5 |
-| 6 | R48 | [Benchmark multiple destinations](#r48) | 6 | 5 |
-| 7 | R46 | [Add WebAuthn authentication](#r46) | 8 | 5 |
-| 8 | R37 | [Partition quotas by trusted tenant](#r37) | 8 | 4 |
-| 9 | R39 | [Assign weighted request costs](#r39) | 6 | 4 |
-| 10 | R49 | [Add optional network fault injection](#r49) | 6 | 4 |
-| 11 | R51 | [Demonstrate service discovery](#r51) | 6 | 4 |
-| 12 | R55 | [Save operator views](#r55) | 5 | 3 |
-| 13 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
-| 14 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
-| 15 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
-| 16 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
+| 2 | R40 | [Measure compression savings](#r40) | 7 | 6 |
+| 3 | R41 | [Configure allowed compression algorithms](#r41) | 7 | 5 |
+| 4 | R50 | [Demonstrate blue-green deployment](#r50) | 7 | 5 |
+| 5 | R48 | [Benchmark multiple destinations](#r48) | 6 | 5 |
+| 6 | R46 | [Add WebAuthn authentication](#r46) | 8 | 5 |
+| 7 | R37 | [Partition quotas by trusted tenant](#r37) | 8 | 4 |
+| 8 | R39 | [Assign weighted request costs](#r39) | 6 | 4 |
+| 9 | R49 | [Add optional network fault injection](#r49) | 6 | 4 |
+| 10 | R51 | [Demonstrate service discovery](#r51) | 6 | 4 |
+| 11 | R55 | [Save operator views](#r55) | 5 | 3 |
+| 12 | R52 | [Demonstrate cancellable streaming](#r52) | 5 | 3 |
+| 13 | R53 | [Show redacted telemetry configuration](#r53) | 5 | 3 |
+| 14 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
+| 15 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
 
 ## Completion rule
 
@@ -225,7 +224,7 @@ Verification: [R38 evidence](tests/Wafish.Regression/evidence/combined-quotas/RE
 
 ### R36: Share local quotas across named route groups
 
-Status: TODO. Value: 7/10. Need: 6/10.
+Status: COMPLETE. Value: 7/10. Need: 6/10.
 
 Share one allowance across related routes.
 
@@ -234,6 +233,8 @@ Source: [Wafish.Plugin.RateLimit FEAT-01](docs/archive/2026-11-planning/src/Wafi
 Let selected routes share an explicitly named local quota.
 
 Acceptance: Grouped routes share permits while unrelated routes remain isolated.
+
+Verification: [R36 evidence](tests/Wafish.Regression/evidence/local-quota-groups/README.md).
 
 <a id="r40"></a>
 

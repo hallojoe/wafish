@@ -35,6 +35,11 @@ internal sealed partial class AdministrationRegressionSuite : IDisposable
         Directory.CreateDirectory(path);
         try
         {
+            if (args is ["--quota-groups"])
+            {
+                await QuotaGroupEndpointChecks.RunAsync(Check, () => StartHost("ApiKey", registration: false), key);
+                return failures.Count == 0 ? 0 : 1;
+            }
             if (args.Length == 0 || args is ["--need-six"])
                 await NeedSixEndpointChecks.RunAsync(Check, configure => StartHost("ApiKey", configure: configure, registration: false), key);
             if (args is ["--need-six"]) return failures.Count == 0 ? 0 : 1;
@@ -75,6 +80,7 @@ internal sealed partial class AdministrationRegressionSuite : IDisposable
             await CheckApiKeyHostAsync();
             await CheckJwtHostAsync();
             await CheckOptionalFeaturesAsync();
+            await QuotaGroupEndpointChecks.RunAsync(Check, () => StartHost("ApiKey", registration: false), key);
         }
         finally
         {

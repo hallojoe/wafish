@@ -28,8 +28,19 @@ public sealed partial class PluginBindingsController
             RouteUid = scope == PluginBindingScope.Route ? target.Value.uid : null,
             ClusterUid = scope == PluginBindingScope.Cluster ? target.Value.uid : null
         };
-        var current = _snapshotPublisher.Current;
-        await _snapshotCompiler.CompileAsync(current.Routes, current.Clusters, current.Version, ct, [candidate]);
+        await PublishGate.WaitAsync(ct);
+        try
+        {
+            var bindings = await _repository.GetBindingsAsync(ct);
+            var proposed = bindings.Where(binding => !(binding.PluginId.Equals(candidate.PluginId, StringComparison.OrdinalIgnoreCase) &&
+                binding.Scope == candidate.Scope && (binding.ScopeId == candidate.ScopeId ||
+                    candidate.RouteUid is not null && binding.RouteUid == candidate.RouteUid ||
+                    candidate.ClusterUid is not null && binding.ClusterUid == candidate.ClusterUid)))
+                .Append(candidate).ToArray();
+            var current = _snapshotPublisher.Current;
+            await _snapshotCompiler.CompileAsync(current.Routes, current.Clusters, current.Version, ct, proposed);
+        }
+        finally { PublishGate.Release(); }
         return Ok(new { code = 200, data = new { candidate.PluginId, candidate.ScopeId, config = JsonSerializer.Deserialize<JsonElement>(json), exclusions = Exclusions(candidate) } });
     }
 

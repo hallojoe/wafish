@@ -1,0 +1,47 @@
+{
+  "base": "9c293c0",
+  "covered": 40,
+  "executable": 41,
+  "files": [
+    {
+      "file": "src/Wafish.Administration/Modules/Dashboard/Controllers/PluginBindingsController.Preview.cs",
+      "covered": 11,
+      "executable": 11,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish.Plugin.RateLimit/Middleware/RateLimitMiddleware.cs",
+      "covered": 5,
+      "executable": 6,
+      "uncovered": [
+        79
+      ]
+    },
+    {
+      "file": "src/Wafish.Plugin.RateLimit/RateLimitPlugin.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish/Models/PluginExecutionConfigs.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish/Services/GatewaySnapshotCompiler.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "src/Wafish/Services/RateLimitQuotaGroups.cs",
+      "covered": 21,
+      "executable": 21,
+      "uncovered": []
+    }
+  ],
+  "missingFiles": [],
+  "percent": 97.56
+}

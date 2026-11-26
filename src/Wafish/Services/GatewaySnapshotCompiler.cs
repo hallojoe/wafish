@@ -63,6 +63,7 @@ public sealed class GatewaySnapshotCompiler : IGatewaySnapshotCompiler
             .Where(x => x.Scope == PluginBindingScope.Route ? routeIds.Contains(x.ScopeId) : clusterIds.Contains(x.ScopeId))
             .ToArray();
 
+        RateLimitQuotaGroups.Validate(bindings);
         var routeBindings = Group(bindings, PluginBindingScope.Route);
         var clusterBindings = Group(bindings, PluginBindingScope.Cluster);
         var compiledRoutes = ImmutableArray.CreateBuilder<RouteConfig>(routes.Count);

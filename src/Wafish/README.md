@@ -110,3 +110,6 @@ See [change-set contracts](../../docs/configuration-policy-contracts.md) for API
 
 Redis execution plans include `BurstLimit` for the optional atomic `DualWindow` policy.
 See [combined Redis quotas](../Wafish.Plugin.RateLimit.Redis/README.md#combined-burst-and-sustained-allowances-r38).
+
+Local quota groups require matching execution settings across enabled route bindings.
+Snapshot compilation rejects conflicts before persistence. See [quota groups](../Wafish.Plugin.RateLimit/README.md#named-local-quota-groups-r36).

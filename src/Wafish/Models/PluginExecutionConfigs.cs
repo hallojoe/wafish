@@ -47,6 +47,7 @@ public sealed class RequestRetryBindingOptions
 
 public sealed record RateLimitExecutionConfig
 {
+    public string QuotaGroup { get; init; } = string.Empty;
     public bool Enabled { get; init; }
     public RateLimitAlgorithm Algorithm { get; init; } = RateLimitAlgorithm.FixedWindow;
     public int PermitLimit { get; init; } = 100;

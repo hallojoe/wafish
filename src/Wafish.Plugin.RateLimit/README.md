@@ -60,3 +60,32 @@ Retry-After uses limiter metadata when available. Token-bucket fallback uses its
 Concurrency limits return a one-second retry hint. A hint does not reserve a permit.
 Cancellation releases queued ownership. Active partitions survive cleanup and remain owned until their requests finish.
 See [algorithm and partition stress checks](../../tests/Wafish.Regression/evidence/lifetime-stress/README.md).
+
+## Named local quota groups (R36)
+
+Set the same `quotaGroup` on related route bindings to share one local allowance:
+
+```json
+{
+  "enabled": true,
+  "quotaGroup": "inventory-api",
+  "algorithm": "FixedWindow",
+  "permitLimit": 100,
+  "window": "1m",
+  "partitionKey": "Global"
+}
+```
+
+Names are case-sensitive and contain 1–64 ASCII letters, digits, periods, underscores, or hyphens.
+The first character must be a letter or digit. An empty or omitted name retains independent route quotas.
+All enabled bindings in a group must use identical quota and partition settings, including defaults.
+Conflicting settings fail snapshot compilation before persistence or activation.
+Binding previews include existing bindings and report the same conflicts as saves.
+Update every group member together through an atomic configuration change set when changing shared settings.
+
+`Global` and `Route` partitions share one allowance across the named group.
+`IpAddress` and `UserId` share an allowance per client identity within the group.
+Unrelated groups and ungrouped routes retain separate allowances.
+Group names and client values are hashed in runtime limiter keys.
+Changing a group's settings starts a fresh local allowance. Existing idle partitions follow normal bounded cleanup.
+Groups share permits only inside one gateway process. Use Redis for allowances shared across replicas.

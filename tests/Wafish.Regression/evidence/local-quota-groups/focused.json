@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "suite": "main",
+  "cases": [
+    {
+      "name": "Redis: combined quotas validate settings and preserve unsupported-store outage policy",
+      "group": "rate-limit",
+      "durationMs": 114.0761,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Rate limiting: exhausted permits return JSON and Retry-After without forwarding",
+      "group": "rate-limit",
+      "durationMs": 43.5595,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Redis: route failure policy distinguishes outages from exhausted limits",
+      "group": "rate-limit",
+      "durationMs": 4.3187,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Local quotas: named groups share permits while routes, groups, and client partitions remain isolated",
+      "group": "rate-limit",
+      "durationMs": 30.3057,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Local quotas: incompatible named policies fail before binding persistence and activation",
+      "group": "rate-limit",
+      "durationMs": 526.057,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    }
+  ]
+}

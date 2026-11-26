@@ -137,3 +137,6 @@ See [registration and operations](../../docs/registration-operations-contracts.m
 
 Versioned change sets combine routes, clusters, and plugin bindings in one transaction.
 See [change-set contracts](../../docs/configuration-policy-contracts.md) for API examples, revisions, permissions, and recovery.
+
+Binding previews validate proposed replacements against all stored bindings under the publication gate.
+Named quota conflicts return HTTP 400 with `ValidationRejected`; previews and failed saves leave stored and active settings unchanged.
