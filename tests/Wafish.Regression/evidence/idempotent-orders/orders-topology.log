@@ -1,0 +1,7 @@
+dotnet-coverage v18.12.0.0 [linux-x64 - .NET 10.0.14]
+
+SessionId: 448365eb-3012-482d-81c0-5c488a86b110
+PASS: direct and gateway replays share one order across both backend processes.
+PASS: concurrent cross-process writes create one order; conflicting payloads return HTTP 409.
+PASS: backend restart preserves the original order and idempotency record.
+Code coverage results: /home/casko/.cache/wafish-verification/r54/orders-topology-coverage.xml.

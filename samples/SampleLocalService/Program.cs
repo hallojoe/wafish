@@ -23,6 +23,8 @@ else
 var identity = SampleInstanceIdentity.Resolve(builder.Configuration);
 builder.Services.AddSingleton(identity);
 builder.Services.AddSingleton<SampleStreamActivity>();
+builder.Services.AddSingleton(new SampleOrderStore(
+    builder.Configuration["Sample:OrdersStatePath"] ?? Path.Combine(AppContext.BaseDirectory, "sample-orders.json"), TimeProvider.System));
 builder.Services.AddWafishClient(options => options.InstanceId = identity.Value);
 
 // Or with code override (higher priority than config file):

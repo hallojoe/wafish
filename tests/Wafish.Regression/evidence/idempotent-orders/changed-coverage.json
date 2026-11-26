@@ -1,0 +1,45 @@
+{
+  "base": "3a313e2",
+  "covered": 97,
+  "executable": 106,
+  "files": [
+    {
+      "file": "Wafish.AppHost/AppHost.cs",
+      "covered": 1,
+      "executable": 1,
+      "uncovered": []
+    },
+    {
+      "file": "samples/SampleLocalService/Controllers/OrdersController.cs",
+      "covered": 21,
+      "executable": 26,
+      "uncovered": [
+        31,
+        34,
+        41,
+        43,
+        46
+      ]
+    },
+    {
+      "file": "samples/SampleLocalService/Program.cs",
+      "covered": 0,
+      "executable": 2,
+      "uncovered": [
+        26,
+        27
+      ]
+    },
+    {
+      "file": "samples/SampleLocalService/SampleOrderStore.cs",
+      "covered": 75,
+      "executable": 77,
+      "uncovered": [
+        55,
+        87
+      ]
+    }
+  ],
+  "missingFiles": [],
+  "percent": 91.51
+}

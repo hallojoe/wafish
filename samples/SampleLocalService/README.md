@@ -11,7 +11,7 @@ flowchart LR
     P0["Backend startup"]
     P1["Client registration"]
     P2["Gateway route"]
-    P3["Ping, echo, and instance endpoints"]
+    P3["Sample API endpoints"]
     P0 --> P1
     P1 --> P2
     P2 --> P3
@@ -28,12 +28,12 @@ The sample makes registration, load distribution, and trace propagation visible 
 ## What it does
 
 - Register through Wafish.Client and send lifecycle heartbeats.
-- Expose ping, echo, POST echo, and instance identity endpoints.
+- Expose ping, echo, instance identity, bounded streaming, and idempotent synthetic order endpoints.
 - Apply shared telemetry and development health endpoints.
 
 ## What it does not do
 
-- Implement a complete business service or persistent domain model.
+- Implement a production business service or payment workflow.
 - Act as a gateway or host administration pages.
 
 ## Start here
@@ -104,3 +104,33 @@ The endpoint sends `Cache-Control: no-store, no-transform` and `Content-Type: te
 These headers prevent response caching and compression buffering through the corresponding gateway plugins.
 Retries cannot replay a response after streaming has started. A disconnected stream releases backend work without another attempt.
 The `sample-streaming` regression group verifies these behaviors through all three active plugins.
+
+## Idempotent synthetic orders
+
+POST `/api/local-service/orders` with `Idempotency-Key: demo-order-1` and JSON:
+
+```json
+{"productId":"demo-product","quantity":2}
+```
+
+Keys and product IDs accept 1–64 ASCII letters, digits, dots, underscores, or hyphens.
+Quantity must be 1–1000. The request body limit is 4 KiB. Unknown JSON fields are rejected.
+A new key returns HTTP 201 and a `Location` for `GET /api/local-service/orders/{id}`.
+An identical replay returns HTTP 200 with the original order. A changed payload returns HTTP 409.
+The response envelope identifies the backend that handled each request and its current trace.
+
+The ledger retains at most 256 orders for ten minutes from creation.
+After expiry, the old order returns HTTP 404 and the same key can create a new order.
+At capacity, new keys return HTTP 503 with `Retry-After`. Existing unexpired keys still replay.
+Storage failures also return HTTP 503 without disclosing paths. Order responses use `Cache-Control: no-store`.
+
+Set `Sample:OrdersStatePath` to a local file. The default is `sample-orders.json` beside the executable.
+Both Aspire backends share one topology-specific ledger. Separate standalone processes must use the same path to share keys.
+The ledger uses an exclusive file lease and atomic replacement. Committed records survive process restarts.
+A cancelled waiter creates no order. If a response is lost after commit, the same key retrieves the committed order.
+Keys are stored as SHA-256 digests. The ledger contains only synthetic product and order data.
+
+This unauthenticated sample has one shared key namespace. It uses a local filesystem, not a distributed database.
+Do not submit real customer or payment data. Production applications need authenticated ownership and durable transactional storage.
+Gateway retry rules remain unchanged; the client must reuse its key when retrying a write.
+`python3 scripts/check-idempotent-orders.py` verifies parallel writes, cross-backend replay, conflict handling, and restart persistence.

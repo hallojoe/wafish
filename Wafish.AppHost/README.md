@@ -79,3 +79,12 @@ See [SampleFaultProxy](../samples/SampleFaultProxy/README.md) for controls and t
 `EnableDiscoveryDemo=true` adds a private loopback catalog for both sample backends.
 The profile retains the default gRPC registration example.
 See [SampleDiscoveryCatalog](../samples/SampleDiscoveryCatalog/README.md) for endpoint changes and stale-policy verification.
+
+## Shared synthetic order state
+
+Both backends use `sample-orders.json` inside the topology data directory.
+This shared local ledger preserves idempotency across backend selection and process restarts.
+The sample retains at most 256 synthetic orders for ten minutes.
+See [idempotent orders](../samples/SampleLocalService/README.md#idempotent-synthetic-orders) for API behavior and limits.
+Run `python3 scripts/check-idempotent-orders.py` only when this AppHost is stopped.
+The check owns an isolated topology, verifies cross-process concurrency and restart persistence, then removes its generated credential.

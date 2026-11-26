@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "suite": "main",
+  "cases": [
+    {
+      "name": "Sample orders: shared durable keys serialize concurrent writes, reject conflicts, expire, and bound storage",
+      "group": "sample-orders",
+      "durationMs": 319.2648,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    },
+    {
+      "name": "Sample orders: HTTP replay preserves order identity across instances and rejects invalid or unavailable writes",
+      "group": "sample-orders",
+      "durationMs": 1613.4316,
+      "status": "passed",
+      "error": null,
+      "schedules": []
+    }
+  ]
+}

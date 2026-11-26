@@ -99,6 +99,7 @@ await registry.DefineGroupAsync("sample-faults", FaultProxyChecks.RunAsync);
 await registry.DefineGroupAsync("sample-discovery", CatalogChecks.RunAsync);
 await registry.DefineGroupAsync("sample-streaming", SampleStreamingChecks.RunAsync);
 await registry.DefineGroupAsync("sample-telemetry-diagnostics", TelemetryDiagnosticsChecks.RunAsync);
+await registry.DefineGroupAsync("sample-orders", SampleOrderChecks.RunAsync);
 await registry.DefineGroupAsync("runtime", RuntimeHostChecks.RunAsync);
 await registry.DefineGroupAsync("runtime", run => run("Runtime: split and isolated deployment modes preserve endpoint roles", RuntimeHostChecks.CheckEndpointModesAsync));
 await registry.DefineGroupAsync("storage", SqliteEncryptionChecks.RunAsync);

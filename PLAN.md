@@ -2,7 +2,7 @@
 
 Updated: 2026-11-26.
 
-This is the single active backlog. R01–R35 and the approved review fixes are complete.
+This is the single active backlog. R01–R55 and the approved review fixes are complete.
 Completed plans and design records are in the [planning archive](docs/archive/2026-11-planning/README.md).
 Current behavior belongs in project READMEs and [product documentation](docs/guide/index.md).
 
@@ -13,14 +13,13 @@ Both scores range from 1 (low) to 10 (essential).
 Order accounts for dependencies, not only scores. Scores are judgments, not defect severity ratings.
 The scope remains one gateway host with optional administration and UI.
 Tenant isolation, mandatory passkeys, or central gateway management would change these priorities.
-Remaining items within R36–R55 are optional proposals. Listing a feature does not make it a release requirement.
+R36–R55 are complete. Their implementation does not authorize package publication.
 R56 records a release discrepancy found during cleanup; it does not authorize publication.
 
 | Order | ID | Remaining task | Value / 10 | Need / 10 |
 |---|---|---|---|---|
 | 1 | R56 | [Reconcile the release version and package publication](#r56) | 9 | 9 |
-| 2 | R54 | [Demonstrate idempotent orders](#r54) | 4 | 2 |
-| 3 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
+| 2 | IDEA-01 | [Separate administration and gateway processes](#idea-01) | 9 | 3 |
 
 ## Completion rule
 
@@ -441,7 +440,7 @@ Verification: [R53 evidence](tests/Wafish.Regression/evidence/telemetry-diagnost
 
 ### R54: Demonstrate idempotent orders
 
-Status: TODO. Value: 4/10. Need: 2/10.
+Status: COMPLETE. Value: 4/10. Need: 2/10.
 
 Teach application idempotency; this extends the sample, not gateway behavior.
 
@@ -450,6 +449,8 @@ Source: [SampleLocalService FEAT-01](docs/archive/2026-11-planning/samples/Sampl
 Provide a sample write operation that demonstrates safe repeated requests with an idempotency key.
 
 Acceptance: Repeated keys do not create duplicate sample orders, and conflicting payloads are rejected.
+
+Verification: [R54 evidence](tests/Wafish.Regression/evidence/idempotent-orders/README.md).
 
 <a id="idea-01"></a>
 

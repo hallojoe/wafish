@@ -164,3 +164,6 @@ Run `python3 scripts/check-service-discovery.py` with the AppHost stopped for re
 It uses the actual cache, compression, and retry plugin bindings through a real HTTP gateway.
 
 `--group sample-telemetry-diagnostics` verifies opt-in local telemetry registration without exposing configuration secrets.
+
+`--group sample-orders` verifies concurrent durable idempotency, cross-instance replay, conflicts, cancellation, expiry, capacity, and storage failures.
+`python3 scripts/check-idempotent-orders.py` verifies the same order identity across both real Aspire backend processes and restart.
