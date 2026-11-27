@@ -44,6 +44,55 @@ export function SchemaFields({
             name.replace(/([A-Z])/g, " $1"),
           );
           if (
+            type === "array" &&
+            field(field(property, "items"), "type") === "object"
+          ) {
+            const items = Array.isArray(current) ? current : [];
+            const itemSchema = field(property, "items");
+            return (
+              <fieldset key={name} className="space-y-3 sm:col-span-2">
+                <legend>{label}</legend>
+                {items.map((item, index) => (
+                  <div key={index} className="space-y-2 rounded border p-3">
+                    <SchemaFields
+                      schema={itemSchema}
+                      value={JSON.stringify(item)}
+                      onChange={(next) => {
+                        const updated = [...items];
+                        updated[index] = JSON.parse(next);
+                        change(name, updated);
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="native-button"
+                      onClick={() =>
+                        change(
+                          name,
+                          items.filter((_, i) => i !== index),
+                        )
+                      }
+                    >
+                      Remove {label} {index + 1}
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  className="native-button"
+                  disabled={
+                    items.length >= Number(field(property, "maxItems") ?? 32)
+                  }
+                  onClick={() =>
+                    change(name, [...items, schemaDefaults(itemSchema)])
+                  }
+                >
+                  Add {label}
+                </button>
+              </fieldset>
+            );
+          }
+          if (
             !["boolean", "string", "integer", "number"].includes(text(type)) &&
             !(
               type === "array" &&

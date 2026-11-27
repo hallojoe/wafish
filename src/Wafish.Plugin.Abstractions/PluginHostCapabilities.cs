@@ -11,6 +11,7 @@ public static class PluginHostCapabilities
     public static IReadOnlyDictionary<string, int> Versions { get; } = new Dictionary<string, int>
     {
         ["wafish.runtime"] = 1,
+        ["wafish.claims-transform"] = 1,
         ["wafish.redirect-endpoint"] = 1,
         ["wafish.proxy-pipeline"] = 1,
         ["wafish.resource-lifecycle"] = 1

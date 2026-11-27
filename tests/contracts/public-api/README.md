@@ -16,3 +16,6 @@ See [migration notes](../../../docs/security.md) and [verification](../../../ARC
 The redirect addition records the new plugin package, redirect preview DTOs/controller, and execution stage `Redirect = 250`.
 It adds no required interface members and removes no existing declarations.
 The manifest requires host capability `wafish.redirect-endpoint` version 1.
+
+The claims-transform addition records its new package API. Existing declarations remain unchanged.
+It requires `wafish.claims-transform` version 1 and compiles outbound mappings before activation.

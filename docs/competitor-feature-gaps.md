@@ -69,6 +69,10 @@ Wafish entry point: [hosting extensions](../src/Wafish.Runtime/GatewayRuntimeExt
 
 ### G06: Declarative claims transformations
 
+Implementation update: downstream headers, query parameters, and path mappings now exist in
+[ClaimsTransform](../src/Wafish.Plugin.ClaimsTransform/README.md). Claims-to-claims transformation remains deferred under G06-FULL.
+The following comparison records the reviewed baseline.
+
 Ocelot maps authenticated claims into other claims, headers, query parameters, and downstream paths.
 Wafish retains native YARP transforms and supports custom middleware.
 It has no equivalent configurable claims-mapping policy.
