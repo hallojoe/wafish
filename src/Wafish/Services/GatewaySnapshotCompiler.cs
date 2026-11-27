@@ -55,6 +55,7 @@ public sealed class GatewaySnapshotCompiler : IGatewaySnapshotCompiler
             ? new Dictionary<string, string>(StringComparer.Ordinal)
             : (await _clusters.GetAllClustersAsync(ct)).Where(x => !string.IsNullOrWhiteSpace(x.ClusterUid))
                 .ToDictionary(x => x.ClusterUid, x => x.ClusterId, StringComparer.Ordinal));
+        var routeUidsById = routeUidMap.ToDictionary(pair => pair.Value, pair => pair.Key, StringComparer.Ordinal);
         var sourceBindings = candidateBindings ?? await _plugins.GetBindingsAsync(ct);
         var endpointBindings = sourceBindings.Where(b => b.Enabled && (b.PluginId.Equals("redirect", StringComparison.OrdinalIgnoreCase) || b.PluginId.Equals("claims-transform", StringComparison.OrdinalIgnoreCase) || b.PluginId.Equals("route-authorization", StringComparison.OrdinalIgnoreCase)))
             .Select(b => ToSnapshot(b, routeUidMap, clusterUidMap)).Where(b => b.Scope == PluginBindingScope.Route && routeIds.Contains(b.ScopeId));
@@ -83,8 +84,9 @@ public sealed class GatewaySnapshotCompiler : IGatewaySnapshotCompiler
         foreach (var route in routes)
         {
             // Published routes may contain derived metadata from a previous compilation.
-            var current = route with { Metadata = route.Metadata?.Where(x => x.Key != "wafish:claims-transform" && x.Key != "wafish:route-authorization")
-                .ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal) };
+            var metadata = route.Metadata?.Where(x => x.Key != "wafish:claims-transform" && x.Key != "wafish:route-authorization")
+                .ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal);
+            var current = route with { Metadata = metadata };
             var compiledPlugins = new List<CompiledRoutePlugin>();
             if (routeBindings.TryGetValue(route.RouteId, out var targetBindings))
             {
@@ -124,7 +126,7 @@ public sealed class GatewaySnapshotCompiler : IGatewaySnapshotCompiler
             clusterPlans[cluster.ClusterId] = new ClusterExecutionPlan(cluster.ClusterId, PluginExecutionPlanOrdering.Order(compiledPlugins));
         }
 
-        return new GatewaySnapshot(
+        var snapshot = new GatewaySnapshot(
             version,
             DateTimeOffset.UtcNow,
             compiledRoutes.MoveToImmutable(),
@@ -132,7 +134,10 @@ public sealed class GatewaySnapshotCompiler : IGatewaySnapshotCompiler
             routeBindings,
             clusterBindings,
             routePlans.ToImmutable(),
-            clusterPlans.ToImmutable());
+            clusterPlans.ToImmutable())
+        { RouteUidsById = routes.ToImmutableDictionary(r => r.RouteId, r => routeUidsById.GetValueOrDefault(r.RouteId, r.RouteId), StringComparer.Ordinal) };
+        foreach (var validator in _routeCompilers.OfType<IGatewaySnapshotValidator>()) validator.Validate(snapshot);
+        return snapshot;
     }
 
     private static PluginBindingSnapshot ToSnapshot(

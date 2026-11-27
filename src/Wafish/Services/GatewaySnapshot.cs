@@ -15,6 +15,9 @@ public sealed record GatewaySnapshot(
     ImmutableDictionary<string, RouteExecutionPlan> RouteExecutionPlans,
     ImmutableDictionary<string, ClusterExecutionPlan> ClusterExecutionPlans)
 {
+    /// <summary>Stable route identities indexed by the current route name.</summary>
+    public ImmutableDictionary<string,string> RouteUidsById { get; init; } = ImmutableDictionary<string,string>.Empty;
+
     public static GatewaySnapshot Empty { get; } = new(
         0, DateTimeOffset.UnixEpoch, [], [],
         ImmutableDictionary<string, ImmutableArray<PluginBindingSnapshot>>.Empty,

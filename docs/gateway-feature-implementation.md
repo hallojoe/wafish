@@ -119,3 +119,14 @@ Run the Release solution build and both executable regression suites, including 
 Run frontend build, lint, coverage, and browser checks. Maintain at least 80% coverage of changed executable code.
 Verify new packages with isolated consumers. Check activation rejection, rollback, replacement, concurrency, and shutdown.
 Mark backlog work complete only after acceptance checks pass; record actual limits and unrun checks.
+
+## Internal execution implementation
+
+The executor uses framework route matching against captured endpoints and verifies the selected route UID.
+It rejects admission during configuration transitions. Prepared batches retain destination addresses across subsequent updates.
+Authorization preflight, WAF, native quotas, G06, bounded responses, cancellation, and shutdown have executable checks.
+Internal destination counters are shared per captured snapshot and remain separate from direct proxy counters.
+Custom host middleware and custom passive-health extensions require host integration.
+Entry points: [executor](../src/Wafish.Runtime/InternalExecution/InternalRouteExecutor.cs),
+[contracts](../src/Wafish/Services/InternalRouteContracts.cs), and
+[checks](../tests/Wafish.Regression/InternalRouteExecutionChecks.cs).

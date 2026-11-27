@@ -11,6 +11,7 @@ using Wafish.Plugin.Cache;
 using Wafish.Plugin.Redirect;
 using Wafish.Plugin.ClaimsTransform;
 using Wafish.Plugin.RouteAuthorization;
+using Wafish.Runtime.InternalExecution;
 using Wafish.Plugin.CircuitBreaker;
 using Wafish.Plugin.Compression;
 using Wafish.Plugin.Metrics;
@@ -137,6 +138,12 @@ public static class GatewayRuntimeExtensions
         services.AddSingleton<IGatewayPlugin, HttpServiceDiscoveryPlugin>();
         services.AddSingleton<IGatewayPlugin, CompressionPlugin>();
         services.AddAuthorization();
+        services.AddRateLimiter(_ => { });
+        services.AddRequestTimeouts();
+        services.AddSingleton<InternalRouteExecutor>();
+        services.AddSingleton<IInternalRouteExecutor>(sp => sp.GetRequiredService<InternalRouteExecutor>());
+        services.AddSingleton<Microsoft.Extensions.Hosting.IHostedService>(sp => sp.GetRequiredService<InternalRouteExecutor>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<ITransformProvider, InternalForwarderTransformProvider>());
         services.TryAddSingleton<RoutePolicyPipelineSupport>();
         services.AddSingleton<IGatewayPlugin, RouteAuthorizationPlugin>();
         services.AddSingleton<IRoutePluginCompiler, RouteAuthorizationCompiler>();
@@ -202,6 +209,7 @@ public static class GatewayRuntimeExtensions
         }
         var conventions = endpoints.MapReverseProxy(proxy =>
         {
+            proxy.Use((context, next) => { InternalRouteExecutor.RestoreProxyFeature(context); return next(context); });
             proxy.UseMiddleware<Wafish.Dashboard.Infrastructure.Resilience.DestinationMaintenanceMiddleware>();
             if (useBuiltInPipeline)
             {

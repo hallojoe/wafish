@@ -129,3 +129,22 @@ Routes can omit clusters. Active redirects run before YARP requires a backend.
 Other requests on routes without clusters return `503`.
 Manage bindings and preview sample requests through the existing plugin editor.
 See the [redirect reference](../Wafish.Plugin.Redirect/README.md) for validation, policies, and setup.
+
+## Internal route execution
+
+`IInternalRouteExecutor` prepares up to eight GET requests without loopback HTTP.
+Preparation checks all child authorization before dispatch. The framework router must select each requested stable route UID.
+Each child has its own service scope, principal clone, context, response buffer, and cancellation token.
+The batch retains its snapshot, endpoint delegates, destination addresses, HTTP clients, and plugin domain until disposal.
+Callers must dispose batches. Shutdown cancels and joins active batches.
+
+Children run native authorization, request timeout, rate limiting, and the Wafish request/proxy pipelines.
+Custom host middleware outside those pipelines is not replayed.
+Additional header forwarding uses an explicit allowlist. Routing, framing, forwarding, conditional, and encoding headers are excluded.
+Authorization and Cookie credentials are retained. Responses use a bounded buffer, with a maximum of 4 MiB per child.
+Transport failures remain failures even when their partial response contains valid JSON.
+
+Native destination selection uses a frozen destination set per snapshot.
+Internal selection counters are shared within that snapshot; direct proxy counters remain separate.
+Health changes from the source destinations are observed. Custom passive-health extensions must account for frozen destination instances.
+Admission returns 503 during incompatible configuration transitions or shutdown.
