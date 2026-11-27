@@ -1390,11 +1390,11 @@ Original source: `README.md`. Snapshot: `5d91599e8d5aa90e6e8433a13745351c0a16d18
 
 <!-- archive:start archive-readme-md -->
 <div align="center">
-<img src="cover-en.png" alt="Wafish — The reverse proxy & API gateway for .NET" width="100%"/>
+<img src="brand/cover-en.png" alt="Wafish — The reverse proxy & API gateway for .NET" width="100%"/>
 
 <br/>
 
-<img src="logo.png" alt="Wafish" width="240" style="border-radius: 15px;"/>
+<img src="brand/logo.png" alt="Wafish" width="240" style="border-radius: 15px;"/>
 
 **Wafish — Full-featured API Gateway powered by YARP**
 

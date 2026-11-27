@@ -46,7 +46,7 @@ await writeFile(
   icon,
 );
 const png = await sharp(Buffer.from(icon)).resize(512).png().toBuffer();
-await writeFile(path.join(root, "logo.png"), png);
+await writeFile(path.join(root, "brand/logo.png"), png);
 await sharp(Buffer.from(icon))
   .resize(180)
   .png()
@@ -66,12 +66,12 @@ for (const [name, color, mark] of [
 }
 const cover = `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="800" viewBox="0 0 1600 800"><rect width="1600" height="800" fill="#141915"/><circle cx="1285" cy="494" r="246" stroke="#394333" fill="none"/><circle cx="1285" cy="494" r="290" stroke="#283122" fill="none"/><g transform="translate(1024 245) scale(5.2)">${paths}</g><g transform="translate(90 68) scale(1.1)">${paths}</g><text x="220" y="148" font-family="sans-serif" font-size="62" letter-spacing="-3" fill="#f1f0e8">Wafish</text><text x="94" y="366" font-family="sans-serif" font-weight="bold" font-size="98" letter-spacing="-5" fill="#f1f0e8">An API gateway.</text><text x="94" y="480" font-family="sans-serif" font-weight="bold" font-size="98" letter-spacing="-5" fill="#d5f36b">Built for .NET.</text><path d="M96 566h700" stroke="#44503d"/><text x="96" y="618" font-family="monospace" font-size="24" fill="#b4bead">REVERSE PROXY + REQUEST POLICIES</text><text x="96" y="726" font-family="monospace" font-size="18" fill="#b4bead">WAF / RATE LIMITS / CACHE / LIVE CONFIGURATION</text></svg>`;
 await writeFile(path.join(output, "cover.svg"), cover);
-await sharp(Buffer.from(cover)).png().toFile(path.join(root, "cover-en.png"));
+await sharp(Buffer.from(cover)).png().toFile(path.join(root, "brand/cover-en.png"));
 await sharp(Buffer.from(cover))
   .resize(1200, 630, { fit: "cover" })
   .png()
-  .toFile(path.join(root, "og-image.png"));
-await cp(path.join(root, "og-image.png"), path.join(output, "social.png"));
+  .toFile(path.join(root, "brand/og-image.png"));
+await cp(path.join(root, "brand/og-image.png"), path.join(output, "social.png"));
 await cp(path.join(root, "brand/README.md"), path.join(output, "README.md"));
 await cp(path.join(root, "LICENSE"), path.join(output, "LICENSE"));
 for (const font of [

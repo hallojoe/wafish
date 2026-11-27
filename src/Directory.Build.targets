@@ -2,7 +2,7 @@
   <!-- Stage the canonical package icon in the intermediate output directory. -->
   <Target Name="StagePackageIcon" BeforeTargets="_GetPackageFiles">
     <MakeDir Directories="$(IntermediateOutputPath)package-icon" />
-    <Copy SourceFiles="$(MSBuildThisFileDirectory)../logo.png" DestinationFiles="$(IntermediateOutputPath)package-icon/logo.png" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)../brand/logo.png" DestinationFiles="$(IntermediateOutputPath)package-icon/logo.png" SkipUnchangedFiles="true" />
     <ItemGroup>
       <None Include="$(IntermediateOutputPath)package-icon/logo.png" Pack="true" PackagePath="/" Visible="false" />
       <FileWrites Include="$(IntermediateOutputPath)package-icon/logo.png" />

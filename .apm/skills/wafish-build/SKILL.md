@@ -23,7 +23,7 @@ Paths below are relative to the repository root. Read the affected project's `AG
    Report the exact failed project or build step when a prerequisite blocks verification.
 
 Do not edit `bin`, `obj`, `node_modules`, `coverage`, or embedded `wwwroot` output by hand.
-The root `logo.png` remains a package-icon input even when README branding changes.
+`brand/logo.png` remains a package-icon input even when README branding changes.
 Keep package versions centralized. Do not upgrade frameworks or dependencies as an incidental build repair.
 For AppHost lifecycle work, use the installed Aspire skills; a successful AppHost build does not start the topology.
 
