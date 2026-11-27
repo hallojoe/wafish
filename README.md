@@ -1,4 +1,3 @@
-
 [![NuGet](https://img.shields.io/nuget/v/Wafish.svg)](https://www.nuget.org/packages/Wafish)
 [![NuGet](https://img.shields.io/nuget/v/Wafish.ReactUi.svg)](https://www.nuget.org/packages/Wafish.ReactUi)
 [![NuGet](https://img.shields.io/nuget/v/Wafish.Client.svg)](https://www.nuget.org/packages/Wafish.Client)
@@ -6,22 +5,22 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-
-<img src="cover-en.png" alt="Wafish — The reverse proxy & API gateway for .NET" width="100%"/>
-**Wafish** is an API gateway built on [Microsoft YARP](https://microsoft.github.io/reverse-proxy/) 2.3.0. It adds a **plugin architecture** (11 built-in plugins), a visual **management dashboard**, WAF, AI assistant, multi-provider **service discovery**, notifications, health & circuit-breaker monitoring, and **client auto-registration**.
-
-[Website](https://hallojoe.github.io/wafish/) · [Documentation](https://hallojoe.github.io/wafish/docs/) · [Presentation](https://hallojoe.github.io/wafish/presentation/) · [Quick Start](#quick-start)
+<img src="brand/cover-en.png" alt="Wafish — The reverse proxy & API gateway for .NET" width="100%"/>
 
 ---
+
+**Wafish** is a .NET 10 API gateway built on [Microsoft YARP](https://microsoft.github.io/reverse-proxy/) 2.3.0.
+It includes 12 built-in plugins, a management dashboard, an AI assistant, service discovery, and client registration.
+
+- [Website](https://hallojoe.github.io/wafish/)
+- [Documentation](https://hallojoe.github.io/wafish/docs/)
+- [Presentation](https://hallojoe.github.io/wafish/presentation/)
 
 ## Releases
 
 Publish a GitHub release to build and publish packages using its version tag, such as `1.1.0` or `1.1.0-rc.1`.
 No version edit in build properties is required. Local builds use `0.0.0-dev`.
 See the [package publishing workflows](docs/package-publishing.md) for setup, validation, and prerelease rules.
-Check [release reconciliation](PLAN.md#r56) before reusing historical release versions.
-Archived checks cover Linux, Windows, and macOS with .NET 10.
-See [candidate release notes](ARCHIVE.md#archive-docs-release-notes-1-0-0-rc-1-md) for historical scope, support boundaries, and verification.
 
 ## Wafish vs. Bare YARP
 
@@ -84,14 +83,15 @@ flowchart LR
 ```
 
 The host selects runtime, administration, UI, and storage components.
-Plugins provide WAF, rate limits, retry, circuit breaking, caching, compression, metrics, and request logs.
+Plugins provide redirects, WAF, rate limits, retries, circuit breaking, caching, compression, metrics, request logs, and service discovery.
 See [package boundaries and hosting APIs](docs/architecture.md).
 
 ---
 
 ## Highlights
 
-- **Plugin architecture** — everything is a plugin; 11 first-party plugins provide WAF, rate limiting, retry, circuit breaking, compression, caching, metrics and more. Bring your own `IGatewayPlugin` in minutes.
+- **Plugin architecture** — 12 first-party plugins provide request policies, redirects, metrics, logs, and service discovery.
+- **Redirects** — fixed URLs, route templates, HTTPS enforcement, host allowlists, and request preview. Redirect routes can omit backends.
 - **Visual dashboard** — clusters, routes, plugins, WAF, health, circuit breakers, logs, notifications, audit trail and config history in one place.
 - **Runtime dynamic routing** — create / edit clusters & routes without restarting; auto-persists and auto-recovers on restart.
 - **Native YARP config editing** — dual-mode **form + JSON** editor that works directly on the standard YARP schema.
@@ -186,7 +186,7 @@ app.Run();
 
 ## Package Structure
 
-See the [solution project guide](docs/projects.md) for project READMEs, Mermaid diagrams, agent notes, and proposed work.
+See the [solution project guide](docs/projects.md) for project READMEs, architecture diagrams, and package dependencies.
 
 | Package | Purpose | YARP |
 |:--------|:--------|:---:|
@@ -199,7 +199,7 @@ See the [solution project guide](docs/projects.md) for project READMEs, Mermaid 
 | **Wafish.Storage.Abstractions** | Storage interfaces & entities | ❌ |
 | **Wafish.Grpc** | gRPC registration protocol | ❌ |
 | **Wafish.Plugin.Abstractions** | Plugin contract (`IGatewayPlugin`) | ❌ |
-| **Wafish.Plugin.\*** | 11 first-party plugins, pulled in individually | via core |
+| **Wafish.Plugin.\*** | 12 first-party plugins across 11 packages; see the catalog below | via core |
 
 **.NET 10.0**.
 
@@ -213,6 +213,7 @@ Install the .NET 10 SDK to build this repository. Use the .NET 10 ASP.NET Core r
 | Area | What you get | Detail |
 |:-----|:-------------|:-------|
 | **Routing** | Dynamic clusters & routes, drag-sort priority, dual form/JSON editor, import/export, snapshot & rollback, audit log | [Guide](src/Wafish/README.md) |
+| **Redirects** | Fixed and template targets, HTTPS enforcement, host allowlists, and preview; routes can omit backends | [Guide](src/Wafish.Plugin.Redirect/README.md) |
 | **Authentication** | `None` / `DefaultJwt` / `CustomJwt` / `ApiKey` / custom delegate; TOTP **2FA** | [Guide](docs/security.md) |
 | **Security** | WAF: IP allow/deny, SQLi / XSS / path-traversal detection, request limits, security headers | [Guide](src/Wafish.Plugin.Waf/README.md) |
 | **Observability** | Request logs (TraceID pairing, sanitization, sampling), real-time WebSocket stream | [Guide](src/Wafish.Plugin.ProxyLog/README.md) |
@@ -245,19 +246,23 @@ Config: `Mode` (default `Static`), `Endpoint`, `ServiceName`, `Namespace` (`defa
 
 ## Built-in Plugins
 
-| ID | Scope | What it does |
-|:---|:------|:-------------|
-| `waf` | Route | IP allow/deny, SQLi / XSS / path-traversal detection, request limits, security headers |
-| `rate-limit` | Route | FixedWindow / SlidingWindow / TokenBucket / Concurrency |
-| `rate-limit-redis` | Route | Distributed limiting via Redis Lua; 429 with `Retry-After` / `X-RateLimit-*` |
-| `request-retry` | Route | Retry with exponential backoff + jitter, status/exception policy |
-| `circuit-breaker` | Cluster | Failure threshold, recovery timeout, half-open probing |
-| `compression` | Route | Gzip / Brotli by MIME allowlist + min size |
-| `response-cache` | Route | Bounded in-memory cache with TTL & vary key |
-| `traffic-metrics` | Route | Per-route requests / errors / latency / bytes |
-| `cluster-metrics` | Cluster | Per-cluster requests / errors / latency / destinations |
-| `proxy-log` | Route | Full proxy capture (headers / optional body), sampling |
-| `service-discovery` | Cluster | Periodic registry-backed endpoint refresh |
+Runtime registers all 12 plugins. Configure bindings through the plugin editor or administration API.
+The Metrics package supplies both metric plugins. Each package link opens its configuration guide.
+
+| ID | Scope | Package and guide | What it does |
+|:---|:------|:------------------|:-------------|
+| `redirect` | Route | [Wafish.Plugin.Redirect](src/Wafish.Plugin.Redirect/README.md) | Fixed and template redirects, HTTPS enforcement, host allowlists, and preview |
+| `waf` | Route | [Wafish.Plugin.Waf](src/Wafish.Plugin.Waf/README.md) | IP allow/deny, SQLi, XSS, path traversal, request limits, and security headers |
+| `rate-limit` | Route | [Wafish.Plugin.RateLimit](src/Wafish.Plugin.RateLimit/README.md) | Fixed window, sliding window, token bucket, and concurrency limits |
+| `rate-limit-redis` | Route | [Wafish.Plugin.RateLimit.Redis](src/Wafish.Plugin.RateLimit.Redis/README.md) | Distributed Redis limits, rejection headers, and configured outage behavior |
+| `request-retry` | Route | [Wafish.Plugin.Retry](src/Wafish.Plugin.Retry/README.md) | Bounded retries, backoff, jitter, replay checks, deadlines, and shared retry budgets |
+| `circuit-breaker` | Cluster | [Wafish.Plugin.CircuitBreaker](src/Wafish.Plugin.CircuitBreaker/README.md) | Destination failure tracking, recovery delays, and limited recovery probes |
+| `compression` | Route | [Wafish.Plugin.Compression](src/Wafish.Plugin.Compression/README.md) | Gzip and Brotli compression with content-type and size rules |
+| `response-cache` | Route | [Wafish.Plugin.Cache](src/Wafish.Plugin.Cache/README.md) | Bounded response caching, expiry, vary keys, shared fills, tags, and purge |
+| `traffic-metrics` | Route | [Wafish.Plugin.Metrics](src/Wafish.Plugin.Metrics/README.md) | Request, error, latency, and byte measurements; OpenTelemetry export |
+| `cluster-metrics` | Cluster | [Wafish.Plugin.Metrics](src/Wafish.Plugin.Metrics/README.md) | Cluster and destination measurements; OpenTelemetry export |
+| `proxy-log` | Route | [Wafish.Plugin.ProxyLog](src/Wafish.Plugin.ProxyLog/README.md) | Request and response capture, optional bodies, sanitization, sampling, and persistence |
+| `service-discovery` | Cluster | [Wafish.Plugin.ServiceDiscovery](src/Wafish.Plugin.ServiceDiscovery/README.md) | Periodic destination refresh from static configuration or supported registries |
 
 ---
 
@@ -269,7 +274,7 @@ Documentation is maintained in this repository.
 - **Architecture** — [Package boundaries](docs/architecture.md) · [Project guide](docs/projects.md)
 - **Dashboard** — [React workspace](docs/react-ui.md)
 - **Security** — [Authentication and deployment](docs/security.md) · [WAF](src/Wafish.Plugin.Waf/README.md)
-- **Plugins** — [Plugin contracts](src/Wafish.Plugin.Abstractions/README.md) · [Lifecycle](docs/plugin-lifecycle-contract.md)
+- **Plugins** — [Configuration guide](docs/guide/plugins.md) · [Plugin catalog](#built-in-plugins) · [Plugin contracts](src/Wafish.Plugin.Abstractions/README.md) · [Lifecycle](docs/plugin-lifecycle-contract.md)
 - **Operations** — [Leases, readiness, policy controls, and diagnostics](docs/registration-operations-contracts.md)
 - **Client SDK** — [Registration](src/Wafish.Client/README.md) · [Mutation outcomes](docs/mutation-contracts.md)
 - **Storage** — [SQLite](src/Wafish.Storage.Sqlite/README.md) · [Offline inspection](tools/Wafish.Storage.Tool/README.md)
@@ -297,12 +302,25 @@ Report bugs and feature requests via GitHub Issues. All first-party packages are
 | Package | NuGet |
 |:--------|:-----:|
 | **Wafish** | [![NuGet](https://img.shields.io/nuget/v/Wafish.svg)](https://www.nuget.org/packages/Wafish) |
+| **Wafish.Runtime** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Runtime.svg)](https://www.nuget.org/packages/Wafish.Runtime) |
+| **Wafish.Administration** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Administration.svg)](https://www.nuget.org/packages/Wafish.Administration) |
 | **Wafish.ReactUi** | [![NuGet](https://img.shields.io/nuget/v/Wafish.ReactUi.svg)](https://www.nuget.org/packages/Wafish.ReactUi) |
 | **Wafish.Client** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Client.svg)](https://www.nuget.org/packages/Wafish.Client) |
 | **Wafish.Storage.Abstractions** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Storage.Abstractions.svg)](https://www.nuget.org/packages/Wafish.Storage.Abstractions) |
 | **Wafish.Storage.Sqlite** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Storage.Sqlite.svg)](https://www.nuget.org/packages/Wafish.Storage.Sqlite) |
 | **Wafish.Grpc** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Grpc.svg)](https://www.nuget.org/packages/Wafish.Grpc) |
 | **Wafish.Plugin.Abstractions** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Plugin.Abstractions.svg)](https://www.nuget.org/packages/Wafish.Plugin.Abstractions) |
+| **Wafish.Plugin.Cache** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Plugin.Cache.svg)](https://www.nuget.org/packages/Wafish.Plugin.Cache) |
+| **Wafish.Plugin.CircuitBreaker** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Plugin.CircuitBreaker.svg)](https://www.nuget.org/packages/Wafish.Plugin.CircuitBreaker) |
+| **Wafish.Plugin.Compression** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Plugin.Compression.svg)](https://www.nuget.org/packages/Wafish.Plugin.Compression) |
+| **Wafish.Plugin.Metrics** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Plugin.Metrics.svg)](https://www.nuget.org/packages/Wafish.Plugin.Metrics) |
+| **Wafish.Plugin.ProxyLog** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Plugin.ProxyLog.svg)](https://www.nuget.org/packages/Wafish.Plugin.ProxyLog) |
+| **Wafish.Plugin.RateLimit** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Plugin.RateLimit.svg)](https://www.nuget.org/packages/Wafish.Plugin.RateLimit) |
+| **Wafish.Plugin.RateLimit.Redis** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Plugin.RateLimit.Redis.svg)](https://www.nuget.org/packages/Wafish.Plugin.RateLimit.Redis) |
+| **Wafish.Plugin.Redirect** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Plugin.Redirect.svg)](https://www.nuget.org/packages/Wafish.Plugin.Redirect) |
+| **Wafish.Plugin.Retry** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Plugin.Retry.svg)](https://www.nuget.org/packages/Wafish.Plugin.Retry) |
+| **Wafish.Plugin.ServiceDiscovery** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Plugin.ServiceDiscovery.svg)](https://www.nuget.org/packages/Wafish.Plugin.ServiceDiscovery) |
+| **Wafish.Plugin.Waf** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Plugin.Waf.svg)](https://www.nuget.org/packages/Wafish.Plugin.Waf) |
 
 **.NET 10.0** · **YARP 2.3.0**
 
@@ -345,12 +363,6 @@ Downloaded dependencies and generated skill installations are ignored.
 
 For dependency updates, change the Git revision deliberately, run `apm install`, and review the lockfile and imported instructions.
 Run `apm audit --ci` and `apm compile --validate` before committing updates.
-
-## Work and history
-
-- [PLAN.md](PLAN.md): unresolved work and deferred proposals.
-- [ARCHIVE.md](ARCHIVE.md): previous plans, reviews, release notes, and verification narratives.
-- [Package publishing](docs/package-publishing.md): current packaging and publication procedure.
 
 ## License
 

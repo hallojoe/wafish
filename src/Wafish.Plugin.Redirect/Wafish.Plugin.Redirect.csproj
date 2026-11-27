@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Description>Validated route redirects and HTTPS enforcement for Wafish.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../Wafish/Wafish.csproj" />
+    <ProjectReference Include="../Wafish.Plugin.Abstractions/Wafish.Plugin.Abstractions.csproj" />
+  </ItemGroup>
+</Project>

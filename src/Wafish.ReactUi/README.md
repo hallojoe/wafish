@@ -58,7 +58,7 @@ Frontend inputs include package scripts, lockfiles, source files, public assets,
 An input-list record detects added and removed source files.
 Vite emits an asset manifest. Builds and packing reject missing entry, stylesheet, font, chunk, or manifest assets.
 `SkipReactBuild=true` skips generation but retains asset validation. Node.js remains required for validation.
-The package icon is staged from the canonical root `logo.png`.
+The package icon is staged from the canonical `brand/logo.png`.
 Browser fixtures use ports 5219–5224, including three prefixed authentication hosts.
 
 [Verification](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-review111213-readme-md).
@@ -103,3 +103,11 @@ The Assistant offers prompts for routes, backends, traffic, plugins, route troub
 Choosing a prompt fills and focuses the message editor. Review or edit it, then select Send.
 Suggestions are disabled while streaming or while a draft contains text, so existing drafts remain intact.
 Write tools retain the normal confirmation step. Suggestions are hidden when the host disables AI.
+
+## Route redirects
+
+The `redirect` plugin supports fixed targets, path and host templates, and HTTPS enforcement.
+Routes can omit clusters. Active redirects run before YARP requires a backend.
+Other requests on routes without clusters return `503`.
+Manage bindings and preview sample requests through the existing plugin editor.
+See the [redirect reference](../Wafish.Plugin.Redirect/README.md) for validation, policies, and setup.

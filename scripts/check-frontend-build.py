@@ -11,7 +11,8 @@ source = Path('src/Wafish.ReactUi')
 with tempfile.TemporaryDirectory(prefix='wafish-build-inputs-') as temporary:
     root = Path(temporary) / "src" / "Probe"
     root.mkdir(parents=True)
-    shutil.copyfile("logo.png", Path(temporary) / "logo.png")
+    (Path(temporary) / "brand").mkdir()
+    shutil.copyfile("brand/logo.png", Path(temporary) / "brand" / "logo.png")
     project = ET.parse(source / 'Wafish.ReactUi.csproj')
     for group in project.getroot().findall('ItemGroup'):
         for item in group.findall('ProjectReference'):

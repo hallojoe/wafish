@@ -121,3 +121,11 @@ See [registration and operations](../../docs/registration-operations-contracts.m
 
 Versioned change sets combine routes, clusters, and plugin bindings in one transaction.
 See [change-set contracts](../../docs/configuration-policy-contracts.md) for API examples, revisions, permissions, and recovery.
+
+## Route redirects
+
+The `redirect` plugin supports fixed targets, path and host templates, and HTTPS enforcement.
+Routes can omit clusters. Active redirects run before YARP requires a backend.
+Other requests on routes without clusters return `503`.
+Manage bindings and preview sample requests through the existing plugin editor.
+See the [redirect reference](../Wafish.Plugin.Redirect/README.md) for validation, policies, and setup.

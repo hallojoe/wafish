@@ -42,7 +42,8 @@ public sealed class RedisRateLimitMiddleware : GatewayMiddlewareBase
 
     public async Task InvokeAsync(HttpContext context)
     {
-        var routeId = context.Features.Get<IReverseProxyFeature>()?.Route?.Config?.RouteId;
+        var routeId = context.Features.Get<IReverseProxyFeature>()?.Route?.Config?.RouteId
+            ?? context.GetEndpoint()?.Metadata.GetMetadata<RouteModel>()?.Config.RouteId;
         if (string.IsNullOrWhiteSpace(routeId) ||
             !_executionPlans.Current.RedisRateLimitByRoute.TryGetValue(routeId, out var config) ||
             !config.Enabled)

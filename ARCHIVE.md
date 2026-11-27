@@ -8,6 +8,42 @@ Current guides retain operating and compatibility requirements.
 Mixed documents are preserved as complete snapshots to prevent information loss.
 Headings and relative links have been adapted for this combined file. Code blocks retain their original content.
 
+## Redirect plugin implementation — 2026-11-27
+
+Implemented `Wafish.Plugin.Redirect`, with route bindings and schema version 1.
+Targets support fixed URLs, route values, effective hosts, original paths, and HTTPS enforcement.
+Supported status codes are 301, 302, 303, 307, and 308. The default is 307.
+Incoming query parameters are discarded unless explicitly preserved. Literal target parameters take precedence.
+Dynamic destination hosts require exact allowlists. URL validation rejects unsafe components and direct self-redirects.
+
+Redirect endpoints work without clusters. Authentication, authorization, WAF, local limits, and Redis limits remain applicable.
+Logs and route metrics observe redirects without inventing backend activity.
+Disabled redirects and already-HTTPS requests use normal forwarding, or return 503 without a backend.
+Request leases protect retired domains during replacement.
+
+The existing binding editor includes authenticated request preview.
+Preview uses native endpoint matching, the binding schema, and the runtime evaluator.
+It does not save configuration, execute access policies, consume quotas, or contact destinations.
+Separate redirect pages, bulk imports, and chain analysis remain outside this feature.
+
+Verification completed locally:
+
+- Release solution build: zero warnings and errors.
+- Core executable suite: 303 checks passed, including eight redirect cases and existing lifecycle checks.
+- Administration executable suite: 61 checks passed.
+- React lint and coverage: 94 tests passed. All 30 instrumented changed frontend lines were covered.
+- Browser suite: 32 checks passed, including preview and redirects without clusters.
+- Package checks: 20 packages, compatible API additions, and three isolated consumers passed.
+- Seven negative package checks passed. No package was published.
+- Website build checked links and assets across 30 HTML pages.
+- Changed .NET lines: 365 of 372 covered, or 98.1%.
+- Counting partially exercised branches as uncovered gives 322 of 372 lines, or 86.6%.
+
+Regression checks cover rename, restart, rollback, disabled bindings, cancellation, replacement, security policies, and preview isolation.
+The final schema-validation adjustment passed both executable suites after the browser run.
+Public API snapshots record only intentional additions. Documentation and the package workflow include the new plugin.
+APM dependency installation encountered an existing generated-skill hash mismatch. APM compilation succeeded separately.
+
 ## Source inventory
 
 The SHA-256 values identify original file bytes before consolidation.
@@ -1354,11 +1390,11 @@ Original source: `README.md`. Snapshot: `5d91599e8d5aa90e6e8433a13745351c0a16d18
 
 <!-- archive:start archive-readme-md -->
 <div align="center">
-<img src="cover-en.png" alt="Wafish — The reverse proxy & API gateway for .NET" width="100%"/>
+<img src="brand/cover-en.png" alt="Wafish — The reverse proxy & API gateway for .NET" width="100%"/>
 
 <br/>
 
-<img src="logo.png" alt="Wafish" width="240" style="border-radius: 15px;"/>
+<img src="brand/logo.png" alt="Wafish" width="240" style="border-radius: 15px;"/>
 
 **Wafish — Full-featured API Gateway powered by YARP**
 

@@ -6,7 +6,8 @@ The raised tail and curved body keep the silhouette distinct at small sizes.
 `mark.svg` is the editable master. Keep its proportions and clear space.
 
 Run `npm --prefix website run assets` to produce all exports.
-The root `logo.png`, README cover, social image, and website downloads use this master.
+`brand/logo.png`, `brand/cover-en.png`, and `brand/og-image.png` use this master.
+These files supply the package icon, README cover, and social image. Website downloads use the same master.
 The administration icon uses the same paths with its current text color.
 
 Use graphite `#141915`, warm white `#f1f0e8`, and signal green `#d5f36b`.

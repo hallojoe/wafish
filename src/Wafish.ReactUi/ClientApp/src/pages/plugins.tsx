@@ -30,6 +30,7 @@ import {
   parseObject,
 } from "@/components/workspace";
 import { SchemaFields, schemaDefaults } from "@/components/schema-fields";
+import { RedirectPreview } from "@/components/redirect-preview";
 import { ObjectEditor } from "@/components/json-form";
 export function PluginsPage() {
   const query = useApi("api/plugins");
@@ -466,6 +467,11 @@ export function BindingsPage() {
                 value={text(editor.configJson)}
                 onChange={(v) => update("configJson", v)}
               />
+              {editor.pluginId === "redirect" && !batch && (
+                <RedirectPreview
+                  binding={{ ...editor, configJson: editor.configJson }}
+                />
+              )}
               <Inspect label="Schema" value={field(plugin, "schemas")} />
               <ErrorNotice error={error} />
             </div>

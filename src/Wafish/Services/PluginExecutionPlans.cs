@@ -10,6 +10,7 @@ public enum PluginExecutionStage
     NativeConfiguration = 0,
     PreProxy = 100,
     RateLimit = 200,
+    Redirect = 250,
     CacheLookup = 300,
     Retry = 400,
     DestinationSelection = 500,

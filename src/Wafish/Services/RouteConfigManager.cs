@@ -172,11 +172,6 @@ internal class RouteConfigManager : ConfigManagerBase, IRouteConfigManager
             return new RouteOperationResult(false, "Route ID cannot be empty");
         }
 
-        if (string.IsNullOrWhiteSpace(route.ClusterId))
-        {
-            return new RouteOperationResult(false, "Cluster ID cannot be empty");
-        }
-
         return await ExecuteWithLockAsync("AddOrUpdateRoute", route.RouteId, config =>
         {
             var dynRoute = config.Routes.FirstOrDefault(r =>

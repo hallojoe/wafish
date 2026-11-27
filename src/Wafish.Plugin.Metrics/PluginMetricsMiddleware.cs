@@ -187,7 +187,8 @@ public sealed class PluginMetricsMiddleware
     public async Task InvokeAsync(HttpContext context)
     {
         var feature = context.Features.Get<IReverseProxyFeature>();
-        var routeId = feature?.Route?.Config?.RouteId;
+        var routeId = feature?.Route?.Config?.RouteId
+            ?? context.GetEndpoint()?.Metadata.GetMetadata<RouteModel>()?.Config.RouteId;
         var clusterId = feature?.Cluster?.Config?.ClusterId;
         MetricsExecutionConfig? routeConfig = null;
         MetricsExecutionConfig? clusterConfig = null;

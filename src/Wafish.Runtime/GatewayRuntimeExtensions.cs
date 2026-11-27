@@ -8,6 +8,7 @@ using Wafish.Dashboard.Infrastructure.Plugin;
 using Wafish.Dashboard.Modules.Dashboard.Services;
 using Wafish.Dashboard.Modules.GatewayConfig.Services;
 using Wafish.Plugin.Cache;
+using Wafish.Plugin.Redirect;
 using Wafish.Plugin.CircuitBreaker;
 using Wafish.Plugin.Compression;
 using Wafish.Plugin.Metrics;
@@ -133,6 +134,8 @@ public static class GatewayRuntimeExtensions
         services.AddSingleton<IGatewayPlugin, ClusterMetricsPlugin>();
         services.AddSingleton<IGatewayPlugin, HttpServiceDiscoveryPlugin>();
         services.AddSingleton<IGatewayPlugin, CompressionPlugin>();
+        services.AddSingleton<IGatewayPlugin, RedirectPlugin>();
+        services.AddSingleton<IRoutePluginCompiler, RedirectConfigurationCompiler>();
         services.AddSingleton<PluginMetricStore>();
         services.AddSingleton<ExternalGatewayPluginHost>();
         services.AddSingleton<GatewayPluginManager>();
@@ -179,7 +182,8 @@ public static class GatewayRuntimeExtensions
 
     public static IEndpointConventionBuilder MapWafishProxy(this IEndpointRouteBuilder endpoints,
         Action<IReverseProxyApplicationBuilder>? configure = null, bool useBuiltInPipeline = true)
-        => endpoints.MapReverseProxy(proxy =>
+    {
+        var conventions = endpoints.MapReverseProxy(proxy =>
         {
             proxy.UseMiddleware<Wafish.Dashboard.Infrastructure.Resilience.DestinationMaintenanceMiddleware>();
             if (useBuiltInPipeline)
@@ -190,6 +194,17 @@ public static class GatewayRuntimeExtensions
             }
             configure?.Invoke(proxy);
         });
+        if (useBuiltInPipeline)
+        {
+            conventions.Add(endpoint =>
+            {
+                var forward = endpoint.RequestDelegate!;
+                endpoint.RequestDelegate = context => context.RequestServices.GetRequiredService<PluginRuntimeDomainManager>()
+                    .InvokeRedirectPipelineAsync(context, forward);
+            });
+        }
+        return conventions;
+    }
 
     private sealed class RuntimeMarker;
 }

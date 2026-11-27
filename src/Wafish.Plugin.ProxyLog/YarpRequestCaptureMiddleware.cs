@@ -138,11 +138,16 @@ public sealed class YarpRequestCaptureMiddleware
                 downstreamText, downstreamTruncated);
 
             // ── Phase 7: Record statistics (zero-allocation hot path) ──
-            _statistics.RecordRequest(
-                context.Response.StatusCode,
-                (long)(elapsed.TotalMilliseconds * 1000),
-                routeId != null ? routeId.GetHashCode() : 0,
-                clusterId != null ? clusterId.GetHashCode() : 0);
+            // Before YARP, route metrics own the shared counter when both observers are active.
+            if (proxyFeature is not null || routeId is null ||
+                !_executionPlans.Current.TrafficMetricsByRoute.TryGetValue(routeId, out var metrics) || !metrics.Enabled)
+            {
+                _statistics.RecordRequest(
+                    context.Response.StatusCode,
+                    (long)(elapsed.TotalMilliseconds * 1000),
+                    routeId != null ? routeId.GetHashCode() : 0,
+                    clusterId != null ? clusterId.GetHashCode() : 0);
+            }
         }
         finally
         {

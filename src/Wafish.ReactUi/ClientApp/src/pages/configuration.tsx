@@ -360,8 +360,13 @@ export function ConfigurationPage({ kind }: { kind: "routes" | "clusters" }) {
                         />
                       </Field>
                       <Field label="Cluster">
+                        <p className="text-sm text-muted-foreground">
+                          Without a cluster, an active redirect can handle
+                          requests. Other requests return 503.
+                        </p>
                         <select
                           className="native-select"
+                          aria-label="Cluster"
                           value={text(field(parsed, "ClusterId"), "")}
                           onChange={(e) => change("ClusterId", e.target.value)}
                         >

@@ -66,17 +66,12 @@ public class RouteConfigController : ConfigControllerBase
 
             route = route with { RouteId = routeId };
 
-            if (string.IsNullOrWhiteSpace(route.ClusterId))
-            {
-                return BadRequest(new { code = 400, message = "ClusterId is required" });
-            }
-
             if (route.Match == null || (string.IsNullOrWhiteSpace(route.Match.Path) && (route.Match.Hosts == null || route.Match.Hosts.Count == 0)))
             {
                 return BadRequest(new { code = 400, message = "Match.Path or Match.Hosts is required" });
             }
 
-            var implicitCluster = BuildImplicitCluster(route.ClusterId!, config);
+            var implicitCluster = string.IsNullOrWhiteSpace(route.ClusterId) ? null : BuildImplicitCluster(route.ClusterId, config);
 
             await SnapshotLowRiskMutationAsync($"After route '{routeId}' saved via dashboard");
 

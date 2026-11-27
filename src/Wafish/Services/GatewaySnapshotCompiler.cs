@@ -56,6 +56,19 @@ public sealed class GatewaySnapshotCompiler : IGatewaySnapshotCompiler
             : (await _clusters.GetAllClustersAsync(ct)).Where(x => !string.IsNullOrWhiteSpace(x.ClusterUid))
                 .ToDictionary(x => x.ClusterUid, x => x.ClusterId, StringComparer.Ordinal));
         var sourceBindings = candidateBindings ?? await _plugins.GetBindingsAsync(ct);
+        var enabledRedirects = sourceBindings.Where(b => b.Enabled && b.PluginId.Equals("redirect", StringComparison.OrdinalIgnoreCase))
+            .Select(b => ToSnapshot(b, routeUidMap, clusterUidMap)).Where(b => b.Scope == PluginBindingScope.Route && routeIds.Contains(b.ScopeId));
+        if (enabledRedirects.GroupBy(b => b.ScopeId, StringComparer.Ordinal).Any(g => g.Count() > 1))
+            throw new ArgumentException("A route can have only one enabled redirect binding.");
+        // Redirects validate saved drafts as well as active bindings. Enabling them must not reveal stale invalid templates.
+        foreach (var draft in sourceBindings.Where(b => b.PluginId.Equals("redirect", StringComparison.OrdinalIgnoreCase) &&
+                     (!b.Enabled || !_activationState.IsPluginEnabled(b.PluginId))))
+        {
+            var binding = ToSnapshot(draft, routeUidMap, clusterUidMap);
+            var route = routes.FirstOrDefault(r => r.RouteId == binding.ScopeId);
+            if (route is not null)
+                foreach (var compiler in _routeCompilers.Where(c => c.CanCompile(binding.PluginId))) compiler.Compile(binding, route);
+        }
         var bindings = sourceBindings
             .Where(x => x.Enabled)
             .Where(x => _activationState.IsPluginEnabled(x.PluginId))

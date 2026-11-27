@@ -17,7 +17,7 @@ description: Build and verify Wafish NuGet packages, consumer profiles, metadata
    Follow `tests/Wafish.PackageChecks/README.md` for public API and negative compatibility checks.
    Preserve reviewed API and protobuf snapshots; a failing check is not permission to overwrite them.
 4. Inspect package metadata, dependencies, embedded React assets, native SQLite loading, and package icons as applicable.
-   The root `logo.png` remains required for packaging. README display choices do not remove that dependency.
+   `brand/logo.png` remains required for packaging. README display choices do not remove that dependency.
    Local staging and consumer verification do not prove publication or support on untested platforms.
 5. For an explicitly authorized publication task, verify the selected registry, version, source commit, and credentials.
    Use `nuget-trusted-publishing` when setting up NuGet.org OIDC publishing, not for unrelated private feeds.

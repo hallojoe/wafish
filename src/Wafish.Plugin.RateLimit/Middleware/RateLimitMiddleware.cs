@@ -64,7 +64,8 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
             return;
         }
 
-        var routeId = context.Features.Get<IReverseProxyFeature>()?.Route?.Config?.RouteId;
+        var routeId = context.Features.Get<IReverseProxyFeature>()?.Route?.Config?.RouteId
+            ?? context.GetEndpoint()?.Metadata.GetMetadata<RouteModel>()?.Config.RouteId;
         if (string.IsNullOrWhiteSpace(routeId) ||
             !TryGetBindingConfig(routeId, out var routeUid, out var config))
         {
