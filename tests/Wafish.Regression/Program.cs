@@ -81,6 +81,7 @@ await registry.DefineGroupAsync("contracts", MutationResponseChecks.RunAsync);
 await registry.DefineGroupAsync("security", ReviewSecurityChecks.RunAsync);
 await registry.DefineGroupAsync("retry-streaming", RetryStreamingChecks.RunAsync);
 await registry.DefineGroupAsync("configuration", ConfigurationTransactionChecks.RunAsync);
+await registry.DefineGroupAsync("registration-migration", RegistrationMigrationChecks.RunAsync);
 await registry.DefineGroupAsync("storage-reliability", StorageReliabilityChecks.RunAsync);
 await registry.DefineGroupAsync("repositories", StorageRepositoryChecks.RunAsync);
 await registry.DefineGroupAsync("sonar", SonarRegressionChecks.RunAsync);
