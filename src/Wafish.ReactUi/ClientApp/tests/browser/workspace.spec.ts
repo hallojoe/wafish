@@ -541,6 +541,45 @@ test("two-factor changes revoke sessions and require a new sign-in", async ({
     page.getByRole("button", { name: "Set up", exact: true }),
   ).toBeVisible();
 });
+test("assistant common actions fit mobile screens and preserve editable drafts", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await login(page);
+  await open(page, "/assistant", "Assistant");
+  const suggestions = page.getByRole("region", { name: "Common actions" });
+  await expect(suggestions.getByRole("button")).toHaveCount(6);
+  await expect(page.getByRole("status", { name: "Loading" })).toHaveCount(0);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: test.info().outputPath("assistant-common-actions-mobile.png"),
+    fullPage: true,
+  });
+  const accessibility = await new AxeBuilder({ page })
+    .include('[aria-labelledby="assistant-common-actions"]')
+    .analyze();
+  expect(accessibility.violations).toEqual([]);
+  await suggestions.getByRole("button", { name: /^List routes/ }).click();
+  const input = page.getByLabel("Message", { exact: true });
+  await expect(input).toBeFocused();
+  await expect(input).toHaveValue(
+    "List my routes with their matching paths, clusters, and enabled state.",
+  );
+  await input.fill("Keep this request");
+  await expect(
+    suggestions.getByRole("button", { name: /^Create a route/ }),
+  ).toBeDisabled();
+  await expect(input).toHaveValue("Keep this request");
+  await input.clear();
+  await expect(
+    suggestions.getByRole("button", { name: /^Create a route/ }),
+  ).toBeEnabled();
+});
+
 test("assistant write tools require confirmation and retain returned results", async ({
   page,
 }) => {
@@ -562,7 +601,19 @@ test("assistant write tools require confirmation and retain returned results", a
     route.fulfill({ json: { code: 200, data: [] } }),
   );
   await open(page, "/assistant", "Assistant");
-  await page.getByLabel("Message", { exact: true }).fill("Suggest a change");
+  const suggestion = page.getByRole("button", {
+    name: /^Create a route/,
+  });
+  await suggestion.focus();
+  await page.keyboard.press("Enter");
+  const message = page.getByLabel("Message", { exact: true });
+  await expect(message).toBeFocused();
+  await expect(message).toHaveValue(/Help me create a route/);
+  await expect(
+    page.getByRole("button", { name: "Run tool", exact: true }),
+  ).toHaveCount(0);
+  expect(executed).toBe(0);
+  await message.fill("Suggest a change");
   await page.getByRole("button", { name: "Send", exact: true }).click();
   await expect(
     page.getByText("Review this change.", { exact: true }),

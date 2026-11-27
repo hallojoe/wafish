@@ -96,3 +96,10 @@ The configured UI prefix and PathBase also apply to this endpoint. Control-plane
 The shell includes the same metadata in `app-config.build`. Responses use `Cache-Control: no-store`.
 The hash covers ordered embedded resource names, lengths, and bytes, excluding timestamps and machine paths.
 Identical assets produce identical hashes. Keep UI and administration packages on matching releases.
+
+## Assistant common actions
+
+The Assistant offers prompts for routes, backends, traffic, plugins, route troubleshooting, and route creation.
+Choosing a prompt fills and focuses the message editor. Review or edit it, then select Send.
+Suggestions are disabled while streaming or while a draft contains text, so existing drafts remain intact.
+Write tools retain the normal confirmation step. Suggestions are hidden when the host disables AI.
