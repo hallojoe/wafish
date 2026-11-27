@@ -5,7 +5,7 @@ inputs:
     description: Exact package ID, or all.
     required: true
   version:
-    description: Expected version from src/Directory.Build.props.
+    description: Package version resolved from the release tag or supplied for a manual run.
     required: true
   registry:
     description: both, nuget, or github.
@@ -48,12 +48,15 @@ runs:
         cache-dependency-path: src/Wafish.ReactUi/ClientApp/package-lock.json
     - name: Build release binaries
       shell: bash
-      run: dotnet build Wafish.slnx -c Release -p:ContinuousIntegrationBuild=true
+      env:
+        VERSION: ${{ inputs.version }}
+      run: dotnet build Wafish.slnx -c Release -p:ContinuousIntegrationBuild=true -p:Version="$VERSION" -p:PackageVersion="$VERSION"
     - name: Verify APIs and isolated package consumers
       shell: bash
       env:
         ContinuousIntegrationBuild: 'true'
-      run: python3 scripts/verify-packages.py
+        VERSION: ${{ inputs.version }}
+      run: python3 scripts/verify-packages.py --version "$VERSION"
     - name: Stage selected packages
       shell: bash
       env:

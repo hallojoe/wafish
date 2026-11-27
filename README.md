@@ -20,12 +20,14 @@
 
 ---
 
-## Release candidate
+## Releases
 
-Source package metadata identifies candidate `1.0.0-rc.1`. Check [release reconciliation](PLAN.md#r56) before publication.
+Publish a GitHub release to build and publish packages using its version tag, such as `1.1.0` or `1.1.0-rc.1`.
+No version edit in build properties is required. Local builds use `0.0.0-dev`.
+See the [package publishing workflows](docs/package-publishing.md) for setup, validation, and prerelease rules.
+Check [release reconciliation](PLAN.md#r56) before reusing historical release versions.
 Archived checks cover Linux, Windows, and macOS with .NET 10.
-See [release notes](ARCHIVE.md#archive-docs-release-notes-1-0-0-rc-1-md) for the completed scope, support boundaries, and verification.
-Maintainers can use the [package publishing workflows](docs/package-publishing.md).
+See [candidate release notes](ARCHIVE.md#archive-docs-release-notes-1-0-0-rc-1-md) for historical scope, support boundaries, and verification.
 
 ## Wafish vs. Bare YARP
 

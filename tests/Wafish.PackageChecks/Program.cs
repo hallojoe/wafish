@@ -5,6 +5,8 @@ using System.Text.Json;
 var directory = Path.GetFullPath(args[0]);
 var baselineDirectory = Path.GetFullPath(args[1]);
 var update = args.Contains("--update");
+var versionIndex = Array.IndexOf(args, "--version");
+var expectedVersion = versionIndex >= 0 ? args[versionIndex + 1] : null;
 var files = Directory.GetFiles(directory, "Wafish*.dll");
 var platform = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator);
 var references = platform.Concat(files).Distinct().Select(p => MetadataReference.CreateFromFile(p)).ToArray();
@@ -22,6 +24,14 @@ foreach (var file in files)
 {
     var reference = references.Single(r => r.FilePath == file);
     var assembly = (IAssemblySymbol)compilation.GetAssemblyOrModuleSymbol(reference)!;
+    if (expectedVersion is not null)
+    {
+        var informationalVersion = assembly.GetAttributes().SingleOrDefault(a =>
+            a.AttributeClass?.ToDisplayString() == "System.Reflection.AssemblyInformationalVersionAttribute")?
+            .ConstructorArguments.FirstOrDefault().Value as string;
+        if (informationalVersion?.Split('+')[0] != expectedVersion)
+            failures.Add($"{assembly.Name}: built version {informationalVersion} differs from package version {expectedVersion}. Rebuild with -p:Version={expectedVersion}.");
+    }
     var surface = new SortedSet<string>(StringComparer.Ordinal);
     var requiredMembers = new Dictionary<string, string>(StringComparer.Ordinal);
     void Visit(ISymbol symbol)

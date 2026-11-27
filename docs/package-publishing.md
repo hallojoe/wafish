@@ -42,56 +42,61 @@ Publishing workflows still verify package APIs and isolated consumers before upl
 
 ## Publish a GitHub release
 
-1. Include the publishing workflows in the source commit selected for the release.
-2. Set the package version in [src/Directory.Build.props](../src/Directory.Build.props).
-3. Create a matching tag with the `v` prefix.
+The release tag is the package version source. No version edit in build properties is required.
+
+1. Merge the intended source and these publishing workflows into the release branch.
+2. Create a GitHub release targeting that exact commit.
+3. Choose a version tag, with or without a leading `v`.
 4. Set the GitHub prerelease flag according to the table below.
-5. Publish the release. The workflow publishes all packages to both registries.
+5. Publish the release. The workflow builds, verifies, and publishes all 19 packages to both registries.
 
 | Release tag | GitHub prerelease flag | Package version | Result |
 |---|---|---|---|
-| `v1.1.1` | Off | `1.1.1` | Stable publication |
-| `v1.1.1-pre` | On | `1.1.1-pre` | Prerelease publication |
-| `v1.2.1-rc` | On | `1.2.1-rc` | Prerelease publication |
-| `v1.2.1-rc.1` | On | `1.2.1-rc.1` | Prerelease publication |
+| `1.1.0` or `v1.1.0` | Off | `1.1.0` | Stable publication |
+| `1.1.0-rc.1` or `v1.1.0-rc.1` | On | `1.1.0-rc.1` | Prerelease publication |
+| `1.1.0-beta.2` | On | `1.1.0-beta.2` | Prerelease publication |
 | Any suffix tag | Off | — | Rejected |
 | Clean tag | On | — | Rejected |
 
-The workflow derives the version from the release tag and checks it against source metadata.
-Only clean `vMAJOR.MINOR.PATCH` tags can publish stable versions.
-Suffix tags must use valid prerelease versions and have the GitHub prerelease flag enabled.
-Clean tags cannot produce prerelease NuGet packages, even when GitHub marks the release as a prerelease.
-Malformed tags, build metadata, and numeric identifiers with leading zeros are rejected.
-Validation runs before builds, registry authentication, or package uploads.
-The workflow rejects mismatches; it does not change the release flag or package version automatically.
+NuGet determines prerelease status from the version suffix, not the GitHub checkbox.
+The workflow rejects mismatches rather than silently changing the version or release flag.
+Malformed tags, build metadata, and numeric identifiers with leading zeros are rejected before builds or authentication.
 
-The trigger uses `release: published`, which covers stable releases and prereleases published from drafts.
+The resolved version is passed as `Version` and `PackageVersion` to the build and pack commands.
+Package metadata, internal package dependencies, compiled informational versions, and isolated consumers use that same version.
+[src/Directory.Build.props](../src/Directory.Build.props) supplies only the fixed `0.0.0-dev` fallback for local builds.
+The version in `apm.yml` remains independent of NuGet publishing.
+
+The trigger uses `release: published`, including stable releases and prereleases published from drafts.
+Draft releases and tag pushes alone do not publish packages.
 See [GitHub release events](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#release).
 Editing a release does not start another run. Correct mismatches before publishing the release.
 If validation fails, correct the release settings, then run the workflow manually for the same tag.
 Rerunning the original failed event uses its original release payload.
+
+Existing published tags still identify their original commits and workflow implementations.
+The historical `v1.0.0` tag does not identify the current source. This change does not move that tag or republish it.
+Resolve [R56](../PLAN.md#r56) when reconciling historical releases and registry versions. Never reuse a published version for changed source.
 
 ## Run a workflow manually
 
 1. Merge the workflow files into the default branch so manual dispatch becomes available.
 2. Select `publish-packages`, or a package-specific workflow, in GitHub Actions.
 3. Select the branch or tag containing the intended release source.
-4. Enter the exact version from [src/Directory.Build.props](../src/Directory.Build.props).
+4. Enter the package version to build, without the optional tag prefix `v`.
 5. Select `both`, `nuget`, or `github`. The default is `both`.
 6. Enable `dry-run` for a build and package rehearsal. It skips registry authentication and publication.
 7. Run the workflow. Inspect the summary and retained package artifact.
 
-Current source version: `1.0.0-rc.1`.
-The workflow checks the entered version; it does not override package metadata.
-When selecting a tag, its name must equal `v` followed by the source version.
-The existing `v1.0.0` tag does not match the current candidate metadata.
-Resolve [R56](../PLAN.md#r56) before the first public release.
+A manual run uses its version input without editing source metadata.
+When selecting a tag, its normalized version must match the input. Branch runs use the explicit input.
+Manual runs do not change GitHub release flags; NuGet prerelease status still follows the input version suffix.
 
-Example, after the workflows reach the default branch:
+Example rehearsal after these workflows reach the default branch:
 
 ```bash
 gh workflow run publish-packages.yml --ref main \
-  -f version=1.0.0-rc.1 -f registry=both -f dry-run=true
+  -f version=1.1.0-rc.1 -f registry=both -f dry-run=true
 ```
 
 ## Validation and publication
@@ -159,8 +164,12 @@ These commands do not publish packages:
 
 ```bash
 python3 scripts/test-publication.py
-python3 scripts/prepare-publication.py --package all --version 1.0.0-rc.1 --check-only
-dotnet build Wafish.slnx -c Release -p:ContinuousIntegrationBuild=true
-python3 scripts/verify-packages.py
-python3 scripts/prepare-publication.py --package all --version 1.0.0-rc.1
+python3 scripts/prepare-publication.py --package all --version 1.1.0-rc.1 --check-only
+dotnet build Wafish.slnx -c Release -p:ContinuousIntegrationBuild=true \
+  -p:Version=1.1.0-rc.1 -p:PackageVersion=1.1.0-rc.1
+python3 scripts/verify-packages.py --version 1.1.0-rc.1
+python3 scripts/prepare-publication.py --package all --version 1.1.0-rc.1
 ```
+
+For ordinary development checks, omit the version properties and `--version`; both use `0.0.0-dev`.
+Rebuild before switching versions. Package verification rejects assemblies built with a different version.

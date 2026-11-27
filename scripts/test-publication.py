@@ -25,7 +25,7 @@ class PublicationTests(unittest.TestCase):
         self.env.start()
         self.addCleanup(self.env.stop)
         (self.root / 'src').mkdir()
-        (self.root / 'src/Directory.Build.props').write_text('<Project><PropertyGroup><Version>1.0.0-rc.1</Version></PropertyGroup></Project>')
+        (self.root / 'src/Directory.Build.props').write_text('<Project><PropertyGroup><Version>0.0.0-dev</Version></PropertyGroup></Project>')
         # The dependent sorts first alphabetically. Publication must still put its dependency first.
         for name, reference in [('Wafish.A', 'Wafish.Z'), ('Wafish.Z', None)]:
             folder = self.root / 'src' / name
@@ -58,9 +58,10 @@ class PublicationTests(unittest.TestCase):
         self.assertEqual(['Wafish.A.1.0.0-rc.1.nupkg'], (output / 'packages.txt').read_text().splitlines())
         self.assertFalse(list(output.glob('Wafish.Z*')))
 
-    def test_version_mismatch_rejected(self):
-        with self.assertRaisesRegex(ValueError, 'differs from source'):
-            publication.check_inputs(self.root, 'all', '1.0.0')
+    def test_manual_version_does_not_require_source_edits(self):
+        for version in ('1.0.0', '2.3.4-rc.7'):
+            with self.subTest(version=version):
+                self.assertEqual(2, len(publication.check_inputs(self.root, 'all', version)))
 
     def test_unknown_selection_rejected(self):
         with self.assertRaisesRegex(ValueError, 'Unknown package'):
@@ -72,8 +73,9 @@ class PublicationTests(unittest.TestCase):
                 self.prepare()
 
     def test_matching_release_tag_accepted(self):
-        with patch.dict(os.environ, {'GITHUB_REF_TYPE': 'tag', 'GITHUB_REF_NAME': 'v1.0.0-rc.1'}):
-            self.prepare()
+        for tag in ('v1.0.0-rc.1', '1.0.0-rc.1'):
+            with self.subTest(tag=tag), patch.dict(os.environ, {'GITHUB_REF_TYPE': 'tag', 'GITHUB_REF_NAME': tag}):
+                self.prepare()
 
     def release_environment(self, tag, prerelease, **overrides):
         event = {'action': 'published', 'release': {'tag_name': tag, 'prerelease': prerelease, 'draft': False}}
@@ -92,20 +94,29 @@ class PublicationTests(unittest.TestCase):
             ('v1.2.1-rc', True, True),
             ('v1.2.1-rc.1', True, True),
             ('v1.2.1-alpha-beta.2', True, True),
+            ('1.1.0', False, True),
+            ('1.1.0-rc.1', True, True),
+            ('1.1.0-beta.2', True, True),
+            ('1.1.0-rc.1', False, False),
+            ('1.1.0', True, False),
             ('v1.1.1-pre', False, False),
             ('v1.2.1-rc', False, False),
             ('v1.1.1', True, False),
         ]:
             with self.subTest(tag=tag, prerelease=prerelease), self.release_environment(tag, prerelease):
                 if allowed:
-                    self.assertEqual(tag[1:], publication.release_version())
+                    self.assertEqual(tag.removeprefix('v'), publication.release_version())
                 else:
                     with self.assertRaises(ValueError):
                         publication.release_version()
 
     def test_invalid_release_tags_rejected(self):
-        for tag in ['1.2.3', 'v1.2', 'v1.2.3.4', 'v01.2.3', 'v1.2.3+build', 'v1.2.3-01',
+        for tag in [None, '', 'release-1.2.3', 'vv1.2.3', '1.2', '1.02.3', '1.2.3-rc.01',
+                    'v1.2', 'v1.2.3.4', 'v01.2.3', 'v1.2.3+build', 'v1.2.3-01',
                     'v1.2.3-rc..1', 'v1.2.3-rc.01', 'v1.2.3\nversion=9.9.9']:
+            if tag is None:
+                with self.assertRaises(ValueError): publication.version_from_tag(tag)
+                continue
             with self.subTest(tag=tag), self.release_environment(tag, True):
                 with self.assertRaises(ValueError):
                     publication.release_version()
@@ -133,21 +144,20 @@ class PublicationTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'match the release tag'):
                 self.prepare()
 
-    def test_release_version_must_match_source_metadata(self):
+    def test_release_version_overrides_development_metadata(self):
         with self.release_environment('v1.1.1-pre', True):
-            with self.assertRaisesRegex(ValueError, 'differs from source'):
-                publication.check_inputs(self.root, 'all', publication.release_version())
+            self.assertEqual(2, len(publication.check_inputs(self.root, 'all', publication.release_version())))
 
     def test_cli_resolves_release_and_manual_versions(self):
-        import xml.etree.ElementTree as ET
-        version = ET.parse(REPO / 'src/Directory.Build.props').findtext('.//Version')
+        version = '1.1.0-rc.1'
         output = self.root / 'outputs.txt'
         command = ['python3', str(REPO / 'scripts/prepare-publication.py'), '--package', 'all', '--resolve-version']
-        with self.release_environment('v'+version, publication.validate_version(version)):
-            result = subprocess.run(command, env=dict(os.environ, GITHUB_OUTPUT=str(output)), capture_output=True, text=True)
-        self.assertEqual(0, result.returncode, result.stderr)
-        self.assertEqual(f'version={version}\n', output.read_text())
-        output.unlink()
+        for tag in ('1.1.0', 'v1.1.0', '1.1.0-rc.1', 'v1.1.0-rc.1'):
+            with self.subTest(tag=tag), self.release_environment(tag, '-' in tag):
+                result = subprocess.run(command, env=dict(os.environ, GITHUB_OUTPUT=str(output)), capture_output=True, text=True)
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertEqual(f'version={tag.removeprefix("v")}\n', output.read_text())
+            output.unlink()
         result = subprocess.run(command+['--version', version], env=dict(os.environ, GITHUB_OUTPUT=str(output)), capture_output=True, text=True)
         self.assertEqual(0, result.returncode, result.stderr)
         self.assertEqual(f'version={version}\n', output.read_text())
@@ -172,6 +182,22 @@ class PublicationTests(unittest.TestCase):
         self.archive('Wafish.A', 'nupkg', version='9.0.0')
         with self.assertRaisesRegex(ValueError, 'metadata mismatch'):
             self.prepare()
+
+    def test_stale_dependency_version_rejected(self):
+        path = self.root / 'artifacts/package-checks/Wafish.A.1.0.0-rc.1.nupkg'
+        with zipfile.ZipFile(path, 'w') as archive:
+            archive.writestr('Wafish.A.nuspec', '<package><metadata><id>Wafish.A</id><version>1.0.0-rc.1</version>'
+                '<dependencies><dependency id="Wafish.Z" version="0.0.0-dev" /></dependencies></metadata></package>')
+        with self.assertRaisesRegex(ValueError, 'dependency version mismatch'):
+            self.prepare()
+        self.assertFalse((self.root / 'artifacts/publish').exists())
+
+    def test_invalid_manual_version_rejected_before_build(self):
+        for version in ('', 'v1.1.0', '1.1.0;OtherProperty=value', '1.1.0\nversion=2.0.0'):
+            with self.subTest(version=version):
+                result = subprocess.run(['python3', str(REPO / 'scripts/verify-packages.py'), '--version', version], capture_output=True, text=True)
+                self.assertNotEqual(0, result.returncode)
+                self.assertIn('three-part NuGet version', result.stderr)
 
     def push(self, registry, fail=False):
         self.prepare('Wafish.A')

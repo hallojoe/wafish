@@ -8,6 +8,10 @@ with tempfile.TemporaryDirectory(prefix='wafish-api-negative-') as temporary:
  def build():subprocess.run(['dotnet','build','-c','Release','--nologo'],cwd=p,check=True,capture_output=True)
  check=['dotnet',str(root/'tests/Wafish.PackageChecks/bin/Release/net10.0/Wafish.PackageChecks.dll'),str(p/'bin/Release/net10.0'),str(p/'baseline')]
  build();subprocess.run(check+['--update'],check=True,capture_output=True)
+ subprocess.run(check+['--version','1.0.0'],check=True,capture_output=True)
+ failed=subprocess.run(check+['--version','1.1.0-rc.1'],text=True,capture_output=True)
+ assert failed.returncode==1 and 'differs from package version' in failed.stderr, failed.stdout+failed.stderr
+ print('PASS: stale assembly version fails package validation')
  source.write_text('public class Contract { }');build()
  failed=subprocess.run(check,text=True,capture_output=True)
  assert failed.returncode==1 and 'RequiredMethod' in failed.stderr, failed.stdout+failed.stderr
