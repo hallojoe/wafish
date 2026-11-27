@@ -10,6 +10,21 @@ Complete each task only after implementation and acceptance checks pass.
 Record compatibility impact and verification with the change. Retain task IDs when priorities change.
 Publication requires a separate release decision and verification of the exact artifacts.
 
+## Approved gateway feature stack
+
+The [implementation specification](docs/gateway-feature-implementation.md) records behavior, limits, acceptance checks, and PR order.
+The [competitor findings](docs/competitor-feature-gaps.md) record the original gaps.
+
+| Item | Status | Remaining work | Source entry point |
+| --- | --- | --- | --- |
+| G06 | TODO | Downstream claims mappings, dashboard editor, validation, and tests. | [Snapshot compiler](src/Wafish/Services/GatewaySnapshotCompiler.cs) |
+| G13 | TODO | Route scopes/claims and enforcement before response-producing plugins. | [Gateway pipeline](src/Wafish.Runtime/GatewayPipelineExtensions.cs) |
+| G01 | TODO | Internal child execution, parallel JSON aggregation, bounded resources, and policy parity. | [Runtime domains](src/Wafish.Runtime/Infrastructure/Plugin/PluginRuntimeDomain.cs) |
+| G06-FULL | DEFERRED | Principal cloning, authentication integration, early stages, idempotence, issuer semantics, and snapshot ownership. | [Gateway pipeline](src/Wafish.Runtime/GatewayPipelineExtensions.cs) |
+
+Current: These plugins and internal aggregation execution are absent. Ordinary proxy plugins run after native authorization.
+Acceptance: Each item meets the specification and scoped checks. Downstream mapping alone does not complete G06-FULL.
+
 <a id="r56"></a>
 
 ## R56: Reconcile the release version and package publication
