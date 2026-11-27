@@ -1,6 +1,6 @@
 # Package publishing
 
-Use `publish-packages` to publish all 22 packages.
+Use `publish-packages` to publish all 23 packages.
 Use a package-specific workflow to publish one package.
 `publish-packages` starts automatically when a GitHub release is published, including prereleases.
 All workflows also support manual runs through GitHub Actions.
@@ -48,7 +48,7 @@ The release tag is the package version source. No version edit in build properti
 2. Create a GitHub release targeting that exact commit.
 3. Choose a version tag, with or without a leading `v`.
 4. Set the GitHub prerelease flag according to the table below.
-5. Publish the release. The workflow builds, verifies, and publishes all 22 packages to both registries.
+5. Publish the release. The workflow builds, verifies, and publishes all 23 packages to both registries.
 
 | Release tag | GitHub prerelease flag | Package version | Result |
 |---|---|---|---|
@@ -146,6 +146,7 @@ Never reuse a published version for changed source.
 | `Wafish.Plugin.Cache` | [publish-wafish-plugin-cache.yml](../.github/workflows/publish-wafish-plugin-cache.yml) |
 | `Wafish.Plugin.CircuitBreaker` | [publish-wafish-plugin-circuitbreaker.yml](../.github/workflows/publish-wafish-plugin-circuitbreaker.yml) |
 | `Wafish.Plugin.RouteAuthorization` | [publish-wafish-plugin-route-authorization.yml](../.github/workflows/publish-wafish-plugin-route-authorization.yml) |
+| `Wafish.Plugin.Aggregation` | [publish-wafish-plugin-aggregation.yml](../.github/workflows/publish-wafish-plugin-aggregation.yml) |
 | `Wafish.Plugin.ClaimsTransform` | [publish-wafish-plugin-claims-transform.yml](../.github/workflows/publish-wafish-plugin-claims-transform.yml) |
 | `Wafish.Plugin.Redirect` | [publish-wafish-plugin-redirect.yml](../.github/workflows/publish-wafish-plugin-redirect.yml) |
 | `Wafish.Plugin.Compression` | [publish-wafish-plugin-compression.yml](../.github/workflows/publish-wafish-plugin-compression.yml) |

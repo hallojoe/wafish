@@ -17,6 +17,9 @@ Sources:
 
 ### G01: Request and response aggregation
 
+Implementation update: [Aggregation](../src/Wafish.Plugin.Aggregation/README.md) now provides bounded parallel GET JSON composition.
+Dependent calls, writes, partial responses, and custom composition remain deferred.
+
 Ocelot combines multiple downstream routes into one response, including dependent calls and custom aggregators.
 Veritas documents aggregation through a custom route implementation, rather than an equivalent declarative engine.
 Wafish forwards through YARP and has no aggregate-route model or response-composition plugin.

@@ -130,3 +130,28 @@ Custom host middleware and custom passive-health extensions require host integra
 Entry points: [executor](../src/Wafish.Runtime/InternalExecution/InternalRouteExecutor.cs),
 [contracts](../src/Wafish/Services/InternalRouteContracts.cs), and
 [checks](../tests/Wafish.Regression/InternalRouteExecutionChecks.cs).
+
+## Aggregation implementation
+
+The plugin supports independent GET JSON children with all-or-nothing responses.
+Process admission reserves both internal buffers and returned arrays before preparing any child.
+All child tasks stop and their batches dispose before response composition begins.
+JSON documents are validated before output. The validated original bytes avoid re-encoding expansion.
+
+Referenced route-match changes require an updated child request in the same configuration change set.
+Disabled aggregate drafts retain dependency validation. Their routes remain unavailable until aggregation is enabled.
+
+Entry points: [compiler](../src/Wafish.Plugin.Aggregation/AggregationCompiler.cs),
+[handler](../src/Wafish.Plugin.Aggregation/AggregationHandler.cs),
+[admission](../src/Wafish.Plugin.Aggregation/AggregationAdmission.cs), and
+[checks](../tests/Wafish.Regression/AggregationChecks.cs).
+
+## Completion evidence
+
+The Release solution build and both executable regression suites pass.
+Package API compatibility and three isolated consumer profiles pass.
+React build, lint, 97 component tests, and the final 35-test browser suite pass.
+New plugin coverage exceeds 80%. Aggregation package line coverage is 85.8%.
+The browser suite includes explicit preset targets and separate editing and activation scenarios.
+
+G06-FULL and extended aggregation remain deferred as specified above.

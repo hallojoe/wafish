@@ -17,10 +17,11 @@ The [competitor findings](docs/competitor-feature-gaps.md) record the original g
 
 | Item | Status | Remaining work | Source entry point |
 | --- | --- | --- | --- |
-| G01 | TODO | Parallel JSON aggregation, bounded admission, dependency validation, and editor. Internal execution is implemented. | [Internal executor](src/Wafish.Runtime/InternalExecution/InternalRouteExecutor.cs) |
+| G01-EXT | DEFERRED | Dependent calls, partial responses, custom composition, writes, streaming, and aggregate caching. | [Aggregation handler](src/Wafish.Plugin.Aggregation/AggregationHandler.cs) |
 | G06-FULL | DEFERRED | Principal cloning, authentication integration, early stages, idempotence, issuer semantics, and snapshot ownership. | [Gateway pipeline](src/Wafish.Runtime/GatewayPipelineExtensions.cs) |
 
-Current: G06 downstream mappings and G13 route authorization are implemented. Internal aggregation execution remains absent.
+Current: G06 downstream mappings, G13 route authorization, and G01 parallel JSON reads are implemented.
+Internal child execution retains configuration and runtime ownership.
 Full principal transformation remains deferred under G06-FULL.
 Acceptance: Each item meets the specification and scoped checks. Downstream mapping alone does not complete G06-FULL.
 
@@ -31,7 +32,7 @@ Acceptance: Each item meets the specification and scoped checks. Downstream mapp
 Status: DEFERRED. Publishing automation is implemented; release reconciliation and confirmed publication remain separate work.
 
 Current: Workflows derive versions from release tags or manual inputs. Local builds default to `0.0.0-dev`.
-Package verification covers 22 package projects. This source review does not establish their current publication status.
+Package verification covers 23 package projects. This source review does not establish their current publication status.
 
 Remaining: Verify package feeds, existing versions, release tags, source identity, registry configuration, and release assets.
 Align metadata and installation examples with the selected release. Preserve published versions and release history.

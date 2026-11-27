@@ -405,7 +405,7 @@ for (const [mode, port] of [
     ).toBeVisible();
   });
 }
-test("plugin bindings, presets, and activation use real administration APIs", async ({
+test("plugin bindings and presets use real administration APIs", async ({
   page,
 }) => {
   await login(page);
@@ -460,6 +460,10 @@ test("plugin bindings, presets, and activation use real administration APIs", as
   await preset
     .getByRole("button", { name: "Apply preset", exact: true })
     .click();
+  await page
+    .getByRole("dialog")
+    .getByLabel("Binding", { exact: true })
+    .selectOption(binding.id ?? binding.Id);
   await page.getByRole("button", { name: "Save changes", exact: true }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await preset.getByRole("button", { name: "Delete", exact: true }).click();
@@ -489,6 +493,10 @@ test("plugin bindings, presets, and activation use real administration APIs", as
   await expect(
     page.getByRole("row").filter({ hasText: "response-cache" }),
   ).toHaveCount(0);
+});
+
+test("plugin activation uses real administration APIs", async ({ page }) => {
+  await login(page);
   await open(page, "/extensions/plugins", "Plugins");
   const card = page.locator('[data-slot="card"]').filter({
     has: page.getByRole("heading", { name: "Response Cache", exact: true }),

@@ -11,6 +11,7 @@ using Wafish.Plugin.Cache;
 using Wafish.Plugin.Redirect;
 using Wafish.Plugin.ClaimsTransform;
 using Wafish.Plugin.RouteAuthorization;
+using Wafish.Plugin.Aggregation;
 using Wafish.Runtime.InternalExecution;
 using Wafish.Plugin.CircuitBreaker;
 using Wafish.Plugin.Compression;
@@ -145,6 +146,10 @@ public static class GatewayRuntimeExtensions
         services.AddSingleton<Microsoft.Extensions.Hosting.IHostedService>(sp => sp.GetRequiredService<InternalRouteExecutor>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<ITransformProvider, InternalForwarderTransformProvider>());
         services.TryAddSingleton<RoutePolicyPipelineSupport>();
+        services.AddSingleton<IGatewayPlugin, AggregationPlugin>();
+        services.AddSingleton<IRoutePluginCompiler, AggregationCompiler>();
+        services.AddSingleton<AggregationAdmission>();
+        services.AddSingleton<AggregationHandler>();
         services.AddSingleton<IGatewayPlugin, RouteAuthorizationPlugin>();
         services.AddSingleton<IRoutePluginCompiler, RouteAuthorizationCompiler>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<ITransformProvider, RouteAuthorizationTransformProvider>());
@@ -204,7 +209,7 @@ public static class GatewayRuntimeExtensions
         {
             endpoints.ServiceProvider.GetService<RoutePolicyPipelineSupport>()?.Disable();
             if (endpoints.ServiceProvider.GetService<IGatewaySnapshotPublisher>()?.Current.Routes.Any(r =>
-                r.Metadata?.ContainsKey("wafish:route-authorization") == true || r.Metadata?.ContainsKey("wafish:claims-transform") == true) == true)
+                r.Metadata?.ContainsKey("wafish:request-aggregation") == true || r.Metadata?.ContainsKey("wafish:route-authorization") == true || r.Metadata?.ContainsKey("wafish:claims-transform") == true) == true)
                 throw new InvalidOperationException("Active endpoint policies require the built-in proxy pipeline.");
         }
         var conventions = endpoints.MapReverseProxy(proxy =>
@@ -226,7 +231,8 @@ public static class GatewayRuntimeExtensions
                 var forward = endpoint.RequestDelegate!;
                 endpoint.RequestDelegate = context => RouteAuthorizationMiddleware.InvokeAsync(context, authorized =>
                     ClaimsTransformProvider.InvokeAsync(authorized, inner => inner.RequestServices.GetRequiredService<PluginRuntimeDomainManager>()
-                        .InvokeRedirectPipelineAsync(inner, forward)));
+                        .InvokeAggregationPipelineAsync(inner, aggregate => aggregate.RequestServices.GetRequiredService<PluginRuntimeDomainManager>()
+                            .InvokeRedirectPipelineAsync(aggregate, forward))));
             });
         }
         return conventions;

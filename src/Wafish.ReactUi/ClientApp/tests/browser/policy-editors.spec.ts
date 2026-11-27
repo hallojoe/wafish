@@ -77,6 +77,17 @@ test("claims and access-rule editors persist structured mappings", async ({
       { type: "tenant_id", allowedValues: ["alpha"] },
     ]);
   } finally {
-    await page.request.delete(`/wafish/api/config/routes/${routeId}`).catch(() => {});
+    const bindings = await page.request
+      .get("/wafish/api/plugin-bindings")
+      .then((response) => response.json())
+      .catch(() => ({ data: [] }));
+    for (const binding of bindings.data ?? [])
+      if (binding.scopeId === routeId)
+        await page.request
+          .delete(`/wafish/api/plugin-bindings/${binding.id}`)
+          .catch(() => {});
+    await page.request
+      .delete(`/wafish/api/config/routes/${routeId}`)
+      .catch(() => {});
   }
 });

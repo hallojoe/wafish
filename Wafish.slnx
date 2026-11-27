@@ -19,6 +19,7 @@
     <Project Path="src/Wafish.Plugin.CircuitBreaker/Wafish.Plugin.CircuitBreaker.csproj" />
     <Project Path="src/Wafish.Plugin.Compression/Wafish.Plugin.Compression.csproj" />
     <Project Path="src/Wafish.Plugin.RouteAuthorization/Wafish.Plugin.RouteAuthorization.csproj" />
+    <Project Path="src/Wafish.Plugin.Aggregation/Wafish.Plugin.Aggregation.csproj" />
     <Project Path="src/Wafish.Plugin.ClaimsTransform/Wafish.Plugin.ClaimsTransform.csproj" />
     <Project Path="src/Wafish.Plugin.Redirect/Wafish.Plugin.Redirect.csproj" />
     <Project Path="src/Wafish.Plugin.Metrics/Wafish.Plugin.Metrics.csproj" />
