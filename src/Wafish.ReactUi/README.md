@@ -103,3 +103,11 @@ The Assistant offers prompts for routes, backends, traffic, plugins, route troub
 Choosing a prompt fills and focuses the message editor. Review or edit it, then select Send.
 Suggestions are disabled while streaming or while a draft contains text, so existing drafts remain intact.
 Write tools retain the normal confirmation step. Suggestions are hidden when the host disables AI.
+
+## Route redirects
+
+The `redirect` plugin supports fixed targets, path and host templates, and HTTPS enforcement.
+Routes can omit clusters. Active redirects run before YARP requires a backend.
+Other requests on routes without clusters return `503`.
+Manage bindings and preview sample requests through the existing plugin editor.
+See the [redirect reference](../Wafish.Plugin.Redirect/README.md) for validation, policies, and setup.

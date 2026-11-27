@@ -157,3 +157,11 @@ See the [OpenAI Chat Completions reference](https://developers.openai.com/api/re
 
 Tool-result requests include their originating assistant tool calls and matching call IDs.
 Write tools remain pending until user confirmation. Mixed batches report that pending status to the model.
+
+## Route redirects
+
+The `redirect` plugin supports fixed targets, path and host templates, and HTTPS enforcement.
+Routes can omit clusters. Active redirects run before YARP requires a backend.
+Other requests on routes without clusters return `503`.
+Manage bindings and preview sample requests through the existing plugin editor.
+See the [redirect reference](../Wafish.Plugin.Redirect/README.md) for validation, policies, and setup.

@@ -202,3 +202,17 @@ This applies to `ImportBatchAsync` and `ReplaceAllConfig`.
 It references administration services without referencing the Razor package.
 Its embedded assets support standalone hosts and container publishing.
 See [registration, development, authentication, and migration](react-ui.md).
+
+## Redirect endpoints
+
+The `redirect` plugin compiles immutable templates into route execution plans.
+`MapWafishProxy` wraps the matched endpoint before YARP initializes its cluster feature.
+This permits redirect-only routes without placeholder clusters or destinations.
+
+Authentication, authorization, and global WAF middleware retain their normal positions.
+The redirect branch applies bound logging, route metrics, and local or Redis rate limits.
+Completed redirects bypass forwarding policies. HTTPS pass-through uses the normal proxy pipeline once.
+A request retains its plugin domain lease through nested middleware and endpoint execution.
+
+Preview builds a private matcher from active endpoint metadata. It does not register endpoint data sources globally.
+See the [redirect reference](../src/Wafish.Plugin.Redirect/README.md) for configuration and failure behavior.

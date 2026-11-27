@@ -631,3 +631,46 @@ test("assistant write tools require confirmation and retain returned results", a
     /confirmed/,
   );
 });
+
+test("redirect bindings preview and serve routes without clusters", async ({
+  page,
+}) => {
+  await login(page);
+  const routeId = "browser-redirect";
+  const saved = await page.request.put(`/wafish/api/config/routes/${routeId}`, {
+    data: { Match: { Path: "/redirect-browser/{item}" } },
+  });
+  expect(saved.ok()).toBeTruthy();
+  try {
+    await open(page, "/extensions/bindings", "Bindings");
+    await page
+      .getByRole("button", { name: "New binding", exact: true })
+      .click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel("Plugin", { exact: true }).selectOption("redirect");
+    await dialog.getByLabel("Target", { exact: true }).selectOption(routeId);
+    await dialog
+      .getByRole("textbox", { name: "Configuration JSON" })
+      .fill('{"target":"/redirected/{route.item}"}');
+    await dialog
+      .getByLabel("Sample URL")
+      .fill("http://example.com/redirect-browser/one");
+    await dialog.getByRole("button", { name: "Preview redirect" }).click();
+    await expect(
+      dialog.getByText("/redirected/one", { exact: true }),
+    ).toBeVisible();
+    await dialog
+      .getByRole("button", { name: "Save changes", exact: true })
+      .click();
+    await expect(dialog).toHaveCount(0);
+    const response = await page.request.get(
+      "/redirect-browser/one?secret=hidden",
+      { maxRedirects: 0 },
+    );
+    expect(response.status()).toBe(307);
+    expect(response.headers().location).toBe("/redirected/one");
+    expect(await response.text()).toBe("");
+  } finally {
+    await page.request.delete(`/wafish/api/config/routes/${routeId}`);
+  }
+});

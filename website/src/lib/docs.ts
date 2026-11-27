@@ -92,6 +92,12 @@ export const documents = [
     "src/Wafish.Plugin.CircuitBreaker/README.md",
   ],
   [
+    "plugins/redirect",
+    "Redirects",
+    "Plugin reference",
+    "src/Wafish.Plugin.Redirect/README.md",
+  ],
+  [
     "plugins/compression",
     "Compression",
     "Plugin reference",

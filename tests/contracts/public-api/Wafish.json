@@ -120,6 +120,7 @@
   "Field: global::Wafish.Services.PluginExecutionStage.PostProxy = 700",
   "Field: global::Wafish.Services.PluginExecutionStage.PreProxy = 100",
   "Field: global::Wafish.Services.PluginExecutionStage.RateLimit = 200",
+  "Field: global::Wafish.Services.PluginExecutionStage.Redirect = 250",
   "Field: global::Wafish.Services.PluginExecutionStage.Retry = 400",
   "Field: global::Wafish.Services.PluginExecutionStage.Telemetry = 800",
   "Field: global::Wafish.Services.ProxyConfigHealth.ProxyConfigHealthStatus.Error = 1",

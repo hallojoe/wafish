@@ -8,7 +8,7 @@
 
 
 <img src="cover-en.png" alt="Wafish — The reverse proxy & API gateway for .NET" width="100%"/>
-**Wafish** is an API gateway built on [Microsoft YARP](https://microsoft.github.io/reverse-proxy/) 2.3.0. It adds a **plugin architecture** (11 built-in plugins), a visual **management dashboard**, WAF, AI assistant, multi-provider **service discovery**, notifications, health & circuit-breaker monitoring, and **client auto-registration**.
+**Wafish** is an API gateway built on [Microsoft YARP](https://microsoft.github.io/reverse-proxy/) 2.3.0. It adds a **plugin architecture** (12 built-in plugins), a visual **management dashboard**, WAF, AI assistant, multi-provider **service discovery**, notifications, health & circuit-breaker monitoring, and **client auto-registration**.
 
 [Website](https://hallojoe.github.io/wafish/) · [Documentation](https://hallojoe.github.io/wafish/docs/) · [Presentation](https://hallojoe.github.io/wafish/presentation/) · [Quick Start](#quick-start)
 
@@ -91,7 +91,7 @@ See [package boundaries and hosting APIs](docs/architecture.md).
 
 ## Highlights
 
-- **Plugin architecture** — everything is a plugin; 11 first-party plugins provide WAF, rate limiting, retry, circuit breaking, compression, caching, metrics and more. Bring your own `IGatewayPlugin` in minutes.
+- **Plugin architecture** — everything is a plugin; 12 first-party plugins provide WAF, rate limiting, retry, circuit breaking, compression, caching, metrics and more. Bring your own `IGatewayPlugin` in minutes.
 - **Visual dashboard** — clusters, routes, plugins, WAF, health, circuit breakers, logs, notifications, audit trail and config history in one place.
 - **Runtime dynamic routing** — create / edit clusters & routes without restarting; auto-persists and auto-recovers on restart.
 - **Native YARP config editing** — dual-mode **form + JSON** editor that works directly on the standard YARP schema.
@@ -199,7 +199,7 @@ See the [solution project guide](docs/projects.md) for project READMEs, Mermaid 
 | **Wafish.Storage.Abstractions** | Storage interfaces & entities | ❌ |
 | **Wafish.Grpc** | gRPC registration protocol | ❌ |
 | **Wafish.Plugin.Abstractions** | Plugin contract (`IGatewayPlugin`) | ❌ |
-| **Wafish.Plugin.\*** | 11 first-party plugins, pulled in individually | via core |
+| **Wafish.Plugin.\*** | 12 first-party plugins, pulled in individually | via core |
 
 **.NET 10.0**.
 
@@ -247,6 +247,7 @@ Config: `Mode` (default `Static`), `Endpoint`, `ServiceName`, `Namespace` (`defa
 
 | ID | Scope | What it does |
 |:---|:------|:-------------|
+| `redirect` | Route | Validated fixed/template redirects, HTTPS enforcement, host allowlists, and request preview |
 | `waf` | Route | IP allow/deny, SQLi / XSS / path-traversal detection, request limits, security headers |
 | `rate-limit` | Route | FixedWindow / SlidingWindow / TokenBucket / Concurrency |
 | `rate-limit-redis` | Route | Distributed limiting via Redis Lua; 429 with `Retry-After` / `X-RateLimit-*` |

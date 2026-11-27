@@ -1,4 +1,6 @@
 {
+  "plugin.name.redirect": "Redirect",
+  "plugin.desc.redirect": "Validated route redirects and HTTPS enforcement.",
   "circuit.cluster": "Cluster",
   "circuit.destination": "Destination",
   "circuit.empty": "No circuit breaker data",

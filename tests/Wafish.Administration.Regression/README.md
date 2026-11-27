@@ -59,7 +59,7 @@ Schema version 1 includes suite, case name, duration, status, and exception deta
 Normal exits write reports, including focused modes and failed assertions.
 Process termination cannot guarantee a report. CI also retains console logs.
 
-The authorization matrix checks all 87 mapped administration actions across four authentication modes.
+The authorization matrix checks all mapped administration actions across four authentication modes.
 It tests anonymous, invalid, and authorized credentials without invoking action side effects.
 `--authorization-matrix` selects the matrix. `--sessions` also runs cleanup and session lifecycle checks.
 Session tests use controlled time and real HTTP/WebSocket connections.

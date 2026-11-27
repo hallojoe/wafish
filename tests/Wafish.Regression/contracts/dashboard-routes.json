@@ -79,6 +79,7 @@
   "POST control/api/plugin-bindings/preview",
   "POST control/api/plugins/install",
   "POST control/api/plugins/preview",
+  "POST control/api/plugins/redirect/preview",
   "POST control/api/plugins/reset",
   "POST control/api/plugins/{pluginId}/toggle",
   "POST control/api/plugins/{pluginId}/upgrade",

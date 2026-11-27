@@ -69,7 +69,7 @@ export const slides: Slide[] = [
     title: "A plugin needs\nmore than middleware.",
     kicker: "05 / POLICY LIFECYCLE",
     points: [
-      "11 first-party plugins with scoped bindings.",
+      "12 first-party plugins with scoped bindings.",
       "Declared ordering and host requirements.",
       "Owned startup, health, draining, and disposal.",
     ],

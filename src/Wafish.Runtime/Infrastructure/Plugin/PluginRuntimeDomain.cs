@@ -51,6 +51,8 @@ public sealed class PluginRuntimeDomain : IAsyncDisposable
         DashboardBuilder = dashboardBuilder ?? new PluginDashboardBuilder();
     }
 
+    internal RequestDelegate RedirectPipeline { get; init; } = _ => Task.CompletedTask;
+
     internal long Generation { get; set; }
     internal int ActiveRequests => Math.Max(0, Volatile.Read(ref _activeRequests));
     public IServiceProvider Services { get; }
@@ -253,6 +255,7 @@ public sealed class PluginRuntimeDomainInitializer(
 public sealed partial class PluginRuntimeDomainManager : IPluginRuntimeDomainManager, IAsyncDisposable
 {
     private static readonly object PipelineContinuationKey = new();
+    private static readonly object RequestDomainKey = new();
 
     private readonly IServiceProvider _rootServices;
     private readonly Dictionary<string, IGatewayPlugin> _firstPartyPlugins;
@@ -375,7 +378,8 @@ public sealed partial class PluginRuntimeDomainManager : IPluginRuntimeDomainMan
                 plugin.ConfigureDashboard(dashboardBuilder);
             }
 
-            var candidate = new PluginRuntimeDomain(servicesWithFallback, plugins, middleware, proxyPipeline, externalLoads, dashboardBuilder);
+            var candidate = new PluginRuntimeDomain(servicesWithFallback, plugins, middleware, proxyPipeline, externalLoads, dashboardBuilder)
+            { RedirectPipeline = BuildRedirectPipeline(servicesWithFallback, plugins) };
             return new PluginRuntimeDomainPreparation(this, candidate);
         }
         catch
@@ -601,6 +605,11 @@ public sealed partial class PluginRuntimeDomainManager : IPluginRuntimeDomainMan
         Func<PluginRuntimeDomain, RequestDelegate> pipelineSelector,
         RequestDelegate next)
     {
+        if (context.Items.TryGetValue(RequestDomainKey, out var active) && active is PluginRuntimeDomain requestDomain)
+        {
+            await InvokePipelineAsync(context, pipelineSelector(requestDomain), next);
+            return;
+        }
         PluginRuntimeDomain domain;
         PluginRuntimeDomainLease lease;
         lock (_lifecycleGate)
@@ -615,12 +624,15 @@ public sealed partial class PluginRuntimeDomainManager : IPluginRuntimeDomainMan
 
         using (lease)
         {
-            await InvokePipelineAsync(context, pipelineSelector(domain), next);
+            context.Items[RequestDomainKey] = domain;
+            try { await InvokePipelineAsync(context, pipelineSelector(domain), next); }
+            finally { context.Items.Remove(RequestDomainKey); }
         }
     }
 
     private static async Task InvokePipelineAsync(HttpContext context, RequestDelegate pipeline, RequestDelegate next)
     {
+        var hadPrevious = context.Items.TryGetValue(PipelineContinuationKey, out var previous);
         context.Items[PipelineContinuationKey] = next;
         try
         {
@@ -628,7 +640,8 @@ public sealed partial class PluginRuntimeDomainManager : IPluginRuntimeDomainMan
         }
         finally
         {
-            context.Items.Remove(PipelineContinuationKey);
+            if (hadPrevious) context.Items[PipelineContinuationKey] = previous;
+            else context.Items.Remove(PipelineContinuationKey);
         }
     }
 

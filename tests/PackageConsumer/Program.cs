@@ -46,6 +46,13 @@ try
         if (config.GetRoutes().Count != 0) throw new Exception("Unexpected routes");
         var plugins = app.Services.GetRequiredService<Wafish.Plugins.IGatewayPluginManager>();
         if (!plugins.GetAllManifests().Any(m => m.Id == "response-cache")) throw new Exception("Plugin composition failed");
+        if (!plugins.GetAllManifests().Any(m => m.Id == "redirect")) throw new Exception("Redirect plugin is missing");
+        var redirect = Wafish.Plugin.Redirect.RedirectEvaluator.Compile(new() { Target = "/new" },
+            new Yarp.ReverseProxy.Configuration.RouteConfig { RouteId = "redirect-consumer", Match = new() { Path = "/old" } });
+        var request = new DefaultHttpContext().Request;
+        request.Scheme = "https"; request.Host = new HostString("example.com"); request.Path = "/old";
+        if (Wafish.Plugin.Redirect.RedirectEvaluator.Evaluate(redirect, request).Location != "/new")
+            throw new Exception("Packaged redirect evaluation failed");
         var factory = app.Services.GetRequiredService<SqliteConnectionFactory>();
         await using var connection = factory.CreateConnection(); await connection.OpenAsync();
         await using var query = connection.CreateCommand(); query.CommandText = "SELECT sqlite3mc_version()";

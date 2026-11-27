@@ -1,12 +1,13 @@
 # Choose your policies
 
-Wafish includes 11 first-party plugins. A plugin can supply request middleware, background work, or management views.
+Wafish includes 12 first-party plugins. A plugin can supply request middleware, background work, or management views.
 Bindings attach configuration to a supported route or cluster scope.
 
 ## Plugin catalog
 
 | Plugin ID | Purpose | Read more |
 |---|---|---|
+| `redirect` | Return validated redirects, including HTTPS upgrades, without a backend. | [Redirect](../../src/Wafish.Plugin.Redirect/README.md) |
 | `waf` | Inspect configured request inputs and enforce allow/deny rules. | [WAF](../../src/Wafish.Plugin.Waf/README.md) |
 | `rate-limit` | Apply local rate-limit policies. | [Local rate limits](../../src/Wafish.Plugin.RateLimit/README.md) |
 | `rate-limit-redis` | Coordinate rate-limit counters through Redis. | [Redis rate limits](../../src/Wafish.Plugin.RateLimit.Redis/README.md) |

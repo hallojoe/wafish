@@ -43,13 +43,36 @@ export function SchemaFields({
             field(property, "title"),
             name.replace(/([A-Z])/g, " $1"),
           );
-          if (!["boolean", "string", "integer", "number"].includes(text(type)))
+          if (
+            !["boolean", "string", "integer", "number"].includes(text(type)) &&
+            !(
+              type === "array" &&
+              field(field(property, "items"), "type") === "string"
+            )
+          )
             return null;
           return (
             <Field key={name} label={label}>
-              {type === "boolean" ? (
+              {type === "array" ? (
+                <textarea
+                  className="native-input min-h-24"
+                  aria-label={label}
+                  onBlur={(e) =>
+                    change(
+                      name,
+                      e.target.value
+                        .split("\n")
+                        .map((item) => item.trim())
+                        .filter(Boolean),
+                    )
+                  }
+                  value={Array.isArray(current) ? current.join("\n") : ""}
+                  onChange={(e) => change(name, e.target.value.split("\n"))}
+                />
+              ) : type === "boolean" ? (
                 <input
                   type="checkbox"
+                  aria-label={label}
                   className="size-5 accent-primary"
                   checked={current === true}
                   onChange={(e) => change(name, e.target.checked)}
@@ -57,8 +80,16 @@ export function SchemaFields({
               ) : Array.isArray(choices) ? (
                 <select
                   className="native-select"
+                  aria-label={label}
                   value={text(current, "")}
-                  onChange={(e) => change(name, e.target.value)}
+                  onChange={(e) =>
+                    change(
+                      name,
+                      type === "integer" || type === "number"
+                        ? Number(e.target.value)
+                        : e.target.value,
+                    )
+                  }
                 >
                   {choices.map((option) => (
                     <option key={text(option)}>{text(option)}</option>
@@ -67,6 +98,7 @@ export function SchemaFields({
               ) : (
                 <Input
                   type={type === "string" ? "text" : "number"}
+                  aria-label={label}
                   required={required?.includes(name)}
                   min={field(property, "minimum") as number | undefined}
                   max={field(property, "maximum") as number | undefined}
@@ -81,6 +113,11 @@ export function SchemaFields({
                     )
                   }
                 />
+              )}
+              {field(property, "description") != null && (
+                <p className="text-sm text-muted-foreground">
+                  {text(field(property, "description"))}
+                </p>
               )}
             </Field>
           );
