@@ -26,7 +26,7 @@ public sealed partial class PluginRuntimeDomainManager
         builder.Use(async (context, next) =>
         {
             var routeId = context.GetEndpoint()?.Metadata.GetMetadata<RouteModel>()?.Config.RouteId;
-            var snapshot = snapshots.Current;
+            var snapshot = RequestExecutionSnapshot.Current ?? snapshots.Current;
             if (routeId is null || !snapshot.TryGetRouteExecutionPlan(routeId, out var plan) ||
                 plan!.Plugins.FirstOrDefault(p => p.Binding.PluginId.Equals("redirect", StringComparison.OrdinalIgnoreCase)) is not { } plugin)
             {

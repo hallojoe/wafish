@@ -117,3 +117,8 @@ Routes can omit clusters. Active redirects run before YARP requires a backend.
 Other requests on routes without clusters return `503`.
 Manage bindings and preview sample requests through the existing plugin editor.
 See the [redirect reference](../Wafish.Plugin.Redirect/README.md) for validation, policies, and setup.
+
+Internal route contracts expose prepared GET batches with explicit disposal and bounded response bytes.
+`GatewaySnapshot.RouteUidsById` retains stable route identities without changing the existing snapshot constructor.
+`IGatewaySnapshotValidator` lets route compilers reject invalid cross-route dependencies before publication.
+`RequestExecutionSnapshot` pins plugin execution plans during internal child execution.

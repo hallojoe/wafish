@@ -22,3 +22,6 @@ It requires `wafish.claims-transform` version 1 and compiles outbound mappings b
 
 The route-authorization addition records its new plugin API and host capability `wafish.route-authorization` version 1.
 The host-local pipeline guard and claims-compiler constructor overload are additive. Existing constructors remain supported.
+
+Internal route execution adds batch contracts, snapshot route identities, and snapshot graph validation.
+Existing snapshot constructors and plugin interfaces remain compatible.

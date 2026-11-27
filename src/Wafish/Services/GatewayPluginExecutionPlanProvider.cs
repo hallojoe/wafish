@@ -1,4 +1,5 @@
 using System.Collections.Frozen;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Wafish.Models;
@@ -19,6 +20,7 @@ public sealed class GatewayPluginExecutionPlanProvider
     private readonly IGatewaySnapshotPublisher _publisher;
     private readonly ILogger<GatewayPluginExecutionPlanProvider> _logger;
     private readonly object _sync = new();
+    private readonly ConditionalWeakTable<GatewaySnapshot, GatewayPluginExecutionPlan> _requestPlans = new();
     private GatewaySnapshot? _snapshot;
     private GatewayPluginExecutionPlan _plan = GatewayPluginExecutionPlan.Empty;
 
@@ -34,6 +36,7 @@ public sealed class GatewayPluginExecutionPlanProvider
     {
         get
         {
+            if (RequestExecutionSnapshot.Current is { } captured) return _requestPlans.GetValue(captured, Compile);
             var snapshot = _publisher.Current;
             if (ReferenceEquals(snapshot, Volatile.Read(ref _snapshot)))
             {

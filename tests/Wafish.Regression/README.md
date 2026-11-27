@@ -154,3 +154,5 @@ See [verification evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evi
 The solution includes the collectible plugin fixture so Release builds produce the required Release assembly.
 Legacy database tests dispose reopened connections before reading file headers, including on Windows.
 See [candidate evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-release-candidate-readme-md).
+
+Use `--group internal-routes` for child routing, authorization preflight, context isolation, response bounds, cancellation, and snapshot retention.

@@ -17,7 +17,7 @@ The [competitor findings](docs/competitor-feature-gaps.md) record the original g
 
 | Item | Status | Remaining work | Source entry point |
 | --- | --- | --- | --- |
-| G01 | TODO | Internal child execution, parallel JSON aggregation, bounded resources, and policy parity. | [Runtime domains](src/Wafish.Runtime/Infrastructure/Plugin/PluginRuntimeDomain.cs) |
+| G01 | TODO | Parallel JSON aggregation, bounded admission, dependency validation, and editor. Internal execution is implemented. | [Internal executor](src/Wafish.Runtime/InternalExecution/InternalRouteExecutor.cs) |
 | G06-FULL | DEFERRED | Principal cloning, authentication integration, early stages, idempotence, issuer semantics, and snapshot ownership. | [Gateway pipeline](src/Wafish.Runtime/GatewayPipelineExtensions.cs) |
 
 Current: G06 downstream mappings and G13 route authorization are implemented. Internal aggregation execution remains absent.
