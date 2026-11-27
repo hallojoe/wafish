@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Expected source version, for example 1.0.0-rc.1'
+        description: 'Package version to build, for example 1.1.0 or 1.1.0-rc.1'
         type: string
         required: true
       registry:

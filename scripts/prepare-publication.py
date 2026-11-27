@@ -10,17 +10,7 @@ import re
 import shutil
 import xml.etree.ElementTree as ET
 import zipfile
-
-
-def validate_version(version):
-    number = r'(?:0|[1-9][0-9]*)'
-    match = re.fullmatch(rf'{number}\.{number}\.{number}(?:-([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*))?', version)
-    if not match:
-        raise ValueError('Use a three-part NuGet version, with an optional prerelease suffix; build metadata is not allowed')
-    suffix = match[1]
-    if suffix and any(part.isdigit() and len(part) > 1 and part.startswith('0') for part in suffix.split('.')):
-        raise ValueError('Numeric prerelease identifiers must not contain leading zeros')
-    return suffix is not None
+from package_version import check_archive, validate_version, version_from_tag
 
 
 def release_version():
@@ -32,9 +22,7 @@ def release_version():
     if not isinstance(release, dict) or event.get('action') != 'published' or release.get('draft') is not False:
         raise ValueError('Publication requires a published, non-draft release')
     tag = release.get('tag_name')
-    if not isinstance(tag, str) or not tag.startswith('v'):
-        raise ValueError('Release tags must use the v prefix, for example v1.2.3')
-    version = tag[1:]
+    version = version_from_tag(tag)
     prerelease = validate_version(version)
     if type(release.get('prerelease')) is not bool:
         raise ValueError('Release prerelease status must be a boolean')
@@ -61,14 +49,11 @@ def package_projects(root):
 
 
 def check_inputs(root, package, version):
-    configured = ET.parse(root / 'src/Directory.Build.props').findtext('.//Version')
     validate_version(version)
     if os.environ.get('GITHUB_EVENT_NAME') == 'release' and release_version() != version:
         raise ValueError('Package version must match the release tag')
-    if version != configured:
-        raise ValueError(f'Requested version {version} differs from source version {configured}')
-    if os.environ.get('GITHUB_REF_TYPE') == 'tag' and os.environ.get('GITHUB_REF_NAME') != f'v{version}':
-        raise ValueError(f'The selected tag must be v{version}')
+    if os.environ.get('GITHUB_REF_TYPE') == 'tag' and version_from_tag(os.environ.get('GITHUB_REF_NAME')) != version:
+        raise ValueError(f'The selected tag must be {version} or v{version}')
     projects = package_projects(root)
     if package != 'all' and package not in projects:
         raise ValueError(f'Unknown package: {package}')
@@ -83,18 +68,6 @@ def package_order(projects):
         paths = [(path.parent / item.attrib['Include'].replace('\\', '/')).resolve() for item in references]
         graph[package_id] = [by_path[item] for item in paths if item in by_path]
     return list(TopologicalSorter(graph).static_order())
-
-
-def check_archive(path, package_id, version):
-    with zipfile.ZipFile(path) as archive:
-        specs = [name for name in archive.namelist() if name.endswith('.nuspec')]
-        if len(specs) != 1:
-            raise ValueError(f'Expected one nuspec in {path.name}')
-        spec = ET.fromstring(archive.read(specs[0]))
-        actual_id = spec.findtext('.//{*}metadata/{*}id')
-        actual_version = spec.findtext('.//{*}metadata/{*}version')
-        if (actual_id, actual_version) != (package_id, version):
-            raise ValueError(f'Package metadata mismatch: {path.name}')
 
 
 def prepare(root, package, version):

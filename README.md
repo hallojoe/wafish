@@ -1,6 +1,3 @@
-<div align="center">
-<img src="cover-en.png" alt="Wafish — The reverse proxy & API gateway for .NET" width="100%"/>
-
 
 [![NuGet](https://img.shields.io/nuget/v/Wafish.svg)](https://www.nuget.org/packages/Wafish)
 [![NuGet](https://img.shields.io/nuget/v/Wafish.ReactUi.svg)](https://www.nuget.org/packages/Wafish.ReactUi)
@@ -10,22 +7,21 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 
-</div>
-
----
-
+<img src="cover-en.png" alt="Wafish — The reverse proxy & API gateway for .NET" width="100%"/>
 **Wafish** is an API gateway built on [Microsoft YARP](https://microsoft.github.io/reverse-proxy/) 2.3.0. It adds a **plugin architecture** (11 built-in plugins), a visual **management dashboard**, WAF, AI assistant, multi-provider **service discovery**, notifications, health & circuit-breaker monitoring, and **client auto-registration**.
 
 [Website](https://hallojoe.github.io/wafish/) · [Documentation](https://hallojoe.github.io/wafish/docs/) · [Presentation](https://hallojoe.github.io/wafish/presentation/) · [Quick Start](#quick-start)
 
 ---
 
-## Release candidate
+## Releases
 
-Source package metadata identifies candidate `1.0.0-rc.1`. Check [release reconciliation](PLAN.md#r56) before publication.
+Publish a GitHub release to build and publish packages using its version tag, such as `1.1.0` or `1.1.0-rc.1`.
+No version edit in build properties is required. Local builds use `0.0.0-dev`.
+See the [package publishing workflows](docs/package-publishing.md) for setup, validation, and prerelease rules.
+Check [release reconciliation](PLAN.md#r56) before reusing historical release versions.
 Archived checks cover Linux, Windows, and macOS with .NET 10.
-See [release notes](ARCHIVE.md#archive-docs-release-notes-1-0-0-rc-1-md) for the completed scope, support boundaries, and verification.
-Maintainers can use the [package publishing workflows](docs/package-publishing.md).
+See [candidate release notes](ARCHIVE.md#archive-docs-release-notes-1-0-0-rc-1-md) for historical scope, support boundaries, and verification.
 
 ## Wafish vs. Bare YARP
 
