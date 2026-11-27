@@ -9,6 +9,7 @@ using Wafish.Dashboard.Modules.Dashboard.Services;
 using Wafish.Dashboard.Modules.GatewayConfig.Services;
 using Wafish.Plugin.Cache;
 using Wafish.Plugin.Redirect;
+using Wafish.Plugin.ClaimsTransform;
 using Wafish.Plugin.CircuitBreaker;
 using Wafish.Plugin.Compression;
 using Wafish.Plugin.Metrics;
@@ -134,6 +135,9 @@ public static class GatewayRuntimeExtensions
         services.AddSingleton<IGatewayPlugin, ClusterMetricsPlugin>();
         services.AddSingleton<IGatewayPlugin, HttpServiceDiscoveryPlugin>();
         services.AddSingleton<IGatewayPlugin, CompressionPlugin>();
+        services.AddSingleton<IGatewayPlugin, ClaimsTransformPlugin>();
+        services.AddSingleton<IRoutePluginCompiler, ClaimsTransformCompiler>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<ITransformProvider, ClaimsTransformProvider>());
         services.AddSingleton<IGatewayPlugin, RedirectPlugin>();
         services.AddSingleton<IRoutePluginCompiler, RedirectConfigurationCompiler>();
         services.AddSingleton<PluginMetricStore>();
@@ -199,8 +203,8 @@ public static class GatewayRuntimeExtensions
             conventions.Add(endpoint =>
             {
                 var forward = endpoint.RequestDelegate!;
-                endpoint.RequestDelegate = context => context.RequestServices.GetRequiredService<PluginRuntimeDomainManager>()
-                    .InvokeRedirectPipelineAsync(context, forward);
+                endpoint.RequestDelegate = context => ClaimsTransformProvider.InvokeAsync(context, inner => inner.RequestServices.GetRequiredService<PluginRuntimeDomainManager>()
+                    .InvokeRedirectPipelineAsync(inner, forward));
             });
         }
         return conventions;

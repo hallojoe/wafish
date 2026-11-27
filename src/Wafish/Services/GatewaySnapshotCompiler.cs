@@ -56,12 +56,12 @@ public sealed class GatewaySnapshotCompiler : IGatewaySnapshotCompiler
             : (await _clusters.GetAllClustersAsync(ct)).Where(x => !string.IsNullOrWhiteSpace(x.ClusterUid))
                 .ToDictionary(x => x.ClusterUid, x => x.ClusterId, StringComparer.Ordinal));
         var sourceBindings = candidateBindings ?? await _plugins.GetBindingsAsync(ct);
-        var enabledRedirects = sourceBindings.Where(b => b.Enabled && b.PluginId.Equals("redirect", StringComparison.OrdinalIgnoreCase))
+        var endpointBindings = sourceBindings.Where(b => b.Enabled && (b.PluginId.Equals("redirect", StringComparison.OrdinalIgnoreCase) || b.PluginId.Equals("claims-transform", StringComparison.OrdinalIgnoreCase)))
             .Select(b => ToSnapshot(b, routeUidMap, clusterUidMap)).Where(b => b.Scope == PluginBindingScope.Route && routeIds.Contains(b.ScopeId));
-        if (enabledRedirects.GroupBy(b => b.ScopeId, StringComparer.Ordinal).Any(g => g.Count() > 1))
-            throw new ArgumentException("A route can have only one enabled redirect binding.");
-        // Redirects validate saved drafts as well as active bindings. Enabling them must not reveal stale invalid templates.
-        foreach (var draft in sourceBindings.Where(b => b.PluginId.Equals("redirect", StringComparison.OrdinalIgnoreCase) &&
+        if (endpointBindings.GroupBy(b => (b.ScopeId, PluginId: b.PluginId.ToLowerInvariant())).Any(g => g.Count() > 1))
+            throw new ArgumentException("A route can have only one enabled binding per endpoint policy.");
+        // Endpoint policies validate drafts before persistence, including when the plugin is disabled.
+        foreach (var draft in sourceBindings.Where(b => (b.PluginId.Equals("redirect", StringComparison.OrdinalIgnoreCase) || b.PluginId.Equals("claims-transform", StringComparison.OrdinalIgnoreCase)) &&
                      (!b.Enabled || !_activationState.IsPluginEnabled(b.PluginId))))
         {
             var binding = ToSnapshot(draft, routeUidMap, clusterUidMap);
@@ -82,7 +82,9 @@ public sealed class GatewaySnapshotCompiler : IGatewaySnapshotCompiler
         var routePlans = ImmutableDictionary.CreateBuilder<string, RouteExecutionPlan>(StringComparer.Ordinal);
         foreach (var route in routes)
         {
-            var current = route;
+            // Published routes may contain derived metadata from a previous compilation.
+            var current = route with { Metadata = route.Metadata?.Where(x => x.Key != "wafish:claims-transform")
+                .ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal) };
             var compiledPlugins = new List<CompiledRoutePlugin>();
             if (routeBindings.TryGetValue(route.RouteId, out var targetBindings))
             {
