@@ -10,6 +10,7 @@ using Wafish.Dashboard.Modules.GatewayConfig.Services;
 using Wafish.Plugin.Cache;
 using Wafish.Plugin.Redirect;
 using Wafish.Plugin.ClaimsTransform;
+using Wafish.Plugin.RouteAuthorization;
 using Wafish.Plugin.CircuitBreaker;
 using Wafish.Plugin.Compression;
 using Wafish.Plugin.Metrics;
@@ -135,6 +136,11 @@ public static class GatewayRuntimeExtensions
         services.AddSingleton<IGatewayPlugin, ClusterMetricsPlugin>();
         services.AddSingleton<IGatewayPlugin, HttpServiceDiscoveryPlugin>();
         services.AddSingleton<IGatewayPlugin, CompressionPlugin>();
+        services.AddAuthorization();
+        services.TryAddSingleton<RoutePolicyPipelineSupport>();
+        services.AddSingleton<IGatewayPlugin, RouteAuthorizationPlugin>();
+        services.AddSingleton<IRoutePluginCompiler, RouteAuthorizationCompiler>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<ITransformProvider, RouteAuthorizationTransformProvider>());
         services.AddSingleton<IGatewayPlugin, ClaimsTransformPlugin>();
         services.AddSingleton<IRoutePluginCompiler, ClaimsTransformCompiler>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<ITransformProvider, ClaimsTransformProvider>());
@@ -187,6 +193,13 @@ public static class GatewayRuntimeExtensions
     public static IEndpointConventionBuilder MapWafishProxy(this IEndpointRouteBuilder endpoints,
         Action<IReverseProxyApplicationBuilder>? configure = null, bool useBuiltInPipeline = true)
     {
+        if (!useBuiltInPipeline)
+        {
+            endpoints.ServiceProvider.GetService<RoutePolicyPipelineSupport>()?.Disable();
+            if (endpoints.ServiceProvider.GetService<IGatewaySnapshotPublisher>()?.Current.Routes.Any(r =>
+                r.Metadata?.ContainsKey("wafish:route-authorization") == true || r.Metadata?.ContainsKey("wafish:claims-transform") == true) == true)
+                throw new InvalidOperationException("Active endpoint policies require the built-in proxy pipeline.");
+        }
         var conventions = endpoints.MapReverseProxy(proxy =>
         {
             proxy.UseMiddleware<Wafish.Dashboard.Infrastructure.Resilience.DestinationMaintenanceMiddleware>();
@@ -203,8 +216,9 @@ public static class GatewayRuntimeExtensions
             conventions.Add(endpoint =>
             {
                 var forward = endpoint.RequestDelegate!;
-                endpoint.RequestDelegate = context => ClaimsTransformProvider.InvokeAsync(context, inner => inner.RequestServices.GetRequiredService<PluginRuntimeDomainManager>()
-                    .InvokeRedirectPipelineAsync(inner, forward));
+                endpoint.RequestDelegate = context => RouteAuthorizationMiddleware.InvokeAsync(context, authorized =>
+                    ClaimsTransformProvider.InvokeAsync(authorized, inner => inner.RequestServices.GetRequiredService<PluginRuntimeDomainManager>()
+                        .InvokeRedirectPipelineAsync(inner, forward)));
             });
         }
         return conventions;

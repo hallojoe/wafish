@@ -148,6 +148,9 @@ Wafish entry points: [cache middleware](../src/Wafish.Plugin.Cache/ResponseCache
 
 ### G13: Configurable route claims and scope requirements
 
+Implementation update: [RouteAuthorization](../src/Wafish.Plugin.RouteAuthorization/README.md) now provides these rules.
+The following comparison records the reviewed baseline.
+
 Ocelot exposes allowed scopes and required claim values in route configuration.
 Wafish supports named ASP.NET Core authorization policies through YARP.
 The gap is direct operator configuration of these requirements, without implementing named host policies.

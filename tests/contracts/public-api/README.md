@@ -19,3 +19,6 @@ The manifest requires host capability `wafish.redirect-endpoint` version 1.
 
 The claims-transform addition records its new package API. Existing declarations remain unchanged.
 It requires `wafish.claims-transform` version 1 and compiles outbound mappings before activation.
+
+The route-authorization addition records its new plugin API and host capability `wafish.route-authorization` version 1.
+The host-local pipeline guard and claims-compiler constructor overload are additive. Existing constructors remain supported.

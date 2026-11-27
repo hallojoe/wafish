@@ -21,9 +21,13 @@ public sealed partial class ClaimsTransformCompiler : IRoutePluginCompiler
 {
     internal const string MetadataKey = "wafish:claims-transform";
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow };
+    private readonly RoutePolicyPipelineSupport? _support;
+    public ClaimsTransformCompiler() { }
+    public ClaimsTransformCompiler(RoutePolicyPipelineSupport support) => _support = support;
     public bool CanCompile(string pluginId) => pluginId.Equals("claims-transform", StringComparison.OrdinalIgnoreCase);
     public CompiledRoutePlugin Compile(PluginBindingSnapshot binding, RouteConfig route)
     {
+        _support?.RequireEnabled();
         if (binding.SchemaVersion != 1) throw new ArgumentException("Unsupported claims transform schema.");
         var options = JsonSerializer.Deserialize<ClaimsTransformOptions>(binding.ConfigJson, Json) ?? throw new ArgumentException("Claims configuration is required.");
         var compiled = Compile(options);
