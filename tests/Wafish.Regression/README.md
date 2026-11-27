@@ -156,3 +156,4 @@ Legacy database tests dispose reopened connections before reading file headers, 
 See [candidate evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-release-candidate-readme-md).
 
 Use `--group internal-routes` for child routing, authorization preflight, context isolation, response bounds, cancellation, and snapshot retention.
+Use `--group aggregation` for JSON composition, template validation, admission, deadlines, policy parity, and atomic dependency repairs.

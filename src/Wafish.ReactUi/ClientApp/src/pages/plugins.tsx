@@ -458,6 +458,18 @@ export function BindingsPage() {
                 <summary>{t("Common fields")}</summary>
                 <SchemaFields
                   schema={schema}
+                  routeChoices={rows(routes.data)
+                    .filter(
+                      (route) =>
+                        text(field(route, "clusterId"), "") &&
+                        text(field(route, "routeId")) !==
+                          text(editor.scopeId) &&
+                        text(field(route, "routeUid"), ""),
+                    )
+                    .map((route) => ({
+                      value: text(field(route, "routeUid")),
+                      label: text(field(route, "routeId")),
+                    }))}
                   value={text(editor.configJson)}
                   onChange={(value) => update("configJson", value)}
                 />
@@ -467,6 +479,13 @@ export function BindingsPage() {
                 value={text(editor.configJson)}
                 onChange={(v) => update("configJson", v)}
               />
+              {editor.pluginId === "request-aggregation" && (
+                <p role="status">
+                  Child routes must support GET. Referenced routes cannot be
+                  deleted or changed incompatibly until their references are
+                  updated.
+                </p>
+              )}
               {editor.pluginId === "redirect" && !batch && (
                 <RedirectPreview
                   binding={{ ...editor, configJson: editor.configJson }}

@@ -16,8 +16,10 @@ export function SchemaFields({
   schema,
   value,
   onChange,
+  routeChoices = [],
 }: {
   schema: unknown;
+  routeChoices?: { value: string; label: string }[];
   value: string;
   onChange: (value: string) => void;
 }) {
@@ -56,6 +58,7 @@ export function SchemaFields({
                   <div key={index} className="space-y-2 rounded border p-3">
                     <SchemaFields
                       schema={itemSchema}
+                      routeChoices={routeChoices}
                       value={JSON.stringify(item)}
                       onChange={(next) => {
                         const updated = [...items];
@@ -102,7 +105,35 @@ export function SchemaFields({
             return null;
           return (
             <Field key={name} label={label}>
-              {type === "array" ? (
+              {field(property, "format") === "wafish-route-uid" ? (
+                <>
+                  <select
+                    className="native-select"
+                    aria-label={label}
+                    required
+                    value={text(current, "")}
+                    onChange={(e) => change(name, e.target.value)}
+                  >
+                    <option value="">Select a child route</option>
+                    {current &&
+                    !routeChoices.some((route) => route.value === current) ? (
+                      <option value={text(current)}>Unavailable route</option>
+                    ) : null}
+                    {routeChoices.map((route) => (
+                      <option key={route.value} value={route.value}>
+                        {route.label}
+                      </option>
+                    ))}
+                  </select>
+                  {current &&
+                  !routeChoices.some((route) => route.value === current) ? (
+                    <p role="alert">
+                      Selected child route is unavailable. Select an existing
+                      proxy route.
+                    </p>
+                  ) : null}
+                </>
+              ) : type === "array" ? (
                 <textarea
                   className="native-input min-h-24"
                   aria-label={label}

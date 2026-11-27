@@ -23,6 +23,7 @@
     <ProjectReference Include="..\Wafish.Plugin.ServiceDiscovery\Wafish.Plugin.ServiceDiscovery.csproj" />
     <ProjectReference Include="..\Wafish.Plugin.Metrics\Wafish.Plugin.Metrics.csproj" />
     <ProjectReference Include="../Wafish.Plugin.RouteAuthorization/Wafish.Plugin.RouteAuthorization.csproj" />
+    <ProjectReference Include="../Wafish.Plugin.Aggregation/Wafish.Plugin.Aggregation.csproj" />
     <ProjectReference Include="../Wafish.Plugin.ClaimsTransform/Wafish.Plugin.ClaimsTransform.csproj" />
     <ProjectReference Include="../Wafish.Plugin.Redirect/Wafish.Plugin.Redirect.csproj" />
   </ItemGroup>

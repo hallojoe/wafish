@@ -460,6 +460,10 @@ test("plugin bindings, presets, and activation use real administration APIs", as
   await preset
     .getByRole("button", { name: "Apply preset", exact: true })
     .click();
+  await page
+    .getByRole("dialog")
+    .getByLabel("Binding", { exact: true })
+    .selectOption(binding.id ?? binding.Id);
   await page.getByRole("button", { name: "Save changes", exact: true }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await preset.getByRole("button", { name: "Delete", exact: true }).click();

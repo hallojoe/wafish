@@ -111,3 +111,6 @@ Routes can omit clusters. Active redirects run before YARP requires a backend.
 Other requests on routes without clusters return `503`.
 Manage bindings and preview sample requests through the existing plugin editor.
 See the [redirect reference](../Wafish.Plugin.Redirect/README.md) for validation, policies, and setup.
+
+The aggregation binding editor selects child routes by name and stores stable route UIDs.
+Nested rows edit child paths, query mappings, and header allowlists. Missing child selections show dependency feedback.

@@ -25,3 +25,6 @@ The host-local pipeline guard and claims-compiler constructor overload are addit
 
 Internal route execution adds batch contracts, snapshot route identities, and snapshot graph validation.
 Existing snapshot constructors and plugin interfaces remain compatible.
+
+The aggregation addition records its new plugin API and `wafish.request-aggregation` host capability.
+Existing plugin interfaces and constructors remain supported. Child execution uses the additive internal route contracts.
