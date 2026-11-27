@@ -137,3 +137,23 @@ See [registration and operations](../../docs/registration-operations-contracts.m
 
 Versioned change sets combine routes, clusters, and plugin bindings in one transaction.
 See [change-set contracts](../../docs/configuration-policy-contracts.md) for API examples, revisions, permissions, and recovery.
+
+## AI token limits
+
+Select provider `openai` for OpenAI chat-completion endpoints, including endpoints reached through a proxy.
+Connection tests, chat streams, and notification completions use `max_completion_tokens` for this provider.
+Other providers, including `custom`, retain `max_tokens` for compatibility.
+The `AI:MaxTokens` setting and saved configuration remain unchanged. Connection tests retain their five-token limit.
+OpenAI counts reasoning tokens within this limit. See the [OpenAI parameter reference](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create).
+
+## OpenAI tools and reasoning
+
+Some models reject function tools with reasoning on the Chat Completions endpoint.
+For that specific OpenAI HTTP 400 response, the Assistant retries once with `reasoning_effort: none`.
+The retry and its tool-result follow-up keep reasoning disabled for that exchange. Saved settings remain unchanged.
+Other errors and providers do not trigger this fallback. A failed retry remains visible.
+Using reasoning together with tools on those models requires a Responses API integration.
+See the [OpenAI Chat Completions reference](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create).
+
+Tool-result requests include their originating assistant tool calls and matching call IDs.
+Write tools remain pending until user confirmation. Mixed batches report that pending status to the model.

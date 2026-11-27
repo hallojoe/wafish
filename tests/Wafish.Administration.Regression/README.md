@@ -29,6 +29,7 @@ Management behavior can be tested without relying on a browser or Razor presenta
 
 - Exercise administration deployment, authentication, APIs, backups, and realtime communication.
 - Check optional AI and MCP registration.
+- Check AI token-limit fields through isolated HTTP and SSE endpoints, without external API calls.
 - Verify persistence across host restarts and reject corrupted authentication state.
 
 ## What it does not do
@@ -42,6 +43,9 @@ Source project: [Wafish.Administration.Regression.csproj](Wafish.Administration.
 Direct project references: [Wafish.Administration](../../src/Wafish.Administration/README.md), [Wafish.Storage.Sqlite](../../src/Wafish.Storage.Sqlite/README.md).
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../PLAN.md).
+
+Use `--ai-requests` for OpenAI, case-insensitive provider selection, DeepSeek, and custom-provider request checks.
+These checks cover connection tests, completion model overrides, streamed output, and configured token limits.
 
 ## Review regression coverage
 
@@ -82,3 +86,7 @@ Fixture helpers retain host creation, HTTP, websocket, and assertion behavior. S
 Historical split verification is preserved in [ARCHIVE.md](../../ARCHIVE.md#archive-tests-wafish-administration-regression-readme-md).
 
 Run `--need-six` for combined change-set permissions and destination maintenance endpoints.
+
+The `--ai-requests` checks also cover OpenAI reasoning rejection, bounded retries, and mixed read/write tool exchanges.
+They verify unchanged saved settings, matching tool-call context, pending write confirmations, and visible provider failures.
+All provider responses are simulated on isolated loopback endpoints. No paid model requests are made.
