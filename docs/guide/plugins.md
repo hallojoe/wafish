@@ -1,12 +1,13 @@
 # Choose your policies
 
-Wafish includes 13 first-party plugins. A plugin can supply request middleware, background work, or management views.
+Wafish includes 14 first-party plugins. A plugin can supply request middleware, background work, or management views.
 Bindings attach configuration to a supported route or cluster scope.
 
 ## Plugin catalog
 
 | Plugin ID | Purpose | Read more |
 |---|---|---|
+| `route-authorization` | Require authenticated scopes and claims before route responses. | [Route authorization](../../src/Wafish.Plugin.RouteAuthorization/README.md) |
 | `claims-transform` | Map authenticated claims into downstream requests. | [Claims transform](../../src/Wafish.Plugin.ClaimsTransform/README.md) |
 | `redirect` | Return validated redirects, including HTTPS upgrades, without a backend. | [Redirect](../../src/Wafish.Plugin.Redirect/README.md) |
 | `waf` | Inspect configured request inputs and enforce allow/deny rules. | [WAF](../../src/Wafish.Plugin.Waf/README.md) |

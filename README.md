@@ -10,7 +10,7 @@
 ---
 
 **Wafish** is a .NET 10 API gateway built on [Microsoft YARP](https://microsoft.github.io/reverse-proxy/) 2.3.0.
-It includes 13 built-in plugins, a management dashboard, an AI assistant, service discovery, and client registration.
+It includes 14 built-in plugins, a management dashboard, an AI assistant, service discovery, and client registration.
 
 - [Website](https://hallojoe.github.io/wafish/)
 - [Documentation](https://hallojoe.github.io/wafish/docs/)
@@ -90,7 +90,7 @@ See [package boundaries and hosting APIs](docs/architecture.md).
 
 ## Highlights
 
-- **Plugin architecture** — 13 first-party plugins provide request policies, redirects, metrics, logs, and service discovery.
+- **Plugin architecture** — 14 first-party plugins provide request policies, redirects, metrics, logs, and service discovery.
 - **Redirects** — fixed URLs, route templates, HTTPS enforcement, host allowlists, and request preview. Redirect routes can omit backends.
 - **Visual dashboard** — clusters, routes, plugins, WAF, health, circuit breakers, logs, notifications, audit trail and config history in one place.
 - **Runtime dynamic routing** — create / edit clusters & routes without restarting; auto-persists and auto-recovers on restart.
@@ -199,7 +199,7 @@ See the [solution project guide](docs/projects.md) for project READMEs, architec
 | **Wafish.Storage.Abstractions** | Storage interfaces & entities | ❌ |
 | **Wafish.Grpc** | gRPC registration protocol | ❌ |
 | **Wafish.Plugin.Abstractions** | Plugin contract (`IGatewayPlugin`) | ❌ |
-| **Wafish.Plugin.\*** | 13 first-party plugins across 12 packages; see the catalog below | via core |
+| **Wafish.Plugin.\*** | 14 first-party plugins across 13 packages; see the catalog below | via core |
 
 **.NET 10.0**.
 
@@ -251,6 +251,7 @@ The Metrics package supplies both metric plugins. Each package link opens its co
 
 | ID | Scope | Package and guide | What it does |
 |:---|:------|:------------------|:-------------|
+| `route-authorization` | Route | [Wafish.Plugin.RouteAuthorization](src/Wafish.Plugin.RouteAuthorization/README.md) | Require authenticated scopes and claims before route responses |
 | `claims-transform` | Route | [Wafish.Plugin.ClaimsTransform](src/Wafish.Plugin.ClaimsTransform/README.md) | Authenticated claims to downstream headers, queries, and paths |
 | `redirect` | Route | [Wafish.Plugin.Redirect](src/Wafish.Plugin.Redirect/README.md) | Fixed and template redirects, HTTPS enforcement, host allowlists, and preview |
 | `waf` | Route | [Wafish.Plugin.Waf](src/Wafish.Plugin.Waf/README.md) | IP allow/deny, SQLi, XSS, path traversal, request limits, and security headers |
@@ -311,6 +312,7 @@ Report bugs and feature requests via GitHub Issues. All first-party packages are
 | **Wafish.Storage.Sqlite** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Storage.Sqlite.svg)](https://www.nuget.org/packages/Wafish.Storage.Sqlite) |
 | **Wafish.Grpc** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Grpc.svg)](https://www.nuget.org/packages/Wafish.Grpc) |
 | **Wafish.Plugin.Abstractions** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Plugin.Abstractions.svg)](https://www.nuget.org/packages/Wafish.Plugin.Abstractions) |
+| **Wafish.Plugin.RouteAuthorization** | Source package; publication is separate. |
 | **Wafish.Plugin.ClaimsTransform** | Source package; publication is separate. |
 | **Wafish.Plugin.Cache** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Plugin.Cache.svg)](https://www.nuget.org/packages/Wafish.Plugin.Cache) |
 | **Wafish.Plugin.CircuitBreaker** | [![NuGet](https://img.shields.io/nuget/v/Wafish.Plugin.CircuitBreaker.svg)](https://www.nuget.org/packages/Wafish.Plugin.CircuitBreaker) |
