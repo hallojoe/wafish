@@ -16,3 +16,15 @@ See [migration notes](../../../docs/security.md) and [verification](../../../ARC
 The redirect addition records the new plugin package, redirect preview DTOs/controller, and execution stage `Redirect = 250`.
 It adds no required interface members and removes no existing declarations.
 The manifest requires host capability `wafish.redirect-endpoint` version 1.
+
+The claims-transform addition records its new package API. Existing declarations remain unchanged.
+It requires `wafish.claims-transform` version 1 and compiles outbound mappings before activation.
+
+The route-authorization addition records its new plugin API and host capability `wafish.route-authorization` version 1.
+The host-local pipeline guard and claims-compiler constructor overload are additive. Existing constructors remain supported.
+
+Internal route execution adds batch contracts, snapshot route identities, and snapshot graph validation.
+Existing snapshot constructors and plugin interfaces remain compatible.
+
+The aggregation addition records its new plugin API and `wafish.request-aggregation` host capability.
+Existing plugin interfaces and constructors remain supported. Child execution uses the additive internal route contracts.

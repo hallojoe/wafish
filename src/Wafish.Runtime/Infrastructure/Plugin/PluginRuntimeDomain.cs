@@ -51,6 +51,8 @@ public sealed class PluginRuntimeDomain : IAsyncDisposable
         DashboardBuilder = dashboardBuilder ?? new PluginDashboardBuilder();
     }
 
+    internal RequestDelegate AggregationPipeline { get; init; } = _ => Task.CompletedTask;
+
     internal RequestDelegate RedirectPipeline { get; init; } = _ => Task.CompletedTask;
 
     internal long Generation { get; set; }
@@ -379,7 +381,7 @@ public sealed partial class PluginRuntimeDomainManager : IPluginRuntimeDomainMan
             }
 
             var candidate = new PluginRuntimeDomain(servicesWithFallback, plugins, middleware, proxyPipeline, externalLoads, dashboardBuilder)
-            { RedirectPipeline = BuildRedirectPipeline(servicesWithFallback, plugins) };
+            { RedirectPipeline = BuildRedirectPipeline(servicesWithFallback, plugins), AggregationPipeline = BuildAggregationPipeline(servicesWithFallback, plugins) };
             return new PluginRuntimeDomainPreparation(this, candidate);
         }
         catch

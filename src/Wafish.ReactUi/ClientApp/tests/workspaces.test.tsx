@@ -541,3 +541,83 @@ describe("extension and account drafts", () => {
     expect(screen.getByLabelText("Verification code")).toHaveValue("123456");
   });
 });
+
+it("shows named aggregate dependencies and excludes clusterless parents", async () => {
+  const schema = {
+    properties: {
+      children: {
+        type: "array",
+        default: [],
+        items: {
+          type: "object",
+          properties: {
+            routeUid: {
+              type: "string",
+              format: "wafish-route-uid",
+              title: "Child route",
+            },
+          },
+        },
+      },
+    },
+  };
+  vi.stubGlobal(
+    "fetch",
+    vi.fn((path: string) =>
+      Promise.resolve(
+        Response.json(
+          path.endsWith("/plugins")
+            ? [
+                {
+                  pluginId: "request-aggregation",
+                  displayName: "Aggregation",
+                  schemas: [
+                    { version: 1, configJsonSchema: JSON.stringify(schema) },
+                  ],
+                },
+              ]
+            : path.endsWith("/routes")
+              ? [
+                  { routeId: "combined", routeUid: "parent" },
+                  {
+                    routeId: "profiles",
+                    routeUid: "child",
+                    clusterId: "backend",
+                  },
+                  { routeId: "missing-uid", clusterId: "backend" },
+                ]
+              : [],
+        ),
+      ),
+    ),
+  );
+  mount(<BindingsPage />);
+  await waitFor(() =>
+    expect(screen.queryAllByRole("status", { name: "Loading" })).toHaveLength(
+      0,
+    ),
+  );
+  fireEvent.click(
+    screen.getByRole("button", { name: "New binding", exact: true }),
+  );
+  const dialog = await screen.findByRole("dialog");
+  fireEvent.change(within(dialog).getByLabelText("Target"), {
+    target: { value: "combined" },
+  });
+  fireEvent.click(within(dialog).getByText("Common fields"));
+  fireEvent.click(
+    within(dialog).getByRole("button", { name: "Add children", exact: true }),
+  );
+  const child = within(dialog).getByLabelText("Child route");
+  expect(within(child).getByRole("option", { name: "profiles" })).toHaveValue(
+    "child",
+  );
+  expect(within(child).queryByRole("option", { name: "combined" })).toBeNull();
+  expect(
+    within(child).queryByRole("option", { name: "missing-uid" }),
+  ).toBeNull();
+  fireEvent.change(child, { target: { value: "child" } });
+  expect(within(dialog).getByRole("status")).toHaveTextContent(
+    "Referenced routes",
+  );
+});

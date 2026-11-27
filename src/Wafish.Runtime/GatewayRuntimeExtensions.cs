@@ -9,6 +9,10 @@ using Wafish.Dashboard.Modules.Dashboard.Services;
 using Wafish.Dashboard.Modules.GatewayConfig.Services;
 using Wafish.Plugin.Cache;
 using Wafish.Plugin.Redirect;
+using Wafish.Plugin.ClaimsTransform;
+using Wafish.Plugin.RouteAuthorization;
+using Wafish.Plugin.Aggregation;
+using Wafish.Runtime.InternalExecution;
 using Wafish.Plugin.CircuitBreaker;
 using Wafish.Plugin.Compression;
 using Wafish.Plugin.Metrics;
@@ -134,6 +138,24 @@ public static class GatewayRuntimeExtensions
         services.AddSingleton<IGatewayPlugin, ClusterMetricsPlugin>();
         services.AddSingleton<IGatewayPlugin, HttpServiceDiscoveryPlugin>();
         services.AddSingleton<IGatewayPlugin, CompressionPlugin>();
+        services.AddAuthorization();
+        services.AddRateLimiter(_ => { });
+        services.AddRequestTimeouts();
+        services.AddSingleton<InternalRouteExecutor>();
+        services.AddSingleton<IInternalRouteExecutor>(sp => sp.GetRequiredService<InternalRouteExecutor>());
+        services.AddSingleton<Microsoft.Extensions.Hosting.IHostedService>(sp => sp.GetRequiredService<InternalRouteExecutor>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<ITransformProvider, InternalForwarderTransformProvider>());
+        services.TryAddSingleton<RoutePolicyPipelineSupport>();
+        services.AddSingleton<IGatewayPlugin, AggregationPlugin>();
+        services.AddSingleton<IRoutePluginCompiler, AggregationCompiler>();
+        services.AddSingleton<AggregationAdmission>();
+        services.AddSingleton<AggregationHandler>();
+        services.AddSingleton<IGatewayPlugin, RouteAuthorizationPlugin>();
+        services.AddSingleton<IRoutePluginCompiler, RouteAuthorizationCompiler>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<ITransformProvider, RouteAuthorizationTransformProvider>());
+        services.AddSingleton<IGatewayPlugin, ClaimsTransformPlugin>();
+        services.AddSingleton<IRoutePluginCompiler, ClaimsTransformCompiler>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<ITransformProvider, ClaimsTransformProvider>());
         services.AddSingleton<IGatewayPlugin, RedirectPlugin>();
         services.AddSingleton<IRoutePluginCompiler, RedirectConfigurationCompiler>();
         services.AddSingleton<PluginMetricStore>();
@@ -183,8 +205,16 @@ public static class GatewayRuntimeExtensions
     public static IEndpointConventionBuilder MapWafishProxy(this IEndpointRouteBuilder endpoints,
         Action<IReverseProxyApplicationBuilder>? configure = null, bool useBuiltInPipeline = true)
     {
+        if (!useBuiltInPipeline)
+        {
+            endpoints.ServiceProvider.GetService<RoutePolicyPipelineSupport>()?.Disable();
+            if (endpoints.ServiceProvider.GetService<IGatewaySnapshotPublisher>()?.Current.Routes.Any(r =>
+                r.Metadata?.ContainsKey("wafish:request-aggregation") == true || r.Metadata?.ContainsKey("wafish:route-authorization") == true || r.Metadata?.ContainsKey("wafish:claims-transform") == true) == true)
+                throw new InvalidOperationException("Active endpoint policies require the built-in proxy pipeline.");
+        }
         var conventions = endpoints.MapReverseProxy(proxy =>
         {
+            proxy.Use((context, next) => { InternalRouteExecutor.RestoreProxyFeature(context); return next(context); });
             proxy.UseMiddleware<Wafish.Dashboard.Infrastructure.Resilience.DestinationMaintenanceMiddleware>();
             if (useBuiltInPipeline)
             {
@@ -199,8 +229,10 @@ public static class GatewayRuntimeExtensions
             conventions.Add(endpoint =>
             {
                 var forward = endpoint.RequestDelegate!;
-                endpoint.RequestDelegate = context => context.RequestServices.GetRequiredService<PluginRuntimeDomainManager>()
-                    .InvokeRedirectPipelineAsync(context, forward);
+                endpoint.RequestDelegate = context => RouteAuthorizationMiddleware.InvokeAsync(context, authorized =>
+                    ClaimsTransformProvider.InvokeAsync(authorized, inner => inner.RequestServices.GetRequiredService<PluginRuntimeDomainManager>()
+                        .InvokeAggregationPipelineAsync(inner, aggregate => aggregate.RequestServices.GetRequiredService<PluginRuntimeDomainManager>()
+                            .InvokeRedirectPipelineAsync(aggregate, forward))));
             });
         }
         return conventions;

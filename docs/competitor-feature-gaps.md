@@ -17,6 +17,9 @@ Sources:
 
 ### G01: Request and response aggregation
 
+Implementation update: [Aggregation](../src/Wafish.Plugin.Aggregation/README.md) now provides bounded parallel GET JSON composition.
+Dependent calls, writes, partial responses, and custom composition remain deferred.
+
 Ocelot combines multiple downstream routes into one response, including dependent calls and custom aggregators.
 Veritas documents aggregation through a custom route implementation, rather than an equivalent declarative engine.
 Wafish forwards through YARP and has no aggregate-route model or response-composition plugin.
@@ -68,6 +71,10 @@ Evidence: [Veritas Azure Functions](https://github.com/VeritasSoftware/AspNetCor
 Wafish entry point: [hosting extensions](../src/Wafish.Runtime/GatewayRuntimeExtensions.cs).
 
 ### G06: Declarative claims transformations
+
+Implementation update: downstream headers, query parameters, and path mappings now exist in
+[ClaimsTransform](../src/Wafish.Plugin.ClaimsTransform/README.md). Claims-to-claims transformation remains deferred under G06-FULL.
+The following comparison records the reviewed baseline.
 
 Ocelot maps authenticated claims into other claims, headers, query parameters, and downstream paths.
 Wafish retains native YARP transforms and supports custom middleware.
@@ -143,6 +150,9 @@ Wafish entry points: [cache middleware](../src/Wafish.Plugin.Cache/ResponseCache
 [cache store](../src/Wafish.Plugin.Cache/ResponseCacheStore.cs).
 
 ### G13: Configurable route claims and scope requirements
+
+Implementation update: [RouteAuthorization](../src/Wafish.Plugin.RouteAuthorization/README.md) now provides these rules.
+The following comparison records the reviewed baseline.
 
 Ocelot exposes allowed scopes and required claim values in route configuration.
 Wafish supports named ASP.NET Core authorization policies through YARP.
