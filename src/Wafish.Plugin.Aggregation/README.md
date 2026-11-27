@@ -34,7 +34,7 @@ Children preserve authentication credentials, route authorization, WAF, quotas, 
 Parent quotas apply once. Child quotas apply to each child execution.
 See [internal execution](../Wafish.Runtime/README.md#internal-route-execution) for host integration limits.
 
-Every child must return successful JSON. A 204 response becomes `null`.
+Every child must return successful UTF-8 JSON. A 204 response becomes `null`.
 The response uses child names as properties and `Cache-Control: no-store`.
 Child headers and cookies are not copied. Invalid JSON, unsupported encodings, transport errors, and size failures return 502.
 Policy failures retain 401, 403, or 429. Deadlines return 504; admission failures return 503.

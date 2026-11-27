@@ -405,7 +405,7 @@ for (const [mode, port] of [
     ).toBeVisible();
   });
 }
-test("plugin bindings, presets, and activation use real administration APIs", async ({
+test("plugin bindings and presets use real administration APIs", async ({
   page,
 }) => {
   await login(page);
@@ -493,6 +493,10 @@ test("plugin bindings, presets, and activation use real administration APIs", as
   await expect(
     page.getByRole("row").filter({ hasText: "response-cache" }),
   ).toHaveCount(0);
+});
+
+test("plugin activation uses real administration APIs", async ({ page }) => {
+  await login(page);
   await open(page, "/extensions/plugins", "Plugins");
   const card = page.locator('[data-slot="card"]').filter({
     has: page.getByRole("heading", { name: "Response Cache", exact: true }),
