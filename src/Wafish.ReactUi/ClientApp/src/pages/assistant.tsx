@@ -25,6 +25,38 @@ import {
   Confirm,
   JsonView,
 } from "@/components/workspace";
+
+const commonActions = [
+  {
+    title: "List routes",
+    prompt:
+      "List my routes with their matching paths, clusters, and enabled state.",
+  },
+  {
+    title: "Inspect backends",
+    prompt: "List my clusters and their configured backend destinations.",
+  },
+  {
+    title: "Review traffic",
+    prompt:
+      "Summarize the available traffic statistics and highlight errors or unusual patterns.",
+  },
+  {
+    title: "List plugins",
+    prompt: "List the available plugins and explain what each one does.",
+  },
+  {
+    title: "Troubleshoot a route",
+    prompt:
+      "Help me troubleshoot a route. Ask which route, then inspect its match and backend configuration.",
+  },
+  {
+    title: "Create a route",
+    prompt:
+      "Help me create a route. Ask for its name, match path, cluster, and backend address before proposing changes.",
+  },
+];
+
 export function AssistantPage() {
   const [session, setSession] = useState("");
   const [message, setMessage] = useState("");
@@ -33,6 +65,7 @@ export function AssistantPage() {
   const [error, setError] = useState<unknown>();
   const [busy, setBusy] = useState(false);
   const controller = useRef<AbortController | null>(null);
+  const messageInput = useRef<HTMLTextAreaElement>(null);
   const queryClient = useQueryClient();
   const mutation = useWrite();
   const { t } = useLocale();
@@ -221,6 +254,41 @@ export function AssistantPage() {
               </div>
             ))}
             <ErrorNotice error={error} />
+            <section
+              aria-labelledby="assistant-common-actions"
+              className="space-y-3"
+            >
+              <h3 id="assistant-common-actions" className="font-medium">
+                {t("Common actions")}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {t(
+                  message.trim()
+                    ? "Clear your draft to choose another action."
+                    : "Choose an action, review the message, then send it.",
+                )}
+              </p>
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                {commonActions.map((action) => (
+                  <Button
+                    key={action.title}
+                    type="button"
+                    variant="outline"
+                    className="h-auto min-w-0 flex-col items-start gap-1 whitespace-normal p-3 text-left"
+                    disabled={busy || !!message.trim()}
+                    onClick={() => {
+                      setMessage(t(action.prompt));
+                      messageInput.current?.focus();
+                    }}
+                  >
+                    <span className="font-medium">{t(action.title)}</span>
+                    <span className="text-xs font-normal text-muted-foreground">
+                      {t(action.prompt)}
+                    </span>
+                  </Button>
+                ))}
+              </div>
+            </section>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -230,6 +298,7 @@ export function AssistantPage() {
             >
               <Field label="Message">
                 <Textarea
+                  ref={messageInput}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   disabled={busy}

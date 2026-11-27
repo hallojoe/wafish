@@ -114,6 +114,7 @@ public partial class DynamicYarpConfigService : IDynamicYarpConfigService, IHost
         {
             using var mutation = BeginMutation(cancellationToken);
             var config = mutation.Config;
+            MigrateRegistrationMetadata(config);
             var thisStartupStaticRoutes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var thisStartupStaticClusters = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 

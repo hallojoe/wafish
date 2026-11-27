@@ -43,6 +43,7 @@ Direct project references: [Wafish](../../src/Wafish/README.md), [Wafish.Adminis
 
 Options: `--storage`, `--redis`, and `--dashboard-routes`.
 Live Redis checks require `WAFISH_REDIS_SERVER` to identify a Redis server executable.
+Use `--group registration-migration` for legacy ownership, port replacement, lease protection, and failed migration checks.
 
 Build and verification commands are in [AGENTS.md](AGENTS.md). Future work is in [PLAN.md](../../PLAN.md).
 

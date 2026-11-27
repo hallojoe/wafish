@@ -59,11 +59,11 @@ public class AIService
         }
 
         var baseUrl = opts.BaseUrl.TrimEnd('/');
-        var body = JsonSerializer.Serialize(new
+        var body = JsonSerializer.Serialize(new Dictionary<string, object?>
         {
-            model = opts.ChatModel,
-            messages = new[] { new { role = "user", content = "Hi" } },
-            max_tokens = 5
+            ["model"] = opts.ChatModel,
+            ["messages"] = new[] { new { role = "user", content = "Hi" } },
+            [TokenLimitParameter(opts)] = 5
         }, JsonOpts);
 
         try
@@ -108,7 +108,7 @@ public class AIService
                 new { role = "system", content = systemPrompt },
                 new { role = "user", content = userMessage }
             },
-            ["max_tokens"] = opts.MaxTokens,
+            [TokenLimitParameter(opts)] = opts.MaxTokens,
             ["temperature"] = opts.Temperature
         };
         var body = JsonSerializer.Serialize(payload, JsonOpts);
@@ -255,7 +255,8 @@ public class AIService
     private async IAsyncEnumerable<AIStreamEvent> StreamLLMCallAsync(
         List<Dictionary<string, object?>> messages,
         List<object>? tools,
-        [EnumeratorCancellation] CancellationToken ct)
+        [EnumeratorCancellation] CancellationToken ct,
+        bool disableReasoning = false)
     {
         var opts = _config.Current;
         var baseUrl = opts.BaseUrl.TrimEnd('/');
@@ -265,10 +266,14 @@ public class AIService
             ["model"] = opts.ChatModel,
             ["messages"] = messages,
             ["stream"] = true,
-            ["max_tokens"] = opts.MaxTokens,
+            [TokenLimitParameter(opts)] = opts.MaxTokens,
             ["temperature"] = opts.Temperature
         };
-        if (!string.IsNullOrEmpty(opts.ReasoningEffort) && opts.ReasoningEffort != "auto")
+        if (disableReasoning)
+        {
+            requestPayload["reasoning_effort"] = "none";
+        }
+        else if (!string.IsNullOrEmpty(opts.ReasoningEffort) && opts.ReasoningEffort != "auto")
         {
             requestPayload["reasoning_effort"] = opts.ReasoningEffort;
         }
@@ -278,28 +283,42 @@ public class AIService
             requestPayload["tools"] = tools;
         }
 
-        var body = JsonSerializer.Serialize(requestPayload, JsonOpts);
-
         Stream? responseStream = null;
+        HttpResponseMessage? response = null;
         string? errorMsg = null;
         int? statusCode = null;
         string? respContentType = null;
         try
         {
-            using var req = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/chat/completions");
-            req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", opts.ApiKey);
-            req.Content = new StringContent(body, Encoding.UTF8, "application/json");
-            var resp = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
-            statusCode = (int)resp.StatusCode;
-            respContentType = resp.Content.Headers.ContentType?.MediaType;
-            if (!resp.IsSuccessStatusCode)
+            for (var attempt = 0; attempt < 2; attempt++)
             {
-                var errBody = await resp.Content.ReadAsStringAsync(ct);
+                using var req = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/chat/completions");
+                req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", opts.ApiKey);
+                req.Content = new StringContent(JsonSerializer.Serialize(requestPayload, JsonOpts), Encoding.UTF8, "application/json");
+                response = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
+                statusCode = (int)response.StatusCode;
+                respContentType = response.Content.Headers.ContentType?.MediaType;
+                if (response.IsSuccessStatusCode)
+                {
+                    responseStream = await response.Content.ReadAsStreamAsync(ct);
+                    break;
+                }
+
+                var errBody = await response.Content.ReadAsStringAsync(ct);
+                if (attempt == 0 && statusCode == 400 && tools is { Count: > 0 }
+                    && string.Equals(opts.Provider, "openai", StringComparison.OrdinalIgnoreCase)
+                    && !Equals(requestPayload.GetValueOrDefault("reasoning_effort"), "none")
+                    && IsToolReasoningRejection(errBody))
+                {
+                    response.Dispose();
+                    response = null;
+                    disableReasoning = true;
+                    requestPayload["reasoning_effort"] = "none";
+                    continue;
+                }
+
                 errorMsg = $"LLM API error {statusCode} ({respContentType}): {Truncate(errBody, 300)}";
-            }
-            else
-            {
-                responseStream = await resp.Content.ReadAsStreamAsync(ct);
+                break;
             }
         }
         catch (OperationCanceledException)
@@ -311,6 +330,7 @@ public class AIService
             errorMsg = $"{ex.GetType().Name}: {ex.Message}";
         }
 
+        using var responseLifetime = response;
         if (errorMsg != null)
         {
             yield return new AIStreamEvent { Type = "error", Error = errorMsg };
@@ -322,6 +342,7 @@ public class AIService
         var toolCallAccumulator = new Dictionary<int, (string id, string name, StringBuilder args)>();
         var hasToolCalls = false;
         var dataLineCount = 0;
+        var assistantContent = new StringBuilder();
 
         while (await reader.ReadLineAsync(ct) is { } line)
         {
@@ -361,6 +382,7 @@ public class AIService
             // Stream content (some reasoning models put text in reasoning_content instead of content)
             if (!string.IsNullOrEmpty(delta.Content))
             {
+                assistantContent.Append(delta.Content);
                 yield return new AIStreamEvent { Type = "chunk", Content = delta.Content };
             }
             else if (!string.IsNullOrEmpty(delta.ReasoningContent))
@@ -411,6 +433,18 @@ public class AIService
         // Execute accumulated tool calls
         if (hasToolCalls && toolCallAccumulator.Count > 0)
         {
+            // Tool results must follow the assistant message that requested those calls.
+            messages.Add(new Dictionary<string, object?>
+            {
+                ["role"] = "assistant",
+                ["content"] = assistantContent.ToString(),
+                ["tool_calls"] = toolCallAccumulator.OrderBy(x => x.Key).Select(x => new
+                {
+                    id = x.Value.id,
+                    type = "function",
+                    function = new { name = x.Value.name, arguments = x.Value.args.ToString() }
+                }).ToArray()
+            });
             var executedAnyReadTool = false;
             foreach (var kvp in toolCallAccumulator.OrderBy(x => x.Key))
             {
@@ -449,19 +483,54 @@ public class AIService
                         ["content"] = result
                     });
                 }
+                else
+                {
+                    // Mixed read/write batches still need a response for every call ID.
+                    messages.Add(new Dictionary<string, object?>
+                    {
+                        ["role"] = "tool",
+                        ["tool_call_id"] = id,
+                        ["content"] = "{\"status\":\"confirmation_required\",\"message\":\"Not executed. Waiting for user confirmation.\"}"
+                    });
+                }
             }
 
             // If any read tools were executed, call LLM again for a streaming text response
             if (executedAnyReadTool)
             {
                 // Remove tools for the second call to force a text response
-                await foreach (var evt in StreamLLMCallAsync(messages, null, ct))
+                await foreach (var evt in StreamLLMCallAsync(messages, null, ct, disableReasoning))
                 {
                     yield return evt;
                 }
             }
         }
     }
+
+    private static bool IsToolReasoningRejection(string body)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(body);
+            var root = document.RootElement;
+            if (root.ValueKind != JsonValueKind.Object || !root.TryGetProperty("error", out var error)
+                || error.ValueKind != JsonValueKind.Object) return false;
+            return error.TryGetProperty("type", out var type) && type.ValueKind == JsonValueKind.String
+                && type.GetString() == "invalid_request_error"
+                && error.TryGetProperty("param", out var param) && param.ValueKind == JsonValueKind.String
+                && param.GetString() == "reasoning_effort"
+                && error.TryGetProperty("message", out var message) && message.ValueKind == JsonValueKind.String
+                && message.GetString()!.Contains("Function tools with reasoning_effort are not supported", StringComparison.OrdinalIgnoreCase)
+                && message.GetString()!.Contains("reasoning_effort to 'none'", StringComparison.OrdinalIgnoreCase);
+        }
+        catch (JsonException) { return false; }
+    }
+
+    // OpenAI replaced max_tokens. Other compatible providers can still require the legacy field.
+    private static string TokenLimitParameter(AIOptions options) =>
+        string.Equals(options.Provider, "openai", StringComparison.OrdinalIgnoreCase)
+            ? "max_completion_tokens"
+            : "max_tokens";
 
     private static string Truncate(string s, int max) => s.Length <= max ? s : s[..max] + "...";
 

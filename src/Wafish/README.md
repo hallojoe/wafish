@@ -53,6 +53,8 @@ See [resource limits and consumer changes](../../docs/security.md#request-resour
 Configuration, binding, and discovery writers share one publication gate. Stored revisions remain separate from runtime generations.
 `DynamicYarpConfigService.ReconcileAsync` reloads committed storage after an activation failure.
 Instance destination updates require `InstanceId` and the expected configuration revision. Peer destinations remain unchanged.
+Startup migrates legacy `aneiang.registration.*` ownership and lease keys to `wafish.registration.*` in one configuration transaction.
+Conflicting legacy and current values stop startup without changing stored configuration.
 
 ## Batch route deletion
 

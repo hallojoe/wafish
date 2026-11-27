@@ -144,6 +144,104 @@ describe.each(pages)("%s workspace", (_name, page) => {
     expect(screen.queryByText("obsolete")).not.toBeInTheDocument();
   });
 });
+describe("assistant common actions", () => {
+  it.each([
+    "List routes",
+    "Inspect backends",
+    "Review traffic",
+    "List plugins",
+    "Troubleshoot a route",
+    "Create a route",
+  ])("prepares an editable %s message without sending it", async (title) => {
+    const fetcher = vi.fn<
+      (path: string, init?: RequestInit) => Promise<Response>
+    >(() => Promise.resolve(Response.json([])));
+    vi.stubGlobal("fetch", fetcher);
+    mount(<AssistantPage />);
+    const suggestions = screen.getByRole("region", { name: "Common actions" });
+    expect(within(suggestions).getAllByRole("button")).toHaveLength(6);
+    fireEvent.click(
+      within(suggestions).getByRole("button", {
+        name: new RegExp(`^${title}`),
+      }),
+    );
+    const input = screen.getByLabelText("Message");
+    expect(input).toHaveFocus();
+    expect((input as HTMLTextAreaElement).value.length).toBeGreaterThan(20);
+    fireEvent.change(input, { target: { value: "My edited request" } });
+    expect(input).toHaveValue("My edited request");
+    expect(
+      screen.getByRole("button", { name: "Send", exact: true }),
+    ).toBeEnabled();
+    expect(
+      fetcher.mock.calls.every(
+        ([, init]) => !init?.method || init.method === "GET",
+      ),
+    ).toBe(true);
+  });
+
+  it("preserves drafts and enables suggestions after clearing the message", () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(Response.json([]))),
+    );
+    mount(<AssistantPage />);
+    const input = screen.getByLabelText("Message");
+    fireEvent.change(input, { target: { value: "Keep my draft" } });
+    const action = screen.getByRole("button", {
+      name: /^List routes/,
+    });
+    expect(action).toBeDisabled();
+    fireEvent.click(action);
+    expect(input).toHaveValue("Keep my draft");
+    fireEvent.change(input, { target: { value: "" } });
+    expect(action).toBeEnabled();
+    fireEvent.click(action);
+    expect(input).toHaveValue(
+      "List my routes with their matching paths, clusters, and enabled state.",
+    );
+  });
+
+  it("disables suggestions throughout streaming and restores them afterward", async () => {
+    let stream!: ReadableStreamDefaultController<Uint8Array>;
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        stream = controller;
+      },
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((_path: string, init?: RequestInit) =>
+        Promise.resolve(
+          init?.method === "POST" ? new Response(body) : Response.json([]),
+        ),
+      ),
+    );
+    mount(<AssistantPage />);
+    const action = screen.getByRole("button", {
+      name: /^List routes/,
+    });
+    fireEvent.click(action);
+    fireEvent.click(screen.getByRole("button", { name: "Send", exact: true }));
+    await waitFor(() =>
+      expect(screen.getByLabelText("Message")).toHaveValue(""),
+    );
+    expect(action).toBeDisabled();
+    fireEvent.click(action);
+    expect(screen.getByLabelText("Message")).toHaveValue("");
+    await act(async () => stream.close());
+    await waitFor(() => expect(action).toBeEnabled());
+  });
+
+  it("does not offer actions when AI is disabled", () => {
+    config.ai = false;
+    mount(<AssistantPage />);
+    expect(
+      screen.queryByRole("region", { name: "Common actions" }),
+    ).not.toBeInTheDocument();
+  });
+});
+
 describe("draft ownership", () => {
   function mockWrites() {
     const pending = deferred();
