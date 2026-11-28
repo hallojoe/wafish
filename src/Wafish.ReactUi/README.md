@@ -114,3 +114,9 @@ See the [redirect reference](../Wafish.Plugin.Redirect/README.md) for validation
 
 The aggregation binding editor selects child routes by name and stores stable route UIDs.
 Nested rows edit child paths, query mappings, and header allowlists. Missing child selections show dependency feedback.
+
+## External login bindings
+
+The external-login editor lists host-configured sites and their API token targets.
+Changing the site or selecting page mode clears incompatible token selections.
+Provider credentials remain in host configuration. Provider changes require a gateway restart.
