@@ -12,3 +12,44 @@ GET {{baseUrl}}/api/local-service/stream?chunks=100&intervalMilliseconds=1000
 
 ### Invalid record count returns HTTP 400
 GET {{baseUrl}}/api/local-service/stream?chunks=0
+
+### Create a synthetic order. Use one backend or a gateway route pinned to one backend.
+POST {{baseUrl}}/api/local-service/orders
+Content-Type: application/json
+Idempotency-Key: sample-order-00000001
+
+{"product":"sample-widget","quantity":2}
+
+### Replay the same semantic request. Expect the same 201 body and Idempotency-Replayed: true.
+POST {{baseUrl}}/api/local-service/orders
+Content-Type: application/json
+Idempotency-Key: sample-order-00000001
+
+{"quantity":2,"product":"sample-widget"}
+
+### A conflicting payload returns 409 during the five-minute retention period.
+POST {{baseUrl}}/api/local-service/orders
+Content-Type: application/json
+Idempotency-Key: sample-order-00000001
+
+{"product":"sample-widget","quantity":3}
+
+### Replace this ID with the creation response ID. Unknown and expired IDs return 404.
+GET {{baseUrl}}/api/local-service/orders/00000000-0000-0000-0000-000000000000
+
+### Non-synthetic products are invalid.
+POST {{baseUrl}}/api/local-service/orders
+Content-Type: application/json
+Idempotency-Key: sample-order-00000002
+
+{"product":"unknown-product","quantity":1}
+
+### Unknown properties are rejected, including customer data.
+POST {{baseUrl}}/api/local-service/orders
+Content-Type: application/json
+Idempotency-Key: sample-order-00000002
+
+{"product":"sample-widget","quantity":1,"customer":"synthetic-only"}
+
+### Inspect the API document in Development or the orchestrated sample profile.
+GET {{baseUrl}}/openapi/v1.json

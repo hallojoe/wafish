@@ -1,5 +1,6 @@
 using Wafish.Extensions;
 using SampleLocalService;
+using SampleLocalService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,11 +35,15 @@ builder.Services.AddWafishClient(options => options.InstanceId = identity.Value)
 
 // Your business services
 builder.Services.AddControllers();
+builder.Services.AddSampleOrders();
 
 var app = builder.Build();
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 app.UseRouting();
 app.Use(async (context, next) => { identity.Apply(context); await next(context); });
 app.MapControllers();
+if (app.Environment.IsDevelopment() || builder.Configuration.GetValue<bool>("Sample:Orchestrated")) app.MapOpenApi();
 app.MapDefaultEndpoints();
 app.MapGet("/api/local-service/instance", (SampleInstanceIdentity instance) =>
 {

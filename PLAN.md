@@ -91,25 +91,6 @@ Source entry points:
 - [Observation pages](src/Wafish.ReactUi/ClientApp/src/pages/observe.tsx) — log and audit filters.
 - [Dashboard authorization](src/Wafish.Administration/Infrastructure/Auth/DashboardAuthorizationService.cs) — authenticated operation permissions.
 
-<a id="r54"></a>
-
-## R54: Demonstrate idempotent orders
-
-Status: TODO.
-
-Current: The sample exposes ping and echo operations. It has no idempotent write example.
-
-Remaining: Add a synthetic order operation using an idempotency key and bounded retained state.
-Define key scope, request comparison, expiry, and concurrent duplicate behavior.
-This demonstrates application behavior; it does not add gateway-wide idempotency guarantees.
-
-Acceptance: Repeated keys do not create duplicate orders. Conflicting payloads are rejected.
-
-Source entry points:
-
-- [Sample controller](samples/SampleLocalService/Controllers/LocalServiceController.cs) — write endpoint integration point.
-- [Sample startup](samples/SampleLocalService/Program.cs) — sample state registration.
-
 <a id="idea-01"></a>
 
 ## IDEA-01: Separate administration and gateway processes

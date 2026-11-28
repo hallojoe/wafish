@@ -101,3 +101,12 @@ Responses use `Cache-Control: no-store, no-transform` to prevent caching and com
 
 The [streaming walkthrough](../../docs/cancellable-streaming.md) covers cancellation, cache, compression bypass, and retry deadlines.
 [HTTP examples](SampleLocalService.http) include valid and invalid requests.
+
+## Idempotent synthetic orders
+
+`POST /api/local-service/orders` creates a bounded synthetic order using one `Idempotency-Key`.
+Repeated keys replay the original result. Conflicting product or quantity returns 409.
+Each process retains up to 1,024 orders for five minutes, with atomic concurrent handling.
+Use one backend or a dedicated single-destination route. Default load-balanced backends do not share state.
+See [scope, expiry, retry behavior, and verification](../../docs/idempotent-sample-orders.md).
+The API document is available at `/openapi/v1.json` in Development and the orchestrated sample profile.
