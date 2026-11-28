@@ -188,7 +188,7 @@ class BudgetTests(unittest.TestCase):
                 change()
                 candidate.write_text(json.dumps(self.candidate))
                 self.assertEqual(expected, budgets.main(arguments))
-            for malformed in ('{}', '{', '{"a":1,"a":2}', '{"x":NaN}', '[]'):
+            for malformed in ('{}', '{', '{"a":1,"a":2}', '{"x":NaN}', '[]', '[' * 1100 + ']' * 1100):
                 candidate.write_text(malformed)
                 self.assertEqual(2, budgets.main(arguments))
             candidate.write_text(json.dumps(report()))
@@ -197,9 +197,12 @@ class BudgetTests(unittest.TestCase):
             self.assertEqual(report(), json.loads(candidate.read_text()))
             (root / "performance-other.json").write_text('{}')
             self.assertEqual(2, budgets.main(arguments))
+            self.assertEqual(2, budgets.main(["--candidate", str(root), "--output", str(candidate)]))
+            self.assertEqual(report(), json.loads(candidate.read_text()))
             self.assertEqual(2, budgets.main(["--candidate", str(root / "missing"), "--output", str(output)]))
             candidate.write_text(' ' * (16 * 1024 * 1024 + 1))
             self.assertEqual(2, budgets.main(["--candidate", str(candidate), "--output", str(output)]))
+            self.assertEqual(2, budgets.main(["--candidate", str(candidate), "--output", str(root)]))
 
     def test_process_exit_code(self):
         with tempfile.TemporaryDirectory() as directory:

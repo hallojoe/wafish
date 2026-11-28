@@ -182,6 +182,16 @@ def main(argv=None):
     parser.add_argument("--output", required=True)
     args = parser.parse_args(argv)
     output = Path(args.output)
+    protected = []
+    for value in (args.baseline, args.candidate, args.policy):
+        if value:
+            path = Path(value)
+            protected.append(path.resolve())
+            if path.is_dir():
+                protected.extend(p.resolve() for p in path.glob("performance-*.json"))
+    if output.resolve() in protected:
+        print("invalid: output cannot replace an input file")
+        return EXIT_CODES["invalid"]
     inputs = {}
     try:
         for name in ("baseline", "candidate", "policy"):
@@ -196,21 +206,25 @@ def main(argv=None):
                             for key, path in inputs.items()}
         result["candidateRevision"] = data["candidate"]["environment"]["sourceRevision"]
         result["baselineRevision"] = data.get("baseline", {}).get("environment", {}).get("sourceRevision")
-    except (ValueError, KeyError, TypeError, OSError, AttributeError, OverflowError) as error:
+    except (ValueError, KeyError, TypeError, OSError, AttributeError, OverflowError, RecursionError) as error:
         result = {"status": "invalid", "error": str(error)}
     # Even malformed input must not let an output path overwrite a report or policy.
-    protected = [Path(value).resolve() for value in (args.baseline, args.candidate, args.policy) if value]
     protected += [path.resolve() for path in inputs.values()]
     if output.resolve() in protected:
         print("invalid: output cannot replace an input file")
         return EXIT_CODES["invalid"]
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps({"schemaVersion": 1, **result}, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+    try:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(json.dumps({"schemaVersion": 1, **result}, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+    except OSError as error:
+        print("invalid: cannot write decision: " + str(error))
+        return EXIT_CODES["invalid"]
     print(result["status"] + ": " + str(output))
     for row in result.get("measurements", []):
         if row["status"] != "passed":
             print(f"  {row['gateway']} / {row['scenario']} / {row['metric']}: {row['status']}; "
-                  f"change {row['regressionPercent']:.2f}%, budget {row['budgetPercent']}%")
+                  f"change {row['regressionPercent']:.2f}%, budget {row['budgetPercent']}%; "
+                  f"spread {row['baselineSpreadPercent']:.2f}% / {row['candidateSpreadPercent']:.2f}%")
     return EXIT_CODES[result["status"]]
 
 

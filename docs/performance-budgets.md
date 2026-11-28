@@ -16,6 +16,7 @@ Each run retains raw JSON, CSV, and Markdown in `performance-reports` for 90 day
 Comparison decisions, the selected baseline, and the policy are retained in `performance-comparison`.
 Decisions record source revisions and SHA-256 hashes of both reports and the policy.
 Baseline selection is explicit. A failed or noisy comparison never replaces the baseline.
+CI accepts baseline artifacts only from successful runs of this workflow in the same repository.
 Download selected reports before artifact retention expires if longer history is required.
 
 The workflow measures these profiles sequentially:

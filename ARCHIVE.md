@@ -12089,3 +12089,22 @@ The final runtime branch separately verified null and empty policies against the
 Only the new package received a public API baseline. Existing baselines remain unchanged.
 Remote workflow execution and package publication were not performed.
 Deferred provider adapters, token exchange, account linking, logout extensions, and live provider management remain in PLAN.md.
+
+## 2026-11-28 — R45 performance budget gate
+
+Added a managed-report comparator, explicit budget policy, and a manually triggered performance workflow.
+The workflow compares representative baseline, plugin, and streaming profiles against a selected successful earlier run.
+It retains raw measurements and rejects incompatible configurations, request failures, regressions, and noisy measurements separately.
+
+Verification:
+
+- Complete Release solution build: zero warnings and errors, .NET SDK 10.0.404.
+- Existing benchmark regression group: all 12 checks passed.
+- Comparator: all 15 deterministic tests passed; combined statement/branch coverage reached 98%.
+- Workflow YAML parsed successfully. Remote GitHub Actions execution was not performed.
+- Two independent managed runs completed with no request failures and matching configurations.
+- Real measurements correctly failed qualification and comparison as noisy. No baseline was promoted.
+
+[Retained JSON, CSV, Markdown, and decisions](tests/Wafish.Performance/results/r45-20261128/README.md) record source and environment identity.
+[Operator guidance](docs/performance-budgets.md) defines the gate and its limits.
+R45 retains only initial CI baseline qualification and environment-specific tolerance review in PLAN.md.

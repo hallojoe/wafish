@@ -31,6 +31,20 @@ jobs:
         run: python3 scripts/test-performance-budgets.py
       - name: Build Release hosts
         run: dotnet build Wafish.slnx -c Release
+      - name: Verify baseline run provenance
+        if: inputs.baseline-run-id != ''
+        shell: bash
+        env:
+          BASELINE_RUN_ID: ${{ inputs.baseline-run-id }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ "$BASELINE_RUN_ID" =~ ^[0-9]+$ ]]
+          mkdir -p artifacts/performance-comparison
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$BASELINE_RUN_ID" > artifacts/performance-comparison/baseline-run.json
+          jq -e --arg repo "$GITHUB_REPOSITORY" \
+            '.status == "completed" and .conclusion == "success" and .head_repository.full_name == $repo and .path == ".github/workflows/performance-budgets.yml"' \
+            artifacts/performance-comparison/baseline-run.json > /dev/null
       - name: Download selected earlier reports
         if: inputs.baseline-run-id != ''
         uses: actions/download-artifact@v4

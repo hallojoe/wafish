@@ -1,0 +1,618 @@
+{
+  "schemaVersion": 5,
+  "environment": {
+    "capturedUtc": "2026-11-28T01:45:29.4511904+00:00",
+    "runtime": ".NET 10.0.15",
+    "operatingSystem": "Omarchy",
+    "processArchitecture": "X64",
+    "osArchitecture": "X64",
+    "logicalProcessors": 8,
+    "cpuModel": "11th Gen Intel(R) Core(TM) i7-1185G7 @ 3.00GHz",
+    "serverGc": false,
+    "sourceRevision": "30000be4a27cc608925951d25ab84c99c89635c4",
+    "workingTreeDirty": false
+  },
+  "settings": {
+    "processMeasurementsAvailable": true,
+    "durationSeconds": 10,
+    "warmupSeconds": 3,
+    "concurrency": 4,
+    "repetitions": 5,
+    "suite": "plugins",
+    "requestTimeoutSeconds": 10,
+    "clientTransport": "HTTP/1.1 exact cleartext"
+  },
+  "streaming": null,
+  "pluginSets": [
+    {
+      "name": "rate-limit\u002Bwaf",
+      "plugins": [
+        "rate-limit",
+        "waf"
+      ]
+    }
+  ],
+  "acceptEncoding": "gzip",
+  "arrivals": {
+    "mode": "closed-loop",
+    "ratePerSecond": 0,
+    "queueCapacity": 128,
+    "drainDeadlineSeconds": 12
+  },
+  "transport": {
+    "mode": "http1",
+    "client": "HTTP/1.1 exact cleartext",
+    "upstream": "HTTP/1.1 exact cleartext",
+    "certificate": "none"
+  },
+  "latency": {
+    "strategy": "fixed logarithmic histogram; upper-bound nearest rank",
+    "relativeError": 0.01,
+    "absoluteErrorBelowMinimumMs": 0.001,
+    "maximumMs": 86400000,
+    "retainedBytes": 20256
+  },
+  "hosts": [
+    {
+      "name": "Backend",
+      "endpoint": "http://127.0.0.1:47347/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "d4cd79b7c34adac516735a60e9dea672305f84e0f0e447c5094c7ac7867b0473",
+        "configuration": {
+          "maxDelayMilliseconds": 30000,
+          "maxRequestBytes": 4194304,
+          "mode": "backend",
+          "payloadMode": "precomputed",
+          "preparedSizes": [
+            0,
+            1024,
+            65536,
+            1048576,
+            4194304
+          ],
+          "streamLimits": {
+            "maxBytes": 4194304,
+            "maxChunkBytes": 65536,
+            "maxChunks": 256,
+            "maxDurationMs": 4000,
+            "maxIntervalMs": 1000
+          },
+          "transport": "HTTP/1.1 exact cleartext",
+          "transportFaults": false
+        }
+      }
+    },
+    {
+      "name": "Native YARP",
+      "endpoint": "http://127.0.0.1:39425/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "e1e1b2bf1d574f360011741c309b5c3d705c814e599ae4f52bb917a835ab5f93",
+        "configuration": {
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:47347/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "metadata": null,
+              "sessionAffinity": null
+            }
+          ],
+          "listener": "http://127.0.0.1:39425/",
+          "mode": "native",
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "authorizationPolicy": null,
+              "clusterId": "backend",
+              "corsPolicy": null,
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "maxRequestBodySize": null,
+              "metadata": null,
+              "order": null,
+              "outputCachePolicy": null,
+              "rateLimiterPolicy": null,
+              "routeId": "perf",
+              "timeout": null,
+              "timeoutPolicy": null,
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        }
+      }
+    },
+    {
+      "name": "Plugins: rate-limit\u002Bwaf",
+      "endpoint": "http://127.0.0.1:40067/",
+      "manifest": {
+        "schemaVersion": 1,
+        "configurationHash": "e6f7d6ba6695df6e1db34d47921470b1f72ec51a35b23288ac43783faa10c388",
+        "configuration": {
+          "bindings": [
+            {
+              "configuration": {
+                "enabled": true
+              },
+              "manifestOrder": 100,
+              "order": 100,
+              "pluginId": "waf",
+              "schemaVersion": 1,
+              "scope": 1,
+              "scopeId": "perf",
+              "version": "1.0"
+            },
+            {
+              "configuration": {
+                "algorithm": "FixedWindow",
+                "enabled": true,
+                "partitionKey": "Global",
+                "permitLimit": 1000000,
+                "queueLimit": 0,
+                "window": "1s"
+              },
+              "manifestOrder": 200,
+              "order": 200,
+              "pluginId": "rate-limit",
+              "schemaVersion": 1,
+              "scope": 1,
+              "scopeId": "perf",
+              "version": "1.0"
+            }
+          ],
+          "clientTransport": "HTTP/1.1 exact cleartext",
+          "clusters": [
+            {
+              "clusterId": "backend",
+              "destinations": {
+                "backend": {
+                  "address": "http://127.0.0.1:47347/",
+                  "health": null,
+                  "host": null,
+                  "metadata": null
+                }
+              },
+              "healthCheck": null,
+              "httpClient": null,
+              "httpRequest": {
+                "activityTimeout": null,
+                "allowResponseBuffering": null,
+                "version": "1.1",
+                "versionPolicy": 2
+              },
+              "loadBalancingPolicy": null,
+              "sessionAffinity": null
+            }
+          ],
+          "effectivePolicies": [
+            "rate-limit",
+            "waf"
+          ],
+          "listener": "http://127.0.0.1:40067/",
+          "mode": "plugins",
+          "pluginSelection": {
+            "name": "rate-limit\u002Bwaf",
+            "plugins": [
+              "rate-limit",
+              "waf"
+            ]
+          },
+          "presetVersion": 1,
+          "proxyVersion": "2.3.0.0",
+          "routes": [
+            {
+              "clusterId": "backend",
+              "match": {
+                "headers": null,
+                "hosts": null,
+                "methods": null,
+                "path": "/api/perf/{**catch-all}",
+                "queryParameters": null
+              },
+              "order": 2147483647,
+              "routeId": "perf",
+              "transforms": null
+            }
+          ],
+          "upstreamTransport": "HTTP/1.1 exact cleartext"
+        },
+        "resources": []
+      }
+    }
+  ],
+  "results": [
+    {
+      "gateway": "Native YARP",
+      "scenario": "cacheable-json",
+      "repetition": 1,
+      "requestsPerSecond": 28704.66997123664,
+      "p50Ms": 0.11747299515100557,
+      "p95Ms": 0.21554693048588,
+      "p99Ms": 0.6768615242770454,
+      "errorRatePercent": 0,
+      "cpuPercent": 40.94524994155429,
+      "workingSetMb": 107.60546875,
+      "requests": 287080,
+      "failures": 0,
+      "policyRejections": 0,
+      "transportFailures": 0,
+      "configurationHash": "e1e1b2bf1d574f360011741c309b5c3d705c814e599ae4f52bb917a835ab5f93",
+      "arrivals": {
+        "offered": 287080,
+        "started": 287080,
+        "dropped": 0,
+        "cancelledBeforeStart": 0,
+        "offeredPerSecond": 28708,
+        "queueP50Ms": 0,
+        "queueP95Ms": 0,
+        "queueP99Ms": 0
+      },
+      "completedResponses": 287080,
+      "scheduledP95Ms": 0.21554693048588,
+      "scheduledP99Ms": 0.6768615242770454,
+      "responseBytes": 50813160,
+      "bodyReads": 287080,
+      "firstByteSamples": 287080,
+      "firstByteP50Ms": 0.11630989618911443,
+      "firstByteP95Ms": 0.21341280246126731,
+      "firstByteP99Ms": 0.6701599250267777,
+      "readGapP95Ms": 0.001
+    },
+    {
+      "gateway": "Native YARP",
+      "scenario": "cacheable-json",
+      "repetition": 2,
+      "requestsPerSecond": 30543.87634992333,
+      "p50Ms": 0.11401813174111795,
+      "p95Ms": 0.17665029497788035,
+      "p99Ms": 0.6701599250267777,
+      "errorRatePercent": 0,
+      "cpuPercent": 38.73569452927799,
+      "workingSetMb": 108.06640625,
+      "requests": 305453,
+      "failures": 0,
+      "policyRejections": 0,
+      "transportFailures": 0,
+      "configurationHash": "e1e1b2bf1d574f360011741c309b5c3d705c814e599ae4f52bb917a835ab5f93",
+      "arrivals": {
+        "offered": 305453,
+        "started": 305453,
+        "dropped": 0,
+        "cancelledBeforeStart": 0,
+        "offeredPerSecond": 30545.3,
+        "queueP50Ms": 0,
+        "queueP95Ms": 0,
+        "queueP99Ms": 0
+      },
+      "completedResponses": 305453,
+      "scheduledP95Ms": 0.17665029497788035,
+      "scheduledP99Ms": 0.6701599250267777,
+      "responseBytes": 54065181,
+      "bodyReads": 305453,
+      "firstByteSamples": 305453,
+      "firstByteP50Ms": 0.11288923934764154,
+      "firstByteP95Ms": 0.17665029497788035,
+      "firstByteP99Ms": 0.6701599250267777,
+      "readGapP95Ms": 0.001
+    },
+    {
+      "gateway": "Native YARP",
+      "scenario": "cacheable-json",
+      "repetition": 3,
+      "requestsPerSecond": 25497.208157846733,
+      "p50Ms": 0.11747299515100557,
+      "p95Ms": 0.31459661571089903,
+      "p99Ms": 0.8509252768640498,
+      "errorRatePercent": 0,
+      "cpuPercent": 37.296355027223186,
+      "workingSetMb": 107.96875,
+      "requests": 254997,
+      "failures": 0,
+      "policyRejections": 0,
+      "transportFailures": 0,
+      "configurationHash": "e1e1b2bf1d574f360011741c309b5c3d705c814e599ae4f52bb917a835ab5f93",
+      "arrivals": {
+        "offered": 254997,
+        "started": 254997,
+        "dropped": 0,
+        "cancelledBeforeStart": 0,
+        "offeredPerSecond": 25499.7,
+        "queueP50Ms": 0,
+        "queueP95Ms": 0,
+        "queueP99Ms": 0
+      },
+      "completedResponses": 254997,
+      "scheduledP95Ms": 0.31459661571089903,
+      "scheduledP99Ms": 0.8509252768640498,
+      "responseBytes": 45134469,
+      "bodyReads": 254997,
+      "firstByteSamples": 254997,
+      "firstByteP50Ms": 0.11630989618911443,
+      "firstByteP95Ms": 0.3114817977335634,
+      "firstByteP99Ms": 0.8425002741228216,
+      "readGapP95Ms": 0.001
+    },
+    {
+      "gateway": "Native YARP",
+      "scenario": "cacheable-json",
+      "repetition": 4,
+      "requestsPerSecond": 13384.479496913305,
+      "p50Ms": 0.2578259167926944,
+      "p95Ms": 0.450115017182711,
+      "p99Ms": 1.3856027607345867,
+      "errorRatePercent": 0,
+      "cpuPercent": 37.206605357513205,
+      "workingSetMb": 108.09765625,
+      "requests": 133866,
+      "failures": 0,
+      "policyRejections": 0,
+      "transportFailures": 0,
+      "configurationHash": "e1e1b2bf1d574f360011741c309b5c3d705c814e599ae4f52bb917a835ab5f93",
+      "arrivals": {
+        "offered": 133866,
+        "started": 133866,
+        "dropped": 0,
+        "cancelledBeforeStart": 0,
+        "offeredPerSecond": 13386.6,
+        "queueP50Ms": 0,
+        "queueP95Ms": 0,
+        "queueP99Ms": 0
+      },
+      "completedResponses": 133866,
+      "scheduledP95Ms": 0.450115017182711,
+      "scheduledP99Ms": 1.3856027607345867,
+      "responseBytes": 23694282,
+      "bodyReads": 133866,
+      "firstByteSamples": 133866,
+      "firstByteP50Ms": 0.2578259167926944,
+      "firstByteP95Ms": 0.44565843285416934,
+      "firstByteP99Ms": 1.3856027607345867,
+      "readGapP95Ms": 0.001
+    },
+    {
+      "gateway": "Native YARP",
+      "scenario": "cacheable-json",
+      "repetition": 5,
+      "requestsPerSecond": 14351.006453308259,
+      "p50Ms": 0.24047888756396565,
+      "p95Ms": 0.42402870725333835,
+      "p99Ms": 1.2923767115892,
+      "errorRatePercent": 0,
+      "cpuPercent": 37.097173195402505,
+      "workingSetMb": 109.25,
+      "requests": 143521,
+      "failures": 0,
+      "policyRejections": 0,
+      "transportFailures": 0,
+      "configurationHash": "e1e1b2bf1d574f360011741c309b5c3d705c814e599ae4f52bb917a835ab5f93",
+      "arrivals": {
+        "offered": 143521,
+        "started": 143521,
+        "dropped": 0,
+        "cancelledBeforeStart": 0,
+        "offeredPerSecond": 14352.1,
+        "queueP50Ms": 0,
+        "queueP95Ms": 0,
+        "queueP99Ms": 0
+      },
+      "completedResponses": 143521,
+      "scheduledP95Ms": 0.42402870725333835,
+      "scheduledP99Ms": 1.2923767115892,
+      "responseBytes": 25403217,
+      "bodyReads": 143521,
+      "firstByteSamples": 143521,
+      "firstByteP50Ms": 0.23809790847917392,
+      "firstByteP95Ms": 0.419830403221127,
+      "firstByteP99Ms": 1.2923767115892,
+      "readGapP95Ms": 0.001
+    },
+    {
+      "gateway": "Plugins: rate-limit\u002Bwaf",
+      "scenario": "cacheable-json",
+      "repetition": 1,
+      "requestsPerSecond": 5143.350084619388,
+      "p50Ms": 0.6250702616136556,
+      "p95Ms": 1.6906986879727486,
+      "p99Ms": 2.8648311229272547,
+      "errorRatePercent": 0,
+      "cpuPercent": 51.060018993677105,
+      "workingSetMb": 167.625,
+      "requests": 51436,
+      "failures": 0,
+      "policyRejections": 0,
+      "transportFailures": 0,
+      "configurationHash": "e6f7d6ba6695df6e1db34d47921470b1f72ec51a35b23288ac43783faa10c388",
+      "arrivals": {
+        "offered": 51436,
+        "started": 51436,
+        "dropped": 0,
+        "cancelledBeforeStart": 0,
+        "offeredPerSecond": 5143.6,
+        "queueP50Ms": 0,
+        "queueP95Ms": 0,
+        "queueP99Ms": 0
+      },
+      "completedResponses": 51436,
+      "scheduledP95Ms": 1.6906986879727486,
+      "scheduledP99Ms": 2.8648311229272547,
+      "responseBytes": 9104172,
+      "bodyReads": 51436,
+      "firstByteSamples": 51436,
+      "firstByteP50Ms": 0.6250702616136556,
+      "firstByteP95Ms": 1.6739590970027214,
+      "firstByteP99Ms": 2.8648311229272547,
+      "readGapP95Ms": 0.001
+    },
+    {
+      "gateway": "Plugins: rate-limit\u002Bwaf",
+      "scenario": "cacheable-json",
+      "repetition": 2,
+      "requestsPerSecond": 9038.812296424485,
+      "p50Ms": 0.36523690430481937,
+      "p95Ms": 0.7858152167700664,
+      "p99Ms": 1.65738524455715,
+      "errorRatePercent": 0,
+      "cpuPercent": 47.884386557186055,
+      "workingSetMb": 168.6796875,
+      "requests": 90394,
+      "failures": 0,
+      "policyRejections": 0,
+      "transportFailures": 0,
+      "configurationHash": "e6f7d6ba6695df6e1db34d47921470b1f72ec51a35b23288ac43783faa10c388",
+      "arrivals": {
+        "offered": 90394,
+        "started": 90394,
+        "dropped": 0,
+        "cancelledBeforeStart": 0,
+        "offeredPerSecond": 9039.4,
+        "queueP50Ms": 0,
+        "queueP95Ms": 0,
+        "queueP99Ms": 0
+      },
+      "completedResponses": 90394,
+      "scheduledP95Ms": 0.7858152167700664,
+      "scheduledP99Ms": 1.65738524455715,
+      "responseBytes": 15999738,
+      "bodyReads": 90394,
+      "firstByteSamples": 90394,
+      "firstByteP50Ms": 0.36523690430481937,
+      "firstByteP95Ms": 0.7858152167700664,
+      "firstByteP99Ms": 1.65738524455715,
+      "readGapP95Ms": 0.001
+    },
+    {
+      "gateway": "Plugins: rate-limit\u002Bwaf",
+      "scenario": "cacheable-json",
+      "repetition": 3,
+      "requestsPerSecond": 9111.304064843975,
+      "p50Ms": 0.3616206973315043,
+      "p95Ms": 0.7858152167700664,
+      "p99Ms": 1.65738524455715,
+      "errorRatePercent": 0,
+      "cpuPercent": 47.498457250108515,
+      "workingSetMb": 169.1640625,
+      "requests": 91116,
+      "failures": 0,
+      "policyRejections": 0,
+      "transportFailures": 0,
+      "configurationHash": "e6f7d6ba6695df6e1db34d47921470b1f72ec51a35b23288ac43783faa10c388",
+      "arrivals": {
+        "offered": 91116,
+        "started": 91116,
+        "dropped": 0,
+        "cancelledBeforeStart": 0,
+        "offeredPerSecond": 9111.6,
+        "queueP50Ms": 0,
+        "queueP95Ms": 0,
+        "queueP99Ms": 0
+      },
+      "completedResponses": 91116,
+      "scheduledP95Ms": 0.7858152167700664,
+      "scheduledP99Ms": 1.65738524455715,
+      "responseBytes": 16127532,
+      "bodyReads": 91116,
+      "firstByteSamples": 91116,
+      "firstByteP50Ms": 0.3616206973315043,
+      "firstByteP95Ms": 0.7858152167700664,
+      "firstByteP99Ms": 1.65738524455715,
+      "readGapP95Ms": 0.001
+    },
+    {
+      "gateway": "Plugins: rate-limit\u002Bwaf",
+      "scenario": "cacheable-json",
+      "repetition": 4,
+      "requestsPerSecond": 8811.025303832095,
+      "p50Ms": 0.37630394774215975,
+      "p95Ms": 0.8016101026271447,
+      "p99Ms": 1.6906986879727486,
+      "errorRatePercent": 0,
+      "cpuPercent": 45.78035734864647,
+      "workingSetMb": 169.8359375,
+      "requests": 88124,
+      "failures": 0,
+      "policyRejections": 0,
+      "transportFailures": 0,
+      "configurationHash": "e6f7d6ba6695df6e1db34d47921470b1f72ec51a35b23288ac43783faa10c388",
+      "arrivals": {
+        "offered": 88124,
+        "started": 88124,
+        "dropped": 0,
+        "cancelledBeforeStart": 0,
+        "offeredPerSecond": 8812.4,
+        "queueP50Ms": 0,
+        "queueP95Ms": 0,
+        "queueP99Ms": 0
+      },
+      "completedResponses": 88124,
+      "scheduledP95Ms": 0.8096262036534162,
+      "scheduledP99Ms": 1.6906986879727486,
+      "responseBytes": 15597948,
+      "bodyReads": 88124,
+      "firstByteSamples": 88124,
+      "firstByteP50Ms": 0.37630394774215975,
+      "firstByteP95Ms": 0.8016101026271447,
+      "firstByteP99Ms": 1.6739590970027214,
+      "readGapP95Ms": 0.001
+    },
+    {
+      "gateway": "Plugins: rate-limit\u002Bwaf",
+      "scenario": "cacheable-json",
+      "repetition": 5,
+      "requestsPerSecond": 8849.233376261222,
+      "p50Ms": 0.37257816608134625,
+      "p95Ms": 0.8177224656899503,
+      "p99Ms": 1.7076056748524762,
+      "errorRatePercent": 0,
+      "cpuPercent": 45.98559481680674,
+      "workingSetMb": 169.9609375,
+      "requests": 88496,
+      "failures": 0,
+      "policyRejections": 0,
+      "transportFailures": 0,
+      "configurationHash": "e6f7d6ba6695df6e1db34d47921470b1f72ec51a35b23288ac43783faa10c388",
+      "arrivals": {
+        "offered": 88496,
+        "started": 88496,
+        "dropped": 0,
+        "cancelledBeforeStart": 0,
+        "offeredPerSecond": 8849.6,
+        "queueP50Ms": 0,
+        "queueP95Ms": 0,
+        "queueP99Ms": 0
+      },
+      "completedResponses": 88496,
+      "scheduledP95Ms": 0.8177224656899503,
+      "scheduledP99Ms": 1.7076056748524762,
+      "responseBytes": 15663792,
+      "bodyReads": 88496,
+      "firstByteSamples": 88496,
+      "firstByteP50Ms": 0.3688892733478676,
+      "firstByteP95Ms": 0.8177224656899503,
+      "firstByteP99Ms": 1.7076056748524762,
+      "readGapP95Ms": 0.001
+    }
+  ]
+}
