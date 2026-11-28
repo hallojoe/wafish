@@ -12053,3 +12053,39 @@ Verified locally on 2026-11-15:
 The existing administration coverage baseline remains below 80% overall.
 This work changes its branding only; it does not claim increased application coverage.
 <!-- archive:end archive-website-readme-md -->
+
+## 2026-11-28 — External visitor login
+
+Implemented OIDC visitor authentication for static pages and same-origin API calls.
+Startup site profiles define providers, exact origins, and API token targets.
+The dashboard edits route bindings without handling provider secrets.
+Redis stores encrypted sessions and coordinates refresh across replicas.
+Visitor authentication preserves native policies and remains separate from administration authentication.
+
+Source entry points:
+
+- [Plugin and host configuration](src/Wafish.Plugin.ExternalLogin/README.md).
+- [Runtime integration](src/Wafish.Runtime/GatewayPipelineExtensions.cs).
+- [Regression checks](tests/Wafish.Regression/ExternalLoginChecks.cs).
+- [Aspire Keycloak sample](samples/SampleExternalLogin/README.md).
+- [Browser verification](scripts/check-external-login.mjs).
+
+Verification used .NET SDK 10.0.404 and Node.js 24.22.3.
+The core package and runtime branch each built independently with zero warnings.
+The complete source stack at `a4cf0f6` built in Release with zero warnings and errors.
+
+- Full core regression: 319 checks passed. Administration regression: 61 checks passed.
+- Final external-login group: seven live Redis scenarios passed at runtime commit `0a97a3a`.
+- Final plugin line coverage: 88.26%. Changed executable C# lines: 485/552, or 87.86%.
+- UI lint and 100 component tests passed. The new editor reached 100% line coverage.
+- The complete browser regression suite passed all 35 tests.
+- Real Keycloak verification passed for writer and reader accounts, API permissions, CSRF, logout, and two gateway replicas.
+- Real-provider token refresh passed after entering the 60-second refresh window.
+- Negative compatibility checks rejected removed APIs and stale package versions.
+- Final package verification checked all 24 packages and passed three isolated consumer profiles at `a4cf0f6`.
+
+The full core run preceded the final empty-policy normalization.
+The final runtime branch separately verified null and empty policies against the host fallback policy.
+Only the new package received a public API baseline. Existing baselines remain unchanged.
+Remote workflow execution and package publication were not performed.
+Deferred provider adapters, token exchange, account linking, logout extensions, and live provider management remain in PLAN.md.

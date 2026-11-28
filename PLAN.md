@@ -1,6 +1,6 @@
 # Wafish remaining work
 
-Updated: 2026-11-27. Reviewed against the current checkout.
+Updated: 2026-11-28. Reviewed against the current checkout.
 
 This backlog contains unresolved work only. Each item identifies current behavior, remaining scope, acceptance criteria, and source entry points.
 The R36–R55 entries below remain optional proposals. R56 and IDEA-01 remain deferred by user decision.
@@ -32,7 +32,7 @@ Acceptance: Each item meets the specification and scoped checks. Downstream mapp
 Status: DEFERRED. Publishing automation is implemented; release reconciliation and confirmed publication remain separate work.
 
 Current: Workflows derive versions from release tags or manual inputs. Local builds default to `0.0.0-dev`.
-Package verification covers 23 package projects. This source review does not establish their current publication status.
+Package verification covers 24 package projects. This source review does not establish their current publication status.
 
 Remaining: Verify package feeds, existing versions, release tags, source identity, registry configuration, and release assets.
 Align metadata and installation examples with the selected release. Preserve published versions and release history.
@@ -379,3 +379,25 @@ Source entry points:
 - [Runtime registration](src/Wafish.Runtime/GatewayRuntimeExtensions.cs) — runtime services and proxy endpoints.
 - [Deployment options](src/Wafish.Runtime/Infrastructure/Deployment/DeploymentOptions.cs) — current process and endpoint roles.
 - [Configuration publication](src/Wafish/Services/DynamicConfigPublisher.cs) — local snapshot preparation and activation.
+
+## EL01-EXT: Extend external visitor login
+
+Status: DEFERRED. The OIDC session and downstream API implementation is complete.
+
+Current: Startup site profiles select OIDC providers. Route bindings enforce visitor cookies and optional API token forwarding.
+Redis shares encrypted sessions and refresh ownership. The optional Aspire profile verifies Keycloak and two gateway replicas.
+
+Remaining decisions:
+
+| Extension | Rethink before implementation | Source entry point |
+| --- | --- | --- |
+| Direct GitHub and other OAuth adapters | Provider-specific identity verification, stable subject mapping, and API token compatibility. | [Scheme registration](src/Wafish.Plugin.ExternalLogin/ExternalLoginExtensions.cs) |
+| Token exchange or gateway-issued API tokens | Issuer ownership, signing keys, audiences, scope reduction, revocation, and trust between services. | [Token refresh and authorization](src/Wafish.Plugin.ExternalLogin/ExternalLoginRuntime.cs) |
+| Account linking | Verified ownership, account storage, conflict resolution, and explicit user consent. | [Provider and site profiles](src/Wafish.Plugin.ExternalLogin/ExternalLoginOptions.cs) |
+| Provider-wide and backchannel logout | Validated logout messages, subject/session indexing, race handling, and provider differences. | [Session store](src/Wafish.Plugin.ExternalLogin/RedisVisitorSessionStore.cs) |
+| Live provider management | Secret storage, atomic scheme replacement, pending callback ownership, and session invalidation. | [Scheme registration](src/Wafish.Plugin.ExternalLogin/ExternalLoginExtensions.cs) |
+| Broader provider certification | Real Google and Microsoft tenant tests, consent behavior, resource scopes, and refresh requirements. | [Browser checks](scripts/check-external-login.mjs) |
+
+Acceptance: Each extension defines its identity and token trust boundaries before adding implementation.
+Add provider-specific positive and negative tests. Preserve administration isolation and existing route authorization.
+Certificate issuance remains infrastructure-owned. Shared parent-domain cookies and browser token export are outside the current contract.

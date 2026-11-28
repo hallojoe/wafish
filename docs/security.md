@@ -336,3 +336,9 @@ Realtime connections require Read and recheck permissions each second.
 Credential-management checks protect two-factor settings, AI credentials, webhook secrets, and database downloads.
 Audit denials include the actor and operation. Permission rules do not isolate routes, tenants, or AI conversations.
 Plugin code and direct in-process callers remain trusted. See [configuration](../src/Wafish.Administration/README.md#operation-permissions).
+
+## Visitor authentication
+
+External visitor login is separate from administration authentication. See the [external login guide](../src/Wafish.Plugin.ExternalLogin/README.md).
+Visitor routes require HTTPS, Redis sessions, shared protected keys, and configured OIDC providers.
+Unsafe cookie-authenticated requests require a same-origin CSRF token. APIs validate forwarded access tokens independently.

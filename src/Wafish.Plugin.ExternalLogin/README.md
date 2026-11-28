@@ -18,6 +18,7 @@ The package namespace is `Wafish.Plugin.ExternalLogin`.
 Configure trusted forwarded headers before the gateway when an ingress changes the public origin.
 The plugin never trusts arbitrary forwarded headers automatically. HTTPS and certificate validation remain required.
 Path-base hosting is not supported. Public origins must use the root path.
+Keep static and API origins private. Allow backend traffic only from the gateway or another authenticated caller.
 
 ```json
 {
@@ -128,7 +129,7 @@ Required scopes are checked against the provider's granted scopes before forward
 Only configured HTTPS destination origins receive bearer tokens. Incoming authorization and cookie headers are stripped.
 Gateway session cookies are also removed on public routes. Public backends cannot set gateway session cookies.
 Internal child requests never forward the parent browser's credentials to unprotected destinations.
-Upstream cookies are also removed. Do not use protected routes for applications that require their own cookie sessions.
+Protected routes discard backend `Set-Cookie` headers. They cannot support applications that require their own cookie sessions.
 Do not add host-side custom transforms that replace the final destination after credential enforcement.
 
 Refresh starts within 60 seconds of expiry. Redis serializes refresh across replicas.
@@ -142,6 +143,7 @@ Local logout does not revoke an already issued access token or end the identity 
 ## Verification and limits
 
 Run the `external-login` regression group. Set `WAFISH_EXTERNALLOGIN_REDIS` to an isolated Redis instance for live checks.
+The [Aspire sample](../../samples/SampleExternalLogin/README.md) tests real Keycloak login and API permissions.
 Metrics use the `Wafish.ExternalLogin` meter and `wafish.external_login.outcomes` counter. Labels contain outcomes only.
 
 Direct OAuth adapters, token exchange, account linking, backchannel logout, and dynamic provider management are deferred.

@@ -1,6 +1,6 @@
 # Package publishing
 
-Use `publish-packages` to publish all 23 packages.
+Use `publish-packages` to publish all 24 packages.
 Use a package-specific workflow to publish one package.
 `publish-packages` starts automatically when a GitHub release is published, including prereleases.
 All workflows also support manual runs through GitHub Actions.
@@ -48,7 +48,7 @@ The release tag is the package version source. No version edit in build properti
 2. Create a GitHub release targeting that exact commit.
 3. Choose a version tag, with or without a leading `v`.
 4. Set the GitHub prerelease flag according to the table below.
-5. Publish the release. The workflow builds, verifies, and publishes all 23 packages to both registries.
+5. Publish the release. The workflow builds, verifies, and publishes all 24 packages to both registries.
 
 | Release tag | GitHub prerelease flag | Package version | Result |
 |---|---|---|---|
