@@ -236,3 +236,9 @@ Use `python3 scripts/check-service-discovery.py` for the isolated Aspire scenari
 `--group telemetry-configuration` verifies opt-in startup output, environment restrictions, secret redaction, and registration snapshots.
 It checks that diagnostics add no HTTP route. Existing `--sample-contracts` checks verify actual instrumentation behavior.
 The [live script](../../scripts/check-telemetry-configuration.py) verifies enabled and disabled Aspire resource reports.
+
+## Idempotent sample orders
+
+`--group sample-orders` verifies atomic duplicates, conflicts, bounded capacity, expiry, cancellation, HTTP validation, and OpenAPI.
+A real gateway fixture retries a committed order after a bodyless failure and checks its original result.
+The sample scope is one backend process. Independent stores deliberately create independent results.

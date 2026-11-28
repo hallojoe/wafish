@@ -387,6 +387,8 @@ The optional [HTTP JSON discovery sample](docs/service-discovery-sample.md) demo
 
 See the [local telemetry configuration report](docs/telemetry-configuration.md) to inspect sample exporter and instrumentation registration.
 
+The [idempotent order sample](docs/idempotent-sample-orders.md) demonstrates bounded duplicate handling within one backend process.
+
 ### Administration authenticators
 
 Optional passkeys and FIDO2 security keys support JWT administration login. Configured TOTP remains required.

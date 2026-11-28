@@ -12595,3 +12595,42 @@ Source entry points:
 - [Focused checks](tests/Wafish.Regression/TelemetryConfigurationChecks.cs).
 - [Live verification](scripts/check-telemetry-configuration.py).
 - [Operator guide](docs/telemetry-configuration.md).
+
+
+## R54: Idempotent synthetic orders — 2026-11-28
+
+Added a synthetic order API with bounded process-local idempotency.
+One validated key and product/quantity pair commits one order under concurrent requests.
+Duplicates replay the original 201 result and relative location. Conflicting payloads return 409 without mutation.
+The service retains at most 1,024 orders for five minutes and never evicts unexpired entries for new keys.
+Monotonic expiry permits later key reuse. Replays do not extend retention.
+Reads return retained orders or 404. Capacity returns 503 with retry guidance; existing keys still replay.
+
+Keys, body size, product choices, and quantities are bounded. Unknown JSON properties are rejected.
+Only synthetic product and quantity data are accepted. No external writes or production data are involved.
+The sample exposes OpenAPI in Development and the orchestrated profile.
+The guide requires one backend or a dedicated single-destination gateway route.
+Default load-balanced backends have independent state. Restart and expiry reset the guarantee.
+
+Verification:
+
+- Release solution build: zero warnings and errors.
+- All 363 core regression checks passed, including sample contracts and deployment checks.
+- Four focused cases covered 64 concurrent duplicates, conflicts, cancellation, capacity, expiry, and clock adjustment.
+- HTTP checks verified validation, body bounds, replay headers, relative locations, no-store behavior, and OpenAPI metadata.
+- A real gateway retry recovered a committed order after a bodyless 503 without creating another result.
+- Changed executable-line coverage: 66/70 (94.3%); sample startup lines were not instrumented by the focused fixture.
+- Changed Markdown links and whitespace checks passed. All fixture-owned hosts were disposed.
+
+Initial checks found that oversized bodies reached the default 500 exception response.
+A bounded-request exception handler now returns 413 Problem Details without exposing exception details.
+The retry fixture was corrected to emit a bodyless failure, preserving existing retry eligibility rules.
+The final complete suite passed after both corrections.
+No production plugin defaults changed. No packages were published or services deployed.
+
+Source entry points:
+
+- [Order service](samples/SampleLocalService/Services/SampleOrderService.cs).
+- [HTTP controller](samples/SampleLocalService/Controllers/SampleOrdersController.cs).
+- [Regression checks](tests/Wafish.Regression/SampleOrderChecks.cs).
+- [Walkthrough](docs/idempotent-sample-orders.md).
