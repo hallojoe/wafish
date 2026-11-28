@@ -72,25 +72,6 @@ Source entry points:
 - [Operator guide](docs/performance-budgets.md) — qualification, comparison, and exit codes.
 - [Benchmark session](tests/Wafish.Performance/Runner/BenchmarkSession.cs) — report metadata and configuration identity.
 
-<a id="r50"></a>
-
-## R50: Demonstrate blue-green deployment
-
-Status: TODO.
-
-Current: Route updates and snapshot rollback APIs exist. The sample does not provide a blue-green deployment walkthrough.
-
-Remaining: Demonstrate a health-checked switch between two backend versions using existing configuration APIs.
-Include cutover verification and rollback instructions.
-
-Acceptance: Cutover and rollback preserve the original route identity and restore the intended backend version.
-
-Source entry points:
-
-- [Sample topology](Wafish.AppHost/AppHost.cs) — gateway and backend resources.
-- [Route configuration controller](src/Wafish.Administration/Modules/GatewayConfig/Controllers/RouteConfigController.cs) — route updates.
-- [Snapshot manager](src/Wafish.Administration/Modules/GatewayConfig/Services/ConfigSnapshotManager.cs) — snapshot and rollback behavior.
-
 <a id="r48"></a>
 
 ## R48: Benchmark multiple destinations

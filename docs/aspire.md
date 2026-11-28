@@ -21,6 +21,7 @@ Do not assume fixed service ports. Root paths have no page and return HTTP 404.
 The gRPC URL appears only in resource details. It requires an HTTP/2 client, not a browser.
 `/api/local-service/instance` identifies the selected backend and trace.
 The two instances share one service cluster and the same route definitions.
+The [blue-green walkthrough](blue-green.md) uses a separate route to demonstrate cutover and rollback.
 HTTP and gRPC use separate dynamically assigned loopback endpoints.
 The gRPC endpoint uses HTTP/2 cleartext. Production remote administration requires HTTPS.
 The Aspire dashboard itself uses the generated HTTPS launch profile.
