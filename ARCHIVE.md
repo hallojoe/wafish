@@ -12221,3 +12221,28 @@ Source entry points:
 - [Measurement regression checks](tests/Wafish.Regression/CompressionMetricChecks.cs).
 - [Sample telemetry](samples/SampleServiceDefaults/Extensions.cs).
 - [Operator guide](src/Wafish.Plugin.Compression/README.md#compression-measurements).
+
+## R41: Compression algorithm and level policy — 2026-11-28
+
+Routes can restrict compression to Brotli, Gzip, both, or neither.
+Optional per-codec levels override the existing shared level. Omitted fields preserve previous behavior.
+Compilation rejects unknown or duplicate encodings and invalid override levels before persistence.
+Negotiation retains quality values, wildcard rules, identity fallback, and Vary behavior.
+
+Verification:
+
+- Complete Release solution build: zero warnings and errors.
+- Combined R38, R40, and R41 stack: all 335 core checks passed.
+- All 61 administration checks, 24 package API checks, and three isolated consumers passed.
+- Isolated live Redis standalone and cluster checks passed after stack integration.
+- Package compatibility rejection tests passed before integration; package contracts were unchanged by integration.
+- Changed executable line coverage: 23/23 (100%).
+- Four new scenarios cover validation, 70 negotiation combinations, per-codec levels, and persistence rejection.
+
+Source entry points:
+
+- [Policy validation](src/Wafish/Models/CompressionEncodingPolicy.cs).
+- [Policy compiler](src/Wafish.Plugin.Compression/CompressionPolicyCompiler.cs).
+- [Compression middleware](src/Wafish.Plugin.Compression/CompressionMiddleware.cs).
+- [Policy checks](tests/Wafish.Regression/CompressionPolicyChecks.cs).
+- [Configuration guide](src/Wafish.Plugin.Compression/README.md).
