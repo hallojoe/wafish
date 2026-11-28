@@ -198,3 +198,39 @@ The comparator checks environment, workloads, transport, host configuration, and
 Request failures, incompatible reports, invalid input, and noise have distinct failing outcomes.
 The **Performance budgets** workflow collects representative profiles and accepts an explicit baseline run ID.
 See [policy, baseline selection, and exit codes](../../../docs/performance-budgets.md).
+
+## Multiple destinations (R48)
+
+Use `--backend-urls` for one to eight distinct loopback origins.
+Separate origins with commas. Do not combine this option with `--backend-url`.
+The existing singular option and its default port remain supported.
+Every backend, native listener, and Wafish listener must have a distinct, nonzero port.
+All schemes must match the selected transport. Paths, credentials, queries, and fragments are rejected.
+
+```bash
+dotnet run --project tests/Wafish.Performance/Runner -c Release --no-build -- \
+  --backend-urls=http://127.0.0.1:5300,http://127.0.0.1:5303 \
+  --load-balancing-policy=RoundRobin --modes=native,full \
+  --duration=10 --warmup=3 --concurrency=16 --repetitions=3
+```
+
+Supported policies are `PowerOfTwoChoices`, `RoundRobin`, `Random`, `LeastRequests`, and `FirstAlphabetical`.
+Names are case-sensitive. The default is `PowerOfTwoChoices`, matching the previous YARP default.
+NativeYarp, same-host native, and all Wafish modes receive the same destination list and policy.
+The native baseline remains independent of Wafish packages.
+The runner owns all backend processes and checks every backend payload before measuring each scenario.
+HTTP/1.1, HTTP/2, and both TLS modes support multiple destinations.
+
+JSON records destination count, policy, addresses, effective host manifests, and each measured row's `destinationRequests`.
+CSV includes these counts. Markdown shows the distribution for the median-RPS row.
+Stable destination IDs are `backend`, `backend-2`, through `backend-8`.
+Counters describe backend request attempts. Preflight, warmup, health, and counter requests are excluded.
+The runner waits up to five seconds for backend work to drain before reading counters.
+Failure to obtain counters fails the run. Counts are not inferred from the configured balancing policy.
+Cache hits can reduce backend counts. Retries can increase them. These counts need not equal client request counts.
+
+The stateful `first` suite requires one backend because its retry and circuit scenarios share failure counters.
+External mode cannot set destination lists or balancing policies; it does not control upstream configuration.
+It reports destination details as unavailable.
+The existing single-backend baseline remains covered by regression checks.
+Configuration hashes include the explicit policy and destination list. Older manifests may require a new performance baseline.

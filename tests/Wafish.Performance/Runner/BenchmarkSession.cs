@@ -19,7 +19,8 @@ internal sealed class BenchmarkSession : IDisposable
     public int ArrivalQueueCapacity { get; }
     public bool External { get; }
     public BenchmarkTransport Transport { get; }
-    public Uri Backend { get; }
+    public BenchmarkDestinations Destinations { get; }
+    public Uri Backend => Destinations.Addresses[0];
     public Uri Native { get; }
     public Uri Enhanced { get; }
     public string PayloadMode { get; }
@@ -43,12 +44,16 @@ internal sealed class BenchmarkSession : IDisposable
         External = external.Length != 0;
         var mode = BenchmarkOptions.Read(args, "--transport", external.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ? "https1" : "http1");
         Transport = new BenchmarkTransport(mode);
-        Backend = Transport.Address(BenchmarkOptions.Read(args, "--backend-url", $"{Transport.Scheme}://127.0.0.1:5300"), "--backend-url");
+        Destinations = BenchmarkDestinations.Read(args, Transport);
         Native = Transport.Address(BenchmarkOptions.Read(args, "--native-url", $"{Transport.Scheme}://127.0.0.1:5301"), "--native-url");
         Enhanced = Transport.Address(BenchmarkOptions.Read(args, "--enhanced-url", $"{Transport.Scheme}://127.0.0.1:5302"), "--enhanced-url");
-        if (new[] { Backend.Port, Native.Port, Enhanced.Port }.Distinct().Count() != 3 || Backend.Port == 0 || Native.Port == 0 || Enhanced.Port == 0)
+        if (Destinations.Addresses.Select(address => address.Port).Concat([Native.Port, Enhanced.Port]).Distinct().Count() != Destinations.Addresses.Length + 2 || Native.Port == 0 || Enhanced.Port == 0)
             throw new ArgumentException("Managed listener ports must be distinct and nonzero.");
         var suite = BenchmarkOptions.Read(args, "--suite", "baseline");
+        if (suite.Equals("first", StringComparison.OrdinalIgnoreCase) && Destinations.Addresses.Length != 1)
+            throw new ArgumentException("The stateful first suite requires one backend.");
+        if (External && args.Any(arg => arg is "--backend-urls" or "--load-balancing-policy" || arg.StartsWith("--backend-urls=", StringComparison.Ordinal) || arg.StartsWith("--load-balancing-policy=", StringComparison.Ordinal)))
+            throw new ArgumentException("Destination configuration requires managed mode.");
         var matrix = BenchmarkOptions.Read(args, "--plugin-sets", suite == "plugins" ? BenchmarkPluginMatrix.DefaultSets : "");
         if (suite != "plugins" && matrix.Length > 0) throw new ArgumentException("--plugin-sets requires --suite=plugins.");
         if (suite == "plugins" && External) throw new ArgumentException("Plugin combinations require managed hosts.");
@@ -130,12 +135,35 @@ internal sealed class BenchmarkSession : IDisposable
         _hashes[endpoint.Port] = manifest.GetProperty("configurationHash").GetString()!;
         _hosts.Add(new { name, endpoint = endpoint.ToString(), manifest });
     }
+    public async Task<Dictionary<string, long>> ReadDestinationCountsAsync()
+    {
+        using var client = Transport.CreateClient(TimeSpan.FromSeconds(5));
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var counts = new Dictionary<string, long>();
+        foreach (var (address, index) in Destinations.Addresses.Select((address, index) => (address, index)))
+        {
+            while (true)
+            {
+                using var response = await client.GetAsync(new Uri(address, "/api/perf/control/counters"), timeout.Token);
+                response.EnsureSuccessStatusCode();
+                using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync(timeout.Token));
+                if (body.RootElement.GetProperty("active").GetInt64() == 0)
+                {
+                    counts.Add(BenchmarkDestinations.Id(index), body.RootElement.GetProperty("total").GetInt64());
+                    break;
+                }
+                await Task.Delay(10, timeout.Token);
+            }
+        }
+        return counts;
+    }
     public string? ConfigurationHash(int port) => _hashes.GetValueOrDefault(port);
     public async Task WriteAsync(string path, object results, object settings)
     {
         await File.WriteAllTextAsync(path, JsonSerializer.Serialize(new
         {
             schemaVersion = 5, environment = _environment, settings, streaming = Streaming,
+            destinations = External ? null : new { count = Destinations.Addresses.Length, policy = Destinations.LoadBalancingPolicy, addresses = Destinations.Addresses.Select((address, index) => new { id = BenchmarkDestinations.Id(index), address = address.ToString() }) },
             pluginSets = PluginSets, acceptEncoding = AcceptGzip ? "gzip" : "identity",
             arrivals = new { mode = ArrivalRate == 0 ? "closed-loop" : "scheduled", ratePerSecond = ArrivalRate, queueCapacity = ArrivalQueueCapacity, drainDeadlineSeconds = 12 },
             transport = new { mode = Transport.Mode, client = Transport.Description, upstream = External ? "unverified external upstream" : Transport.Description, certificate = !Transport.Tls ? "none" : Transport.CertificatePath is null ? "system trust" : "temporary pinned loopback certificate" },

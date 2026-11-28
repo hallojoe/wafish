@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 using var transport = BenchmarkTransport.Read(args);
 var listener = transport.Address(BenchmarkOptions.Read(args, "--listen-url", $"{transport.Scheme}://127.0.0.1:5301"), "--listen-url");
-var backend = transport.Address(BenchmarkOptions.Read(args, "--backend-url", $"{transport.Scheme}://127.0.0.1:5300"), "--backend-url");
+var backends = BenchmarkDestinations.Read(args, transport);
 builder.WebHost.ConfigureBenchmarkListener(listener, transport);
 
 builder.Services.AddReverseProxy().LoadFromMemory(
@@ -20,10 +20,9 @@ builder.Services.AddReverseProxy().LoadFromMemory(
     {
         ClusterId = "backend",
         HttpRequest = new ForwarderRequestConfig { Version = transport.Version, VersionPolicy = HttpVersionPolicy.RequestVersionExact },
-        Destinations = new Dictionary<string, Yarp.ReverseProxy.Configuration.DestinationConfig>
-        {
-            ["backend"] = new() { Address = backend.ToString() }
-        }
+        LoadBalancingPolicy = backends.LoadBalancingPolicy,
+            Destinations = backends.Addresses.Select((address, index) => KeyValuePair.Create(BenchmarkDestinations.Id(index),
+                new DestinationConfig { Address = address.ToString() })).ToDictionary()
     }]);
 
 builder.Services.AddSingleton<IForwarderHttpClientFactory>(new BenchmarkForwarderHttpClientFactory(transport));

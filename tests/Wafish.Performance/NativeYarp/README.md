@@ -58,3 +58,10 @@ Reports retain these manifests beside each measured configuration hash.
 Secrets in named credential fields are redacted before hashing.
 
 Set `--listen-url` and `--backend-url` to select isolated addresses.
+
+## Multiple destinations
+
+Use `--backend-urls` and `--load-balancing-policy` for bounded destination lists and explicit balancing.
+The singular `--backend-url` remains supported.
+See the [runner guide](../Runner/README.md#multiple-destinations-r48) for supported policies and matching transport requirements.
+The effective cluster manifest includes all destinations and the selected policy.

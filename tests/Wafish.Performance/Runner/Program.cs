@@ -77,10 +77,14 @@ if (suite.Equals("first", StringComparison.OrdinalIgnoreCase))
 
 try
 {
-    var backend = StartService("Backend", Path.Combine(root, "tests", "Wafish.Performance", "Backend", "bin", "Release", "net10.0", "Backend.dll"), root);
-    processes.Add(backend);
-    await WaitForHealthyAsync(new Uri(BenchmarkSession.Current.Backend, "/health").ToString(), backend);
-    await BenchmarkSession.Current.CaptureHostAsync("Backend", BenchmarkSession.Current.Backend);
+    foreach (var (address, index) in session.Destinations.Addresses.Select((address, index) => (address, index)))
+    {
+        var name = index == 0 ? "Backend" : "Backend:" + BenchmarkDestinations.Id(index);
+        var backend = StartService(name, Path.Combine(root, "tests", "Wafish.Performance", "Backend", "bin", "Release", "net10.0", "Backend.dll"), root, listenAddress: address);
+        processes.Add(backend);
+        await WaitForHealthyAsync(new Uri(address, "/health").ToString(), backend);
+        await session.CaptureHostAsync(name, address);
+    }
 
     var gateways = new[]
     {
@@ -120,13 +124,19 @@ try
 
         foreach (var scenario in scenarios)
         {
+            foreach (var address in session.Destinations.Addresses)
+                await BenchmarkPreflight.VerifyAsync(address, scenario.Method, scenario.Path, scenario.Body, transport: session.Transport, acceptGzip: session.AcceptGzip);
             await BenchmarkPreflight.VerifyAsync(session.AddressForPort(gateway.Port), scenario.Method, scenario.Path, scenario.Body, transport: BenchmarkSession.Current.Transport, acceptGzip: BenchmarkSession.Current.AcceptGzip);
             Console.WriteLine($"[{gateway.Name}] {scenario.Name}: warmup {warmupSeconds}s, test {durationSeconds}s x {repetitions}, concurrency {concurrency}");
             await RunLoadAsync(gateway.Port, scenario, concurrency, TimeSpan.FromSeconds(warmupSeconds), null);
             for (var repetition = 1; repetition <= repetitions; repetition++)
             {
+                var before = await session.ReadDestinationCountsAsync();
                 var result = await RunLoadAsync(gateway.Port, scenario, concurrency, TimeSpan.FromSeconds(durationSeconds), process);
-                results.Add(result with { Gateway = gateway.Name, Scenario = scenario.Name, Repetition = repetition });
+                var after = await session.ReadDestinationCountsAsync();
+                var distribution = after.ToDictionary(pair => pair.Key, pair => pair.Value - before[pair.Key]);
+                if (distribution.Values.Any(count => count < 0)) throw new InvalidOperationException("Backend counters reset during measurement.");
+                results.Add(result with { Gateway = gateway.Name, Scenario = scenario.Name, Repetition = repetition, DestinationRequests = distribution });
                 Console.WriteLine($"  #{repetition}: {result.RequestsPerSecond:N0} RPS, P95 {result.P95Ms:N2} ms, P99 {result.P99Ms:N2} ms, errors {result.ErrorRatePercent:N3}%");
             }
         }
@@ -435,7 +445,7 @@ static string BuildExtendedMarkdown(IEnumerable<ExtendedResult> records, int dur
     return sb.ToString();
 }
 
-static Process StartService(string name, string dll, string workingDirectory, IReadOnlyList<string>? arguments = null)
+static Process StartService(string name, string dll, string workingDirectory, IReadOnlyList<string>? arguments = null, Uri? listenAddress = null)
 {
     if (!File.Exists(dll))
     {
@@ -451,11 +461,12 @@ static Process StartService(string name, string dll, string workingDirectory, IR
     foreach (var argument in arguments ?? []) info.ArgumentList.Add(argument);
     var session = BenchmarkSession.Current;
     var project = Path.GetFileNameWithoutExtension(dll);
-    var address = project == "Backend" ? session.Backend : project == "NativeYarp" ? session.Native : session.Enhanced;
+    var address = listenAddress ?? (project == "Backend" ? session.Backend : project == "NativeYarp" ? session.Native : session.Enhanced);
     info.ArgumentList.Add("--transport=" + session.Transport.Mode);
     if (session.Transport.CertificatePath is { } certificatePath) info.Environment[BenchmarkTransport.CertificateEnvironment] = certificatePath;
     info.ArgumentList.Add("--listen-url=" + address);
-    info.ArgumentList.Add("--backend-url=" + session.Backend);
+    info.ArgumentList.Add("--backend-urls=" + string.Join(',', session.Destinations.Addresses.Select(address => address.ToString())));
+    info.ArgumentList.Add("--load-balancing-policy=" + session.Destinations.LoadBalancingPolicy);
     info.ArgumentList.Add("--payload-mode=" + session.PayloadMode);
     info.ArgumentList.Add("--data-root=" + Path.Combine(session.DataDirectory, Guid.NewGuid().ToString("N")));
     var process = Process.Start(info) ?? throw new InvalidOperationException($"Unable to start {name}.");
@@ -518,10 +529,10 @@ static List<BenchmarkResult> BuildSummary(List<BenchmarkResult> results) => resu
 
 static string BuildCsv(List<BenchmarkResult> results, List<BenchmarkResult> summary)
 {
-    var sb = new StringBuilder("Kind,Gateway,Scenario,Repetition,RPS,P50Ms,P95Ms,P99Ms,ErrorRatePercent,CpuPercent,WorkingSetMb,Requests,Failures,PolicyRejections,TransportFailures,ConfigurationHash,Offered,Started,Dropped,CancelledBeforeStart,OfferedRPS,CompletedResponses,QueueP95Ms,QueueP99Ms,ScheduledP95Ms,ScheduledP99Ms,ResponseBytes,BodyReads,FirstByteSamples,FirstByteP50Ms,FirstByteP95Ms,FirstByteP99Ms,ReadGapP95Ms\n");
+    var sb = new StringBuilder("Kind,Gateway,Scenario,Repetition,RPS,P50Ms,P95Ms,P99Ms,ErrorRatePercent,CpuPercent,WorkingSetMb,Requests,Failures,PolicyRejections,TransportFailures,ConfigurationHash,Offered,Started,Dropped,CancelledBeforeStart,OfferedRPS,CompletedResponses,QueueP95Ms,QueueP99Ms,ScheduledP95Ms,ScheduledP99Ms,ResponseBytes,BodyReads,FirstByteSamples,FirstByteP50Ms,FirstByteP95Ms,FirstByteP99Ms,ReadGapP95Ms,DestinationCount,LoadBalancingPolicy,DestinationRequests\n");
     foreach (var item in results.Select(x => (Kind: "run", Item: x)).Concat(summary.Select(x => (Kind: "median", Item: x))))
     {
-        sb.AppendLine(string.Join(',', item.Kind, Csv(item.Item.Gateway), Csv(item.Item.Scenario), item.Item.Repetition, F(item.Item.RequestsPerSecond), F(item.Item.P50Ms), F(item.Item.P95Ms), F(item.Item.P99Ms), F(item.Item.ErrorRatePercent), F(item.Item.CpuPercent), F(item.Item.WorkingSetMb), item.Item.Requests, item.Item.Failures, item.Item.PolicyRejections, item.Item.TransportFailures, Csv(item.Item.ConfigurationHash ?? "unavailable"), item.Item.Arrivals.Offered, item.Item.Arrivals.Started, item.Item.Arrivals.Dropped, item.Item.Arrivals.CancelledBeforeStart, F(item.Item.Arrivals.OfferedPerSecond), item.Item.CompletedResponses, F(item.Item.Arrivals.QueueP95Ms), F(item.Item.Arrivals.QueueP99Ms), F(item.Item.ScheduledP95Ms), F(item.Item.ScheduledP99Ms), item.Item.ResponseBytes, item.Item.BodyReads, item.Item.FirstByteSamples, F(item.Item.FirstByteP50Ms), F(item.Item.FirstByteP95Ms), F(item.Item.FirstByteP99Ms), F(item.Item.ReadGapP95Ms)));
+        sb.AppendLine(string.Join(',', item.Kind, Csv(item.Item.Gateway), Csv(item.Item.Scenario), item.Item.Repetition, F(item.Item.RequestsPerSecond), F(item.Item.P50Ms), F(item.Item.P95Ms), F(item.Item.P99Ms), F(item.Item.ErrorRatePercent), F(item.Item.CpuPercent), F(item.Item.WorkingSetMb), item.Item.Requests, item.Item.Failures, item.Item.PolicyRejections, item.Item.TransportFailures, Csv(item.Item.ConfigurationHash ?? "unavailable"), item.Item.Arrivals.Offered, item.Item.Arrivals.Started, item.Item.Arrivals.Dropped, item.Item.Arrivals.CancelledBeforeStart, F(item.Item.Arrivals.OfferedPerSecond), item.Item.CompletedResponses, F(item.Item.Arrivals.QueueP95Ms), F(item.Item.Arrivals.QueueP99Ms), F(item.Item.ScheduledP95Ms), F(item.Item.ScheduledP99Ms), item.Item.ResponseBytes, item.Item.BodyReads, item.Item.FirstByteSamples, F(item.Item.FirstByteP50Ms), F(item.Item.FirstByteP95Ms), F(item.Item.FirstByteP99Ms), F(item.Item.ReadGapP95Ms), BenchmarkSession.Current.External ? "unavailable" : BenchmarkSession.Current.Destinations.Addresses.Length.ToString(CultureInfo.InvariantCulture), Csv(BenchmarkSession.Current.External ? "unavailable" : BenchmarkSession.Current.Destinations.LoadBalancingPolicy), Csv(item.Item.DestinationRequests is null ? "unavailable" : JsonSerializer.Serialize(item.Item.DestinationRequests))));
     }
 
     return sb.ToString();
@@ -559,6 +570,15 @@ static string BuildMarkdown(List<BenchmarkResult> summary, int duration, int war
     sb.AppendLine("|---|---|---:|---:|---:|---:|---:|---:|");
     foreach (var item in summary)
         sb.AppendLine($"| {item.Gateway} | {item.Scenario} | {item.ResponseBytes} | {item.BodyReads} | {item.FirstByteSamples} | {item.FirstByteP95Ms:N2} | {item.P95Ms:N2} | {item.ReadGapP95Ms:N2} |");
+    if (!BenchmarkSession.Current.External)
+    {
+        sb.AppendLine().AppendLine($"Destinations: {BenchmarkSession.Current.Destinations.Addresses.Length}; load balancing: {BenchmarkSession.Current.Destinations.LoadBalancingPolicy}.");
+        sb.AppendLine("Backend counts exclude preflight and warmup. Cache hits can reduce counts; retries can increase them.");
+        sb.AppendLine().AppendLine("| Gateway | Scenario | Destination | Backend requests |").AppendLine("|---|---|---|---:|");
+        foreach (var item in summary)
+            foreach (var destination in item.DestinationRequests ?? new Dictionary<string, long>())
+                sb.AppendLine($"| {item.Gateway} | {item.Scenario} | {destination.Key} | {destination.Value} |");
+    }
     sb.AppendLine().AppendLine("## Relative throughput versus Native YARP").AppendLine();
     foreach (var scenario in summary.Select(x => x.Scenario).Distinct())
     {
@@ -611,6 +631,7 @@ sealed record Scenario(string Name, HttpMethod Method, string Path, string? Body
 sealed record BenchmarkResult(string Gateway, string Scenario, int Repetition, double RequestsPerSecond, double P50Ms, double P95Ms, double P99Ms, double ErrorRatePercent, double CpuPercent, double WorkingSetMb, long Requests, long Failures, long PolicyRejections, long TransportFailures)
 {
     public string? ConfigurationHash { get; init; }
+    public IReadOnlyDictionary<string, long>? DestinationRequests { get; init; }
     public ArrivalStatistics Arrivals { get; init; } = new(0, 0, 0, 0, 0, 0, 0, 0);
     public long CompletedResponses { get; init; }
     public double ScheduledP95Ms { get; init; }
