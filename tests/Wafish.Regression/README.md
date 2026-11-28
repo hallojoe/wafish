@@ -192,3 +192,10 @@ Run `dotnet run --project tests/Wafish.Regression -c Release --no-build -- --gro
 The existing `--redis` selection also verifies combined windows with real Redis counters and a single-primary Redis Cluster.
 It covers concurrent replicas, rejected-request accounting, independent rollover, natural expiry, deployment prefixes, and cluster key placement.
 Set `WAFISH_REDIS_SERVER` to a Redis 7 or later executable. The runner owns isolated processes, ports, and temporary data.
+
+### Blue-green walkthrough
+
+Run `--group blue-green` for isolated administration API cutover and rollback checks.
+The check preserves route UID, transforms, metadata, and unrelated routes across backend version switches.
+It also checks failed candidate health gating and active/persisted version agreement.
+See the [operator walkthrough](../../docs/blue-green.md).

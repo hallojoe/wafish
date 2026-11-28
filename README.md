@@ -104,6 +104,7 @@ See [package boundaries and hosting APIs](docs/architecture.md).
 
 The sample serves the [React workspace](docs/react-ui.md) at `/console`. The old Razor interface has been removed.
 Use the [Aspire guide](docs/aspire.md) to start the gateway with two backend instances.
+Use the [blue-green walkthrough](docs/blue-green.md) to verify a health-checked cutover and targeted rollback.
 Use the [SonarQube guide](docs/sonarqube.md) for local analysis, .NET coverage, and CI quality gates.
 
 ## Quick Start
