@@ -171,3 +171,11 @@ Use the [Aspire browser sample](../../samples/SampleExternalLogin/README.md) for
 Run `dotnet run --project tests/Wafish.Regression -c Release --no-build -- --group named-quotas`.
 [NamedQuotaChecks.cs](NamedQuotaChecks.cs) verifies shared permits, client isolation, policy conflicts, route changes, cancellation, and bounded ownership.
 Real HTTP and SQLite checks verify rejection before persistence and counter retention after binding recreation.
+
+## Combined Redis quotas
+
+Run `dotnet run --project tests/Wafish.Regression -c Release --no-build -- --group dual-quotas`.
+[RedisDualWindowChecks.cs](RedisDualWindowChecks.cs) covers validation, persistence rejection, middleware headers, optional store support, and command dispatch.
+The existing `--redis` selection also verifies combined windows with real Redis counters and a single-primary Redis Cluster.
+It covers concurrent replicas, rejected-request accounting, independent rollover, natural expiry, deployment prefixes, and cluster key placement.
+Set `WAFISH_REDIS_SERVER` to a Redis 7 or later executable. The runner owns isolated processes, ports, and temporary data.
