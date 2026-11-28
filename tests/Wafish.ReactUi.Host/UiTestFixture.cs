@@ -68,6 +68,16 @@ internal sealed class UiTestFixture : IAsyncDisposable
                 ["ReverseProxy:Routes:demo:Match:Path"] = "/demo/{**catch-all}",
                 ["ReverseProxy:Routes:demo:Metadata:retained-field"] = "preserve-me"
             });
+            if (settings.Profile == "webauthn")
+            {
+                builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["Gateway:Dashboard:Auth:WebAuthn:Enabled"] = "true",
+                    ["Gateway:Dashboard:Auth:WebAuthn:RelyingPartyId"] = "localhost",
+                    ["Gateway:Dashboard:Auth:WebAuthn:Origins:0"] = $"https://localhost:{settings.Port}",
+                    ["Gateway:Dashboard:Auth:WebAuthn:CredentialStorePath"] = Path.Combine(directory, "webauthn.json")
+                });
+            }
             if (settings.Profile == "large")
             {
                 builder.Configuration.AddInMemoryCollection(Enumerable.Range(0, 250).SelectMany(index => new Dictionary<string, string?>

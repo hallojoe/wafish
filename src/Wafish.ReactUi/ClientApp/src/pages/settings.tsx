@@ -1,3 +1,4 @@
+import { Authenticators } from "@/components/authenticators";
 import { useState } from "react";
 import { api, config, download, field, object, rows, text } from "@/api/client";
 import { useApi, useWrite } from "@/hooks/api";
@@ -243,6 +244,11 @@ export function AccountPage() {
             </dl>
           </QueryState>
         </Panel>
+        {jwt && config.webAuthn && (
+          <Authenticators
+            requiresTwoFactor={Boolean(field(factor.data, "enabled"))}
+          />
+        )}
         {jwt && (
           <Panel title="Two-factor authentication">
             <QueryState query={factor}>

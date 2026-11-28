@@ -376,3 +376,8 @@ Run `apm audit --ci` and `apm compile --validate` before committing updates.
 ## License
 
 [MIT](LICENSE)
+
+### Administration authenticators
+
+Optional passkeys and FIDO2 security keys support JWT administration login. Configured TOTP remains required.
+See [WebAuthn setup and recovery](docs/administration-webauthn.md).

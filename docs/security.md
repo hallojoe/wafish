@@ -342,3 +342,9 @@ Plugin code and direct in-process callers remain trusted. See [configuration](..
 External visitor login is separate from administration authentication. See the [external login guide](../src/Wafish.Plugin.ExternalLogin/README.md).
 Visitor routes require HTTPS, Redis sessions, shared protected keys, and configured OIDC providers.
 Unsafe cookie-authenticated requests require a same-origin CSRF token. APIs validate forwarded access tokens independently.
+
+## Administration WebAuthn
+
+Optional WebAuthn uses verified user presence and user verification, single-use challenges, and private atomic credential storage.
+Configured TOTP remains required. Successful credential changes revoke host-local sessions.
+See [origins, storage ownership, limits, and recovery](administration-webauthn.md).

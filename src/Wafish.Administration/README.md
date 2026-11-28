@@ -85,7 +85,7 @@ Basic authentication and API keys remain request credentials. Their existing hub
 Credential changes take effect during the next check; in-progress requests can finish.
 
 Authorization covers built-in plugin controllers, including circuit-breaker actions.
-Only the authentication controller's login and logout actions bypass credential checks.
+Password login, logout, and WebAuthn login ceremonies bypass credential checks. Control-plane access checks still apply.
 See [verification](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-administration-lifecycle-readme-md).
 
 ## Shutdown verification
@@ -165,3 +165,10 @@ Routes can omit clusters. Active redirects run before YARP requires a backend.
 Other requests on routes without clusters return `503`.
 Manage bindings and preview sample requests through the existing plugin editor.
 See the [redirect reference](../Wafish.Plugin.Redirect/README.md) for validation, policies, and setup.
+
+## WebAuthn authenticators
+
+Opt-in passkeys and FIDO2 security keys support the configured JWT account.
+Enrollment and removal require credential-management permission and fresh password/TOTP proof.
+Successful credential changes revoke JWT sessions. Password/TOTP login remains available for recovery.
+See [configuration, limits, and recovery](../../docs/administration-webauthn.md).

@@ -80,9 +80,14 @@ Select a profile with `UI_TEST_PROFILE`:
 | `version-conflict` | An independent stored revision causes `VersionConflict`. |
 | `delayed-failure` | Writes wait 1.5 seconds, then return `StorageFailed`. |
 | `activation-failure` | Persistence succeeds; publication returns `ActivationFailed`. |
+| `webauthn` | Private authenticator storage with an exact HTTPS localhost origin. |
 
 Failures activate after startup. They use the actual mutation pipeline and revision response fields.
 Profiles have no HTTP fault-control endpoints and require no external backend.
-Browser checks use additional HTTPS hosts on ports 5228–5233 for these six profiles.
+Browser checks use HTTPS hosts on ports 5228–5233 for fault and data profiles.
+The authenticator profile uses HTTPS localhost on port 5234.
 Port 0 requests an isolated operating-system port for C# fixture tests.
 See [infrastructure evidence](../../ARCHIVE.md#archive-tests-wafish-regression-evidence-regression-infrastructure-readme-md).
+
+The `webauthn` profile enables a private credential store and an exact HTTPS localhost origin.
+The browser runner verifies enrollment, sign-in, removal, and recovery through a virtual authenticator.
