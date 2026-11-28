@@ -12560,3 +12560,49 @@ Source entry points:
 - [Catalog checks](tests/Wafish.Regression/DiscoveryCatalogChecks.cs).
 - [Owned live verification](scripts/check-service-discovery.py).
 - [Walkthrough](docs/service-discovery-sample.md).
+
+
+## R45: Qualify the initial CI performance baseline — 2026-11-28
+
+Selected [run 46111207302](https://github.com/hallojoe/wafish/actions/runs/46111207302) as the initial baseline.
+All baseline, plugin, and streaming profiles returned `baseline_ready` without request failures.
+The measured source was `f7385ac58179a733cb0a76eaf81131d153ff18ec`, with a clean checkout.
+Reports identify .NET 10.0.15, Ubuntu 24.04.5, X64, four logical processors, and Intel Xeon 6975P-C.
+
+The earlier three-second warmup run failed baseline and plugin noise limits.
+First repetitions differed substantially from later repetitions, suggesting incomplete warmup.
+The workflow now uses twenty-second warmups and a sixty-minute job limit.
+Measurement duration, repetitions, concurrency, workload, regression budgets, and noise limits remain unchanged.
+The qualified run's maximum P99 spreads were 16.92%, 12.88%, and 2.01% across its three profiles.
+
+A compatible [repeat run](https://github.com/hallojoe/wafish/actions/runs/46112707318) measured the same source independently.
+Plugins and streaming passed. The baseline profile failed one P99 noise check.
+Wafish core's plain-text P99 spread reached 50.68%, above the 40% limit, despite an improved median.
+The repeat had no request failures. Its other 44 metric comparisons passed.
+The workflow correctly failed the noisy comparison and did not promote its reports.
+This validates actionable comparison and noise rejection; it does not claim that every hosted run is stable.
+Threshold review retained all existing conservative limits. No samples were removed and no limits were relaxed.
+
+Verification:
+
+- Qualification and repeat CI jobs built the complete Release solution and ran mandatory workload preflight.
+- All three initial profiles qualified. Their raw report hashes match the retained comparison evidence.
+- The repeat verified baseline provenance, downloaded its inputs, and produced compatible per-metric decisions.
+- Local replay reproduced all three qualification decisions and all repeat decisions, including exit code 5 for noise.
+- All 15 deterministic comparator checks passed, including incompatible metadata, request failures, noise, and regressions.
+- Changed Markdown links, policy identity, and whitespace checks passed.
+- Raw JSON, CSV, Markdown, decisions, and policy remain in identified CI artifacts until 2027-02-26.
+- The qualification record includes report and artifact hashes for independent inspection.
+
+The initial baseline requirement is complete. The repeat remains a failed candidate and is recorded as such.
+Future candidates must satisfy compatibility and noise checks before performance approval.
+No application behavior or budget thresholds changed. No packages were published or services deployed.
+
+Source entry points:
+
+- [CI workflow](.github/workflows/performance-budgets.yml).
+- [Comparator](scripts/check-performance-budgets.py).
+- [Comparator checks](scripts/test-performance-budgets.py).
+- [Budget policy](tests/Wafish.Performance/budgets.json).
+- [Operator guide](docs/performance-budgets.md).
+- [Qualification and repeat evidence](docs/performance-baseline-2026-11.md).
