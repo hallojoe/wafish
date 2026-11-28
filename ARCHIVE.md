@@ -12271,3 +12271,36 @@ Source entry points:
 - [Aspire topology guide](docs/aspire.md).
 
 No packages were published. No application deployment was performed.
+
+## R48: Multiple benchmark destinations — 2026-11-28
+
+Managed comparisons now accept one to eight loopback backend origins and an explicit YARP balancing policy.
+NativeYarp and Wafish receive identical destinations and transport settings.
+The singular backend option remains supported. NativeYarp remains independent of Wafish projects.
+Reports retain destination count, policy, effective manifests, and measured per-destination request counts.
+Counter deltas exclude preflight and warmup. Cache hits and retries can change backend counts relative to client requests.
+
+Verification:
+
+- Complete Release solution build: zero warnings and errors.
+- All 14 benchmark regression checks passed under coverage.
+- All 338 core regression checks passed independently.
+- RoundRobin and FirstAlphabetical distribution matched across native, same-host native, Wafish core, and Wafish full.
+- Two-backend runs passed with exact request accounting for HTTP/1.1, HTTP/2, HTTPS/1.1, and HTTPS/2.
+- Existing single-backend, plugin, streaming, scheduled-arrival, external-mode, and owned-resource cleanup checks passed.
+- Changed benchmark executable-line coverage: 74/77 (96.1%).
+- Linked copies of shared source were merged across modules; partially covered ranges were counted conservatively within each module.
+- Changed Markdown links and whitespace checks passed.
+
+The stateful first suite still requires one backend because its functional scenarios share failure counters.
+External mode cannot configure upstream destinations. Short verification runs do not establish production capacity.
+No packages were published, and no application deployment was performed.
+
+Source entry points:
+
+- [Destination validation](tests/Wafish.Performance/Shared/BenchmarkDestinations.cs).
+- [Native baseline](tests/Wafish.Performance/NativeYarp/Program.cs).
+- [Wafish host](tests/Wafish.Performance/EnhancedYarp/Program.cs).
+- [Managed runner](tests/Wafish.Performance/Runner/Program.cs).
+- [Operator guide](tests/Wafish.Performance/Runner/README.md#multiple-destinations-r48).
+- [Destination checks](tests/Wafish.Regression/BenchmarkReliabilityChecks.Destinations.cs).
