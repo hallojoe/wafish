@@ -1,0 +1,120 @@
+{
+  "realm": "wafish",
+  "enabled": true,
+  "registrationAllowed": false,
+  "accessTokenLifespan": 120,
+  "roles": {
+    "realm": [
+      {
+        "name": "support-writer"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "wafish",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "${WAFISH_CLIENT_SECRET}",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": [
+        "${WAFISH_GATEWAY_ORIGIN}/_wafish/auth/callback/website/keycloak"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "defaultClientScopes": [
+        "profile"
+      ],
+      "optionalClientScopes": [
+        "support:write"
+      ]
+    }
+  ],
+  "clientScopes": [
+    {
+      "id": "support-write",
+      "name": "support:write",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true"
+      },
+      "protocolMappers": [
+        {
+          "name": "support-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "support-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        }
+      ]
+    },
+    {
+      "name": "profile",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true"
+      },
+      "protocolMappers": [
+        {
+          "name": "full-name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-full-name-mapper",
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "scopeMappings": [
+    {
+      "clientScope": "support:write",
+      "roles": [
+        "support-writer"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "writer",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Support",
+      "lastName": "Writer",
+      "email": "writer@example.test",
+      "realmRoles": [
+        "support-writer"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${WAFISH_WRITER_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "reader",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Support",
+      "lastName": "Reader",
+      "email": "reader@example.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${WAFISH_READER_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}

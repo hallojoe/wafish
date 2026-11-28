@@ -10,11 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.Keycloak" />
     <PackageReference Include="Aspire.Hosting.PostgreSQL" />
     <PackageReference Include="Aspire.Hosting.Redis" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../samples/SampleExternalLogin/SampleExternalLogin.csproj" />
     <ProjectReference Include="..\samples\SampleGateway\SampleGateway.csproj" />
     <ProjectReference Include="..\samples\SampleLocalService\SampleLocalService.csproj" />
   </ItemGroup>
