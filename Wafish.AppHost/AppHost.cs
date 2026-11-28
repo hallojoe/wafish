@@ -38,6 +38,8 @@ IResourceBuilder<ProjectResource> AddGateway(string name, bool registration) => 
     .WithEnvironment("Gateway__Storage__Sqlite__ConnectionString", $"Data Source={Path.Combine(dataDirectory, name + ".db")}")
     .WithHttpHealthCheck("/ready", endpointName: "http");
 
+if (builder.Configuration.GetValue<bool>("EnableExternalLogin")) builder.AddExternalLogin(topology);
+
 var gateway = AddGateway("gateway", true);
 var backends = new List<IResourceBuilder<ProjectResource>>();
 

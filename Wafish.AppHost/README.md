@@ -67,3 +67,10 @@ The default identifier is `default`. Use `UseLegacyTopologyState=true` to reopen
 The compatibility option requires the default identifier and never deletes existing volumes.
 Run `python scripts/check-topology.py` for controlled restart verification.
 SonarQube readiness accepts only an exact `UP` status. Invalid, unavailable, and timed-out responses remain unhealthy.
+
+## External login sample
+
+Set `EnableExternalLogin=true` to start the optional visitor gateway, static site, support API, Keycloak, and Redis.
+Set `EnableSecondVisitorGateway=true` to verify shared visitor sessions across two gateways.
+This profile requires a container runtime and trusted development certificates.
+See the [sample guide](../samples/SampleExternalLogin/README.md) for ports, generated credentials, and browser verification.

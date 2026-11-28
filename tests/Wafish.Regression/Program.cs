@@ -43,6 +43,7 @@ if (args is ["--migration-crash", var database, var ready])
 }
 
 var registry = new RegressionCaseRegistry(report);
+await registry.DefineGroupAsync("external-login", ExternalLoginChecks.RunAsync);
 await registry.DefineGroupAsync("aggregation", AggregationChecks.RunAsync);
 await registry.DefineGroupAsync("internal-routes", InternalRouteExecutionChecks.RunAsync);
 await registry.DefineGroupAsync("route-authorization", RouteAuthorizationChecks.RunAsync);

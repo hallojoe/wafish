@@ -17,12 +17,12 @@ public sealed class LogSanitizer : ILogSanitizer
 {
     private static readonly HashSet<string> _defaultHeaderBlacklist = new(StringComparer.OrdinalIgnoreCase)
     {
-        "Authorization", "Cookie", "Set-Cookie", "X-Api-Key", "X-Auth-Token"
+        "Authorization", "Cookie", "Set-Cookie", "X-Api-Key", "X-Auth-Token", "X-Wafish-CSRF"
     };
 
     private static readonly HashSet<string> _defaultJsonFieldSanitizeList = new(StringComparer.OrdinalIgnoreCase)
     {
-        "password", "token", "secret", "apikey", "api-key", "access_token", "refresh_token"
+        "password", "token", "secret", "apikey", "api-key", "access_token", "refresh_token", "csrfToken"
     };
 
     // Reuse JsonSerializerOptions instance to avoid allocations

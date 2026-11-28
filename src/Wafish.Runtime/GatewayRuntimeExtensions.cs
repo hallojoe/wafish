@@ -1,3 +1,4 @@
+using Wafish.Plugin.ExternalLogin;
 using System.Collections.Concurrent;
 using Wafish.Dashboard.Infrastructure;
 using Wafish.Dashboard.Infrastructure.State;
@@ -150,6 +151,9 @@ public static class GatewayRuntimeExtensions
         services.AddSingleton<IRoutePluginCompiler, AggregationCompiler>();
         services.AddSingleton<AggregationAdmission>();
         services.AddSingleton<AggregationHandler>();
+        services.AddSingleton<IGatewayPlugin, ExternalLoginPlugin>();
+        services.AddSingleton<IRoutePluginCompiler, ExternalLoginCompiler>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<ITransformProvider, ExternalLoginTransformProvider>());
         services.AddSingleton<IGatewayPlugin, RouteAuthorizationPlugin>();
         services.AddSingleton<IRoutePluginCompiler, RouteAuthorizationCompiler>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<ITransformProvider, RouteAuthorizationTransformProvider>());
@@ -209,7 +213,7 @@ public static class GatewayRuntimeExtensions
         {
             endpoints.ServiceProvider.GetService<RoutePolicyPipelineSupport>()?.Disable();
             if (endpoints.ServiceProvider.GetService<IGatewaySnapshotPublisher>()?.Current.Routes.Any(r =>
-                r.Metadata?.ContainsKey("wafish:request-aggregation") == true || r.Metadata?.ContainsKey("wafish:route-authorization") == true || r.Metadata?.ContainsKey("wafish:claims-transform") == true) == true)
+                r.Metadata?.ContainsKey("wafish:request-aggregation") == true || r.Metadata?.ContainsKey("wafish:route-authorization") == true || r.Metadata?.ContainsKey("wafish:claims-transform") == true || r.Metadata?.ContainsKey("wafish:external-login") == true) == true)
                 throw new InvalidOperationException("Active endpoint policies require the built-in proxy pipeline.");
         }
         var conventions = endpoints.MapReverseProxy(proxy =>
@@ -228,6 +232,7 @@ public static class GatewayRuntimeExtensions
         {
             conventions.Add(endpoint =>
             {
+                ExternalLoginExtensions.ConfigureEndpoint(endpoint);
                 var forward = endpoint.RequestDelegate!;
                 endpoint.RequestDelegate = context => RouteAuthorizationMiddleware.InvokeAsync(context, authorized =>
                     ClaimsTransformProvider.InvokeAsync(authorized, inner => inner.RequestServices.GetRequiredService<PluginRuntimeDomainManager>()

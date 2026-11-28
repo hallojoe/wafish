@@ -156,3 +156,11 @@ Run `python scripts/check-topology.py` when the target AppHost is stopped.
 The check owns a temporary topology and verifies gateway, backend, and AppHost restarts.
 It checks persisted route identity, both registered backends, and unchanged generated credentials.
 It removes only its generated test parameter and temporary local directory.
+
+## Optional external login
+
+Set `EnableExternalLogin=true` to add Keycloak, shared Redis sessions, a static site, and a protected support API.
+The visitor gateway uses a fixed HTTPS endpoint for registered OIDC callbacks.
+Set `EnableSecondVisitorGateway=true` to verify shared sessions with a second gateway.
+The default topology remains container-free.
+See the [external login sample](../samples/SampleExternalLogin/README.md) for configuration and browser checks.

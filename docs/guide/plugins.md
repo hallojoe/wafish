@@ -10,6 +10,7 @@ Bindings attach configuration to a supported route or cluster scope.
 | `route-authorization` | Require authenticated scopes and claims before route responses. | [Route authorization](../../src/Wafish.Plugin.RouteAuthorization/README.md) |
 | `request-aggregation` | Combine independent GET JSON routes with bounded parallel execution. | [Aggregation](../../src/Wafish.Plugin.Aggregation/README.md) |
 | `claims-transform` | Map authenticated claims into downstream requests. | [Claims transform](../../src/Wafish.Plugin.ClaimsTransform/README.md) |
+| `external-login` | Require visitor sessions and forward configured API tokens. | [External login](../../src/Wafish.Plugin.ExternalLogin/README.md) |
 | `redirect` | Return validated redirects, including HTTPS upgrades, without a backend. | [Redirect](../../src/Wafish.Plugin.Redirect/README.md) |
 | `waf` | Inspect configured request inputs and enforce allow/deny rules. | [WAF](../../src/Wafish.Plugin.Waf/README.md) |
 | `rate-limit` | Apply local rate-limit policies. | [Local rate limits](../../src/Wafish.Plugin.RateLimit/README.md) |

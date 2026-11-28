@@ -157,3 +157,11 @@ See [candidate evidence](../../ARCHIVE.md#archive-tests-wafish-regression-eviden
 
 Use `--group internal-routes` for child routing, authorization preflight, context isolation, response bounds, cancellation, and snapshot retention.
 Use `--group aggregation` for JSON composition, template validation, admission, deadlines, policy parity, and atomic dependency repairs.
+
+## External login
+
+Run `--group external-login` for configuration, CSRF, OIDC callback, cookie isolation, refresh, and authorization checks.
+Set `WAFISH_EXTERNALLOGIN_REDIS` to an isolated Redis instance to enable the live session and gateway checks.
+Each check uses an isolated namespace and temporary key directory.
+The group verifies repeat login, refresh fencing, two gateway replicas, native policies, and administration isolation.
+Use the [Aspire browser sample](../../samples/SampleExternalLogin/README.md) for real Keycloak verification.

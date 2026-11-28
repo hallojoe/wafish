@@ -10,7 +10,7 @@
 ---
 
 **Wafish** is a .NET 10 API gateway built on [Microsoft YARP](https://microsoft.github.io/reverse-proxy/) 2.3.0.
-It includes 15 built-in plugins, a management dashboard, an AI assistant, service discovery, and client registration.
+It includes 16 built-in plugins, a management dashboard, an AI assistant, service discovery, and client registration.
 
 - [Website](https://hallojoe.github.io/wafish/)
 - [Documentation](https://hallojoe.github.io/wafish/docs/)
@@ -213,6 +213,7 @@ Install the .NET 10 SDK to build this repository. Use the .NET 10 ASP.NET Core r
 | Area | What you get | Detail |
 |:-----|:-------------|:-------|
 | **Routing** | Dynamic clusters & routes, drag-sort priority, dual form/JSON editor, import/export, snapshot & rollback, audit log | [Guide](src/Wafish/README.md) |
+| **External login** | OIDC visitor sessions, protected pages, CSRF protection, and controlled API token forwarding | [Guide](src/Wafish.Plugin.ExternalLogin/README.md) |
 | **Redirects** | Fixed and template targets, HTTPS enforcement, host allowlists, and preview; routes can omit backends | [Guide](src/Wafish.Plugin.Redirect/README.md) |
 | **Authentication** | `None` / `DefaultJwt` / `CustomJwt` / `ApiKey` / custom delegate; TOTP **2FA** | [Guide](docs/security.md) |
 | **Security** | WAF: IP allow/deny, SQLi / XSS / path-traversal detection, request limits, security headers | [Guide](src/Wafish.Plugin.Waf/README.md) |
@@ -246,7 +247,7 @@ Config: `Mode` (default `Static`), `Endpoint`, `ServiceName`, `Namespace` (`defa
 
 ## Built-in Plugins
 
-Runtime registers all 12 plugins. Configure bindings through the plugin editor or administration API.
+Runtime registers all 16 plugins. Configure bindings through the plugin editor or administration API.
 The Metrics package supplies both metric plugins. Each package link opens its configuration guide.
 
 | ID | Scope | Package and guide | What it does |
@@ -254,6 +255,7 @@ The Metrics package supplies both metric plugins. Each package link opens its co
 | `route-authorization` | Route | [Wafish.Plugin.RouteAuthorization](src/Wafish.Plugin.RouteAuthorization/README.md) | Require authenticated scopes and claims before route responses |
 | `request-aggregation` | Route | [Wafish.Plugin.Aggregation](src/Wafish.Plugin.Aggregation/README.md) | Combine independent GET JSON routes with bounded parallel execution |
 | `claims-transform` | Route | [Wafish.Plugin.ClaimsTransform](src/Wafish.Plugin.ClaimsTransform/README.md) | Authenticated claims to downstream headers, queries, and paths |
+| `external-login` | Route | [Wafish.Plugin.ExternalLogin](src/Wafish.Plugin.ExternalLogin/README.md) | OIDC visitor sessions and controlled API token forwarding; providers require host registration |
 | `redirect` | Route | [Wafish.Plugin.Redirect](src/Wafish.Plugin.Redirect/README.md) | Fixed and template redirects, HTTPS enforcement, host allowlists, and preview |
 | `waf` | Route | [Wafish.Plugin.Waf](src/Wafish.Plugin.Waf/README.md) | IP allow/deny, SQLi, XSS, path traversal, request limits, and security headers |
 | `rate-limit` | Route | [Wafish.Plugin.RateLimit](src/Wafish.Plugin.RateLimit/README.md) | Fixed window, sliding window, token bucket, and concurrency limits |
