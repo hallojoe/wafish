@@ -278,6 +278,7 @@ export function BindingsPage() {
         </div>
         <QueryState query={query}>
           <Records
+            viewKey="plugin-bindings"
             data={rows(query.data)}
             columns={[
               {
@@ -457,27 +458,31 @@ export function BindingsPage() {
               </div>
               <details>
                 <summary>{t("Common fields")}</summary>
-                {editor.pluginId === "external-login" ? <ExternalLoginEditor
-                  schema={schema}
-                  value={text(editor.configJson)}
-                  onChange={(value) => update("configJson", value)}
-                /> : <SchemaFields
-                  schema={schema}
-                  routeChoices={rows(routes.data)
-                    .filter(
-                      (route) =>
-                        text(field(route, "clusterId"), "") &&
-                        text(field(route, "routeId")) !==
-                          text(editor.scopeId) &&
-                        text(field(route, "routeUid"), ""),
-                    )
-                    .map((route) => ({
-                      value: text(field(route, "routeUid")),
-                      label: text(field(route, "routeId")),
-                    }))}
-                  value={text(editor.configJson)}
-                  onChange={(value) => update("configJson", value)}
-                />}
+                {editor.pluginId === "external-login" ? (
+                  <ExternalLoginEditor
+                    schema={schema}
+                    value={text(editor.configJson)}
+                    onChange={(value) => update("configJson", value)}
+                  />
+                ) : (
+                  <SchemaFields
+                    schema={schema}
+                    routeChoices={rows(routes.data)
+                      .filter(
+                        (route) =>
+                          text(field(route, "clusterId"), "") &&
+                          text(field(route, "routeId")) !==
+                            text(editor.scopeId) &&
+                          text(field(route, "routeUid"), ""),
+                      )
+                      .map((route) => ({
+                        value: text(field(route, "routeUid")),
+                        label: text(field(route, "routeId")),
+                      }))}
+                    value={text(editor.configJson)}
+                    onChange={(value) => update("configJson", value)}
+                  />
+                )}
               </details>
               <JsonEditor
                 label="Configuration JSON"
@@ -545,6 +550,7 @@ export function PresetsPage() {
       <Panel title="Presets">
         <QueryState query={query}>
           <Records
+            viewKey="plugin-presets"
             data={rows(query.data)}
             columns={[
               { key: "name", label: "Name" },

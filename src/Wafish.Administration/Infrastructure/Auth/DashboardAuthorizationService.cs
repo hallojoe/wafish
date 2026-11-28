@@ -34,6 +34,7 @@ public sealed class DashboardAuthorizationService : IDashboardAuthorizationServi
     /// <inheritdoc />
     public async Task<bool> IsAuthorizedAsync(HttpContext context)
     {
+        DashboardUserIdentity.Clear(context);
         if (!_policy.IsAllowed(context, _options.Auth.AuthMode == DashboardAuthMode.None && _options.Auth.AuthorizeRequest == null))
         {
             return false;
@@ -42,7 +43,11 @@ public sealed class DashboardAuthorizationService : IDashboardAuthorizationServi
         if (_options.Auth.AuthorizeRequest != null)
         {
             var authorized = await _options.Auth.AuthorizeRequest(context);
-            if (authorized) context.Items[DashboardPermissionService.ActorKey] = context.User.Identity?.Name ?? "custom-caller";
+            if (authorized)
+            {
+                context.Items[DashboardPermissionService.ActorKey] = context.User.Identity?.Name ?? "custom-caller";
+                DashboardUserIdentity.Principal(context);
+            }
             return authorized;
         }
 
@@ -60,6 +65,7 @@ public sealed class DashboardAuthorizationService : IDashboardAuthorizationServi
             if (valid)
             {
                 refund();
+                if (_options.Auth.AuthMode == DashboardAuthMode.BasicAuth) DashboardUserIdentity.Account(context, "basic", _options.Auth.JwtUsername);
                 context.Items[DashboardPermissionService.ActorKey] = _options.Auth.AuthMode == DashboardAuthMode.ApiKey ? "api-key" : _options.Auth.JwtUsername ?? "basic-user";
             }
 
@@ -142,7 +148,11 @@ public sealed class DashboardAuthorizationService : IDashboardAuthorizationServi
                 context.Connection.RemoteIpAddress?.ToString() ?? "unknown");
         }
 
-        if (valid) context.Items[DashboardPermissionService.ActorKey] = username ?? "jwt-user";
+        if (valid)
+        {
+            context.Items[DashboardPermissionService.ActorKey] = username ?? "jwt-user";
+            DashboardUserIdentity.Account(context, _options.Auth.AuthMode.ToString(), username);
+        }
         return valid;
     }
 

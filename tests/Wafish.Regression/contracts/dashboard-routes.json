@@ -5,6 +5,7 @@
   "DELETE control/api/config/history",
   "DELETE control/api/config/routes/{routeId}",
   "DELETE control/api/logs",
+  "DELETE control/api/operator-views/{workspace}/{id:guid}",
   "DELETE control/api/plugin-bindings/{id}",
   "DELETE control/api/plugins/{pluginId}",
   "DELETE control/api/presets/{id}",
@@ -34,6 +35,7 @@
   "GET control/api/logs/settings/restart-required",
   "GET control/api/logs/stats",
   "GET control/api/metrics/latency",
+  "GET control/api/operator-views/{workspace}",
   "GET control/api/overview/snapshot",
   "GET control/api/plugin-bindings",
   "GET control/api/plugin-bindings/plugins",
@@ -106,5 +108,6 @@
   "PUT control/api/config/routes/{routeId}/rename",
   "PUT control/api/logs/settings",
   "PUT control/api/logs/settings/reset",
+  "PUT control/api/operator-views/{workspace}/{id:guid}",
   "PUT control/api/plugin-bindings/{id}"
 ]

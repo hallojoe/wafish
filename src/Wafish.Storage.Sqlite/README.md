@@ -140,3 +140,10 @@ See [registration and operations](../../docs/registration-operations-contracts.m
 
 Versioned change sets combine routes, clusters, and plugin bindings in one transaction.
 See [change-set contracts](../../docs/configuration-policy-contracts.md) for API examples, revisions, permissions, and recovery.
+
+## Operator preferences
+
+Migration 023 adds private named operator views, separate from gateway configuration.
+The repository enforces owner/workspace scope, optimistic revisions, unique names, one default per workspace, and capacity.
+Default changes and writes commit atomically. Failures preserve existing preferences.
+See [bounds and optional provider contracts](../../docs/operator-views.md).

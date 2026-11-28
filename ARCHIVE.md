@@ -12634,3 +12634,51 @@ Source entry points:
 - [HTTP controller](samples/SampleLocalService/Controllers/SampleOrdersController.cs).
 - [Regression checks](tests/Wafish.Regression/SampleOrderChecks.cs).
 - [Walkthrough](docs/idempotent-sample-orders.md).
+
+
+## R55: Private saved operator views — 2026-11-28
+
+Implemented named table filters and column choices, plus log and audit server filters.
+The last selected default restores after sign-in or page reload.
+SQLite migration 023 stores preferences separately from gateway configuration.
+An optional repository contract preserves compatibility with existing storage providers.
+
+Verified administration identities determine ownership. Clients cannot choose another owner.
+Basic and JWT accounts retain views across sessions. Custom delegates require one unambiguous authenticated subject.
+API-key and anonymous modes cannot identify individuals and therefore cannot save private views.
+Preferences contain explicit settings only; credentials and row payloads are excluded.
+No browser storage was added. Authentication changes cancel preference requests and clear component state.
+
+Bounded requests, names, filters, columns, and repository capacity limit retained data.
+Transactions enforce one default per workspace, unique names, optimistic revisions, and rollback.
+Read permission permits personal preference writes without granting gateway configuration rights.
+Writes require an explicit request header and reject foreign origins.
+Failed writes preserve filters and name drafts. Reload resolves stale revisions without replacing drafts.
+Removed columns fall back safely; at least one current column remains visible.
+
+Verification:
+
+- Release solution build passed with zero warnings and errors.
+- All 368 core regression checks passed, including storage, contracts, and configuration transaction checks.
+- All 71 administration checks passed, including the expanded authorization matrix.
+- All 116 component checks passed; frontend lint passed.
+- All 38 browser checks passed. Both saved-view cases passed again after the final draft-recovery adjustment.
+- Browser checks covered sign-out, renewed sign-in, reload, columns, server filters, conflicts, and accessibility.
+- The final saved-view screenshot was inspected for layout and visible state.
+- Five focused cases covered isolation, concurrent writes, rollback, capacity, validation, account renewal, and unsupported identities.
+- Changed executable-line coverage: backend 169/172 (98.3%); frontend 104/108 (96.3%).
+- All 24 package API checks and three isolated consumers passed. Negative compatibility checks passed.
+- One package run failed when MSBuild workers exited prematurely. The unchanged command and full package verification passed on retry.
+- Changed Markdown links and whitespace checks passed. Fixture-owned hosts completed cleanup.
+
+No gateway configuration contract changed. No packages were published or services deployed.
+
+Source entry points:
+
+- [Identity derivation](src/Wafish.Administration/Infrastructure/Auth/DashboardUserIdentity.cs).
+- [Preference API](src/Wafish.Administration/Modules/Dashboard/Controllers/OperatorViewsController.cs).
+- [Optional storage contract](src/Wafish.Storage.Abstractions/Storage/IOperatorViewRepository.cs).
+- [SQLite repository](src/Wafish.Storage.Sqlite/SqliteOperatorViewRepository.cs).
+- [Console controls](src/Wafish.ReactUi/ClientApp/src/components/saved-views.tsx).
+- [Regression checks](tests/Wafish.Regression/OperatorViewChecks.cs).
+- [Operator guide](docs/operator-views.md).

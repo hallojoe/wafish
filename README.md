@@ -393,3 +393,5 @@ The [idempotent order sample](docs/idempotent-sample-orders.md) demonstrates bou
 
 Optional passkeys and FIDO2 security keys support JWT administration login. Configured TOTP remains required.
 See [WebAuthn setup and recovery](docs/administration-webauthn.md).
+
+The console supports [private saved operator views](docs/operator-views.md) for named filters, visible columns, and restoration after sign-in.

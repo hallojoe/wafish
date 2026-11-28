@@ -280,6 +280,7 @@ public static class AdministrationServiceCollectionExtensions
     private static IServiceCollection AddDashboardQueryServices(this IServiceCollection services)
     {
         services.AddSingleton<IDashboardInfoQueryService, DashboardInfoQueryService>();
+        services.TryAddSingleton<IOperatorViewService, OperatorViewService>();
         services.AddSingleton<IDashboardClusterQueryService, DashboardClusterQueryService>();
         services.AddSingleton<IDashboardRouteQueryService, DashboardRouteQueryService>();
         services.AddSingleton<IDashboardLogQueryService, DashboardLogQueryService>();

@@ -44,6 +44,7 @@ public sealed class SqliteSchemaMigrator : IHostedService
         new Migration020_ProxyLogUtcIndex(),
         new Migration021_UtcTimestamps(),
         new Migration022_ConfigurationReceipts(),
+        new Migration023_OperatorViews(),
     ];
 
     /// <summary>

@@ -125,3 +125,10 @@ Provider credentials remain in host configuration. Provider changes require a ga
 
 Configured JWT hosts can expose passkey enrollment, sign-in, and removal through the Account page.
 Changes require fresh credentials and a new sign-in. See [WebAuthn setup](../../docs/administration-webauthn.md).
+
+## Saved operator views
+
+Tables support named searches and visible columns. Logs and audit views also restore their server filters.
+The last saved selection restores after sign-in. Failed writes preserve drafts; conflicts require refreshed revisions.
+The feature stores no preferences in browser storage. Authentication changes cancel pending preference requests.
+See [operator views](../../docs/operator-views.md) for account support and limits.

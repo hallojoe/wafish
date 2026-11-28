@@ -195,6 +195,8 @@ export function ConfigurationPage({ kind }: { kind: "routes" | "clusters" }) {
         </div>
         <QueryState query={query}>
           <Records
+            key={kind}
+            viewKey={kind}
             data={data}
             columns={[
               {

@@ -172,3 +172,10 @@ Opt-in passkeys and FIDO2 security keys support the configured JWT account.
 Enrollment and removal require credential-management permission and fresh password/TOTP proof.
 Successful credential changes revoke JWT sessions. Password/TOTP login remains available for recovery.
 See [configuration, limits, and recovery](../../docs/administration-webauthn.md).
+
+## Private operator views
+
+Authenticated account owners can save named filters and columns through `/api/operator-views`.
+Read permission allows personal preference writes. Shared API keys and anonymous access have no private preference owner.
+Writes require an explicit request header and enforce supplied origins. Ownership never comes from client input.
+See [ownership, storage, API examples, and limits](../../docs/operator-views.md).

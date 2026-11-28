@@ -83,6 +83,7 @@ export function HistoryPage() {
           <div className="mt-5">
             <QueryState query={query}>
               <Records
+                viewKey="configuration-history"
                 search={false}
                 data={rows(query.data)}
                 columns={[
