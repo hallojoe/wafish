@@ -70,3 +70,9 @@ Standard byte units use `By`; duration totals use `us`; generic counts use `{cou
 Memory and quota charges are estimates. Quota values describe the last committed write, not physical database file sizes.
 Unknown extension statistics remain readable without descriptors. Extensions can supply descriptors through the initializer.
 Consumers must treat undescribed values as having unknown semantics, rather than assuming they are counters.
+
+## Visitor identity boundary
+
+`GatewayVisitorIdentityFeature` identifies requests authenticated through external visitor login.
+It contains the site identifier only. It carries no session handle, cookies, or tokens.
+The `wafish.external-login` capability identifies hosts with visitor authentication integration.
