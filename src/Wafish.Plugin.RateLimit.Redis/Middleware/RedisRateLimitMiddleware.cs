@@ -59,8 +59,14 @@ public sealed class RedisRateLimitMiddleware : GatewayMiddlewareBase
         DistributedRateLimitResult result;
         try
         {
-            result = await _store.TryAcquireAsync(config.Algorithm, key, config.Limit, config.WindowSeconds,
-                config.BurstBalance, config.RedisConnectionString, context.RequestAborted);
+            if (string.Equals(config.Algorithm, "DualWindow", StringComparison.OrdinalIgnoreCase))
+                result = _store is IDualWindowRateLimitStore dual
+                    ? await dual.TryAcquireDualWindowAsync(key, config.Limit, config.WindowSeconds,
+                        config.BurstLimit!.Value, config.BurstWindowSeconds!.Value, config.RedisConnectionString, context.RequestAborted)
+                    : DistributedRateLimitResult.Unavailable(config.Limit);
+            else
+                result = await _store.TryAcquireAsync(config.Algorithm, key, config.Limit, config.WindowSeconds,
+                    config.BurstBalance, config.RedisConnectionString, context.RequestAborted);
         }
         catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested) { throw; }
         catch (Exception ex)

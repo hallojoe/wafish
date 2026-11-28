@@ -12,7 +12,7 @@ public sealed class RedisRateLimitStoreOptions
 }
 
 /// <summary>Atomic Redis counters. Availability is separate from the route's failure policy.</summary>
-public sealed class RedisLuaRateLimitStore : IDistributedRateLimitStore, IAsyncDisposable
+public sealed class RedisLuaRateLimitStore : IDistributedRateLimitStore, IDualWindowRateLimitStore, IAsyncDisposable
 {
     private readonly object _sync = new();
     private readonly Dictionary<string, ConnectionEntry> _connections = new(StringComparer.Ordinal);
@@ -44,11 +44,23 @@ public sealed class RedisLuaRateLimitStore : IDistributedRateLimitStore, IAsyncD
     private bool _disposed;
     private long _lastFailureLog;
 
-    public async ValueTask<DistributedRateLimitResult> TryAcquireAsync(string algorithm, string key, long limit,
+    public ValueTask<DistributedRateLimitResult> TryAcquireAsync(string algorithm, string key, long limit,
         int windowSeconds, int burstBalance, string? redisConnectionString, CancellationToken cancellationToken = default)
+        => TryAcquireCoreAsync(algorithm, key, limit, windowSeconds, burstBalance, redisConnectionString, cancellationToken);
+
+    public ValueTask<DistributedRateLimitResult> TryAcquireDualWindowAsync(string key, long limit, int windowSeconds,
+        long burstLimit, int burstWindowSeconds, string? redisConnectionString, CancellationToken cancellationToken = default)
+        => TryAcquireCoreAsync("DualWindow", key, limit, windowSeconds, 0, redisConnectionString, cancellationToken, burstLimit, burstWindowSeconds);
+
+    private async ValueTask<DistributedRateLimitResult> TryAcquireCoreAsync(string algorithm, string key, long limit,
+        int windowSeconds, int burstBalance, string? redisConnectionString, CancellationToken cancellationToken,
+        long burstLimit = 0, int burstWindowSeconds = 0)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (limit <= 0 || windowSeconds <= 0)
+        var dual = string.Equals(algorithm, "DualWindow", StringComparison.OrdinalIgnoreCase);
+        if (limit <= 0 || windowSeconds <= 0 || (dual &&
+            (limit > 1000000 || windowSeconds > 86400 || burstLimit is < 1 or > 1000000 || burstLimit > limit ||
+             burstWindowSeconds < 1 || burstWindowSeconds >= windowSeconds)))
         {
             return DistributedRateLimitResult.Unavailable(limit);
         }
@@ -89,21 +101,26 @@ public sealed class RedisLuaRateLimitStore : IDistributedRateLimitStore, IAsyncD
             var name = algorithm.ToUpperInvariant();
             RedisValue[] values = name switch
             {
+                "DUALWINDOW" => [limit, windowSeconds * 1000L, burstLimit, burstWindowSeconds * 1000L],
                 "FIXEDWINDOW" => [limit, windowSeconds],
                 "SLIDINGWINDOW" => [limit, windowSeconds * 1000L, Guid.NewGuid().ToString("N")],
                 "TOKENBUCKET" => [limit, windowSeconds, Math.Max(0, burstBalance)],
                 _ => throw new ArgumentException("Unsupported Redis rate-limit algorithm.")
             };
             var policy = FormattableString.Invariant($"{name}:{limit}:{windowSeconds}:{Math.Max(0, burstBalance)}");
-            key += ":v2:" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(policy)));
-            var script = name switch { "SLIDINGWINDOW" => SlidingWindowScript, "TOKENBUCKET" => TokenBucketScript, _ => FixedWindowScript };
+            if (dual) policy = FormattableString.Invariant($"{name}:{limit}:{windowSeconds}:{burstLimit}:{burstWindowSeconds}");
+            key += (dual ? ":v3-dual:" : ":v2:") + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(policy)));
+            var script = name switch { "DUALWINDOW" => DualWindowScript, "SLIDINGWINDOW" => SlidingWindowScript, "TOKENBUCKET" => TokenBucketScript, _ => FixedWindowScript };
             var reply = (RedisResult[]?)await multiplexer.GetDatabase().ScriptEvaluateAsync(script, [(RedisKey)key], values).WaitAsync(cancellationToken);
-            if (reply is not { Length: 3 })
+            if (reply == null || reply.Length != (dual ? 4 : 3))
             {
                 return DistributedRateLimitResult.Unavailable(limit);
             }
 
             var allowed = (long)reply[0] == 1;
+            if (dual)
+                return new(allowed, (long)reply[1], allowed ? Math.Max(0, (long)reply[2]) : 0,
+                    allowed ? 0 : Math.Max(1, (long)reply[3]));
             var capacity = name == "TOKENBUCKET" ? limit + Math.Max(0, burstBalance) : limit;
             return new(allowed, capacity, allowed ? Math.Max(0, (long)reply[1]) : 0,
                 allowed ? 0 : Math.Max(1, (long)reply[2]));
@@ -168,6 +185,44 @@ public sealed class RedisLuaRateLimitStore : IDistributedRateLimitStore, IAsyncD
             catch (Exception) { /* A failed connection owns no usable multiplexer. */ }
         }
     }
+
+    // One hash key places both windows in one Redis Cluster slot. Redis TIME owns both boundaries.
+    // ARGV: sustained limit/ms, burst limit/ms. Returns { allowed, selected limit, remaining, retry seconds }.
+    private const string DualWindowScript = """
+        local time = redis.call('TIME')
+        local now = tonumber(time[1]) * 1000 + math.floor(tonumber(time[2]) / 1000)
+        local sustainedLimit = tonumber(ARGV[1])
+        local sustainedWindow = tonumber(ARGV[2])
+        local burstLimit = tonumber(ARGV[3])
+        local burstWindow = tonumber(ARGV[4])
+        local state = redis.call('HMGET', KEYS[1], 'sustainedCount', 'sustainedReset', 'burstCount', 'burstReset')
+        local sustainedCount = tonumber(state[1]) or 0
+        local sustainedReset = tonumber(state[2]) or 0
+        local burstCount = tonumber(state[3]) or 0
+        local burstReset = tonumber(state[4]) or 0
+        if now >= sustainedReset then sustainedCount = 0; sustainedReset = now + sustainedWindow end
+        if now >= burstReset then burstCount = 0; burstReset = now + burstWindow end
+        local retry = 0
+        local selectedLimit = burstLimit
+        if burstCount >= burstLimit then retry = burstReset - now end
+        if sustainedCount >= sustainedLimit and sustainedReset - now >= retry then
+            retry = sustainedReset - now
+            selectedLimit = sustainedLimit
+        end
+        -- Decide before any mutation. Denied requests neither charge nor extend either window.
+        if retry > 0 then return {0, selectedLimit, 0, math.max(1, math.ceil(retry / 1000))} end
+        sustainedCount = sustainedCount + 1
+        burstCount = burstCount + 1
+        redis.call('HSET', KEYS[1], 'sustainedCount', sustainedCount, 'sustainedReset', sustainedReset,
+            'burstCount', burstCount, 'burstReset', burstReset)
+        redis.call('PEXPIRE', KEYS[1], math.max(sustainedReset, burstReset) - now)
+        local remaining = burstLimit - burstCount
+        if sustainedLimit - sustainedCount < remaining then
+            remaining = sustainedLimit - sustainedCount
+            selectedLimit = sustainedLimit
+        end
+        return {1, selectedLimit, remaining, 0}
+        """;
 
     // ARGV: [1]=limit, [2]=windowSeconds. Returns { allowed, remaining, retryAfterSeconds }.
     private const string FixedWindowScript = """

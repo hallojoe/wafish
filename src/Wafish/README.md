@@ -140,3 +140,9 @@ See [configuration and limits](../Wafish.Plugin.RateLimit/README.md#named-route-
 [CompressionEncodingPolicy](Models/CompressionEncodingPolicy.cs) validates optional encoding restrictions and per-encoding levels.
 Compilation copies the encoding list. Omitted fields preserve the shared level and both supported encodings.
 See [configuration](../Wafish.Plugin.Compression/README.md#encoding-restrictions-and-separate-levels).
+
+## Combined Redis quota validation
+
+[RedisDualWindowPolicy](Models/RedisDualWindowPolicy.cs) validates paired limits and windows for the opt-in `DualWindow` algorithm.
+Execution plans retain validated immutable settings. Existing Redis algorithms retain their defaults.
+See [configuration and atomic admission](../Wafish.Plugin.RateLimit.Redis/README.md#combined-burst-and-sustained-quotas).

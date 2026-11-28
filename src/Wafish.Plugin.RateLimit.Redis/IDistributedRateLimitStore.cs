@@ -1,5 +1,12 @@
 namespace Wafish.Plugin.RateLimit.Redis;
 
+/// <summary>Optional atomic admission against two fixed windows. Rejection consumes neither allowance.</summary>
+public interface IDualWindowRateLimitStore
+{
+    ValueTask<DistributedRateLimitResult> TryAcquireDualWindowAsync(string key, long limit, int windowSeconds,
+        long burstLimit, int burstWindowSeconds, string? redisConnectionString, CancellationToken cancellationToken = default);
+}
+
 /// <summary>Outcome of a single distributed rate-limit acquisition attempt.</summary>
 /// <param name="Allowed">Whether the request is within the configured budget.</param>
 /// <param name="Limit">The configured capacity (for response headers).</param>

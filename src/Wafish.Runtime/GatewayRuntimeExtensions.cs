@@ -154,6 +154,7 @@ public static class GatewayRuntimeExtensions
         services.AddSingleton<IGatewayPlugin, ExternalLoginPlugin>();
         services.AddSingleton<IRoutePluginCompiler, ExternalLoginCompiler>();
         services.AddSingleton<IRoutePluginCompiler, RateLimitGroupCompiler>();
+        services.AddSingleton<IRoutePluginCompiler, RedisRateLimitCompiler>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<ITransformProvider, ExternalLoginTransformProvider>());
         services.AddSingleton<IGatewayPlugin, RouteAuthorizationPlugin>();
         services.AddSingleton<IRoutePluginCompiler, RouteAuthorizationCompiler>();

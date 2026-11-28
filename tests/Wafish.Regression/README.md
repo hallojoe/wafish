@@ -184,3 +184,11 @@ The full regression includes negotiation properties, streaming checks, and alloc
 Run `dotnet run --project tests/Wafish.Regression -c Release --no-build -- --group compression-policy`.
 [CompressionPolicyChecks.cs](CompressionPolicyChecks.cs) verifies allowed encoding subsets, quality negotiation, independent levels, and validation before persistence.
 The full suite also retains compression measurement, protocol-property, and streaming coverage.
+
+## Combined Redis quotas
+
+Run `dotnet run --project tests/Wafish.Regression -c Release --no-build -- --group dual-quotas`.
+[RedisDualWindowChecks.cs](RedisDualWindowChecks.cs) covers validation, persistence rejection, middleware headers, optional store support, and command dispatch.
+The existing `--redis` selection also verifies combined windows with real Redis counters and a single-primary Redis Cluster.
+It covers concurrent replicas, rejected-request accounting, independent rollover, natural expiry, deployment prefixes, and cluster key placement.
+Set `WAFISH_REDIS_SERVER` to a Redis 7 or later executable. The runner owns isolated processes, ports, and temporary data.
