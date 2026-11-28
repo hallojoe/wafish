@@ -122,8 +122,10 @@ internal static class SampleContractChecks
             using var yarpSource = new ActivitySource("Yarp.ReverseProxy");
             using (var yarpActivity = yarpSource.StartActivity("source-probe")) Check(yarpActivity is not null, "YARP activity source is missing.");
             using var yarpMeter = new Meter("Yarp.ReverseProxy"); yarpMeter.CreateCounter<long>("sample.registration.probe").Add(1);
+            using var compression = new Wafish.Plugin.Compression.CompressionMetricStore();
+            compression.Record("sample", "gzip", Wafish.Plugin.Compression.CompressionMetricOutcome.Completed, 100, 20, TimeSpan.FromMilliseconds(1));
             Check(reader.Collect(5000), "Metric collection timed out.");
-            foreach (var meter in new[] { "Yarp.ReverseProxy", "Microsoft.AspNetCore.Hosting", "System.Net.Http", "System.Runtime" })
+            foreach (var meter in new[] { "Yarp.ReverseProxy", "Microsoft.AspNetCore.Hosting", "System.Net.Http", "System.Runtime", "Wafish.Plugin.Compression" })
                 Check(metrics.Meters.Contains(meter), "Expected telemetry meter is missing: " + meter);
             await app.StopAsync();
         }

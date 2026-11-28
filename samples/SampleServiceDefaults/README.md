@@ -69,6 +69,8 @@ Metrics remain enabled for health requests.
 The regression `--sample-contracts` group verifies custom probe paths and exporter-free telemetry behavior.
 
 The metrics pipeline includes `Wafish.Plugin.Metrics` route and cluster instruments when their bindings are enabled.
+It also collects `Wafish.Plugin.Compression` byte, response, and codec-duration counters.
+See [compression measurements](../../src/Wafish.Plugin.Compression/README.md#compression-measurements) for dimensions and calculation limits.
 
 ## Registration readiness
 

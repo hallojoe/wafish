@@ -167,3 +167,9 @@ The runtime registers the named quota compiler and an `IGroupedRateLimiterStore`
 Named and ungrouped partitions share the 2,000-entry admission limit.
 Active leases and consumed quotas survive cleanup. Policy ownership ends only after every group partition safely retires.
 See [named quota configuration and retirement](../Wafish.Plugin.RateLimit/README.md#named-route-quotas).
+
+## Compression measurements
+
+The runtime owns one [CompressionMetricStore](../Wafish.Plugin.Compression/CompressionMetricStore.cs) across plugin domain replacements.
+Its bounded series track active routes, encoding, and response outcome.
+See [compression measurements](../Wafish.Plugin.Compression/README.md#compression-measurements) for byte semantics, duration limits, and exporter setup.

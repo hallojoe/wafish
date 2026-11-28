@@ -18,7 +18,7 @@ Bindings attach configuration to a supported route or cluster scope.
 | `response-cache` | Cache eligible public responses within the process. | [Cache](../../src/Wafish.Plugin.Cache/README.md) |
 | `request-retry` | Retry eligible failures within bounded attempts and time. | [Retry](../../src/Wafish.Plugin.Retry/README.md) |
 | `circuit-breaker` | Control unhealthy destination eligibility and recovery probes. | [Circuit breaker](../../src/Wafish.Plugin.CircuitBreaker/README.md) |
-| `compression` | Negotiate supported response encodings. | [Compression](../../src/Wafish.Plugin.Compression/README.md) |
+| `compression` | Compress responses and measure byte savings and codec cost. | [Compression](../../src/Wafish.Plugin.Compression/README.md) |
 | `traffic-metrics` | Observe route traffic and latency. | [Metrics](../../src/Wafish.Plugin.Metrics/README.md) |
 | `cluster-metrics` | Observe cluster traffic and latency. | [Metrics](../../src/Wafish.Plugin.Metrics/README.md) |
 | `proxy-log` | Capture bounded request metadata with configured redaction. | [Request logs](../../src/Wafish.Plugin.ProxyLog/README.md) |

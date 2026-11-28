@@ -10,6 +10,13 @@ namespace Wafish.Plugin.Compression;
 /// <summary>Route-scoped compression with a bounded prefix and immediate streaming after selection.</summary>
 public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExecutionPlanProvider plans)
 {
+    private readonly CompressionMetricStore? _metrics;
+    private readonly TimeProvider _time = TimeProvider.System;
+    [ActivatorUtilitiesConstructor]
+    public CompressionMiddleware(RequestDelegate next, GatewayPluginExecutionPlanProvider plans,
+        CompressionMetricStore? metrics = null, TimeProvider? timeProvider = null) : this(next, plans)
+    { _metrics = metrics; _time = timeProvider ?? TimeProvider.System; }
+
     public async Task InvokeAsync(HttpContext context)
     {
         var routeId = context.Features.Get<IReverseProxyFeature>()?.Route?.Config?.RouteId;
@@ -18,14 +25,24 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
         AppendVary(context.Response.Headers);
         context.Response.OnStarting(() => { AppendVary(context.Response.Headers); return Task.CompletedTask; });
         var encoding = SelectEncoding(context.Request.Headers.AcceptEncoding.ToArray());
-        if (encoding == null || HttpMethods.IsHead(context.Request.Method) || context.Request.Headers.ContainsKey("Range") ||
-            HasNoTransform(context.Request.Headers))
-        { await next(context); return; }
+        if (HttpMethods.IsHead(context.Request.Method) || context.Request.Headers.ContainsKey("Range") || HasNoTransform(context.Request.Headers))
+            encoding = null;
+        if (encoding == null && _metrics == null) { await next(context); return; }
         var original = context.Response.Body;
-        await using var stream = new CompressionWriteStream(context, original, config, encoding);
+        var stream = new CompressionWriteStream(context, original, config, encoding, _time);
+        var outcome = CompressionMetricOutcome.Completed;
         context.Response.Body = stream;
         try { await next(context); await stream.CompleteAsync(context.RequestAborted); }
-        finally { context.Response.Body = original; }
+        catch (OperationCanceledException) { outcome = CompressionMetricOutcome.Cancelled; throw; }
+        catch { outcome = CompressionMetricOutcome.Faulted; throw; }
+        finally
+        {
+            context.Response.Body = original;
+            try { await stream.DisposeAsync(); }
+            catch (OperationCanceledException) { outcome = CompressionMetricOutcome.Cancelled; throw; }
+            catch { outcome = CompressionMetricOutcome.Faulted; throw; }
+            finally { _metrics?.Record(routeId, stream.SelectedEncoding, outcome, stream.InputBytes, stream.OutputBytes, stream.CodecDuration); }
+        }
     }
 
     private static string? SelectEncoding(string?[] values)
@@ -89,13 +106,20 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
         }
     }
 
-    private sealed class CompressionWriteStream(HttpContext context, Stream destination, CompressionExecutionConfig config, string encoding) : Stream
+    private sealed class CompressionWriteStream(HttpContext context, Stream destination, CompressionExecutionConfig config, string? encoding, TimeProvider time) : Stream
     {
         // Unknown-length responses never require more than 64 KiB of prefix storage.
         private byte[]? _prefix;
         private int _count;
         private Stream? _output;
         private bool _completed;
+        private bool _compressed;
+        private long _codecTicks;
+        private readonly MeasuredDestination _measured = new(destination, time);
+        public long InputBytes { get; private set; }
+        public long OutputBytes => _measured.Bytes;
+        public string SelectedEncoding => _compressed ? encoding! : "identity";
+        public TimeSpan CodecDuration => TimeSpan.FromTicks(_codecTicks);
 
         private async ValueTask SelectAsync(bool compress, CancellationToken token)
         {
@@ -111,16 +135,19 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
                 }
 
                 var level = config.CompressionLevel switch { "Fastest" => CompressionLevel.Fastest, "NoCompression" => CompressionLevel.NoCompression, _ => CompressionLevel.Optimal };
-                _output = encoding == "br" ? new BrotliStream(destination, level, true) : new GZipStream(destination, level, true);
+                var started = time.GetTimestamp();
+                _compressed = true;
+                try { _output = encoding == "br" ? new BrotliStream(_measured, level, true) : new GZipStream(_measured, level, true); }
+                finally { _codecTicks += time.GetElapsedTime(started).Ticks; }
             }
             else
             {
-                _output = destination;
+                _output = _measured;
             }
 
             if (_count > 0)
             {
-                await _output.WriteAsync(_prefix!.AsMemory(0, _count), token);
+                await WriteOutputAsync(_prefix!.AsMemory(0, _count), token);
             }
 
             _prefix = null; _count = 0;
@@ -137,7 +164,7 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
 
             if (_output == null)
             {
-                if (!CanCompress(context, config))
+                if (encoding == null || !CanCompress(context, config))
                 {
                     await SelectAsync(false, cancellationToken);
                 }
@@ -152,11 +179,28 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
                 else
                 {
                     _prefix ??= new byte[Math.Max(1, config.MinResponseSize)];
-                    buffer.CopyTo(_prefix.AsMemory(_count)); _count += buffer.Length;
+                    buffer.CopyTo(_prefix.AsMemory(_count)); _count += buffer.Length; InputBytes += buffer.Length;
                     return;
                 }
             }
-            await _output!.WriteAsync(buffer, cancellationToken);
+            await WriteOutputAsync(buffer, cancellationToken);
+            InputBytes += buffer.Length;
+        }
+        private async ValueTask WriteOutputAsync(ReadOnlyMemory<byte> buffer, CancellationToken token)
+        {
+            var started = time.GetTimestamp(); var destinationTicks = _measured.ElapsedTicks;
+            try { await _output!.WriteAsync(buffer, token); }
+            finally { AddCodecTime(started, destinationTicks); }
+        }
+        private void AddCodecTime(long started, long destinationTicks)
+        {
+            if (_compressed) _codecTicks += Math.Max(0, time.GetElapsedTime(started).Ticks - (_measured.ElapsedTicks - destinationTicks));
+        }
+        private async ValueTask DisposeOutputAsync()
+        {
+            var started = time.GetTimestamp(); var destinationTicks = _measured.ElapsedTicks;
+            try { await _output!.DisposeAsync(); }
+            finally { AddCodecTime(started, destinationTicks); }
         }
         public async Task CompleteAsync(CancellationToken token)
         {
@@ -172,9 +216,9 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
             }
 
             _completed = true;
-            if (_output != destination)
+            if (_compressed)
             {
-                await _output!.DisposeAsync();
+                await DisposeOutputAsync();
             }
         }
         public override async Task FlushAsync(CancellationToken cancellationToken)
@@ -182,10 +226,12 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
             // Flush must not wait for the minimum size, including event streams.
             if (_output == null)
             {
-                await SelectAsync(context.Response.ContentLength is > 0 && CanCompress(context, config), cancellationToken);
+                await SelectAsync(encoding != null && context.Response.ContentLength is > 0 && CanCompress(context, config), cancellationToken);
             }
 
-            await _output!.FlushAsync(cancellationToken);
+            var started = time.GetTimestamp(); var destinationTicks = _measured.ElapsedTicks;
+            try { await _output!.FlushAsync(cancellationToken); }
+            finally { AddCodecTime(started, destinationTicks); }
         }
         public override void Flush() => FlushAsync(context.RequestAborted).GetAwaiter().GetResult();
         public override void Write(byte[] buffer, int offset, int count) => WriteAsync(buffer.AsMemory(offset, count), context.RequestAborted).AsTask().GetAwaiter().GetResult();
@@ -193,10 +239,10 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
         public override async ValueTask DisposeAsync()
         {
             _prefix = null;
-            if (!_completed && _output != null && _output != destination)
+            if (!_completed && _output != null && _compressed)
             {
                 _completed = true;
-                await _output.DisposeAsync();
+                await DisposeOutputAsync();
             }
             GC.SuppressFinalize(this);
         }
@@ -209,4 +255,40 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
         public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
         public override void SetLength(long value) => throw new NotSupportedException();
     }
+    // Counts completed application writes, including codec trailers. It never owns the destination.
+    private sealed class MeasuredDestination(Stream destination, TimeProvider time) : Stream
+    {
+        public long Bytes { get; private set; }
+        public long ElapsedTicks { get; private set; }
+        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            var started = time.GetTimestamp();
+            try { await destination.WriteAsync(buffer, cancellationToken); Bytes += buffer.Length; }
+            finally { ElapsedTicks += time.GetElapsedTime(started).Ticks; }
+        }
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            var started = time.GetTimestamp();
+            try { destination.Write(buffer, offset, count); Bytes += count; }
+            finally { ElapsedTicks += time.GetElapsedTime(started).Ticks; }
+        }
+        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) => WriteAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
+        public override void Flush()
+        {
+            var started = time.GetTimestamp();
+            try { destination.Flush(); } finally { ElapsedTicks += time.GetElapsedTime(started).Ticks; }
+        }
+        public override async Task FlushAsync(CancellationToken cancellationToken)
+        {
+            var started = time.GetTimestamp();
+            try { await destination.FlushAsync(cancellationToken); } finally { ElapsedTicks += time.GetElapsedTime(started).Ticks; }
+        }
+        public override bool CanRead => false; public override bool CanSeek => false; public override bool CanWrite => destination.CanWrite;
+        public override long Length => throw new NotSupportedException();
+        public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+    }
+
 }

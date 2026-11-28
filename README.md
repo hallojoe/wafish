@@ -262,7 +262,7 @@ The Metrics package supplies both metric plugins. Each package link opens its co
 | `rate-limit-redis` | Route | [Wafish.Plugin.RateLimit.Redis](src/Wafish.Plugin.RateLimit.Redis/README.md) | Distributed Redis limits, rejection headers, and configured outage behavior |
 | `request-retry` | Route | [Wafish.Plugin.Retry](src/Wafish.Plugin.Retry/README.md) | Bounded retries, backoff, jitter, replay checks, deadlines, and shared retry budgets |
 | `circuit-breaker` | Cluster | [Wafish.Plugin.CircuitBreaker](src/Wafish.Plugin.CircuitBreaker/README.md) | Destination failure tracking, recovery delays, and limited recovery probes |
-| `compression` | Route | [Wafish.Plugin.Compression](src/Wafish.Plugin.Compression/README.md) | Gzip and Brotli compression with content-type and size rules |
+| `compression` | Route | [Wafish.Plugin.Compression](src/Wafish.Plugin.Compression/README.md) | Gzip/Brotli compression, content-type and size rules, and savings metrics |
 | `response-cache` | Route | [Wafish.Plugin.Cache](src/Wafish.Plugin.Cache/README.md) | Bounded response caching, expiry, vary keys, shared fills, tags, and purge |
 | `traffic-metrics` | Route | [Wafish.Plugin.Metrics](src/Wafish.Plugin.Metrics/README.md) | Request, error, latency, and byte measurements; OpenTelemetry export |
 | `cluster-metrics` | Cluster | [Wafish.Plugin.Metrics](src/Wafish.Plugin.Metrics/README.md) | Cluster and destination measurements; OpenTelemetry export |
