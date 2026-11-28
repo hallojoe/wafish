@@ -177,3 +177,8 @@ The isolated verification script refuses an already running AppHost and preserve
 `EnableServiceDiscovery=true` starts a local catalog for the existing sample backends.
 Use the [discovery walkthrough](service-discovery-sample.md) to configure a separate cluster and verify membership, stale handling, and recovery.
 The default gRPC registration remains unchanged.
+
+## Inspect sample telemetry registration
+
+Set `EnableTelemetryDiagnostics=true` for a redacted startup report in sample resource console logs.
+The default remains disabled. See [telemetry configuration](telemetry-configuration.md) for scope and verification.
