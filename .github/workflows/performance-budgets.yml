@@ -15,7 +15,7 @@ concurrency:
 jobs:
   compare:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -59,7 +59,7 @@ jobs:
         run: |
           set -euo pipefail
           runner=tests/Wafish.Performance/Runner/bin/Release/net10.0/Runner.dll
-          common=(--duration 10 --warmup 3 --repetitions 5 --concurrency 16 --transport http1 --payload-mode precomputed)
+          common=(--duration 10 --warmup 20 --repetitions 5 --concurrency 16 --transport http1 --payload-mode precomputed)
           dotnet "$runner" "${common[@]}" --modes native,core,full --results-directory artifacts/performance-candidate/baseline
           dotnet "$runner" "${common[@]}" --suite plugins --plugin-sets 'none;waf+rate-limit;response-cache+compression' --results-directory artifacts/performance-candidate/plugins
           dotnet "$runner" "${common[@]}" --modes native,full --workload chunks --stream-chunks 8 --stream-bytes 1024 --stream-interval 50 --results-directory artifacts/performance-candidate/streaming
