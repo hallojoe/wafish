@@ -47,31 +47,6 @@ Source entry points:
 - [Package verification](scripts/verify-packages.py) — API checks and isolated consumers.
 - [Package metadata](src/Directory.Build.props) — local version defaults and package properties.
 
-<a id="r45"></a>
-
-## R45: Qualify the initial CI performance baseline
-
-Status: PARTIAL. Comparison tooling, budget policy, CI workflow, and verification are implemented.
-
-Current: Managed schema-5 reports have explicit compatibility, failure, regression, and noise checks.
-The performance workflow selects a successful earlier run and retains raw reports and comparison decisions.
-Initial budgets cover throughput, P95, and P99 across baseline, plugin, and streaming profiles.
-Local unchanged-source verification produced noisy measurements. These reports are not approved CI baselines.
-
-Remaining: Run the performance workflow in a stable environment and qualify all three profiles.
-Select its successful run ID as the initial baseline. Review tolerances against repeated measurements from that environment.
-
-Acceptance: All profiles qualify without request failures or excessive noise.
-Compatible candidate runs produce actionable budget decisions. Incompatible or noisy runs cannot pass the gate.
-
-Source entry points:
-
-- [Budget comparator](scripts/check-performance-budgets.py) — validation, compatibility, and budget decisions.
-- [Budget policy](tests/Wafish.Performance/budgets.json) — minimum repetitions, durations, and tolerances.
-- [Performance workflow](.github/workflows/performance-budgets.yml) — representative profiles and selected baseline artifacts.
-- [Operator guide](docs/performance-budgets.md) — qualification, comparison, and exit codes.
-- [Benchmark session](tests/Wafish.Performance/Runner/BenchmarkSession.cs) — report metadata and configuration identity.
-
 <a id="r55"></a>
 
 ## R55: Save operator views

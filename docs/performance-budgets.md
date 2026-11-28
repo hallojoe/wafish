@@ -27,9 +27,24 @@ The workflow measures these profiles sequentially:
 | `plugins` | Native YARP and explicit `none`, `waf+rate-limit`, and `response-cache+compression` sets |
 | `streaming` | Native YARP and Wafish full with eight paced 1024-byte chunks, 50 ms apart |
 
-Each profile uses HTTP/1.1, precomputed payloads, concurrency 16, five repetitions, ten-second measurements, and three-second warmups.
+Each profile uses HTTP/1.1, precomputed payloads, concurrency 16, five repetitions, ten-second measurements, and twenty-second warmups.
+Twenty-second warmups reduce first-repetition startup effects observed during initial qualification.
+The policy thresholds and ten-second measurement duration remain unchanged.
 Functional preflight remains mandatory before measurement.
 These are representative regression workloads, not production capacity measurements.
+
+## Selected initial baseline
+
+Use run [`46111207302`](https://github.com/hallojoe/wafish/actions/runs/46111207302) as the initial baseline.
+All three profiles qualified at revision `f7385ac58179a733cb0a76eaf81131d153ff18ec`.
+The [qualification record](performance-baseline-2026-11.md) identifies its environment, report hashes, and measured variation.
+A compatible repeat passed plugins and streaming but failed one P99 noise limit. That candidate was not promoted.
+This selection applies only to compatible reports. It does not approve unrelated runner hardware or workload changes.
+
+```bash
+gh workflow run performance-budgets.yml --ref YOUR_CANDIDATE_BRANCH \
+  -f baseline-run-id=46111207302
+```
 
 ## Comparison rules
 
