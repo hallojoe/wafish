@@ -129,6 +129,9 @@ public sealed record CompressionExecutionConfig
     public bool Enabled { get; init; } = true;
     public int MinResponseSize { get; init; } = 1024;
     public string CompressionLevel { get; init; } = "Optimal";
+    public string[]? AllowedEncodings { get; init; }
+    public string? BrotliCompressionLevel { get; init; }
+    public string? GzipCompressionLevel { get; init; }
     public string[] MimeTypes { get; init; } =
     [
         "text/plain",

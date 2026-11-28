@@ -24,7 +24,7 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
         { await next(context); return; }
         AppendVary(context.Response.Headers);
         context.Response.OnStarting(() => { AppendVary(context.Response.Headers); return Task.CompletedTask; });
-        var encoding = SelectEncoding(context.Request.Headers.AcceptEncoding.ToArray());
+        var encoding = SelectEncoding(context.Request.Headers.AcceptEncoding.ToArray(), config.AllowedEncodings);
         if (HttpMethods.IsHead(context.Request.Method) || context.Request.Headers.ContainsKey("Range") || HasNoTransform(context.Request.Headers))
             encoding = null;
         if (encoding == null && _metrics == null) { await next(context); return; }
@@ -45,7 +45,7 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
         }
     }
 
-    private static string? SelectEncoding(string?[] values)
+    private static string? SelectEncoding(string?[] values, string[]? allowedEncodings)
     {
         if (!HasValidQualities(values) || !StringWithQualityHeaderValue.TryParseStrictList(values.Select(v => v ?? "").ToArray(), out var parsed))
         {
@@ -62,7 +62,8 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
 
             return parsed.Where(p => p.Value == "*").Select(p => p.Quality ?? 1).DefaultIfEmpty(0).Min();
         }
-        var br = Quality("br"); var gzip = Quality("gzip");
+        var br = allowedEncodings == null || allowedEncodings.Contains("br", StringComparer.Ordinal) ? Quality("br") : 0;
+        var gzip = allowedEncodings == null || allowedEncodings.Contains("gzip", StringComparer.Ordinal) ? Quality("gzip") : 0;
         return br > 0 && br >= gzip ? "br" : gzip > 0 ? "gzip" : null;
     }
 
@@ -134,7 +135,8 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
                     context.Response.Headers.ETag = "W/" + etag;
                 }
 
-                var level = config.CompressionLevel switch { "Fastest" => CompressionLevel.Fastest, "NoCompression" => CompressionLevel.NoCompression, _ => CompressionLevel.Optimal };
+                var configuredLevel = (encoding == "br" ? config.BrotliCompressionLevel : config.GzipCompressionLevel) ?? config.CompressionLevel;
+                var level = configuredLevel switch { "Fastest" => CompressionLevel.Fastest, "NoCompression" => CompressionLevel.NoCompression, _ => CompressionLevel.Optimal };
                 var started = time.GetTimestamp();
                 _compressed = true;
                 try { _output = encoding == "br" ? new BrotliStream(_measured, level, true) : new GZipStream(_measured, level, true); }

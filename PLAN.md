@@ -72,25 +72,6 @@ Source entry points:
 - [Operator guide](docs/performance-budgets.md) — qualification, comparison, and exit codes.
 - [Benchmark session](tests/Wafish.Performance/Runner/BenchmarkSession.cs) — report metadata and configuration identity.
 
-<a id="r41"></a>
-
-## R41: Configure allowed compression algorithms
-
-Status: PARTIAL.
-
-Current: One route-level `compressionLevel` applies to either Brotli or Gzip. Encoding selection considers both algorithms.
-
-Remaining: Configure allowed algorithms and separate levels per algorithm.
-Preserve the shared-level setting as the compatibility default.
-
-Acceptance: Disabled algorithms are never selected. Quality values, identity fallback, and Vary handling remain correct.
-
-Source entry points:
-
-- [Compression plugin](src/Wafish.Plugin.Compression/CompressionPlugin.cs) — existing `compressionLevel` schema.
-- [Compression middleware](src/Wafish.Plugin.Compression/CompressionMiddleware.cs) — `SelectEncoding` and compressor creation.
-- [Compression property checks](tests/Wafish.Regression/ProtocolPropertyChecks.Compression.cs) — negotiation and response checks.
-
 <a id="r50"></a>
 
 ## R50: Demonstrate blue-green deployment

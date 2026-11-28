@@ -27,6 +27,7 @@ Large text responses can use less bandwidth while retaining streamed delivery.
 
 - Negotiate supported encodings from Accept-Encoding.
 - Apply media type, size, and compression-level rules.
+- Restrict allowed encodings and configure their levels separately.
 - Handle exclusions and response headers inside the proxy pipeline.
 - Measure response bytes, encoding, outcomes, and estimated codec duration.
 
@@ -55,7 +56,7 @@ The schema description exposes this fallback. Existing encoding, media-type, and
 
 ## Encoding negotiation
 
-Brotli and gzip compete by quality. Brotli wins equal positive qualities.
+Allowed encodings compete by quality. Brotli wins equal positive qualities when both encodings are allowed.
 An explicit coding overrides the wildcard. Duplicate coding or wildcard qualities use the lowest value.
 Unknown codings do not select a compressor.
 Malformed lists, duplicate parameters, and invalid quality syntax bypass compression for the entire field.
@@ -126,3 +127,40 @@ The existing two-argument middleware constructor remains supported without metri
 Manual middleware construction can supply a metric store explicitly.
 
 Source: [metric store](CompressionMetricStore.cs) and [measurement regression checks](../../tests/Wafish.Regression/CompressionMetricChecks.cs).
+
+## Encoding restrictions and separate levels
+
+All new settings are optional. Omitted settings preserve existing negotiation and the shared `compressionLevel`.
+
+```json
+{
+  "enabled": true,
+  "minResponseSize": 1024,
+  "compressionLevel": "Optimal",
+  "allowedEncodings": ["br", "gzip"],
+  "brotliCompressionLevel": "Optimal",
+  "gzipCompressionLevel": "Fastest"
+}
+```
+
+| Setting | Behavior when omitted | Allowed values |
+|---|---|---|
+| `allowedEncodings` | Both Brotli and Gzip are eligible | A unique list containing `br`, `gzip`, both, or neither |
+| `brotliCompressionLevel` | Uses `compressionLevel` | `Optimal`, `Fastest`, `NoCompression` |
+| `gzipCompressionLevel` | Uses `compressionLevel` | `Optimal`, `Fastest`, `NoCompression` |
+
+An empty encoding list preserves the original response representation.
+A disabled encoding cannot be selected by an explicit quality or wildcard.
+The client must still accept an allowed encoding. Otherwise, the response remains unchanged.
+Quality parsing, duplicate handling, identity fallback, and `Vary: Accept-Encoding` retain their existing behavior.
+
+A per-encoding level overrides only that encoding. The other encoding continues using its own override or the shared level.
+`NoCompression` is a codec level. It still produces the selected encoding format and `Content-Encoding` header.
+Use the encoding list or `enabled` to control whether this plugin selects a compressor.
+
+Invalid encoding names, duplicate entries, oversized lists, and invalid override levels fail before persistence.
+Disabled binding drafts receive the same validation. Compilation does not create codecs or record response measurements.
+Media-type rules, size thresholds, streaming behavior, exclusions, and compression measurements remain applicable.
+
+Source: [policy validation](../Wafish/Models/CompressionEncodingPolicy.cs), [compiler](CompressionPolicyCompiler.cs),
+and [policy regression checks](../../tests/Wafish.Regression/CompressionPolicyChecks.cs).

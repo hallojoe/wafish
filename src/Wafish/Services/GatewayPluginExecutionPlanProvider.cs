@@ -85,7 +85,7 @@ public sealed class GatewayPluginExecutionPlanProvider
             CompileBinding(bindings, "rate-limit-redis", route.RouteId, WebJson, redisRateLimit, RedisDualWindowPolicy.Compile);
             CompileBinding(bindings, "proxy-log", route.RouteId, WebJson, proxyLog);
             CompileBinding(bindings, "response-cache", route.RouteId, WebJson, responseCache);
-            CompileBinding(bindings, "compression", route.RouteId, WebJson, compression);
+            CompileBinding(bindings, "compression", route.RouteId, WebJson, compression, CompressionEncodingPolicy.Compile);
             CompileBinding(bindings, "traffic-metrics", route.RouteId, WebJson, trafficMetrics);
         }
 

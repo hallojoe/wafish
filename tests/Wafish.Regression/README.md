@@ -179,6 +179,12 @@ Run `dotnet run --project tests/Wafish.Regression -c Release --no-build -- --gro
 `--sample-contracts` verifies that sample telemetry exports the compression meter.
 The full regression includes negotiation properties, streaming checks, and allocation-pressure limits.
 
+## Compression encoding policies
+
+Run `dotnet run --project tests/Wafish.Regression -c Release --no-build -- --group compression-policy`.
+[CompressionPolicyChecks.cs](CompressionPolicyChecks.cs) verifies allowed encoding subsets, quality negotiation, independent levels, and validation before persistence.
+The full suite also retains compression measurement, protocol-property, and streaming coverage.
+
 ## Combined Redis quotas
 
 Run `dotnet run --project tests/Wafish.Regression -c Release --no-build -- --group dual-quotas`.

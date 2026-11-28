@@ -135,6 +135,12 @@ Policy fingerprints use effective algorithm settings and cannot be supplied by b
 The runtime's rate-limit compiler checks policy conflicts before persistence. Preview does not allocate limiter state.
 See [configuration and limits](../Wafish.Plugin.RateLimit/README.md#named-route-quotas).
 
+## Compression encoding policy
+
+[CompressionEncodingPolicy](Models/CompressionEncodingPolicy.cs) validates optional encoding restrictions and per-encoding levels.
+Compilation copies the encoding list. Omitted fields preserve the shared level and both supported encodings.
+See [configuration](../Wafish.Plugin.Compression/README.md#encoding-restrictions-and-separate-levels).
+
 ## Combined Redis quota validation
 
 [RedisDualWindowPolicy](Models/RedisDualWindowPolicy.cs) validates paired limits and windows for the opt-in `DualWindow` algorithm.

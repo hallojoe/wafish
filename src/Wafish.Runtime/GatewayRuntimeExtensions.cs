@@ -166,6 +166,7 @@ public static class GatewayRuntimeExtensions
         services.AddSingleton<IRoutePluginCompiler, RedirectConfigurationCompiler>();
         services.AddSingleton<PluginMetricStore>();
         services.TryAddSingleton<CompressionMetricStore>();
+        services.AddSingleton<IRoutePluginCompiler, CompressionPolicyCompiler>();
         services.AddSingleton<ExternalGatewayPluginHost>();
         services.AddSingleton<GatewayPluginManager>();
         services.AddSingleton<IGatewayPluginManager>(provider => provider.GetRequiredService<GatewayPluginManager>());
