@@ -80,3 +80,10 @@ Supported IDs, preset settings, and runner examples are in the [combination guid
 Each binding uses its manifest order and passes schema validation.
 Health remains unavailable until the selected plugins match the active plans and their resources are ready.
 Manifests record requested selection and effective binding configuration for each run.
+
+## Multiple destinations
+
+Use `--backend-urls` and `--load-balancing-policy` for bounded destination lists and explicit balancing.
+The singular `--backend-url` remains supported.
+See the [runner guide](../Runner/README.md#multiple-destinations-r48) for supported policies and matching transport requirements.
+The effective cluster manifest includes all destinations and the selected policy.

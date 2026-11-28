@@ -7,6 +7,8 @@ internal static partial class BenchmarkReliabilityChecks
     {
         await run("Benchmarks: fixed-memory histograms bound percentile error without losing samples", HistogramAsync);
         await run("Benchmarks: explicit addresses reject non-loopback and ambiguous origins", OptionsAsync);
+        await run("Benchmarks: destination lists reject unbounded and conflicting topology", DestinationOptionsAsync);
+        await run("Benchmarks: native and Wafish hosts apply identical destination policies", DestinationPoliciesAsync);
         await run("Benchmarks: normalized manifests hash composition and redact nested secrets", ManifestAsync);
         await run("Benchmarks: workload preflight rejects wrong status, payload, size, and stalled reads", PreflightAsync);
         await run("Benchmarks: isolated backend cancellation drains work and identifies payload allocation", BackendAsync);

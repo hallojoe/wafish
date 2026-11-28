@@ -72,26 +72,6 @@ Source entry points:
 - [Operator guide](docs/performance-budgets.md) — qualification, comparison, and exit codes.
 - [Benchmark session](tests/Wafish.Performance/Runner/BenchmarkSession.cs) — report metadata and configuration identity.
 
-<a id="r48"></a>
-
-## R48: Benchmark multiple destinations
-
-Status: TODO.
-
-Current: Native YARP accepts one `--backend-url` and configures one destination.
-
-Remaining: Support a bounded destination list and explicit YARP load-balancing policy.
-Use matching destinations and transport settings in NativeYarp and EnhancedYarp.
-
-Acceptance: Reports identify destination count and request distribution.
-The NativeYarp baseline remains independent of Wafish packages.
-
-Source entry points:
-
-- [Native YARP host](tests/Wafish.Performance/NativeYarp/Program.cs) — destination configuration.
-- [Enhanced YARP host](tests/Wafish.Performance/EnhancedYarp/Program.cs) — matching Wafish configuration.
-- [Benchmark session](tests/Wafish.Performance/Runner/BenchmarkSession.cs) — managed host arguments and result identity.
-
 <a id="r46"></a>
 
 ## R46: Add WebAuthn authentication

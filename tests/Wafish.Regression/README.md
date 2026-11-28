@@ -199,3 +199,9 @@ Run `--group blue-green` for isolated administration API cutover and rollback ch
 The check preserves route UID, transforms, metadata, and unrelated routes across backend version switches.
 It also checks failed candidate health gating and active/persisted version agreement.
 See the [operator walkthrough](../../docs/blue-green.md).
+
+### Multiple benchmark destinations
+
+The `--benchmarks` group checks bounded destination lists, rejected topologies, and matching native/Wafish balancing policies.
+It verifies measured distribution across two backends for all four supported transports.
+Single-backend managed and external comparisons retain their existing checks.

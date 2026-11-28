@@ -38,10 +38,10 @@ internal static partial class BenchmarkReliabilityChecks
         foreach (var mode in new[] { "http1", "h2c", "https1", "https2" })
         {
             using var transport = new BenchmarkTransport(mode);
-            var ports = new HashSet<int>(); while (ports.Count < 3) ports.Add(FreeAddress().Port);
+            var ports = new HashSet<int>(); while (ports.Count < 4) ports.Add(FreeAddress().Port);
             var addresses = ports.Select(port => $"{transport.Scheme}://127.0.0.1:{port}").ToArray();
             await using var runner = await BenchmarkProcess.StartAsync("Runner", ["--transport=" + mode,
-                "--backend-url=" + addresses[0], "--native-url=" + addresses[1], "--enhanced-url=" + addresses[2],
+                "--backend-urls=" + addresses[0] + "," + addresses[1], "--native-url=" + addresses[2], "--enhanced-url=" + addresses[3], "--load-balancing-policy=RoundRobin",
                 "--modes=native,full", "--duration=1", "--warmup=0", "--concurrency=2", "--repetitions=1"], ready: false);
             var result = await runner.FinishAsync();
             Check(result.ExitCode == 0, mode + " comparison failed: " + result.Output);
@@ -49,6 +49,16 @@ internal static partial class BenchmarkReliabilityChecks
             Check(report.RootElement.GetProperty("transport").GetProperty("mode").GetString() == mode, "Report lost selected transport.");
             var rows = report.RootElement.GetProperty("results").EnumerateArray().ToArray();
             Check(rows.Length == 6 && rows.All(row => row.GetProperty("failures").GetInt64() == 0 && row.GetProperty("requests").GetInt64() > 0), "Matched hosts lost successful measurements.");
+            Check(report.RootElement.GetProperty("destinations").GetProperty("count").GetInt32() == 2
+                && report.RootElement.GetProperty("destinations").GetProperty("policy").GetString() == "RoundRobin", "Report lost destination count or policy.");
+            foreach (var row in rows)
+            {
+                var counts = row.GetProperty("destinationRequests").EnumerateObject().Select(property => property.Value.GetInt64()).ToArray();
+                Check(counts.Length == 2 && counts.All(count => count > 0) && counts.Sum() == row.GetProperty("requests").GetInt64()
+                    && Math.Abs(counts[0] - counts[1]) <= 1, "Measured backend distribution included warmup, lost requests, or used the wrong policy.");
+            }
+            Check((await File.ReadAllTextAsync(Directory.GetFiles(Path.Combine(runner.DirectoryPath, "results"), "*.csv").Single())).Contains("DestinationRequests"), "CSV omitted destination distribution.");
+            Check((await File.ReadAllTextAsync(Directory.GetFiles(Path.Combine(runner.DirectoryPath, "results"), "*.md").Single())).Contains("Destinations: 2"), "Markdown omitted destination topology.");
             Check(!Directory.EnumerateDirectories(runner.DirectoryPath, "wafish-perf-*").Any(), "Run retained private certificate or databases.");
         }
     }

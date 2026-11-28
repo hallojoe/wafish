@@ -56,3 +56,7 @@ These local measurements do not establish production capacity.
 `BenchmarkStreamWorkload` defines payload and timing limits for synthetic streams.
 `BenchmarkBodyMeasurement` reads bodies through a pooled buffer and records delivery observations.
 `BenchmarkPluginMatrix` validates explicit combinations and supplies versioned benchmark presets.
+
+`BenchmarkDestinations` validates one to eight loopback origins and a supported YARP balancing policy.
+NativeYarp, EnhancedYarp, and Runner link the same source without adding Wafish dependencies to the native baseline.
+See [multiple destinations](../Runner/README.md#multiple-destinations-r48) for options, limits, and report interpretation.
