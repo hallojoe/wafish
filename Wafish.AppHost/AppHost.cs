@@ -83,6 +83,18 @@ foreach (var instance in new[] { "backend-one", "backend-two" })
     backend.WithEnvironment("Gateway__Registration__DestinationAddress", backend.GetEndpoint("http"));
 }
 
+if (builder.Configuration.GetValue<bool>("EnableServiceDiscovery"))
+{
+    var catalog = builder.AddProject<Projects.SampleDiscoveryCatalog>("discovery-catalog", project =>
+        { project.ExcludeLaunchProfile = true; project.ExcludeKestrelEndpoints = true; })
+        .WithHttpEndpoint(name: "http", env: "CATALOG_HTTP_PORT", isProxied: false)
+        .WithEnvironment("Sample__Orchestrated", "true")
+        .WithUrlForEndpoint("http", url => { url.Url = "/catalog"; url.DisplayText = "HTTP JSON catalog"; })
+        .WithHttpHealthCheck("/health");
+    foreach (var backend in backends)
+        catalog.WithEnvironment($"Catalog__Backends__{backend.Resource.Name}", backend.GetEndpoint("http")).WaitFor(backend);
+}
+
 IResourceBuilder<ProjectResource>? secondGateway = null;
 if (builder.Configuration.GetValue<bool>("EnableSecondGateway"))
 {

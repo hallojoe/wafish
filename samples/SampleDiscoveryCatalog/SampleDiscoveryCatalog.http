@@ -1,0 +1,47 @@
+# Replace the port with the discovery-catalog endpoint assigned by Aspire.
+@baseUrl = http://localhost:ASSIGNED_PORT
+
+### Read the discovery catalog
+GET {{baseUrl}}/catalog
+
+### Inspect the current selection
+GET {{baseUrl}}/control
+
+### Remove backend-two from discovery
+PUT {{baseUrl}}/control
+Content-Type: application/json
+
+{"mode":"healthy","backends":["backend-one"]}
+
+### Simulate a failed registry
+PUT {{baseUrl}}/control
+Content-Type: application/json
+
+{"mode":"unavailable","backends":["backend-one","backend-two"]}
+
+### Simulate malformed registry JSON
+PUT {{baseUrl}}/control
+Content-Type: application/json
+
+{"mode":"malformed","backends":["backend-one","backend-two"]}
+
+### Healthy empty discovery removes all destinations
+PUT {{baseUrl}}/control
+Content-Type: application/json
+
+{"mode":"healthy","backends":[]}
+
+### Restore both backends
+PUT {{baseUrl}}/control
+Content-Type: application/json
+
+{"mode":"healthy","backends":["backend-one","backend-two"]}
+
+### Invalid identifiers return HTTP 400 without changing state
+PUT {{baseUrl}}/control
+Content-Type: application/json
+
+{"mode":"healthy","backends":["unknown"]}
+
+### Inspect OpenAPI
+GET {{baseUrl}}/openapi/v1.json

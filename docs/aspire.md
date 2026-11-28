@@ -171,3 +171,9 @@ See the [external login sample](../samples/SampleExternalLogin/README.md) for co
 `EnableNetworkFaults=true` adds a local HTTP fault fixture without requiring containers.
 The [network fault guide](network-faults.md) covers retries, circuit recovery, stalls, interrupted bodies, and cleanup.
 The isolated verification script refuses an already running AppHost and preserves existing topology data.
+
+## Optional HTTP JSON discovery
+
+`EnableServiceDiscovery=true` starts a local catalog for the existing sample backends.
+Use the [discovery walkthrough](service-discovery-sample.md) to configure a separate cluster and verify membership, stale handling, and recovery.
+The default gRPC registration remains unchanged.

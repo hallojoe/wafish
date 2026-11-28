@@ -16,6 +16,7 @@ flowchart TD
     Backends -. "telemetry" .-> Dashboard
     AppHost -. "EnableSecondGateway" .-> Second["Second gateway"]
     AppHost -. "EnableNetworkFaults" .-> Faults["Local fault backend"]
+    AppHost -. "EnableServiceDiscovery" .-> Catalog["HTTP JSON catalog"]
     AppHost -. "EnableRedis" .-> Redis["Redis"]
     AppHost -. "EnableSonarQube" .-> Sonar["SonarQube"]
     Sonar --> Postgres["PostgreSQL"]
@@ -82,3 +83,10 @@ Set `EnableNetworkFaults=true` to add the container-free `fault-backend` resourc
 It exposes bounded delays, stalled responses, disconnects, and transient failures on loopback.
 It does not intercept ordinary backend traffic or automatically create proxy routes.
 See the [fault walkthrough](../docs/network-faults.md) and run `python3 scripts/check-network-faults.py` when this AppHost is stopped.
+
+## Optional HTTP JSON discovery
+
+`EnableServiceDiscovery=true` adds a bounded local catalog for the existing sample backends.
+The ordinary gRPC registration remains independent. The profile requires no containers.
+The [discovery walkthrough](../docs/service-discovery-sample.md) creates real bindings and demonstrates membership changes, stale rejection, and recovery.
+Run `python3 scripts/check-service-discovery.py` only when the target AppHost is stopped.

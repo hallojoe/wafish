@@ -69,6 +69,7 @@ await registry.DefineGroupAsync("protocol-properties", ProtocolPropertyChecks.Ru
 await registry.DefineGroupAsync("benchmarks", BenchmarkReliabilityChecks.RunAsync);
 await registry.DefineGroupAsync("allocation-pressure", AllocationPressureChecks.RunAsync);
 await registry.DefineGroupAsync("sample-deployment", SampleDeploymentChecks.RunAsync);
+await registry.DefineGroupAsync("discovery-catalog", DiscoveryCatalogChecks.RunAsync);
 await registry.DefineGroupAsync("sample-contracts", SampleContractChecks.RunAsync);
 await registry.DefineGroupAsync("sample-streaming", SampleStreamingChecks.RunAsync);
 await registry.DefineGroupAsync("streaming-compression", StreamingCompressionChecks.RunAsync);

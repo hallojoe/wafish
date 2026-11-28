@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="../tests/Wafish.Performance/Backend/Backend.csproj" />
     <ProjectReference Include="../samples/SampleExternalLogin/SampleExternalLogin.csproj" />
+    <ProjectReference Include="../samples/SampleDiscoveryCatalog/SampleDiscoveryCatalog.csproj" />
     <ProjectReference Include="..\samples\SampleGateway\SampleGateway.csproj" />
     <ProjectReference Include="..\samples\SampleLocalService\SampleLocalService.csproj" />
   </ItemGroup>

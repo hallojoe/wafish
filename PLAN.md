@@ -72,26 +72,6 @@ Source entry points:
 - [Operator guide](docs/performance-budgets.md) — qualification, comparison, and exit codes.
 - [Benchmark session](tests/Wafish.Performance/Runner/BenchmarkSession.cs) — report metadata and configuration identity.
 
-<a id="r51"></a>
-
-## R51: Demonstrate service discovery
-
-Status: TODO.
-
-Current: AppHost backends register through gRPC. An optional HTTP JSON discovery catalog is absent.
-
-Remaining: Add a discovery profile with real plugin bindings for the sample backends.
-Exercise destination addition, removal, stale discovery, and recovery.
-
-Acceptance: The default topology remains unchanged.
-The discovery profile preserves stable destination identities and exposes refresh failures.
-
-Source entry points:
-
-- [AppHost topology](Wafish.AppHost/AppHost.cs) — registration settings and backend resources.
-- [Discovery refresh service](src/Wafish.Plugin.ServiceDiscovery/ServiceDiscoveryRefreshService.cs) — refresh and destination publication.
-- [Discovery plugin](src/Wafish.Plugin.ServiceDiscovery/HttpServiceDiscoveryPlugin.cs) — binding schema.
-
 <a id="r55"></a>
 
 ## R55: Save operator views
