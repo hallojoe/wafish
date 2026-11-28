@@ -1,0 +1,87 @@
+name: Performance budgets
+on:
+  workflow_dispatch:
+    inputs:
+      baseline-run-id:
+        description: 'Earlier successful run of this workflow. Leave empty to qualify a new baseline.'
+        type: string
+        required: false
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: performance-budgets-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Test comparison logic
+        run: python3 scripts/test-performance-budgets.py
+      - name: Build Release hosts
+        run: dotnet build Wafish.slnx -c Release
+      - name: Download selected earlier reports
+        if: inputs.baseline-run-id != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: performance-reports
+          path: artifacts/performance-baseline
+          run-id: ${{ inputs.baseline-run-id }}
+          github-token: ${{ github.token }}
+      - name: Measure representative workloads
+        id: measure
+        shell: bash
+        run: |
+          set -euo pipefail
+          runner=tests/Wafish.Performance/Runner/bin/Release/net10.0/Runner.dll
+          common=(--duration 10 --warmup 3 --repetitions 5 --concurrency 16 --transport http1 --payload-mode precomputed)
+          dotnet "$runner" "${common[@]}" --modes native,core,full --results-directory artifacts/performance-candidate/baseline
+          dotnet "$runner" "${common[@]}" --suite plugins --plugin-sets 'none;waf+rate-limit;response-cache+compression' --results-directory artifacts/performance-candidate/plugins
+          dotnet "$runner" "${common[@]}" --modes native,full --workload chunks --stream-chunks 8 --stream-bytes 1024 --stream-interval 50 --results-directory artifacts/performance-candidate/streaming
+      - name: Enforce budgets or qualify baseline
+        if: ${{ !cancelled() && steps.measure.outcome != 'skipped' }}
+        shell: bash
+        env:
+          BASELINE_RUN_ID: ${{ inputs.baseline-run-id }}
+        run: |
+          set -uo pipefail
+          status=0
+          for profile in baseline plugins streaming; do
+            baseline=()
+            if [[ -n "$BASELINE_RUN_ID" ]]; then
+              baseline=(--baseline "artifacts/performance-baseline/$profile")
+            fi
+            python3 scripts/check-performance-budgets.py "${baseline[@]}" \
+              --candidate "artifacts/performance-candidate/$profile" \
+              --output "artifacts/performance-comparison/$profile.json" || status=1
+          done
+          exit "$status"
+      - name: Retain candidate JSON, CSV, and Markdown reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-reports
+          path: artifacts/performance-candidate
+          retention-days: 90
+          if-no-files-found: warn
+      - name: Retain comparison evidence and selected baseline
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-comparison
+          path: |
+            artifacts/performance-comparison
+            artifacts/performance-baseline
+            tests/Wafish.Performance/budgets.json
+          retention-days: 90

@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "minimumRepetitions": 5,
+  "minimumDurationSeconds": 10,
+  "minimumWarmupSeconds": 3,
+  "metrics": {
+    "requestsPerSecond": { "direction": "decrease", "regressionPercent": 10, "maximumSpreadPercent": 20 },
+    "p95Ms": { "direction": "increase", "regressionPercent": 20, "maximumSpreadPercent": 30 },
+    "p99Ms": { "direction": "increase", "regressionPercent": 25, "maximumSpreadPercent": 40 }
+  }
+}
