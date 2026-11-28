@@ -121,3 +121,61 @@ Stores implementing only `IRateLimiterStore` continue to support ungrouped bindi
 
 Source: [group compiler](RateLimitGroupCompiler.cs), [policy normalization](../Wafish/Models/LocalQuotaGroupPolicy.cs),
 and [regression checks](../../tests/Wafish.Regression/NamedQuotaChecks.cs).
+
+## Weighted request costs
+
+Set `requestCost` to charge a trusted route more than one permit per request:
+
+```json
+{
+  "enabled": true,
+  "algorithm": "TokenBucket",
+  "partitionKey": "UserId",
+  "tokenLimit": 100,
+  "tokensPerPeriod": 20,
+  "replenishmentPeriod": "1m",
+  "requestCost": 5,
+  "queueLimit": 0
+}
+```
+
+This route spends five tokens per admitted request. The server takes the whole cost atomically.
+Insufficient capacity returns HTTP 429 without partial consumption or upstream forwarding.
+Clients cannot override costs through request headers, query values, claims, or bodies.
+
+The default cost is one. Supported weighted algorithms are FixedWindow, SlidingWindow, and TokenBucket.
+Costs must be integers from 1 to 1,000,000 and cannot exceed the algorithm's configured capacity.
+For window algorithms, capacity is `permitLimit`. For TokenBucket, capacity is `tokenLimit`.
+Concurrency retains unit cost. Invalid costs fail before persistence, including costs on disabled bindings.
+
+### Sharing an allowance
+
+Named quota members can use different request costs while sharing identical capacity policies.
+For example, routes with costs one and three can share a five-permit window.
+After one request to each route, one permit remains. Another three-permit request fails without consuming that remainder.
+
+Changing a route's cost preserves its existing counter. Cost is not part of the limiter identity or group capacity fingerprint.
+Changing a group's actual capacity still follows the existing retained-policy conflict rules.
+Weighted limits remain process-local. Redis quotas continue to count one request per acquisition.
+
+### Queues, cancellation, and retry timing
+
+`queueLimit` counts queued permits. A request costing five needs room for five queued permits.
+When queue capacity is insufficient, the request fails immediately with HTTP 429.
+Cancellation removes queued acquisition without charging its cost. Active and queued requests retain their partition ownership.
+
+Retry-After uses the underlying limiter's metadata when available.
+Weighted token waits can require multiple replenishment periods. Large retry values retain integer seconds without 32-bit overflow.
+The JSON `retryAfter` value matches the header. Retry timing remains a hint and does not reserve future capacity.
+
+### Custom limiter stores
+
+Existing `IRateLimiterStore` and `IGroupedRateLimiterStore` implementations remain supported for unit costs.
+Weighted routes require the optional [weighted contracts](../Wafish/Infrastructure/State/IWeightedRateLimiterStore.cs).
+Implement `IWeightedRateLimiterStore` for ordinary partitions and `IWeightedGroupedRateLimiterStore` for named groups.
+The built-in runtime store implements both.
+Upgrade gateway hosts and custom stores before enabling costs above one.
+
+Custom stores must acquire the whole cost atomically and retain ownership until lease disposal.
+Repeated unit acquisitions are unsafe because rejection could partially consume a quota.
+The compiler rejects weighted configurations with unsupported stores. Middleware returns HTTP 503 for an incompatible runtime state.

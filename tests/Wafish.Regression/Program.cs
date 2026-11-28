@@ -102,6 +102,7 @@ await registry.DefineGroupAsync("rate-limit", RedisFailureChecks.RunAsync);
 await registry.DefineGroupAsync("dual-quotas", RedisDualWindowChecks.RunAsync);
 await registry.DefineGroupAsync("tenant-quotas", RedisTenantChecks.RunAsync);
 await registry.DefineGroupAsync("named-quotas", NamedQuotaChecks.RunAsync);
+await registry.DefineGroupAsync("weighted-quotas", WeightedQuotaChecks.RunAsync);
 await registry.DefineGroupAsync("compression-metrics", CompressionMetricChecks.RunAsync);
 await registry.DefineGroupAsync("compression-policy", CompressionPolicyChecks.RunAsync);
 await registry.DefineGroupAsync("runtime", RuntimeHostChecks.RunAsync);

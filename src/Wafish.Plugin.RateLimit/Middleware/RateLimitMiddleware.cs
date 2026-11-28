@@ -88,16 +88,24 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
             {
                 if (_limiterStore is not IGroupedRateLimiterStore grouped) throw new NotSupportedException("The store cannot enforce named quotas.");
                 limiterKey = "group:" + group + ":" + partitionValue;
-                acquired = await grouped.AcquireGroupedAsync(group, config.QuotaGroupPolicy!, partitionValue,
-                    () => CreateLimiter(config), context.RequestAborted);
+                acquired = config.RequestCost == 1
+                    ? await grouped.AcquireGroupedAsync(group, config.QuotaGroupPolicy!, partitionValue, () => CreateLimiter(config), context.RequestAborted)
+                    : _limiterStore is IWeightedGroupedRateLimiterStore weightedGroup
+                        ? await weightedGroup.AcquireWeightedGroupedAsync(group, config.QuotaGroupPolicy!, partitionValue,
+                            config.RequestCost, () => CreateLimiter(config), context.RequestAborted)
+                        : throw new NotSupportedException("The store cannot enforce weighted named quotas.");
             }
-            else acquired = await _limiterStore.AcquireAsync(limiterKey, () => CreateLimiter(config), context.RequestAborted);
+            else acquired = config.RequestCost == 1
+                ? await _limiterStore.AcquireAsync(limiterKey, () => CreateLimiter(config), context.RequestAborted)
+                : _limiterStore is IWeightedRateLimiterStore weighted
+                    ? await weighted.AcquireWeightedAsync(limiterKey, config.RequestCost, () => CreateLimiter(config), context.RequestAborted)
+                    : throw new NotSupportedException("The store cannot enforce weighted quotas.");
         }
         catch (Exception error) when (error is RateLimitGroupPolicyConflictException or NotSupportedException)
         {
             context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
             context.Response.Headers.RetryAfter = "1";
-            await context.Response.WriteAsJsonAsync(new { error = "Quota group policy unavailable" }, cancellationToken: context.RequestAborted);
+            await context.Response.WriteAsJsonAsync(new { error = config.QuotaGroup is null ? "Quota policy unavailable" : "Quota group policy unavailable" }, cancellationToken: context.RequestAborted);
             return;
         }
         using var lease = acquired;
@@ -255,11 +263,11 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
         };
     }
 
-    private static int GetRetryAfterSeconds(RateLimitExecutionConfig config, RateLimitLease? lease)
+    private static long GetRetryAfterSeconds(RateLimitExecutionConfig config, RateLimitLease? lease)
     {
         if (lease != null && lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
         {
-            return Math.Max(1, (int)Math.Ceiling(retryAfter.TotalSeconds));
+            return Math.Max(1L, (long)Math.Ceiling(retryAfter.TotalSeconds));
         }
         var interval = config.Algorithm switch
         {
@@ -267,7 +275,7 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
             RateLimitAlgorithm.Concurrency => TimeSpan.FromSeconds(1),
             _ => ParseTimeSpan(config.Window)
         };
-        return Math.Max(1, (int)Math.Ceiling(interval.TotalSeconds));
+        return Math.Max(1L, (long)Math.Ceiling(interval.TotalSeconds));
     }
 
 }

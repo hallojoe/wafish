@@ -47,6 +47,8 @@ public sealed class RequestRetryBindingOptions
 
 public sealed record RateLimitExecutionConfig
 {
+    /// <summary>Trusted route cost per request. Unit cost preserves existing behavior.</summary>
+    public int RequestCost { get; init; } = 1;
     public bool Enabled { get; init; }
     public RateLimitAlgorithm Algorithm { get; init; } = RateLimitAlgorithm.FixedWindow;
     public int PermitLimit { get; init; } = 100;

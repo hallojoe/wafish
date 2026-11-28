@@ -72,25 +72,6 @@ Source entry points:
 - [Operator guide](docs/performance-budgets.md) — qualification, comparison, and exit codes.
 - [Benchmark session](tests/Wafish.Performance/Runner/BenchmarkSession.cs) — report metadata and configuration identity.
 
-<a id="r39"></a>
-
-## R39: Assign weighted request costs
-
-Status: TODO.
-
-Current: The local limiter store acquires one permit per request.
-
-Remaining: Let trusted route configuration assign a validated cost for token and window algorithms.
-Define supported algorithms and rejection behavior when the cost exceeds available capacity.
-
-Acceptance: Each route consumes its configured allowance. Invalid costs fail validation, and rejection reports usable retry information.
-
-Source entry points:
-
-- [Local limiter store](src/Wafish.Runtime/Infrastructure/State/InMemoryRateLimiterStore.cs) — `AcquireAsync(1, cancellationToken)`.
-- [Local rate-limit middleware](src/Wafish.Plugin.RateLimit/Middleware/RateLimitMiddleware.cs) — acquisition and rejection handling.
-- [Local plugin](src/Wafish.Plugin.RateLimit/RateLimitPlugin.cs) — request-cost schema integration point.
-
 <a id="r49"></a>
 
 ## R49: Add optional network fault injection
