@@ -1,0 +1,14 @@
+@baseUrl = http://localhost:59244
+
+### Read records incrementally. Use curl --no-buffer when this client buffers responses.
+GET {{baseUrl}}/api/local-service/stream?chunks=5&intervalMilliseconds=250
+Accept: application/x-ndjson
+
+### Maximum record count, without scheduled delays
+GET {{baseUrl}}/api/local-service/stream?chunks=100&intervalMilliseconds=0
+
+### Invalid combined duration returns HTTP 400
+GET {{baseUrl}}/api/local-service/stream?chunks=100&intervalMilliseconds=1000
+
+### Invalid record count returns HTTP 400
+GET {{baseUrl}}/api/local-service/stream?chunks=0

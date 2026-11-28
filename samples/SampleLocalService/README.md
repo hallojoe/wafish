@@ -28,7 +28,7 @@ The sample makes registration, load distribution, and trace propagation visible 
 ## What it does
 
 - Register through Wafish.Client and send lifecycle heartbeats.
-- Expose ping, echo, POST echo, and instance identity endpoints.
+- Expose ping, echo, POST echo, instance identity, and bounded streaming endpoints.
 - Apply shared telemetry and development health endpoints.
 
 ## What it does not do
@@ -90,3 +90,14 @@ For remote registration, use trusted HTTPS endpoints. Certificate validation rem
 Verify `/api/local-service/ping`, `/api/local-service/echo?message=test`, and `/api/local-service/instance` through the gateway.
 POST JSON to `/api/local-service/echopost` to verify request bodies.
 `python scripts/check-topology.py` verifies these contracts against both registered Aspire instances.
+
+## Cancellable streaming
+
+`GET /api/local-service/stream` flushes synthetic newline-delimited JSON records.
+Configure `chunks` (1–100) and `intervalMilliseconds` (0–1000). Scheduled delays cannot exceed 30 seconds.
+Defaults are five records with 250 milliseconds between records.
+Each record carries the backend identity and trace ID. Client cancellation stops production and appears in backend logs.
+Responses use `Cache-Control: no-store, no-transform` to prevent caching and compression buffering.
+
+The [streaming walkthrough](../../docs/cancellable-streaming.md) covers cancellation, cache, compression bypass, and retry deadlines.
+[HTTP examples](SampleLocalService.http) include valid and invalid requests.

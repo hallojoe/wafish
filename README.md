@@ -377,6 +377,10 @@ Run `apm audit --ci` and `apm compile --validate` before committing updates.
 
 [MIT](LICENSE)
 
+### Cancellable streaming
+
+The [cancellable streaming sample](docs/cancellable-streaming.md) demonstrates early delivery, cancellation, cache exclusion, compression, and retry deadlines.
+
 ### Administration authenticators
 
 Optional passkeys and FIDO2 security keys support JWT administration login. Configured TOTP remains required.

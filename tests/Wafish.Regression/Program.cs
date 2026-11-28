@@ -70,6 +70,7 @@ await registry.DefineGroupAsync("benchmarks", BenchmarkReliabilityChecks.RunAsyn
 await registry.DefineGroupAsync("allocation-pressure", AllocationPressureChecks.RunAsync);
 await registry.DefineGroupAsync("sample-deployment", SampleDeploymentChecks.RunAsync);
 await registry.DefineGroupAsync("sample-contracts", SampleContractChecks.RunAsync);
+await registry.DefineGroupAsync("sample-streaming", SampleStreamingChecks.RunAsync);
 await registry.DefineGroupAsync("blue-green", BlueGreenChecks.RunAsync);
 await registry.DefineGroupAsync("ui-fixtures", UiFixtureChecks.RunAsync);
 await registry.DefineGroupAsync("async-policy", AsyncConfigurationChecks.RunAsync);

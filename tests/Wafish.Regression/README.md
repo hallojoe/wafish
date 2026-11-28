@@ -211,3 +211,9 @@ The `--redis` checks also verify tenant sharing, cardinality, isolation, and exp
 
 Use `--group weighted-quotas` for atomic request costs, mixed-cost groups, native queue cancellation, and large retry values.
 Run `--lifetime-stress` after changes to limiter ownership, queues, or partition capacity.
+
+### Sample streaming
+
+Run `dotnet run --project tests/Wafish.Regression -c Release -- --group sample-streaming`.
+This group verifies bounded sample records through real HTTP and active cache, compression, and retry bindings.
+It checks early delivery, disconnect cancellation, no-transform enforcement, cache exclusion, and no replay after deadline interruption.
