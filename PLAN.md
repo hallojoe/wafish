@@ -72,24 +72,6 @@ Source entry points:
 - [Operator guide](docs/performance-budgets.md) — qualification, comparison, and exit codes.
 - [Benchmark session](tests/Wafish.Performance/Runner/BenchmarkSession.cs) — report metadata and configuration identity.
 
-<a id="r40"></a>
-
-## R40: Measure compression savings
-
-Status: TODO.
-
-Current: Compression selects an encoding and wraps the response stream. Dedicated compression-savings measurements are absent.
-
-Remaining: Measure input bytes, output bytes, selected encoding, and compression cost using bounded metric dimensions.
-Preserve streaming, cancellation, and existing response behavior.
-
-Acceptance: Operators can identify routes where compression adds cost without useful byte savings.
-
-Source entry points:
-
-- [Compression middleware](src/Wafish.Plugin.Compression/CompressionMiddleware.cs) — encoding selection and `CompressionWriteStream`.
-- [Plugin metrics](src/Wafish.Plugin.Metrics/PluginMetricsMiddleware.cs) — existing meter and bounded metric storage patterns.
-
 <a id="r41"></a>
 
 ## R41: Configure allowed compression algorithms

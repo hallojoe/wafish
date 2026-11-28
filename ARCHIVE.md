@@ -12185,3 +12185,39 @@ Verification:
 [Retained JSON, CSV, Markdown, and decisions](tests/Wafish.Performance/results/r45-20261128/README.md) record source and environment identity.
 [Operator guidance](docs/performance-budgets.md) defines the gate and its limits.
 R45 retains only initial CI baseline qualification and environment-specific tolerance review in PLAN.md.
+
+
+## R40: Compression savings and cost measurements — 2026-11-28
+
+Added the `Wafish.Plugin.Compression` meter and a runtime-owned `CompressionMetricStore`.
+Counters record accepted input bytes, successful output bytes, response attempts, and estimated codec operation duration.
+Output includes codec headers and trailers. Expansion remains visible in raw byte totals.
+Codec duration excludes producer delays and destination writes or flushes. It does not measure CPU time.
+Completed, cancelled, and faulted attempts remain separate. The middleware records each attempt once and restores the original response stream.
+
+Dimensions contain only configured route ID, one of three encodings, and one of three outcomes.
+The store admits at most 1,024 series and retires removed routes.
+Sample telemetry subscribes to the meter. The legacy middleware constructor remains available.
+No additional response buffering was introduced.
+
+Verification:
+
+- Release solution build passed with zero warnings and errors.
+- All 327 core regression checks passed, including six new compression measurement scenarios.
+- Streaming, protocol properties, allocation-pressure, lifecycle, and sample telemetry checks passed within that suite.
+- All 61 administration checks passed.
+- All 24 package API checks, three isolated consumers, and compatibility rejection tests passed.
+- Changed executable line coverage was 99/114 (86.8%), counting partial coverage conservatively.
+- Changed Markdown links and Git whitespace checks passed. Reviewed API baselines were unchanged.
+
+Measurements describe application body writes, not HTTP framing, TLS, or confirmed network delivery.
+Failed writes can have unknown partial delivery. Use completed outcomes when calculating response savings.
+Exporter retention remains external to the bounded runtime store.
+
+Source entry points:
+
+- [Compression metric store](src/Wafish.Plugin.Compression/CompressionMetricStore.cs).
+- [Compression middleware](src/Wafish.Plugin.Compression/CompressionMiddleware.cs).
+- [Measurement regression checks](tests/Wafish.Regression/CompressionMetricChecks.cs).
+- [Sample telemetry](samples/SampleServiceDefaults/Extensions.cs).
+- [Operator guide](src/Wafish.Plugin.Compression/README.md#compression-measurements).

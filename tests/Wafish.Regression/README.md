@@ -172,6 +172,13 @@ Run `dotnet run --project tests/Wafish.Regression -c Release --no-build -- --gro
 [NamedQuotaChecks.cs](NamedQuotaChecks.cs) verifies shared permits, client isolation, policy conflicts, route changes, cancellation, and bounded ownership.
 Real HTTP and SQLite checks verify rejection before persistence and counter retention after binding recreation.
 
+## Compression measurements
+
+Run `dotnet run --project tests/Wafish.Regression -c Release --no-build -- --group compression-metrics`.
+[CompressionMetricChecks.cs](CompressionMetricChecks.cs) verifies byte totals, trailers, exclusions, failures, timing, cardinality, and runtime registration.
+`--sample-contracts` verifies that sample telemetry exports the compression meter.
+The full regression includes negotiation properties, streaming checks, and allocation-pressure limits.
+
 ## Combined Redis quotas
 
 Run `dotnet run --project tests/Wafish.Regression -c Release --no-build -- --group dual-quotas`.
