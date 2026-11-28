@@ -8,6 +8,47 @@ Current guides retain operating and compatibility requirements.
 Mixed documents are preserved as complete snapshots to prevent information loss.
 Headings and relative links have been adapted for this combined file. Code blocks retain their original content.
 
+## R38: Atomic burst and sustained Redis quotas — 2026-11-28
+
+Added the opt-in `DualWindow` algorithm to the existing Redis rate-limit plugin.
+One Lua decision checks burst and sustained fixed windows before charging either allowance.
+Quota rejection changes neither counter, window boundary, nor expiry.
+Both counters occupy one Redis hash and therefore one Redis Cluster slot.
+Redis server time owns window boundaries. Successful admission sets expiry at the later active boundary.
+
+Paired limits and windows are validated before persistence, including disabled bindings.
+Accepted response headers select the smaller remaining allowance. Rejected responses select the longest blocking wait.
+Existing algorithms retain their defaults, `:v2:` keys, and token-bucket burst behavior.
+Combined policy keys use `:v3-dual:` and include both limits and both window lengths.
+The optional `IDualWindowRateLimitStore` interface preserves existing custom-store contracts.
+Unsupported stores use the configured unavailable-store policy. FailClosed remains the default.
+
+Verification on the implementation branch:
+
+- Release solution build passed with zero warnings and errors.
+- All 325 core regression checks passed, including four new combined-quota scenarios.
+- All 61 administration checks passed.
+- All 24 package API checks, three isolated consumers, and compatibility rejection checks passed.
+- Live Redis 7.4.8 verified concurrent clients, both rejection paths, independent rollover, natural expiry, headers, and prefix isolation.
+- Existing live Redis outage, recovery, interrupted-command, and cancellation checks passed.
+- A single-primary Redis Cluster verified ordinary and tagged keys without cross-slot operations.
+- An initial cluster-fixture endpoint selection error was fixed before the successful rerun.
+- Changed .NET executable line coverage was 41/41 (100%), counting partial coverage conservatively.
+- Lua behavior was verified against live Redis. .NET line coverage does not measure Lua branches.
+- Changed Markdown links and Git whitespace checks passed. API baselines were unchanged.
+
+These are fixed windows, not rolling windows. Upgrade all replicas before enabling the new algorithm.
+Changing either policy starts fresh counters; previous keys retain their existing expiry.
+Command interruption can already have consumed both allowances. The store does not replay commands.
+
+Source entry points:
+
+- [Policy validation](src/Wafish/Models/RedisDualWindowPolicy.cs).
+- [Redis compiler](src/Wafish.Plugin.RateLimit.Redis/RedisRateLimitCompiler.cs).
+- [Atomic Lua store](src/Wafish.Plugin.RateLimit.Redis/RedisLuaRateLimitStore.cs).
+- [Combined quota regression checks](tests/Wafish.Regression/RedisDualWindowChecks.cs).
+- [Configuration guide](src/Wafish.Plugin.RateLimit.Redis/README.md#combined-burst-and-sustained-quotas).
+
 ## R36: Named local route quotas — 2026-11-28
 
 Implemented optional `quotaGroup` bindings in the existing local rate-limit plugin.

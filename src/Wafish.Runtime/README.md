@@ -167,3 +167,9 @@ The runtime registers the named quota compiler and an `IGroupedRateLimiterStore`
 Named and ungrouped partitions share the 2,000-entry admission limit.
 Active leases and consumed quotas survive cleanup. Policy ownership ends only after every group partition safely retires.
 See [named quota configuration and retirement](../Wafish.Plugin.RateLimit/README.md#named-route-quotas).
+
+## Combined Redis quota compilation
+
+The runtime registers [RedisRateLimitCompiler](../Wafish.Plugin.RateLimit.Redis/RedisRateLimitCompiler.cs) for validation before persistence.
+Invalid paired windows are rejected for active and disabled bindings without changing the active snapshot.
+[Combined Redis quotas](../Wafish.Plugin.RateLimit.Redis/README.md#combined-burst-and-sustained-quotas) use the existing Redis plugin and connection lifecycle.

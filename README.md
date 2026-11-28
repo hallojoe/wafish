@@ -259,7 +259,7 @@ The Metrics package supplies both metric plugins. Each package link opens its co
 | `redirect` | Route | [Wafish.Plugin.Redirect](src/Wafish.Plugin.Redirect/README.md) | Fixed and template redirects, HTTPS enforcement, host allowlists, and preview |
 | `waf` | Route | [Wafish.Plugin.Waf](src/Wafish.Plugin.Waf/README.md) | IP allow/deny, SQLi, XSS, path traversal, request limits, and security headers |
 | `rate-limit` | Route | [Wafish.Plugin.RateLimit](src/Wafish.Plugin.RateLimit/README.md) | Fixed window, sliding window, token bucket, concurrency limits, and named shared quotas |
-| `rate-limit-redis` | Route | [Wafish.Plugin.RateLimit.Redis](src/Wafish.Plugin.RateLimit.Redis/README.md) | Distributed Redis limits, rejection headers, and configured outage behavior |
+| `rate-limit-redis` | Route | [Wafish.Plugin.RateLimit.Redis](src/Wafish.Plugin.RateLimit.Redis/README.md) | Distributed Redis limits, combined burst/sustained quotas, rejection headers, and configured outage behavior |
 | `request-retry` | Route | [Wafish.Plugin.Retry](src/Wafish.Plugin.Retry/README.md) | Bounded retries, backoff, jitter, replay checks, deadlines, and shared retry budgets |
 | `circuit-breaker` | Cluster | [Wafish.Plugin.CircuitBreaker](src/Wafish.Plugin.CircuitBreaker/README.md) | Destination failure tracking, recovery delays, and limited recovery probes |
 | `compression` | Route | [Wafish.Plugin.Compression](src/Wafish.Plugin.Compression/README.md) | Gzip and Brotli compression with content-type and size rules |

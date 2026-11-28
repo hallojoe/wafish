@@ -72,24 +72,6 @@ Source entry points:
 - [Operator guide](docs/performance-budgets.md) — qualification, comparison, and exit codes.
 - [Benchmark session](tests/Wafish.Performance/Runner/BenchmarkSession.cs) — report metadata and configuration identity.
 
-<a id="r38"></a>
-
-## R38: Combine burst and sustained quotas
-
-Status: TODO.
-
-Current: Redis evaluates one quota per acquisition. Token-bucket `burstBalance` does not enforce two independent quota windows.
-
-Remaining: Evaluate short burst and longer sustained allowances in one atomic decision.
-Define Redis Cluster key placement, expiry, rejection headers, and compatibility defaults.
-
-Acceptance: Exceeding either allowance rejects the request. Rejection does not partially consume another allowance.
-
-Source entry points:
-
-- [Redis quota store](src/Wafish.Plugin.RateLimit.Redis/RedisLuaRateLimitStore.cs) — acquisition and Lua scripts.
-- [Redis plugin](src/Wafish.Plugin.RateLimit.Redis/RedisRateLimitPlugin.cs) — binding schema.
-
 <a id="r40"></a>
 
 ## R40: Measure compression savings
