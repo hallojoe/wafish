@@ -1,3 +1,5 @@
+// Saved-view persistence has dedicated component and browser coverage.
+vi.mock("@/components/saved-views", () => ({ SavedViews: () => null }));
 import { afterEach, expect, it, vi } from "vitest";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

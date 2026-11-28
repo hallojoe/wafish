@@ -72,25 +72,6 @@ Source entry points:
 - [Operator guide](docs/performance-budgets.md) — qualification, comparison, and exit codes.
 - [Benchmark session](tests/Wafish.Performance/Runner/BenchmarkSession.cs) — report metadata and configuration identity.
 
-<a id="r55"></a>
-
-## R55: Save operator views
-
-Status: TODO.
-
-Current: Table and log filters use component state. Named views have no authenticated persistence API.
-
-Remaining: Persist named filters and column choices through a per-user API.
-Define ownership, validation, and restoration after sign-in.
-
-Acceptance: Views restore without storing credentials or sharing private preferences between users.
-
-Source entry points:
-
-- [Workspace components](src/Wafish.ReactUi/ClientApp/src/components/workspace.tsx) — table columns, filters, and pagination.
-- [Observation pages](src/Wafish.ReactUi/ClientApp/src/pages/observe.tsx) — log and audit filters.
-- [Dashboard authorization](src/Wafish.Administration/Infrastructure/Auth/DashboardAuthorizationService.cs) — authenticated operation permissions.
-
 <a id="idea-01"></a>
 
 ## IDEA-01: Separate administration and gateway processes

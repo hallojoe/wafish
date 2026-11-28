@@ -90,3 +90,10 @@ See [registration and operations](../../docs/registration-operations-contracts.m
 
 Versioned change sets combine routes, clusters, and plugin bindings in one transaction.
 See [change-set contracts](../../docs/configuration-policy-contracts.md) for API examples, revisions, permissions, and recovery.
+
+## Optional operator-view persistence
+
+`IOperatorViewRepository` stores named preferences under opaque authenticated owner hashes.
+Existing providers remain source-compatible. Administration reports this feature unavailable when no provider implements the contract.
+Implement owner isolation, bounds, unique names, optimistic revisions, default selection transactions, and cancellation.
+See [operator-view semantics](../../docs/operator-views.md).

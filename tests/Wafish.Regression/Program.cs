@@ -72,6 +72,7 @@ await registry.DefineGroupAsync("sample-deployment", SampleDeploymentChecks.RunA
 await registry.DefineGroupAsync("discovery-catalog", DiscoveryCatalogChecks.RunAsync);
 await registry.DefineGroupAsync("sample-contracts", SampleContractChecks.RunAsync);
 await registry.DefineGroupAsync("sample-orders", SampleOrderChecks.RunAsync);
+await registry.DefineGroupAsync("operator-views", OperatorViewChecks.RunAsync);
 await registry.DefineGroupAsync("telemetry-configuration", TelemetryConfigurationChecks.RunAsync);
 await registry.DefineGroupAsync("sample-streaming", SampleStreamingChecks.RunAsync);
 await registry.DefineGroupAsync("streaming-compression", StreamingCompressionChecks.RunAsync);

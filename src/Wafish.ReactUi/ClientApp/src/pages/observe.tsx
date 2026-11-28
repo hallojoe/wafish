@@ -1,3 +1,5 @@
+import { SavedViews } from "@/components/saved-views";
+import type { Column } from "@/components/workspace";
 import { useState } from "react";
 import { Link } from "react-router";
 import {
@@ -129,6 +131,7 @@ export function OverviewPage() {
               }
             >
               <Records
+                viewKey="overview-routes"
                 search={false}
                 data={rows(field(query.data, "topErrorRoutes"))}
                 columns={[
@@ -266,6 +269,7 @@ export function TrafficPage() {
             <details className="mt-4">
               <summary>{t("View data")}</summary>
               <Records
+                viewKey="traffic-buckets"
                 data={buckets}
                 columns={[
                   { key: "time", label: "Time" },
@@ -278,6 +282,7 @@ export function TrafficPage() {
           </Panel>
           <Panel title="Routes">
             <Records
+              viewKey="traffic-routes"
               data={rows(field(query.data, "topRoutes"))}
               columns={[
                 { key: "name", label: "Route" },
@@ -309,6 +314,38 @@ export function LogsPage({ audit = false }: { audit?: boolean }) {
   const [detail, setDetail] = useState<unknown>();
   const [error, setError] = useState<unknown>();
   const [paused, setPaused] = useState(false);
+  const [search, setSearch] = useState("");
+  const [chosenColumns, setChosenColumns] = useState<string[]>();
+  const columns: Column[] = audit
+    ? [
+        { key: "timestamp", label: "Time" },
+        { key: "action", label: "Operation" },
+        { key: "message", label: "Description" },
+        { key: "operatorName", label: "Account" },
+      ]
+    : [
+        { key: "timestamp", label: "Time" },
+        { key: "method", label: "Method" },
+        {
+          key: "path",
+          label: "Path",
+          render: (row) =>
+            text(
+              field(row, "upstreamPath") ??
+                field(row, "path") ??
+                field(row, "message"),
+            ),
+        },
+        { key: "routeId", label: "Route" },
+        { key: "statusCode", label: "Status" },
+        { key: "elapsedMs", label: "Duration" },
+      ];
+  const matchingColumns = columns.filter(
+    (column) => !chosenColumns || chosenColumns.includes(column.key),
+  );
+  const displayedColumns = (
+    matchingColumns.length ? matchingColumns : columns
+  ).map((column) => column.key);
   const path = audit
     ? `api/audit-logs?page=${page}&pageSize=50&action=${encodeURIComponent(filter)}`
     : historical
@@ -346,6 +383,32 @@ export function LogsPage({ audit = false }: { audit?: boolean }) {
         )}
       </PageTitle>
       <Panel title={audit ? "Audit" : "Logs"}>
+        <SavedViews
+          key={audit ? "audit" : "logs"}
+          workspace={audit ? "audit" : "logs"}
+          columns={columns}
+          settings={{
+            search,
+            filter,
+            route,
+            minimumStatus: status ? Number(status) : null,
+            historical,
+            columns: displayedColumns,
+          }}
+          onRestore={(settings) => {
+            setSearch(settings.search);
+            setFilter(settings.filter);
+            setRoute(settings.route);
+            setStatus(
+              settings.minimumStatus === null
+                ? ""
+                : String(settings.minimumStatus),
+            );
+            setHistorical(settings.historical);
+            setChosenColumns(settings.columns);
+            setPage(1);
+          }}
+        />
         <div className="toolbar mb-5">
           {!audit && (
             <Field label="Source">
@@ -365,6 +428,7 @@ export function LogsPage({ audit = false }: { audit?: boolean }) {
           {(audit || historical) && (
             <Field label={audit ? "Operation" : "Search"}>
               <Input
+                maxLength={256}
                 value={filter}
                 onChange={(e) => {
                   setFilter(e.target.value);
@@ -377,6 +441,7 @@ export function LogsPage({ audit = false }: { audit?: boolean }) {
             <>
               <Field label="Route">
                 <Input
+                  maxLength={128}
                   value={route}
                   onChange={(e) => {
                     setRoute(e.target.value);
@@ -387,6 +452,8 @@ export function LogsPage({ audit = false }: { audit?: boolean }) {
               <Field label="Minimum status">
                 <Input
                   type="number"
+                  min={100}
+                  max={599}
                   value={status}
                   onChange={(e) => {
                     setStatus(e.target.value);
@@ -400,32 +467,10 @@ export function LogsPage({ audit = false }: { audit?: boolean }) {
         <QueryState query={query}>
           <Records
             data={data}
-            columns={
-              audit
-                ? [
-                    { key: "timestamp", label: "Time" },
-                    { key: "action", label: "Operation" },
-                    { key: "message", label: "Description" },
-                    { key: "operatorName", label: "Account" },
-                  ]
-                : [
-                    { key: "timestamp", label: "Time" },
-                    { key: "method", label: "Method" },
-                    {
-                      key: "path",
-                      label: "Path",
-                      render: (row) =>
-                        text(
-                          field(row, "upstreamPath") ??
-                            field(row, "path") ??
-                            field(row, "message"),
-                        ),
-                    },
-                    { key: "routeId", label: "Route" },
-                    { key: "statusCode", label: "Status" },
-                    { key: "elapsedMs", label: "Duration" },
-                  ]
-            }
+            columns={columns}
+            visibleColumns={displayedColumns}
+            searchValue={search}
+            onSearchChange={setSearch}
             actions={(row) => (
               <Button
                 variant="ghost"
@@ -516,6 +561,7 @@ export function DestinationsPage() {
         <Panel title="Destination health">
           <QueryState query={query}>
             <Records
+              viewKey="destination-health"
               data={data}
               columns={[
                 { key: "clusterId", label: "Cluster" },
@@ -531,6 +577,7 @@ export function DestinationsPage() {
         <Panel title="Circuits">
           <QueryState query={circuits}>
             <Records
+              viewKey="circuits"
               data={
                 Array.isArray(circuits.data)
                   ? rows(circuits.data)
@@ -559,6 +606,7 @@ export function ResourcesPage() {
       <Panel title="Resources">
         <QueryState query={query}>
           <Records
+            viewKey="plugin-resources"
             data={rows(query.data)}
             columns={[
               { key: "pluginId", label: "Plugin" },

@@ -242,3 +242,9 @@ The [live script](../../scripts/check-telemetry-configuration.py) verifies enabl
 `--group sample-orders` verifies atomic duplicates, conflicts, bounded capacity, expiry, cancellation, HTTP validation, and OpenAPI.
 A real gateway fixture retries a committed order after a bodyless failure and checks its original result.
 The sample scope is one backend process. Independent stores deliberately create independent results.
+
+## Private operator views
+
+`--group operator-views` checks bounded SQLite persistence, atomic defaults, conflicts, rollback, and cancellation.
+HTTP checks verify account and issuer isolation, shared-credential rejection, JWT renewal, origin checks, and optional providers.
+The administration authorization matrix includes every new route.

@@ -1,0 +1,34 @@
+@host = https://localhost:7001
+@prefix = /wafish
+@token = REPLACE_WITH_CURRENT_ADMINISTRATION_TOKEN
+@viewId = 62477ec4-7097-4594-9d2e-b006b73791e8
+@revision = 1
+
+### Read this account's route views.
+GET {{host}}{{prefix}}/api/operator-views/routes
+Authorization: Bearer {{token}}
+
+### Create a view. Use the returned revision for subsequent updates and deletion.
+PUT {{host}}{{prefix}}/api/operator-views/routes/{{viewId}}
+Authorization: Bearer {{token}}
+X-Wafish-Operator-View: 1
+Content-Type: application/json
+
+{
+  "name": "Support routes",
+  "settings": {
+    "search": "support",
+    "filter": "",
+    "route": "",
+    "minimumStatus": null,
+    "historical": false,
+    "columns": ["routeId", "clusterId"]
+  },
+  "isDefault": true,
+  "expectedRevision": 0
+}
+
+### Delete only this account's view at the expected revision.
+DELETE {{host}}{{prefix}}/api/operator-views/routes/{{viewId}}?expectedRevision={{revision}}
+Authorization: Bearer {{token}}
+X-Wafish-Operator-View: 1

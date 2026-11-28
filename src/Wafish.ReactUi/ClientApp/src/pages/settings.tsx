@@ -195,6 +195,7 @@ export function NotificationsPage() {
         >
           <QueryState query={history}>
             <Records
+              viewKey="webhook-history"
               data={rows(history.data)}
               columns={[
                 { key: "createdAt", label: "Time" },

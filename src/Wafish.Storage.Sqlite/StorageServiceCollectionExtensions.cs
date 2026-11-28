@@ -37,6 +37,7 @@ public static class StorageServiceCollectionExtensions
         services.AddSingleton<IGatewayPluginRepository, SqliteGatewayPluginRepository>();
         services.AddSingleton<IPluginRuntimeStateRepository, SqlitePluginRuntimeStateRepository>();
         services.AddSingleton<ILogSettingsRepository, SqliteLogSettingsRepository>();
+        services.AddSingleton<IOperatorViewRepository, SqliteOperatorViewRepository>();
         services.AddSingleton<IWebhookSettingsRepository, SqliteWebhookSettingsRepository>();
         services.AddSingleton<IWebhookDeliveryRecordRepository, SqliteWebhookDeliveryRecordRepository>();
 

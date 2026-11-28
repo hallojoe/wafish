@@ -1,3 +1,4 @@
+import { SavedViews } from "@/components/saved-views";
 import { cloneElement, isValidElement, useId, useState } from "react";
 import type { ReactNode, ReactElement } from "react";
 import {
@@ -259,13 +260,30 @@ export function Records({
   columns,
   actions,
   search = true,
+  viewKey,
+  visibleColumns,
+  searchValue,
+  onSearchChange,
 }: {
   data: JsonObject[];
   columns: Column[];
   actions?: (row: JsonObject) => ReactNode;
   search?: boolean;
+  viewKey?: string;
+  visibleColumns?: string[];
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
 }) {
-  const [filter, setFilter] = useState("");
+  const [localFilter, setLocalFilter] = useState("");
+  const [chosenColumns, setChosenColumns] = useState<string[]>();
+  const filter = search ? (searchValue ?? localFilter) : "";
+  const setFilter = onSearchChange ?? setLocalFilter;
+  const selectedColumns =
+    visibleColumns ?? chosenColumns ?? columns.map((column) => column.key);
+  const matchingColumns = columns.filter((column) =>
+    selectedColumns.includes(column.key),
+  );
+  const displayedColumns = matchingColumns.length ? matchingColumns : columns;
   const { t } = useLocale();
   const [page, setPage] = useState(0);
   const filtered = data.filter((row) =>
@@ -274,10 +292,31 @@ export function Records({
   const visible = filtered.slice(page * 25, (page + 1) * 25);
   return (
     <div className="space-y-4">
+      {viewKey && (
+        <SavedViews
+          key={viewKey}
+          workspace={viewKey}
+          columns={columns}
+          settings={{
+            search: filter,
+            filter: "",
+            route: "",
+            minimumStatus: null,
+            historical: false,
+            columns: displayedColumns.map((column) => column.key),
+          }}
+          onRestore={(settings) => {
+            setFilter(settings.search);
+            setChosenColumns(settings.columns);
+            setPage(0);
+          }}
+        />
+      )}
       {search && (
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-3 size-4 text-muted-foreground" />
           <Input
+            maxLength={256}
             aria-label={t("Filter records")}
             placeholder={t("Search")}
             className="pl-9"
@@ -296,7 +335,7 @@ export function Records({
           <table>
             <thead>
               <tr>
-                {columns.map((col) => (
+                {displayedColumns.map((col) => (
                   <th key={col.key}>{t(col.label)}</th>
                 ))}
                 {actions && <th>{t("Actions")}</th>}
@@ -313,7 +352,7 @@ export function Records({
                     String(index),
                   )}
                 >
-                  {columns.map((col) => (
+                  {displayedColumns.map((col) => (
                     <td key={col.key}>
                       {col.render ? col.render(row) : text(field(row, col.key))}
                     </td>
