@@ -100,6 +100,7 @@ await registry.DefineGroupAsync("streaming", ResponseStreamingChecks.RunAsync);
 await registry.DefineGroupAsync("rate-limit", RedisFailureChecks.RunAsync);
 await registry.DefineGroupAsync("named-quotas", NamedQuotaChecks.RunAsync);
 await registry.DefineGroupAsync("compression-metrics", CompressionMetricChecks.RunAsync);
+await registry.DefineGroupAsync("compression-policy", CompressionPolicyChecks.RunAsync);
 await registry.DefineGroupAsync("runtime", RuntimeHostChecks.RunAsync);
 await registry.DefineGroupAsync("runtime", run => run("Runtime: split and isolated deployment modes preserve endpoint roles", RuntimeHostChecks.CheckEndpointModesAsync));
 await registry.DefineGroupAsync("storage", SqliteEncryptionChecks.RunAsync);

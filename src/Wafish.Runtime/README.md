@@ -173,3 +173,9 @@ See [named quota configuration and retirement](../Wafish.Plugin.RateLimit/README
 The runtime owns one [CompressionMetricStore](../Wafish.Plugin.Compression/CompressionMetricStore.cs) across plugin domain replacements.
 Its bounded series track active routes, encoding, and response outcome.
 See [compression measurements](../Wafish.Plugin.Compression/README.md#compression-measurements) for byte semantics, duration limits, and exporter setup.
+
+## Compression policy validation
+
+The runtime registers [CompressionPolicyCompiler](../Wafish.Plugin.Compression/CompressionPolicyCompiler.cs) for validation before persistence.
+Encoding restrictions and separate levels are validated for active and disabled binding drafts.
+Compilation creates no compressor and records no response metrics.
