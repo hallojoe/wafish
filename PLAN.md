@@ -91,25 +91,6 @@ Source entry points:
 - [Observation pages](src/Wafish.ReactUi/ClientApp/src/pages/observe.tsx) — log and audit filters.
 - [Dashboard authorization](src/Wafish.Administration/Infrastructure/Auth/DashboardAuthorizationService.cs) — authenticated operation permissions.
 
-<a id="r53"></a>
-
-## R53: Show redacted telemetry configuration
-
-Status: TODO.
-
-Current: Service defaults configure instrumentation and optional OTLP export. AppHost applies telemetry redaction settings.
-A local diagnostic view of effective telemetry configuration is absent.
-
-Remaining: Add an opt-in local view of enabled exporters and instrumentation.
-Show configuration state without exposing exporter credentials, sensitive URLs, or payload data.
-
-Acceptance: Operators can inspect effective telemetry settings while secrets remain redacted.
-
-Source entry points:
-
-- [Service defaults](samples/SampleServiceDefaults/Extensions.cs) — `ConfigureOpenTelemetry` and exporter selection.
-- [AppHost topology](Wafish.AppHost/AppHost.cs) — telemetry environment and redaction settings.
-
 <a id="r54"></a>
 
 ## R54: Demonstrate idempotent orders

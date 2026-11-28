@@ -3,6 +3,7 @@ using Aspire.Hosting.ApplicationModel;
 using Wafish.AppHost;
 
 var builder = DistributedApplication.CreateBuilder(args);
+var telemetryDiagnostics = builder.Configuration.GetValue<bool>("EnableTelemetryDiagnostics") ? "true" : "false";
 var topology = TopologyState.Read(builder.Configuration, builder.AppHostDirectory);
 using var topologyLease = topology.Acquire();
 if (builder.Configuration.GetValue<bool>("EnableSonarQube"))
@@ -28,6 +29,7 @@ IResourceBuilder<ProjectResource> AddGateway(string name, bool registration) => 
         url.DisplayLocation = UrlDisplayLocation.DetailsOnly;
     })
     .WithEnvironment("Sample__Orchestrated", "true")
+    .WithEnvironment("Sample__TelemetryDiagnostics", telemetryDiagnostics)
     .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development")
     .WithEnvironment("ASPNETCORE_AUTO_BROWSER", "0")
     .WithEnvironment("Gateway__Registration__Enabled", registration ? "true" : "false")
@@ -65,6 +67,7 @@ foreach (var instance in new[] { "backend-one", "backend-two" })
         .WithHttpEndpoint(name: "http", env: "BACKEND_HTTP_PORT", isProxied: false)
         .WithUrlForEndpoint("http", url => { url.Url = "/api/local-service/instance"; url.DisplayText = "Backend instance"; })
         .WithEnvironment("Sample__Orchestrated", "true")
+        .WithEnvironment("Sample__TelemetryDiagnostics", telemetryDiagnostics)
         .WithEnvironment("Gateway__Registration__Enabled", "true")
         .WithEnvironment("Gateway__Registration__GatewayUrl", gateway.GetEndpoint("http"))
         .WithEnvironment("Gateway__Registration__GrpcUrl", gateway.GetEndpoint("grpc"))
@@ -89,6 +92,7 @@ if (builder.Configuration.GetValue<bool>("EnableServiceDiscovery"))
         { project.ExcludeLaunchProfile = true; project.ExcludeKestrelEndpoints = true; })
         .WithHttpEndpoint(name: "http", env: "CATALOG_HTTP_PORT", isProxied: false)
         .WithEnvironment("Sample__Orchestrated", "true")
+        .WithEnvironment("Sample__TelemetryDiagnostics", telemetryDiagnostics)
         .WithUrlForEndpoint("http", url => { url.Url = "/catalog"; url.DisplayText = "HTTP JSON catalog"; })
         .WithHttpHealthCheck("/health");
     foreach (var backend in backends)

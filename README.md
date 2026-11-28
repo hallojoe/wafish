@@ -385,6 +385,8 @@ The optional [network fault scenario](docs/network-faults.md) demonstrates retri
 
 The optional [HTTP JSON discovery sample](docs/service-discovery-sample.md) demonstrates membership changes, stale rejection, and recovery.
 
+See the [local telemetry configuration report](docs/telemetry-configuration.md) to inspect sample exporter and instrumentation registration.
+
 ### Administration authenticators
 
 Optional passkeys and FIDO2 security keys support JWT administration login. Configured TOTP remains required.

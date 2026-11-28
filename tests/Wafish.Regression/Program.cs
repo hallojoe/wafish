@@ -71,6 +71,7 @@ await registry.DefineGroupAsync("allocation-pressure", AllocationPressureChecks.
 await registry.DefineGroupAsync("sample-deployment", SampleDeploymentChecks.RunAsync);
 await registry.DefineGroupAsync("discovery-catalog", DiscoveryCatalogChecks.RunAsync);
 await registry.DefineGroupAsync("sample-contracts", SampleContractChecks.RunAsync);
+await registry.DefineGroupAsync("telemetry-configuration", TelemetryConfigurationChecks.RunAsync);
 await registry.DefineGroupAsync("sample-streaming", SampleStreamingChecks.RunAsync);
 await registry.DefineGroupAsync("streaming-compression", StreamingCompressionChecks.RunAsync);
 await registry.DefineGroupAsync("blue-green", BlueGreenChecks.RunAsync);

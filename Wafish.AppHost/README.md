@@ -90,3 +90,10 @@ See the [fault walkthrough](../docs/network-faults.md) and run `python3 scripts/
 The ordinary gRPC registration remains independent. The profile requires no containers.
 The [discovery walkthrough](../docs/service-discovery-sample.md) creates real bindings and demonstrates membership changes, stale rejection, and recovery.
 Run `python3 scripts/check-service-discovery.py` only when the target AppHost is stopped.
+
+## Optional telemetry configuration report
+
+Set `EnableTelemetryDiagnostics=true` to print registration reports in each sample resource console.
+The switch includes the optional second gateway and discovery catalog. It defaults to false.
+Reports omit configuration values and describe sample registration, not collector connectivity.
+See [inspection and verification](../docs/telemetry-configuration.md).

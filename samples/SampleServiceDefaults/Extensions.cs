@@ -88,6 +88,12 @@ public static class Extensions
             builder.Services.AddOpenTelemetry().UseOtlpExporter();
         }
 
+        if (builder.Configuration.GetValue<bool>("Sample:TelemetryDiagnostics") &&
+            (builder.Environment.IsDevelopment() || builder.Configuration.GetValue<bool>("Sample:Orchestrated")))
+        {
+            builder.Services.AddSingleton<IHostedService>(new TelemetryConfigurationReport(useOtlpExporter));
+        }
+
         // Uncomment the following lines to enable the Azure Monitor exporter (requires the Azure.Monitor.OpenTelemetry.AspNetCore package)
         //if (!string.IsNullOrEmpty(builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]))
         //{

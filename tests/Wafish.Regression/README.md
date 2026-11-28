@@ -230,3 +230,9 @@ Its timing is illustrative and does not qualify a performance baseline.
 Run `dotnet run --project tests/Wafish.Regression -c Release -- --group discovery-catalog`.
 Checks cover bounded loopback origins, atomic membership, invalid controls, synthetic failures, empty responses, and OpenAPI.
 Use `python3 scripts/check-service-discovery.py` for the isolated Aspire scenario, with the target AppHost stopped.
+
+## Telemetry configuration report
+
+`--group telemetry-configuration` verifies opt-in startup output, environment restrictions, secret redaction, and registration snapshots.
+It checks that diagnostics add no HTTP route. Existing `--sample-contracts` checks verify actual instrumentation behavior.
+The [live script](../../scripts/check-telemetry-configuration.py) verifies enabled and disabled Aspire resource reports.

@@ -12560,3 +12560,38 @@ Source entry points:
 - [Catalog checks](tests/Wafish.Regression/DiscoveryCatalogChecks.cs).
 - [Owned live verification](scripts/check-service-discovery.py).
 - [Walkthrough](docs/service-discovery-sample.md).
+
+
+## R53: Redacted local telemetry configuration — 2026-11-28
+
+Added an opt-in startup console report to sample service defaults.
+It describes OTLP registration for each signal, registered instrumentation, logging options, and exact health-path trace filtering.
+Only fixed labels and registration flags enter the report. It never serializes configuration values.
+Collector URLs, headers, credentials, resource attributes, configured names, probe paths, and payload data remain absent.
+The report has no HTTP endpoint and bypasses the OpenTelemetry logging provider.
+Process console collectors, including Aspire, can retain it.
+
+`Sample:TelemetryDiagnostics` requires Development or the explicit orchestrated sample profile.
+The AppHost's `EnableTelemetryDiagnostics` switch includes both gateways, both backends, and the optional discovery catalog.
+Both switches default to false. Registration snapshots remain unchanged after later configuration edits.
+The report does not claim collector health, successful export, or visibility into additional host registrations.
+
+Verification:
+
+- Release solution build: zero warnings and errors.
+- All 359 core regression checks passed, including sample contracts and registration/operations contracts.
+- Focused checks verified local opt-in, production suppression, absent HTTP routes, exporter-free output, redaction, and snapshot stability.
+- Changed executable-line coverage: 26/26 (100%), combining focused checks with instrumented Aspire starts.
+- Live Aspire checks verified OTLP reports from all five eligible resources and no reports from the default topology.
+- Python syntax, changed Markdown links, and whitespace checks passed.
+- The owned topology stopped; generated credentials and temporary data were removed.
+
+No production package behavior changed. No packages were published or services deployed.
+
+Source entry points:
+
+- [Report](samples/SampleServiceDefaults/TelemetryConfigurationReport.cs).
+- [Registration](samples/SampleServiceDefaults/Extensions.cs).
+- [Focused checks](tests/Wafish.Regression/TelemetryConfigurationChecks.cs).
+- [Live verification](scripts/check-telemetry-configuration.py).
+- [Operator guide](docs/telemetry-configuration.md).

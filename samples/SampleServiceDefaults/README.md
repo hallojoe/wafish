@@ -78,3 +78,10 @@ Set `Sample:RegistrationReadiness=true` to require local client registration for
 The option defaults to false. `/alive` remains independent. Health probes make no registration calls.
 
 See [registration and operations](../../docs/registration-operations-contracts.md) for limits, configuration, and compatibility.
+
+## Local configuration report
+
+Set `Sample:TelemetryDiagnostics=true` to print an allowlisted startup registration report.
+It requires Development or the orchestrated sample profile and defaults to false.
+The report shows OTLP registration and instrumentation without configuration values or an HTTP endpoint.
+See [usage, scope, and redaction](../../docs/telemetry-configuration.md).
