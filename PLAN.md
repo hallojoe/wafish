@@ -72,25 +72,6 @@ Source entry points:
 - [Operator guide](docs/performance-budgets.md) — qualification, comparison, and exit codes.
 - [Benchmark session](tests/Wafish.Performance/Runner/BenchmarkSession.cs) — report metadata and configuration identity.
 
-<a id="r37"></a>
-
-## R37: Partition quotas by trusted tenant
-
-Status: TODO.
-
-Current: Redis quota keys combine the configured prefix, route ID, and client IP.
-
-Remaining: Allow an explicitly configured, authenticated tenant claim to select the shared quota key.
-Define claim trust, missing-claim behavior, and bounded key cardinality.
-
-Acceptance: Untrusted values cannot select another tenant's quota or create unlimited quota keys.
-Missing claims follow a documented policy.
-
-Source entry points:
-
-- [Redis middleware](src/Wafish.Plugin.RateLimit.Redis/Middleware/RedisRateLimitMiddleware.cs) — request identity and key construction.
-- [Redis plugin](src/Wafish.Plugin.RateLimit.Redis/RedisRateLimitPlugin.cs) — partition configuration schema.
-
 <a id="r39"></a>
 
 ## R39: Assign weighted request costs

@@ -12347,3 +12347,42 @@ Source entry points:
 - [Browser adapter](src/Wafish.ReactUi/ClientApp/src/api/webauthn.ts).
 - [Security checks](tests/Wafish.Administration.Regression/WebAuthnChecks.Security.cs).
 - [Configuration and recovery guide](docs/administration-webauthn.md).
+
+## R37: Trusted Redis tenant quotas — 2026-11-28
+
+Added optional tenant partitions to route-scoped Redis quotas. Client-IP partitioning remains the default.
+Tenant selection requires an authenticated identity, exact authentication type, claim type, issuer, and original issuer.
+A bounded allowlist provisions 1–1024 exact tenant IDs per route. Unknown, missing, ambiguous, or oversized identities are rejected.
+Identity rejection precedes Redis access and forwarding, including FailOpen routes.
+
+Compilation creates immutable opaque tenant keys. Request processing does not create partitions or hash request values.
+Existing tenants retain their counters when the allowlist changes. Routes, trust settings, and deployment prefixes remain isolated.
+Tenant policies bound window length and token-bucket burst capacity. Existing Lua operations and IP keys remain unchanged.
+
+Verification:
+
+- Complete Release solution build: zero warnings and errors.
+- All 343 core regression checks and all 71 administration checks passed.
+- Five focused tenant cases cover compiler/schema bounds, immutable maps, trusted claims, cardinality, isolation, mutation rejection, and real HTTP fallback.
+- Additional enabled/disabled candidate checks passed after the full suite. Invalid claim whitespace and window bounds preserved active and stored state.
+- Changed production executable-line coverage: 57/57 (100%).
+- Isolated Redis 7.4.8 standalone and single-primary cluster checks passed for all four algorithms.
+- Concurrent clients share tenant quotas across addresses. Unknown tenants allocate no Redis keys.
+- Live checks cover other tenants, routes, prefixes, allowlist expansion, positive bounded TTLs, and natural expiry.
+- Existing Redis outage, reconnect, interrupted-operation, cancellation, and dual-window checks passed.
+- All 24 package API checks, three isolated consumers, and compatibility rejection checks passed.
+- Changed Markdown links and whitespace checks passed.
+
+New configuration and public policy types are additive. No existing store interface changed.
+Hosts remain responsible for authenticating principals before the gateway pipeline.
+Dynamic tenant onboarding needs a separate admission and eviction policy. Cross-route tenant groups and multiple issuers are not added.
+No packages were published, and no application deployment was performed.
+
+Source entry points:
+
+- [Policy compilation](src/Wafish/Models/RedisTenantPartitionPolicy.cs).
+- [Identity resolution](src/Wafish.Plugin.RateLimit.Redis/RedisTenantIdentity.cs).
+- [Redis middleware](src/Wafish.Plugin.RateLimit.Redis/Middleware/RedisRateLimitMiddleware.cs).
+- [Tenant checks](tests/Wafish.Regression/RedisTenantChecks.cs).
+- [Live checks](tests/Wafish.Regression/RedisTenantChecks.Live.cs).
+- [Configuration guide](src/Wafish.Plugin.RateLimit.Redis/README.md#trusted-tenant-quotas).

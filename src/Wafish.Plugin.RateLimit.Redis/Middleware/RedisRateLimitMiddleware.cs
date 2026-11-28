@@ -52,9 +52,26 @@ public sealed class RedisRateLimitMiddleware : GatewayMiddlewareBase
             return;
         }
 
-        var clientIp = ClientIpResolver.GetClientIp(context) ?? "unknown";
+        context.RequestAborted.ThrowIfCancellationRequested();
         var prefix = string.IsNullOrWhiteSpace(config.KeyPrefix) ? "wafish:rl" : config.KeyPrefix;
-        var key = $"{prefix}:{routeId}:{clientIp}";
+        string key;
+        if (config.CompiledTenantPartition is { } tenantPolicy)
+        {
+            var status = RedisTenantIdentity.Resolve(context.User, tenantPolicy, out var tenantKey);
+            if (status != 0)
+            {
+                context.Response.StatusCode = status;
+                context.Response.Headers.CacheControl = "no-store";
+                await context.Response.WriteAsJsonAsync(new { error = "Tenant quota identity required" }, context.RequestAborted);
+                return;
+            }
+            key = $"{prefix}:tenant:v1:{tenantKey}";
+        }
+        else
+        {
+            var clientIp = ClientIpResolver.GetClientIp(context) ?? "unknown";
+            key = $"{prefix}:{routeId}:{clientIp}";
+        }
 
         DistributedRateLimitResult result;
         try

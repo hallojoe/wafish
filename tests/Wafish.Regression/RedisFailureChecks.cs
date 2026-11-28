@@ -141,6 +141,7 @@ internal static class RedisFailureChecks
         }
         Console.WriteLine("PASS: Live Redis recovers failed construction with one replacement and shared counters");
         await RedisDualWindowChecks.RunLiveAsync(first, second, options.Value.ConnectionString!);
+        await RedisTenantChecks.RunLiveAsync(first, second, options.Value.ConnectionString!);
         await RedisDualWindowChecks.RunClusterAsync(executable);
         await using (var control = await ConnectionMultiplexer.ConnectAsync(options.Value.ConnectionString + ",allowAdmin=true"))
         {

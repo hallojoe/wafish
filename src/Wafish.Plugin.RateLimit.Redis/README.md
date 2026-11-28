@@ -128,3 +128,75 @@ Without this capability, combined requests use the configured unavailable-store 
 
 Source: [compiler](RedisRateLimitCompiler.cs), [Lua store](RedisLuaRateLimitStore.cs),
 and [combined quota regressions](../../tests/Wafish.Regression/RedisDualWindowChecks.cs).
+
+## Trusted tenant quotas
+
+Set `tenantPartition` to share a route's allowance across users and addresses within a configured tenant.
+Omitting this object preserves the existing client-IP keys and behavior.
+
+```json
+{
+  "enabled": true,
+  "algorithm": "FixedWindow",
+  "limit": 100,
+  "windowSeconds": 60,
+  "keyPrefix": "production:rl",
+  "failureMode": "FailClosed",
+  "tenantPartition": {
+    "claimType": "tenant_id",
+    "claimIssuer": "https://identity.example.com",
+    "authenticationType": "tenant-jwt",
+    "allowedTenants": ["tenant-a", "tenant-b"]
+  }
+}
+```
+
+The host must authenticate requests before the gateway pipeline.
+Configure the authentication handler to validate token signatures, issuer, audience, and lifetime.
+Use the resulting `ClaimsIdentity.AuthenticationType` value in this binding. It is not necessarily the handler's scheme name.
+The plugin consumes that validated principal. It does not authenticate bearer tokens or trust tenant request headers.
+
+Exactly one matching tenant claim must come from an authenticated identity with the configured authentication type.
+Both the claim's issuer and original issuer must equal `claimIssuer`.
+The claim must have the string value type. Claim names, issuers, authentication types, and tenant values use exact ordinal comparison.
+Duplicate matching claims are rejected, including duplicates with identical values or claims from multiple trusted identities.
+Claims from other authentication types and unauthenticated identities cannot select the quota.
+
+`allowedTenants` provisions between 1 and 1,024 distinct tenant identifiers per route.
+Each identifier contains 1–128 characters, without surrounding whitespace or control characters.
+Add tenants through configuration before accepting their requests. There is no automatic enrollment from request values.
+This bounds key creation without evicting active tenants or restarting their quotas through admission churn.
+
+Anonymous requests return HTTP 401. Invalid, missing, ambiguous, or unprovisioned authenticated tenant identities return HTTP 403.
+Oversized principals also return HTTP 403. Inspection permits at most 16 identities and 256 claims across matching identities.
+These failures happen before Redis access and upstream forwarding, even when `failureMode` is `FailOpen`.
+There is no fallback to the caller's IP address, headers, or query parameters.
+A valid tenant retains the existing Redis outage policy and HTTP 429 retry behavior.
+
+### Tenant bounds and counter identity
+
+Tenant quotas support FixedWindow, SlidingWindow, TokenBucket, and DualWindow.
+They require limits of 1–1,000,000 and windows of 1–86,400 seconds.
+TokenBucket burst balance cannot exceed its limit. Other tenant algorithms require zero burst balance.
+DualWindow retains its additional paired-window validation.
+
+Compiled maps contain opaque hashes of the route ID, trust fields, and tenant value.
+Request processing performs bounded claim inspection and a frozen-map lookup. It does not allocate new partitions or hash caller values.
+Redis keys use `<keyPrefix>:tenant:v1:<identity-hash>` followed by the existing algorithm-policy suffix.
+Raw tenant identifiers are absent from Redis keys and quota rejection logs.
+
+Users and addresses in one tenant share its allowance across gateway replicas.
+Other tenants, routes, and deployment prefixes remain separate.
+Changing the allowlist order or adding tenants preserves existing tenant counters.
+Removing a tenant blocks later requests before Redis access. Re-adding it can resume its unexpired counters.
+Changing trust fields, route ID, algorithm, or quota settings selects separate counters.
+Deploy matching bindings and trust settings across replicas.
+
+Old counters expire under the existing algorithm TTL.
+After their last relevant operation, maximum TTLs are one window for FixedWindow and DualWindow, and two windows for SlidingWindow.
+TokenBucket expires after twice its rounded full-refill duration, plus one second.
+Active admitted identities can retain their keys through normal traffic. Unknown identities cannot create or extend keys.
+Existing client-IP key formats remain unchanged. No Redis migration or shared Lua change is required.
+
+The allowlist is deliberately explicit. Dynamic tenant provisioning would require a separate admission and eviction policy.
+This option does not add cross-route tenant quota groups or multiple trusted issuers within one binding.
