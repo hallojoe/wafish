@@ -1,3 +1,4 @@
+using Wafish.Plugin.ExternalLogin;
 using Microsoft.AspNetCore.Http;
 using Wafish.Dashboard.Infrastructure.Deployment;
 using Wafish.Dashboard.Infrastructure.Middleware;
@@ -39,6 +40,14 @@ public static class GatewayPipelineExtensions
         // Resolve endpoint roles before using the normalized deployment mode.
         var resolver = app.ApplicationServices.GetService<EndpointRoleResolver>();
         var auto = options.AutoUseMiddleware ?? deployment.AutoUseMiddleware;
+        if (app.ApplicationServices.GetService<ExternalLoginCatalog>() != null)
+        {
+            if (!options.AutoUseAuthorization || !options.UseBuiltInProxyPipeline)
+                throw new InvalidOperationException("External login requires the built-in authentication and authorization pipeline.");
+            app.Use((context, next) => context.RequestServices.GetRequiredService<ExternalLoginRuntime>().InvokeAsync(context, next));
+            app.UseAuthentication();
+            app.Use((context, next) => context.RequestServices.GetRequiredService<ExternalLoginRuntime>().AuthorizeAsync(context, next));
+        }
         if (options.AutoUseCors)
         {
             app.UseCors();

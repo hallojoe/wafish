@@ -122,3 +122,7 @@ Internal route contracts expose prepared GET batches with explicit disposal and 
 `GatewaySnapshot.RouteUidsById` retains stable route identities without changing the existing snapshot constructor.
 `IGatewaySnapshotValidator` lets route compilers reject invalid cross-route dependencies before publication.
 `RequestExecutionSnapshot` pins plugin execution plans during internal child execution.
+
+External-login bindings participate in route validation and snapshot compilation.
+The compiler removes derived authentication metadata before recompilation and rejects duplicate bindings.
+Host registration and request enforcement belong to [Runtime](../Wafish.Runtime/README.md).

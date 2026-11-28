@@ -32,6 +32,8 @@ public static class RouteAuthorizationMiddleware
         });
     private static async Task RejectAsync(HttpContext context)
     {
+        if (context.Features.Get<Wafish.Plugins.GatewayVisitorIdentityFeature>() != null)
+        { context.Response.StatusCode = 403; return; }
         var schemes = context.RequestServices.GetService<IAuthenticationSchemeProvider>();
         if (context.User.Identities.Any(i => i.IsAuthenticated))
         {
