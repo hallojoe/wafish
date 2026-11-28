@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><Description>OIDC visitor sessions and controlled API token forwarding for Wafish.</Description></PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../Wafish/Wafish.csproj" />
+    <ProjectReference Include="../Wafish.Plugin.Abstractions/Wafish.Plugin.Abstractions.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
+    <PackageReference Include="StackExchange.Redis" />
+    <InternalsVisibleTo Include="Wafish.Regression" />
+  </ItemGroup>
+</Project>
