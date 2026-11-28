@@ -30,6 +30,7 @@ import {
   parseObject,
 } from "@/components/workspace";
 import { SchemaFields, schemaDefaults } from "@/components/schema-fields";
+import { ExternalLoginEditor } from "@/components/external-login-editor";
 import { RedirectPreview } from "@/components/redirect-preview";
 import { ObjectEditor } from "@/components/json-form";
 export function PluginsPage() {
@@ -456,7 +457,11 @@ export function BindingsPage() {
               </div>
               <details>
                 <summary>{t("Common fields")}</summary>
-                <SchemaFields
+                {editor.pluginId === "external-login" ? <ExternalLoginEditor
+                  schema={schema}
+                  value={text(editor.configJson)}
+                  onChange={(value) => update("configJson", value)}
+                /> : <SchemaFields
                   schema={schema}
                   routeChoices={rows(routes.data)
                     .filter(
@@ -472,7 +477,7 @@ export function BindingsPage() {
                     }))}
                   value={text(editor.configJson)}
                   onChange={(value) => update("configJson", value)}
-                />
+                />}
               </details>
               <JsonEditor
                 label="Configuration JSON"
