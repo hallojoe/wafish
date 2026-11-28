@@ -152,3 +152,10 @@ Admission returns 503 during incompatible configuration transitions or shutdown.
 Aggregate routes run their parent logging, metrics, and quotas before bounded child execution.
 Their terminal handler runs before YARP requires a backend cluster.
 See [JSON aggregation](../Wafish.Plugin.Aggregation/README.md) for configuration and dependency rules.
+
+## External visitor authentication
+
+Register `AddWafishExternalLogin` before building the host to enable visitor OIDC sessions.
+The runtime enforces route bindings before native authorization and the proxy pipeline.
+Internal child routes repeat visitor authorization. Administration authentication keeps its existing schemes.
+See the [plugin guide](../Wafish.Plugin.ExternalLogin/README.md) for site profiles, CSRF, and API token forwarding.

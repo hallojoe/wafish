@@ -22,3 +22,7 @@ Without a configured challenge/forbid handler, responses use 401/403. Cookie han
 The built-in endpoint pipeline must remain enabled. Configuration validates before persistence and activation.
 
 The editor uses scope lists and claim rows. The `wafish.route_authorization.decisions` counter records allowed/denied outcomes only.
+
+External visitor authorization failures return HTTP 403.
+They do not invoke the administration scheme's access-denied handler.
+See [external login](../Wafish.Plugin.ExternalLogin/README.md) for visitor session integration.

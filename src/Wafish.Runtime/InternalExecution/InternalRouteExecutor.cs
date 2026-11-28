@@ -1,3 +1,4 @@
+using Wafish.Plugin.ExternalLogin;
 using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
@@ -203,6 +204,7 @@ internal sealed class InternalRouteExecutor(IServiceProvider services, IGatewayS
                 var scope=_owner._services.CreateAsyncScope();
                 var response=new BoundedInternalResponse(_maxBytes);
                 var context=new DefaultHttpContext { RequestServices=scope.ServiceProvider, User=new ClaimsPrincipal(_parent.User.Identities.Select(i=>new ClaimsIdentity(i))), RequestAborted=_cancel.Token };
+                context.Features.Set(_parent.Features.Get<Wafish.Plugins.GatewayVisitorIdentityFeature>());
                 context.Features.Set<IHttpResponseFeature>(response); context.Features.Set<IHttpResponseBodyFeature>(response);
                 context.Request.Method="GET";context.Request.Scheme=_parent.Request.Scheme;context.Request.Host=_parent.Request.Host;
                 context.Request.Path=PathString.FromUriComponent(call.Path);context.Request.PathBase=_parent.Request.PathBase;context.Request.QueryString=new(call.QueryString);
@@ -224,6 +226,13 @@ internal sealed class InternalRouteExecutor(IServiceProvider services, IGatewayS
                 {
                     await _generation.Matcher.MatchAsync(context);
                     if(!ReferenceEquals(context.GetEndpoint(),route.Endpoint)) throw new InternalRouteException(400,"child_route_mismatch");
+                    if (route.Route.Config.Metadata?.ContainsKey(ExternalLoginCompiler.MetadataKey) == true)
+                    {
+                        var visitor = context.RequestServices.GetService<ExternalLoginRuntime>();
+                        var visitorAllowed = false;
+                        if (visitor != null) await visitor.AuthorizeAsync(context, _ => { visitorAllowed = true; return Task.CompletedTask; }, internalRequest: true);
+                        if (!visitorAllowed) throw new InternalRouteException(context.Response.StatusCode == 200 ? 403 : context.Response.StatusCode, "child_external_login");
+                    }
                     var policyProvider=context.RequestServices.GetRequiredService<IAuthorizationPolicyProvider>();
                     var policy=await AuthorizationPolicy.CombineAsync(policyProvider,route.Endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>(),route.Endpoint.Metadata.GetOrderedMetadata<AuthorizationPolicy>());
                     if(policy!=null && route.Endpoint.Metadata.GetMetadata<IAllowAnonymous>()==null)
