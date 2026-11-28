@@ -12489,3 +12489,38 @@ Source entry points:
 - [Policy validation](src/Wafish/Models/CompressionEncodingPolicy.cs).
 - [Regression checks](tests/Wafish.Regression/StreamingCompressionChecks.cs).
 - [Configuration guide](src/Wafish.Plugin.Compression/README.md#incremental-compressed-responses).
+
+
+## R49: Optional local network faults — 2026-11-28
+
+Added `EnableNetworkFaults` to the AppHost. The optional `fault-backend` reuses bounded benchmark transport fixtures.
+The resource uses an assigned loopback HTTP endpoint and requires no container runtime.
+Default resources, ordinary backend traffic, and production plugin defaults remain unchanged.
+No proxy routes or bindings are created automatically by the resource registration.
+
+The isolated verification script starts its own topology, database directory, and generated credential.
+It creates exact-match demo routes and real retry/circuit bindings, then checks recovery and cleanup.
+The guide covers direct fixture access, counter reset, gateway policies, partial bodies, and removal.
+Live verification also corrected the blue-green guide's administration prefix to `/wafish/api`.
+
+Verification:
+
+- Release AppHost and complete solution builds: zero warnings and errors.
+- Changed AppHost executable-line coverage: 13/13 (100%), collected through actual Aspire starts.
+- Two transient failures recovered on the third attempt, with matching retry headers and backend counters.
+- Two failures opened a circuit. Blocked traffic did not reach the backend; a successful probe restored forwarding.
+- Stalls reached deadlines, cancelled backend work, and recovered. Truncation interrupted the body without a false complete response.
+- Transport fault counters confirmed single attempts and drained work.
+- Scenario configuration was removed. Restarting with the flag disabled restored the default resource graph.
+- Separate sample deployment checks and Python syntax verification passed.
+- Changed Markdown links and whitespace checks passed. The AppHost was stopped after verification.
+
+The first instrumented attempt required an attached coverage collector. A subsequent API-path mismatch was corrected before the successful run.
+No packages were published or applications deployed. Existing persistent topology data and container volumes were preserved.
+
+Source entry points:
+
+- [Resource registration](Wafish.AppHost/AppHost.cs).
+- [Fault backend](tests/Wafish.Performance/Backend/Program.cs).
+- [Owned scenario checks](scripts/check-network-faults.py).
+- [Walkthrough](docs/network-faults.md).

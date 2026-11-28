@@ -72,25 +72,6 @@ Source entry points:
 - [Operator guide](docs/performance-budgets.md) — qualification, comparison, and exit codes.
 - [Benchmark session](tests/Wafish.Performance/Runner/BenchmarkSession.cs) — report metadata and configuration identity.
 
-<a id="r49"></a>
-
-## R49: Add optional network fault injection
-
-Status: TODO.
-
-Current: Benchmark fixtures already support controlled stalls and disconnects. AppHost has no optional network fault resource.
-
-Remaining: Add a local resource that delays or interrupts backend traffic on request.
-Reuse existing fixture behavior where suitable and provide repeatable recovery steps.
-
-Acceptance: The optional scenario demonstrates retries and circuit recovery without changing production defaults.
-
-Source entry points:
-
-- [AppHost topology](Wafish.AppHost/AppHost.cs) — optional resource registration.
-- [Benchmark backend](tests/Wafish.Performance/Backend/Program.cs) — existing controlled transport faults.
-- [Network checks](tests/Wafish.Regression/BenchmarkReliabilityChecks.Network.cs) — fault and cancellation checks.
-
 <a id="r51"></a>
 
 ## R51: Demonstrate service discovery

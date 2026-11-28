@@ -15,6 +15,7 @@ flowchart TD
     Gateway -. "telemetry" .-> Dashboard["Aspire dashboard"]
     Backends -. "telemetry" .-> Dashboard
     AppHost -. "EnableSecondGateway" .-> Second["Second gateway"]
+    AppHost -. "EnableNetworkFaults" .-> Faults["Local fault backend"]
     AppHost -. "EnableRedis" .-> Redis["Redis"]
     AppHost -. "EnableSonarQube" .-> Sonar["SonarQube"]
     Sonar --> Postgres["PostgreSQL"]
@@ -31,7 +32,7 @@ One topology supplies endpoint wiring, generated credentials, health dependencie
 ## What it does
 
 - Start a gateway and two backend instances with assigned endpoints.
-- Optionally add a second gateway, Redis, and SonarQube with PostgreSQL.
+- Optionally add a second gateway, Redis, SonarQube with PostgreSQL, and a local fault fixture.
 - Persist sample gateway data and generated secret parameters.
 
 ## What it does not do
@@ -74,3 +75,10 @@ Set `EnableExternalLogin=true` to start the optional visitor gateway, static sit
 Set `EnableSecondVisitorGateway=true` to verify shared visitor sessions across two gateways.
 This profile requires a container runtime and trusted development certificates.
 See the [sample guide](../samples/SampleExternalLogin/README.md) for ports, generated credentials, and browser verification.
+
+## Optional network faults
+
+Set `EnableNetworkFaults=true` to add the container-free `fault-backend` resource.
+It exposes bounded delays, stalled responses, disconnects, and transient failures on loopback.
+It does not intercept ordinary backend traffic or automatically create proxy routes.
+See the [fault walkthrough](../docs/network-faults.md) and run `python3 scripts/check-network-faults.py` when this AppHost is stopped.
