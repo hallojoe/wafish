@@ -381,6 +381,8 @@ Run `apm audit --ci` and `apm compile --validate` before committing updates.
 
 The [cancellable streaming sample](docs/cancellable-streaming.md) demonstrates early delivery, cancellation, cache exclusion, compression, and retry deadlines.
 
+The optional [network fault scenario](docs/network-faults.md) demonstrates retries, circuit recovery, stalled responses, and disconnects.
+
 ### Administration authenticators
 
 Optional passkeys and FIDO2 security keys support JWT administration login. Configured TOTP remains required.

@@ -40,6 +40,21 @@ IResourceBuilder<ProjectResource> AddGateway(string name, bool registration) => 
 
 if (builder.Configuration.GetValue<bool>("EnableExternalLogin")) builder.AddExternalLogin(topology);
 
+if (builder.Configuration.GetValue<bool>("EnableNetworkFaults"))
+{
+    // The controlled transport fixture uses loopback HTTP and needs no container runtime.
+    var faults = builder.AddProject<Projects.Backend>("fault-backend", project =>
+        { project.ExcludeLaunchProfile = true; project.ExcludeKestrelEndpoints = true; })
+        .WithHttpEndpoint(name: "http", isProxied: false)
+        .WithUrlForEndpoint("http", url => { url.Url = "/benchmark/manifest"; url.DisplayText = "Fault fixture"; })
+        .WithHttpHealthCheck("/health");
+    faults.WithArgs(context =>
+    {
+        context.Args.Add("--transport-faults=true");
+        context.Args.Add(ReferenceExpression.Create($"--listen-url={faults.GetEndpoint("http")}"));
+    });
+}
+
 var gateway = AddGateway("gateway", true);
 var backends = new List<IResourceBuilder<ProjectResource>>();
 

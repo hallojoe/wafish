@@ -165,3 +165,9 @@ The visitor gateway uses a fixed HTTPS endpoint for registered OIDC callbacks.
 Set `EnableSecondVisitorGateway=true` to verify shared sessions with a second gateway.
 The default topology remains container-free.
 See the [external login sample](../samples/SampleExternalLogin/README.md) for configuration and browser checks.
+
+## Optional network faults
+
+`EnableNetworkFaults=true` adds a local HTTP fault fixture without requiring containers.
+The [network fault guide](network-faults.md) covers retries, circuit recovery, stalls, interrupted bodies, and cleanup.
+The isolated verification script refuses an already running AppHost and preserves existing topology data.

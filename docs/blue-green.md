@@ -22,7 +22,7 @@ set -euo pipefail
 GATEWAY='http://localhost:PORT'
 BLUE='http://localhost:PORT'
 GREEN='http://localhost:PORT'
-ADMIN="$GATEWAY/console/api"
+ADMIN="$GATEWAY/wafish/api"
 DEMO_DIR=$(mktemp -d)
 chmod 700 "$DEMO_DIR"
 AUTH_FILE="$DEMO_DIR/curl-auth"
