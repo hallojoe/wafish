@@ -74,6 +74,8 @@ public sealed record RedisRateLimitExecutionConfig
     public int WindowSeconds { get; init; } = 60;
     public string KeyPrefix { get; init; } = "wafish:rl";
     public int BurstBalance { get; init; }
+    public int? BurstLimit { get; init; }
+    public int? BurstWindowSeconds { get; init; }
 }
 
 public sealed record ProxyLogBindingExecutionConfig

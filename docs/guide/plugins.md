@@ -14,7 +14,7 @@ Bindings attach configuration to a supported route or cluster scope.
 | `redirect` | Return validated redirects, including HTTPS upgrades, without a backend. | [Redirect](../../src/Wafish.Plugin.Redirect/README.md) |
 | `waf` | Inspect configured request inputs and enforce allow/deny rules. | [WAF](../../src/Wafish.Plugin.Waf/README.md) |
 | `rate-limit` | Apply local rate limits and named shared quotas. | [Local rate limits](../../src/Wafish.Plugin.RateLimit/README.md) |
-| `rate-limit-redis` | Coordinate rate-limit counters through Redis. | [Redis rate limits](../../src/Wafish.Plugin.RateLimit.Redis/README.md) |
+| `rate-limit-redis` | Coordinate Redis quotas, including combined burst and sustained windows. | [Redis rate limits](../../src/Wafish.Plugin.RateLimit.Redis/README.md) |
 | `response-cache` | Cache eligible public responses within the process. | [Cache](../../src/Wafish.Plugin.Cache/README.md) |
 | `request-retry` | Retry eligible failures within bounded attempts and time. | [Retry](../../src/Wafish.Plugin.Retry/README.md) |
 | `circuit-breaker` | Control unhealthy destination eligibility and recovery probes. | [Circuit breaker](../../src/Wafish.Plugin.CircuitBreaker/README.md) |

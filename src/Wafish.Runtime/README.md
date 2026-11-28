@@ -173,3 +173,9 @@ See [named quota configuration and retirement](../Wafish.Plugin.RateLimit/README
 The runtime owns one [CompressionMetricStore](../Wafish.Plugin.Compression/CompressionMetricStore.cs) across plugin domain replacements.
 Its bounded series track active routes, encoding, and response outcome.
 See [compression measurements](../Wafish.Plugin.Compression/README.md#compression-measurements) for byte semantics, duration limits, and exporter setup.
+
+## Combined Redis quota compilation
+
+The runtime registers [RedisRateLimitCompiler](../Wafish.Plugin.RateLimit.Redis/RedisRateLimitCompiler.cs) for validation before persistence.
+Invalid paired windows are rejected for active and disabled bindings without changing the active snapshot.
+[Combined Redis quotas](../Wafish.Plugin.RateLimit.Redis/README.md#combined-burst-and-sustained-quotas) use the existing Redis plugin and connection lifecycle.

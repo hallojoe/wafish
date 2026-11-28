@@ -178,3 +178,11 @@ Run `dotnet run --project tests/Wafish.Regression -c Release --no-build -- --gro
 [CompressionMetricChecks.cs](CompressionMetricChecks.cs) verifies byte totals, trailers, exclusions, failures, timing, cardinality, and runtime registration.
 `--sample-contracts` verifies that sample telemetry exports the compression meter.
 The full regression includes negotiation properties, streaming checks, and allocation-pressure limits.
+
+## Combined Redis quotas
+
+Run `dotnet run --project tests/Wafish.Regression -c Release --no-build -- --group dual-quotas`.
+[RedisDualWindowChecks.cs](RedisDualWindowChecks.cs) covers validation, persistence rejection, middleware headers, optional store support, and command dispatch.
+The existing `--redis` selection also verifies combined windows with real Redis counters and a single-primary Redis Cluster.
+It covers concurrent replicas, rejected-request accounting, independent rollover, natural expiry, deployment prefixes, and cluster key placement.
+Set `WAFISH_REDIS_SERVER` to a Redis 7 or later executable. The runner owns isolated processes, ports, and temporary data.

@@ -134,3 +134,9 @@ Policy fingerprints use effective algorithm settings and cannot be supplied by b
 [IGroupedRateLimiterStore](Infrastructure/State/IGroupedRateLimiterStore.cs) adds optional group ownership without changing `IRateLimiterStore`.
 The runtime's rate-limit compiler checks policy conflicts before persistence. Preview does not allocate limiter state.
 See [configuration and limits](../Wafish.Plugin.RateLimit/README.md#named-route-quotas).
+
+## Combined Redis quota validation
+
+[RedisDualWindowPolicy](Models/RedisDualWindowPolicy.cs) validates paired limits and windows for the opt-in `DualWindow` algorithm.
+Execution plans retain validated immutable settings. Existing Redis algorithms retain their defaults.
+See [configuration and atomic admission](../Wafish.Plugin.RateLimit.Redis/README.md#combined-burst-and-sustained-quotas).

@@ -140,6 +140,8 @@ internal static class RedisFailureChecks
             Check(!(await second.TryAcquireAsync("FixedWindow", "replacement", 10, 30, 0, null)).Allowed, "Replacement did not share Redis counters.");
         }
         Console.WriteLine("PASS: Live Redis recovers failed construction with one replacement and shared counters");
+        await RedisDualWindowChecks.RunLiveAsync(first, second, options.Value.ConnectionString!);
+        await RedisDualWindowChecks.RunClusterAsync(executable);
         await using (var control = await ConnectionMultiplexer.ConnectAsync(options.Value.ConnectionString + ",allowAdmin=true"))
         {
             await control.GetDatabase().ExecuteAsync("CLIENT", "PAUSE", 10000, "ALL");
@@ -217,15 +219,17 @@ internal static class RedisFailureChecks
             => Throw ? throw new IOException("Injected outage") : ValueTask.FromResult(Result);
     }
 
-    private sealed class RedisServer : IAsyncDisposable
+    internal sealed class RedisServer : IAsyncDisposable
     {
         private readonly string _executable;
         private readonly string _directory = Path.Combine(Path.GetTempPath(), "wafish-redis-test-" + Guid.NewGuid().ToString("N"));
         private Process? _process;
         public int Port { get; }
-        public RedisServer(string executable)
+        private readonly bool _cluster;
+        public RedisServer(string executable, bool cluster = false)
         {
             _executable = executable;
+            _cluster = cluster;
             var probe = new TcpListener(IPAddress.Loopback, 0);
             probe.Start(); Port = ((IPEndPoint)probe.LocalEndpoint).Port; probe.Stop();
             Directory.CreateDirectory(_directory);
@@ -238,6 +242,13 @@ internal static class RedisFailureChecks
                 start.ArgumentList.Add(value);
             }
 
+            if (_cluster)
+            {
+                var probe = new TcpListener(IPAddress.Loopback, 0);
+                probe.Start(); var busPort = ((IPEndPoint)probe.LocalEndpoint).Port; probe.Stop();
+                foreach (var value in new[] { "--cluster-enabled", "yes", "--cluster-port", busPort.ToString(), "--cluster-config-file", Path.Combine(_directory, "nodes.conf") })
+                    start.ArgumentList.Add(value);
+            }
             _process = Process.Start(start) ?? throw new Exception("Redis failed to start.");
             _process.BeginOutputReadLine(); _process.BeginErrorReadLine();
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
