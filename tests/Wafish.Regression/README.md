@@ -208,3 +208,6 @@ Single-backend managed and external comparisons retain their existing checks.
 
 Use `--group tenant-quotas` for trusted Redis tenant identity, immutable key compilation, bounds, and configuration rejection.
 The `--redis` checks also verify tenant sharing, cardinality, isolation, and expiry against isolated standalone and cluster instances.
+
+Use `--group weighted-quotas` for atomic request costs, mixed-cost groups, native queue cancellation, and large retry values.
+Run `--lifetime-stress` after changes to limiter ownership, queues, or partition capacity.

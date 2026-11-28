@@ -18,6 +18,9 @@ public sealed class RateLimitGroupCompiler(IRateLimiterStore? store = null) : IR
             ?? throw new ArgumentException("Rate-limit configuration is required."));
         if (config.QuotaGroup != null && (binding.SchemaVersion != 1 || store is not IGroupedRateLimiterStore))
             throw new ArgumentException("Named quotas require schema 1 and a group-capable local limiter store.");
+        if (config.RequestCost > 1 && (binding.SchemaVersion != 1 ||
+            (config.QuotaGroup is null ? store is not IWeightedRateLimiterStore : store is not IWeightedGroupedRateLimiterStore)))
+            throw new ArgumentException("Weighted costs require schema 1 and a compatible weighted limiter store.");
         return new(binding, PluginExecutionStage.RateLimit, config, route);
     }
     public void Validate(GatewaySnapshot snapshot)

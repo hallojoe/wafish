@@ -12386,3 +12386,38 @@ Source entry points:
 - [Tenant checks](tests/Wafish.Regression/RedisTenantChecks.cs).
 - [Live checks](tests/Wafish.Regression/RedisTenantChecks.Live.cs).
 - [Configuration guide](src/Wafish.Plugin.RateLimit.Redis/README.md#trusted-tenant-quotas).
+
+
+## R39: Weighted local request costs — 2026-11-28
+
+Trusted route configuration now assigns request costs for fixed windows, sliding windows, and token buckets.
+Costs default to one and must fit the configured capacity. Concurrency retains unit costs.
+The runtime acquires all permits atomically through additive optional store interfaces.
+Existing custom stores remain supported for unit costs. Unsupported weighted policies fail before persistence.
+
+Named quota members can use different costs. Changing a route cost preserves existing counters.
+Queues count permits and retain partition ownership. Cancellation does not partially charge queued costs.
+Retry headers and JSON preserve large integer seconds without 32-bit overflow.
+
+Verification:
+
+- Complete Release solution: zero warnings and errors.
+- All 348 core regression checks and all 71 administration checks passed.
+- Nine explicit lifetime checks passed.
+- Five focused scenarios cover validation, mixed-cost sharing, atomic rejection, retry metadata, native queues, cancellation, and ownership.
+- Real HTTP bindings reject invalid enabled and disabled policies without changing stored or active configuration.
+- Changed production executable-line coverage: 40/40 (100%).
+- All 24 package API checks, three isolated consumers, and compatibility rejection checks passed.
+- Changed Markdown links and whitespace checks passed.
+
+Existing store interfaces are unchanged. Upgrade hosts and custom stores before enabling weighted costs.
+Redis quotas continue to charge one request per acquisition. No packages were published or applications deployed.
+
+Source entry points:
+
+- [Cost validation](src/Wafish/Models/LocalRequestCostPolicy.cs).
+- [Optional store contracts](src/Wafish/Infrastructure/State/IWeightedRateLimiterStore.cs).
+- [Owned acquisition](src/Wafish.Runtime/Infrastructure/State/InMemoryRateLimiterStore.cs).
+- [Middleware](src/Wafish.Plugin.RateLimit/Middleware/RateLimitMiddleware.cs).
+- [Regression checks](tests/Wafish.Regression/WeightedQuotaChecks.cs).
+- [Configuration guide](src/Wafish.Plugin.RateLimit/README.md#weighted-request-costs).

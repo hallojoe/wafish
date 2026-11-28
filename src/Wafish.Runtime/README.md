@@ -185,3 +185,9 @@ Compilation creates no compressor and records no response metrics.
 The runtime registers [RedisRateLimitCompiler](../Wafish.Plugin.RateLimit.Redis/RedisRateLimitCompiler.cs) for validation before persistence.
 Invalid paired windows are rejected for active and disabled bindings without changing the active snapshot.
 [Combined Redis quotas](../Wafish.Plugin.RateLimit.Redis/README.md#combined-burst-and-sustained-quotas) use the existing Redis plugin and connection lifecycle.
+
+## Weighted quota ownership
+
+The local limiter store supports atomic weighted acquisitions for ordinary partitions and named groups.
+Existing acquisition methods delegate with unit cost. Weighted leases preserve queue cancellation, bounded partitions, and deferred disposal.
+See [weighted route configuration](../Wafish.Plugin.RateLimit/README.md#weighted-request-costs).

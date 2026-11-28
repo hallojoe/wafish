@@ -152,3 +152,9 @@ See [configuration and atomic admission](../Wafish.Plugin.RateLimit.Redis/README
 [RedisTenantPartitionPolicy](Models/RedisTenantPartitionPolicy.cs) validates explicit claim trust and bounded tenant allowlists.
 Compiled immutable keys preserve existing tenants when provisioning changes. Omitted tenant options preserve client-IP quotas.
 See [tenant configuration and limits](../Wafish.Plugin.RateLimit.Redis/README.md#trusted-tenant-quotas).
+
+## Local request costs
+
+[LocalRequestCostPolicy](Models/LocalRequestCostPolicy.cs) validates trusted route costs for token and window limits.
+Costs default to one and remain outside quota identity fingerprints. Named quota members can therefore use different costs.
+The [optional weighted store contracts](Infrastructure/State/IWeightedRateLimiterStore.cs) preserve existing unit-cost implementations.

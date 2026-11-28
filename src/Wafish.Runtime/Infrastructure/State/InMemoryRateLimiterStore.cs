@@ -4,7 +4,7 @@ using Wafish.Infrastructure.State;
 namespace Wafish.Dashboard.Infrastructure.State;
 
 /// <summary>Bounded admission with ownership held through queued acquisition and downstream work.</summary>
-public sealed class InMemoryRateLimiterStore : IRateLimiterStore, IGroupedRateLimiterStore, IDisposable
+public sealed class InMemoryRateLimiterStore : IRateLimiterStore, IGroupedRateLimiterStore, IWeightedRateLimiterStore, IWeightedGroupedRateLimiterStore, IDisposable
 {
     private readonly TimeProvider _time;
     public InMemoryRateLimiterStore() : this(TimeProvider.System) { }
@@ -35,8 +35,13 @@ public sealed class InMemoryRateLimiterStore : IRateLimiterStore, IGroupedRateLi
         return entry;
     }
 
-    public async ValueTask<RateLimitLease?> AcquireAsync(string key, Func<RateLimiter> factory, CancellationToken cancellationToken = default)
+    public ValueTask<RateLimitLease?> AcquireAsync(string key, Func<RateLimiter> factory, CancellationToken cancellationToken = default)
+        => AcquireWeightedAsync(key, 1, factory, cancellationToken);
+
+    public async ValueTask<RateLimitLease?> AcquireWeightedAsync(string key, int permitCount, Func<RateLimiter> factory, CancellationToken cancellationToken = default)
     {
+        ArgumentOutOfRangeException.ThrowIfLessThan(permitCount, 1);
+        cancellationToken.ThrowIfCancellationRequested();
         Entry? entry;
         lock (_gate)
         {
@@ -52,7 +57,7 @@ public sealed class InMemoryRateLimiterStore : IRateLimiterStore, IGroupedRateLi
         }
         try
         {
-            var lease = await entry.Value.Limiter.AcquireAsync(1, cancellationToken);
+            var lease = await entry.Value.Limiter.AcquireAsync(permitCount, cancellationToken);
             return new OwnedLease(lease, () => Release(entry));
         }
         catch { Release(entry); throw; }
@@ -67,9 +72,15 @@ public sealed class InMemoryRateLimiterStore : IRateLimiterStore, IGroupedRateLi
         }
     }
 
-    public async ValueTask<RateLimitLease?> AcquireGroupedAsync(string group, string policy, string partition,
+    public ValueTask<RateLimitLease?> AcquireGroupedAsync(string group, string policy, string partition,
+        Func<RateLimiter> factory, CancellationToken cancellationToken = default)
+        => AcquireWeightedGroupedAsync(group, policy, partition, 1, factory, cancellationToken);
+
+    public async ValueTask<RateLimitLease?> AcquireWeightedGroupedAsync(string group, string policy, string partition, int permitCount,
         Func<RateLimiter> factory, CancellationToken cancellationToken = default)
     {
+        ArgumentOutOfRangeException.ThrowIfLessThan(permitCount, 1);
+        cancellationToken.ThrowIfCancellationRequested();
         ArgumentException.ThrowIfNullOrWhiteSpace(group);
         ArgumentException.ThrowIfNullOrWhiteSpace(policy);
         ArgumentNullException.ThrowIfNull(partition);
@@ -96,7 +107,7 @@ public sealed class InMemoryRateLimiterStore : IRateLimiterStore, IGroupedRateLi
         }
         try
         {
-            var lease = await entry.Value.Limiter.AcquireAsync(1, cancellationToken);
+            var lease = await entry.Value.Limiter.AcquireAsync(permitCount, cancellationToken);
             return new OwnedLease(lease, () => Release(entry));
         }
         catch { Release(entry); throw; }

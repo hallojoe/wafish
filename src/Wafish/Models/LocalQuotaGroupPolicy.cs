@@ -10,6 +10,7 @@ public static class LocalQuotaGroupPolicy
 {
     public static RateLimitExecutionConfig Compile(RateLimitExecutionConfig config)
     {
+        config = LocalRequestCostPolicy.Compile(config);
         if (config.QuotaGroup is null) return config with { QuotaGroupPolicy = null };
         if (config.QuotaGroup.Length is < 1 or > 64 || !Regex.IsMatch(config.QuotaGroup, @"^[a-z][a-z0-9-]*\z", RegexOptions.CultureInvariant))
             throw new ArgumentException("Quota group names require 1–64 lowercase letters, digits, or hyphens, starting with a letter.");
