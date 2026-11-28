@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "status": "noisy",
+  "measurements": [
+    {
+      "gateway": "Native YARP",
+      "scenario": "cacheable-json",
+      "metric": "requestsPerSecond",
+      "baselineMedian": 25497.208157846733,
+      "candidateMedian": 14774.772411071197,
+      "regressionPercent": 42.05337180602544,
+      "budgetPercent": 10,
+      "baselineSpreadPercent": 67.29912054206312,
+      "candidateSpreadPercent": 54.98072755982561,
+      "status": "noisy"
+    },
+    {
+      "gateway": "Native YARP",
+      "scenario": "cacheable-json",
+      "metric": "p95Ms",
+      "baselineMedian": 0.31459661571089903,
+      "candidateMedian": 0.4034487655117983,
+      "regressionPercent": 28.24319950172338,
+      "budgetPercent": 20,
+      "baselineSpreadPercent": 86.92551303734722,
+      "candidateSpreadPercent": 49.275909422943855,
+      "status": "noisy"
+    },
+    {
+      "gateway": "Native YARP",
+      "scenario": "cacheable-json",
+      "metric": "p99Ms",
+      "baselineMedian": 0.8509252768640498,
+      "candidateMedian": 1.1469187114505621,
+      "regressionPercent": 34.78489153329058,
+      "budgetPercent": 25,
+      "baselineSpreadPercent": 84.07822110355683,
+      "candidateSpreadPercent": 37.66030053493695,
+      "status": "noisy"
+    },
+    {
+      "gateway": "Plugins: rate-limit+waf",
+      "scenario": "cacheable-json",
+      "metric": "requestsPerSecond",
+      "baselineMedian": 8849.233376261222,
+      "candidateMedian": 9698.674622795683,
+      "regressionPercent": -9.59903768402306,
+      "budgetPercent": 10,
+      "baselineSpreadPercent": 44.83952238019783,
+      "candidateSpreadPercent": 47.3396995040063,
+      "status": "noisy"
+    },
+    {
+      "gateway": "Plugins: rate-limit+waf",
+      "scenario": "cacheable-json",
+      "metric": "p95Ms",
+      "baselineMedian": 0.8016101026271447,
+      "candidateMedian": 0.7703315525635391,
+      "regressionPercent": -3.9019655517183893,
+      "budgetPercent": 20,
+      "baselineSpreadPercent": 112.88324189491576,
+      "candidateSpreadPercent": 32.694300427711475,
+      "status": "noisy"
+    },
+    {
+      "gateway": "Plugins: rate-limit+waf",
+      "scenario": "cacheable-json",
+      "metric": "p99Ms",
+      "baselineMedian": 1.6906986879727486,
+      "candidateMedian": 1.7076056748524762,
+      "regressionPercent": 1.0000000000000009,
+      "budgetPercent": 25,
+      "baselineSpreadPercent": 71.41697612706534,
+      "candidateSpreadPercent": 43.74112408730115,
+      "status": "noisy"
+    }
+  ],
+  "inputs": {
+    "baseline": {
+      "path": "artifacts/performance-r45-local/baseline/performance-20261128-014529-454-9ffed865.json",
+      "sha256": "b9cdde8735fb04e953046b3a27a6444b5c09f1e6b435e1654b59d85b2ce2e713"
+    },
+    "candidate": {
+      "path": "artifacts/performance-r45-local/candidate/performance-20261128-014720-712-b7dda41c.json",
+      "sha256": "a783cadd39f0b66a25c35d274c604f214c68baed68c80fac12d3bb7a6dae6b27"
+    },
+    "policy": {
+      "path": "/home/casko/code/wafish/tests/Wafish.Performance/budgets.json",
+      "sha256": "e90ff601a28e4b703c7b43d6f03d7e59beb3f90e07c388d1b8eb7bad01c4fa99"
+    }
+  },
+  "candidateRevision": "30000be4a27cc608925951d25ab84c99c89635c4",
+  "baselineRevision": "30000be4a27cc608925951d25ab84c99c89635c4"
+}

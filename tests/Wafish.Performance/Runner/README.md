@@ -30,6 +30,7 @@ Reports connect latency, throughput, errors, and available process measurements 
 - Run managed benchmark hosts or target an existing endpoint in external mode.
 - Control warmup, duration, concurrency, repetition, and supported scenario suites.
 - Write CSV and Markdown results under tests/Wafish.Performance/results.
+- Supply managed JSON reports to the [CI performance budget gate](../../../docs/performance-budgets.md).
 
 ## What it does not do
 
@@ -189,3 +190,11 @@ These presets measure selected combinations under successful traffic. They do no
 Preflight warms cache entries, even with zero warmup. Compare those rows as warm-cache workloads.
 Streaming responses use `no-store`, so their cache bindings do not store response bodies.
 Use the functional first suite for rejection, retry, and circuit recovery scenarios.
+
+## Historical performance budgets (R45)
+
+Use `scripts/check-performance-budgets.py` to compare repeated managed runs against a selected earlier report.
+The comparator checks environment, workloads, transport, host configuration, and plugin composition before comparing measurements.
+Request failures, incompatible reports, invalid input, and noise have distinct failing outcomes.
+The **Performance budgets** workflow collects representative profiles and accepts an explicit baseline run ID.
+See [policy, baseline selection, and exit codes](../../../docs/performance-budgets.md).
