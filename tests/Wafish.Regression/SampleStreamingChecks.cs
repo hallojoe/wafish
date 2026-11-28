@@ -88,7 +88,7 @@ internal static class SampleStreamingChecks
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         while (!condition()) await Task.Delay(10, timeout.Token);
     }
-    private sealed class StreamLog : ILoggerProvider, ILogger
+    internal sealed class StreamLog : ILoggerProvider, ILogger
     {
         public readonly ConcurrentQueue<(int Chunks, bool Cancelled)> Ended = new();
         public ILogger CreateLogger(string categoryName) => this;
@@ -101,7 +101,7 @@ internal static class SampleStreamingChecks
             var fields = values.ToDictionary(); Ended.Enqueue(((int)fields["Chunks"]!, (bool)fields["Cancelled"]!));
         }
     }
-    private sealed class Fixture : IAsyncDisposable
+    internal sealed class Fixture : IAsyncDisposable
     {
         public required WebApplication Backend { get; init; }
         public required RedirectChecks.Fixture Gateway { get; init; }
@@ -113,7 +113,7 @@ internal static class SampleStreamingChecks
             var client = new HttpClient(new SocketsHttpHandler { MaxResponseDrainSize = 0 }) { BaseAddress = Gateway.Client.BaseAddress };
             client.DefaultRequestHeaders.AcceptEncoding.ParseAdd(encoding); return client;
         }
-        public static async Task<Fixture> Start(int timeout = 30)
+        public static async Task<Fixture> Start(int timeout = 30, bool allowTransform = false, bool flushAfterWrite = false)
         {
             var builder = WebApplication.CreateBuilder(); builder.WebHost.UseUrls("http://127.0.0.1:0");
             var log = new StreamLog(); builder.Logging.ClearProviders(); builder.Logging.AddProvider(log);
@@ -125,13 +125,15 @@ internal static class SampleStreamingChecks
             {
                 gateway = await RedirectChecks.Fixture.Start();
                 var fixture = new Fixture { Backend = backend, Gateway = gateway, Log = log };
-                backend.Use(async (context, next) => { Interlocked.Increment(ref fixture._requests); identity.Apply(context); await next(context); });
+                backend.Use(async (context, next) => { Interlocked.Increment(ref fixture._requests); identity.Apply(context);
+                    if (allowTransform) context.Response.OnStarting(() => { context.Response.Headers.CacheControl = "no-store"; return Task.CompletedTask; });
+                    await next(context); });
                 backend.MapControllers(); await backend.StartAsync();
                 var routes = gateway.App.Services.GetRequiredService<IDynamicYarpConfigService>();
                 Check((await routes.TryAddClusterConfig(new() { ClusterId = "stream", Destinations = new Dictionary<string, DestinationConfig> { ["one"] = new() { Address = backend.Urls.Single() } } })).Success, "Stream cluster failed.");
                 Check((await routes.TryAddRouteConfig(new() { RouteId = "stream", ClusterId = "stream", Match = new() { Path = Path } })).Success, "Stream route failed.");
                 await gateway.Bind("stream", "response-cache", "{\"enabled\":true,\"fillWaitMilliseconds\":0}");
-                await gateway.Bind("stream", "compression", JsonSerializer.Serialize(new { enabled = true, minResponseSize = 0, mimeTypes = new[] { "application/x-ndjson" } }));
+                await gateway.Bind("stream", "compression", JsonSerializer.Serialize(new { enabled = true, minResponseSize = 0, flushAfterWrite, mimeTypes = new[] { "application/x-ndjson" } }));
                 await gateway.Bind("stream", "request-retry", JsonSerializer.Serialize(new { enabled = true, maxRetries = 2, timeoutSeconds = timeout, totalTimeoutSeconds = timeout }));
                 await gateway.WaitRoute("stream"); return fixture;
             }

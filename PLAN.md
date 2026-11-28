@@ -130,37 +130,6 @@ Source entry points:
 - [Observation pages](src/Wafish.ReactUi/ClientApp/src/pages/observe.tsx) — log and audit filters.
 - [Dashboard authorization](src/Wafish.Administration/Infrastructure/Auth/DashboardAuthorizationService.cs) — authenticated operation permissions.
 
-<a id="r57"></a>
-
-## R57: Preserve incremental delivery through streaming compression
-
-Status: TODO. Found during R52 live HTTP checks.
-
-Current: Compression forwards explicit flush calls. YARP backend reads do not preserve each backend flush boundary.
-A small NDJSON response with Gzip and a zero size threshold reached the client only after backend completion.
-The sample uses `Cache-Control: no-transform` to preserve incremental delivery.
-
-Remaining: Define an explicit streaming compression flush policy without flushing every ordinary response write.
-Bound overhead, preserve cancellation, and verify both codecs through real forwarding and combined cache/retry bindings.
-
-Acceptance: A compressed first record arrives before backend completion, with valid framing and bounded memory.
-Ordinary compression behavior and existing defaults remain compatible. Record the throughput and size tradeoff.
-
-Proposed implementation:
-
-- Add an opt-in route setting, `flushAfterWrite`, defaulting to false.
-- Require `minResponseSize: 0` with this setting to avoid prefix buffering.
-- Flush the selected codec after each successful gateway write. This does not reconstruct backend record boundaries.
-- Keep MIME selection, encoding restrictions, no-transform, HEAD, range, and bodyless exclusions effective.
-- Verify cancellation, trailer completion, unchanged defaults, real Gzip/Brotli forwarding, and allocation bounds.
-- Measure representative output size and processing cost. Do not treat short local measurements as a CI baseline.
-
-Source entry points:
-
-- [Compression middleware](src/Wafish.Plugin.Compression/CompressionMiddleware.cs) — codec writes and flush behavior.
-- [Sample streaming checks](tests/Wafish.Regression/SampleStreamingChecks.cs) — real HTTP gateway fixture and cancellation assertions.
-- [Streaming walkthrough](docs/cancellable-streaming.md) — current no-transform workaround.
-
 <a id="r53"></a>
 
 ## R53: Show redacted telemetry configuration

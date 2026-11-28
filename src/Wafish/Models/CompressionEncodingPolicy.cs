@@ -5,6 +5,8 @@ public static class CompressionEncodingPolicy
 {
     public static CompressionExecutionConfig Compile(CompressionExecutionConfig config)
     {
+        if (config.FlushAfterWrite && config.MinResponseSize != 0)
+            throw new ArgumentException("flushAfterWrite requires minResponseSize: 0 to avoid prefix buffering.");
         if (config.AllowedEncodings is { } encodings &&
             (encodings.Length > 2 || encodings.Any(e => e is not ("br" or "gzip")) || encodings.Distinct(StringComparer.Ordinal).Count() != encodings.Length))
             throw new ArgumentException("allowedEncodings must contain unique br or gzip values, or an empty list.");

@@ -70,7 +70,9 @@ Expect incremental records without `Content-Encoding`.
 Backend flushes do not necessarily become gateway codec flushes.
 Live testing found that small compressed records could arrive only after the backend completed.
 This sample uses `no-transform` to preserve early delivery through active compression bindings.
-A gateway flush policy needs separate implementation and verification before removing this directive.
+For applications that permit compression, configure the route with `flushAfterWrite: true` and `minResponseSize: 0`.
+Include the streaming MIME type. This flushes each compressed gateway write without reconstructing backend record boundaries.
+The sample retains no-transform, so its response remains uncompressed. See the [compression guide](../src/Wafish.Plugin.Compression/README.md#incremental-compressed-responses) for tradeoffs.
 
 The cache forwards writes while retaining at most its configured capture allowance.
 `no-store` prevents a completed stream from becoming a cache entry.

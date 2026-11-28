@@ -187,6 +187,8 @@ public sealed class CompressionMiddleware(RequestDelegate next, GatewayPluginExe
             }
             await WriteOutputAsync(buffer, cancellationToken);
             InputBytes += buffer.Length;
+            if (config.FlushAfterWrite && _compressed)
+                await FlushAsync(cancellationToken);
         }
         private async ValueTask WriteOutputAsync(ReadOnlyMemory<byte> buffer, CancellationToken token)
         {

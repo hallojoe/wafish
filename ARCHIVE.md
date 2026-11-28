@@ -12455,3 +12455,37 @@ Source entry points:
 - [HTTP examples](samples/SampleLocalService/SampleLocalService.http).
 - [Walkthrough](docs/cancellable-streaming.md).
 - [Regression checks](tests/Wafish.Regression/SampleStreamingChecks.cs).
+
+
+## R57: Incremental compressed delivery — 2026-11-28
+
+Added opt-in route `flushAfterWrite` with a required zero compression threshold.
+Each successful compressed write flushes the codec and destination. Existing defaults and exclusions remain unchanged.
+Invalid combinations fail before persistence, including disabled bindings. No additional response buffer is allocated.
+The setting does not reconstruct backend flush boundaries. The sample retains its explicit no-transform directive.
+
+Verification:
+
+- Complete Release solution: zero warnings and errors.
+- All 355 core regression checks and all 71 administration checks passed.
+- Four focused scenarios verify validation, real Gzip/Brotli delivery, complete trailers, no-transform, cancellation, and deadline interruption without replay.
+- Changed production executable-line coverage: 7/7 (100%).
+- Explicit allocation-pressure and generated protocol checks passed.
+- All 24 package API checks, three isolated consumers, and compatibility rejection checks passed.
+- One consumer build failed without a compiler diagnostic. Verification passed against the same packages on retry.
+- Changed Markdown links and whitespace checks passed.
+
+A short diagnostic sent 2,048 writes of 960 repeated bytes into a non-buffering sink.
+Gzip output increased from 14,320 to 36,909 bytes; measured throughput changed from 849 to 387 MiB/s.
+Brotli output increased from 48 to 22,564 bytes; measured throughput changed from 374 to 203 MiB/s.
+Managed allocation remained approximately 5.3 KiB per response. Native state is outside that measurement.
+These instrumented local measurements illustrate costs, not production capacity or qualified CI baselines.
+
+Upgrade gateway hosts before enabling the new setting. No packages were published or applications deployed.
+
+Source entry points:
+
+- [Compression writes](src/Wafish.Plugin.Compression/CompressionMiddleware.cs).
+- [Policy validation](src/Wafish/Models/CompressionEncodingPolicy.cs).
+- [Regression checks](tests/Wafish.Regression/StreamingCompressionChecks.cs).
+- [Configuration guide](src/Wafish.Plugin.Compression/README.md#incremental-compressed-responses).
