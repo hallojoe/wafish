@@ -12421,3 +12421,37 @@ Source entry points:
 - [Middleware](src/Wafish.Plugin.RateLimit/Middleware/RateLimitMiddleware.cs).
 - [Regression checks](tests/Wafish.Regression/WeightedQuotaChecks.cs).
 - [Configuration guide](src/Wafish.Plugin.RateLimit/README.md#weighted-request-costs).
+
+
+## R52: Cancellable sample streaming — 2026-11-28
+
+Added `/api/local-service/stream` with bounded newline-delimited JSON records.
+The endpoint validates record count, interval, and total scheduled duration before transmission.
+It flushes each record, propagates request cancellation, and logs final counts without payloads.
+Each record retains the sample backend identity and trace ID.
+
+The response uses `Cache-Control: no-store, no-transform` to preserve incremental delivery through active gateway bindings.
+Live checks exposed buffering for small proxied Gzip records without no-transform.
+R57 records the remaining codec flush policy, compatibility requirements, and acceptance checks.
+The walkthrough covers cancellation, cache exclusion, compression bypass, and retry deadlines without partial-response replay.
+
+Verification:
+
+- Complete Release solution: zero warnings and errors.
+- All 351 core regression checks passed.
+- Three focused real-HTTP streaming scenarios passed under coverage.
+- Both codec requests preserve early delivery through no-transform. Disconnects stop backend work.
+- Retry deadlines interrupt started responses without replay. Repeated completed streams bypass cache storage.
+- Separate sample identity, telemetry, and deployment checks passed.
+- Changed sample executable-line coverage: 23/23 (100%).
+- Changed Markdown links and whitespace checks passed.
+
+The sample has no resume protocol or persistent data. Scheduled duration excludes transport delays and client backpressure.
+Production plugin defaults are unchanged. No packages were published or applications deployed.
+
+Source entry points:
+
+- [Controller and records](samples/SampleLocalService/Controllers/LocalServiceController.cs).
+- [HTTP examples](samples/SampleLocalService/SampleLocalService.http).
+- [Walkthrough](docs/cancellable-streaming.md).
+- [Regression checks](tests/Wafish.Regression/SampleStreamingChecks.cs).
