@@ -12246,3 +12246,28 @@ Source entry points:
 - [Compression middleware](src/Wafish.Plugin.Compression/CompressionMiddleware.cs).
 - [Policy checks](tests/Wafish.Regression/CompressionPolicyChecks.cs).
 - [Configuration guide](src/Wafish.Plugin.Compression/README.md).
+
+## R50: Blue-green cutover walkthrough — 2026-11-28
+
+Added an operator walkthrough using two isolated clusters and one stable demo route.
+Candidate health and backend identity checks precede activation.
+Cutover and targeted rollback preserve route UID, transforms, metadata, and unrelated routes.
+The guide explains credentials, active probes, concurrent-operator limits, in-flight requests, and application rollback limits.
+The Aspire sample demonstrates version selection through distinct instances of the same binary.
+
+Verification:
+
+- Complete Release solution build: zero warnings and errors.
+- All 336 core regression checks passed, including the new blue-green HTTP API scenario.
+- Focused scenario passed independently against isolated backends and gateway storage.
+- New regression executable-line coverage: 82/84 (97.6%). No production code changed.
+- Walkthrough Bash syntax, four collision-guard cases, changed Markdown links, and whitespace checks passed.
+- One rebuild encountered an MSBuild worker exit. The unchanged command passed on retry without build configuration changes.
+
+Source entry points:
+
+- [Operator walkthrough](docs/blue-green.md).
+- [API regression](tests/Wafish.Regression/BlueGreenChecks.cs).
+- [Aspire topology guide](docs/aspire.md).
+
+No packages were published. No application deployment was performed.
