@@ -55,8 +55,10 @@ internal static class AuthorizationMatrixChecks
                 }
                 foreach (var action in actions)
                 {
-                    var isEntry = action.Action.ControllerTypeInfo == typeof(Wafish.Dashboard.Modules.Dashboard.Controllers.DashboardAuthController)
-                        && action.Action.ActionName is "Login" or "Logout";
+                    var isEntry = (action.Action.ControllerTypeInfo == typeof(Wafish.Dashboard.Modules.Dashboard.Controllers.DashboardAuthController)
+                        && action.Action.ActionName is "Login" or "Logout")
+                        || (action.Action.ControllerTypeInfo == typeof(Wafish.Dashboard.Modules.Dashboard.Controllers.DashboardWebAuthnController)
+                        && action.Action.ActionName is "BeginLogin" or "CompleteLogin");
                     foreach (var state in new[] { "anonymous", "invalid", "authorized" })
                     {
                         clock.Advance();

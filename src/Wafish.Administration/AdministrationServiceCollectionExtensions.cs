@@ -230,6 +230,9 @@ public static class AdministrationServiceCollectionExtensions
         services.AddHttpContextAccessor();
         services.TryAddSingleton<IDashboardPermissionService, DashboardPermissionService>();
         services.AddSingleton<DashboardSessionStore>();
+        services.AddSingleton<DashboardWebAuthnService>();
+        services.AddSingleton<IDashboardWebAuthnService>(sp => sp.GetRequiredService<DashboardWebAuthnService>());
+        services.AddSingleton<Microsoft.Extensions.Hosting.IHostedService>(sp => sp.GetRequiredService<DashboardWebAuthnService>());
         services.TryAddSingleton<JwtSecretProvider>();
         services.AddSingleton<IConfigureOptions<MvcOptions>, DashboardMvcOptionsSetup>();
 

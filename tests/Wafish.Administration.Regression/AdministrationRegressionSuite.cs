@@ -35,6 +35,13 @@ internal sealed partial class AdministrationRegressionSuite : IDisposable
         Directory.CreateDirectory(path);
         try
         {
+            if (args.Length == 0 || args is ["--webauthn"])
+                await WebAuthnChecks.RunAsync(Check, (mode, configure) => StartHost(mode, configure: configure, registration: false), key);
+            if (args is ["--webauthn"])
+            {
+                foreach (var failure in failures) Console.Error.WriteLine(failure);
+                return failures.Count == 0 ? 0 : 1;
+            }
             if (args.Length == 0 || args is ["--ai-requests"])
                 await CheckAIRequestsAsync();
             if (args is ["--ai-requests"]) return failures.Count == 0 ? 0 : 1;

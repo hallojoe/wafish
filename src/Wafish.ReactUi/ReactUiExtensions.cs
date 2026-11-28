@@ -90,7 +90,7 @@ public static class ReactUiExtensions
                 uiBase = context.Request.PathBase.Add(new PathString(uiBase)).ToUriComponent(),
                 apiBase = context.Request.PathBase.Add(new PathString(apiBase)).ToUriComponent(), authMode = dashboard.Auth.AuthMode.ToString(),
                 apiKeyHeader = dashboard.Auth.ApiKeyHeaderName, locale = "en-US",
-                ai = features.Ai, mcp = features.Mcp, build = ReactUiBuildInfo.Current
+                ai = features.Ai, mcp = features.Mcp, webAuthn = dashboard.Auth.WebAuthn.Enabled, build = ReactUiBuildInfo.Current
             });
             var html = (await reader.ReadToEndAsync(context.RequestAborted))
                 .Replace("<!--APP_CONFIG-->", $"<base href=\"{HtmlEncoder.Default.Encode(context.Request.PathBase.Add(new PathString(uiBase)).ToUriComponent())}/\"><script type=\"application/json\" id=\"app-config\">{configuration}</script>");

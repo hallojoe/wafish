@@ -12304,3 +12304,46 @@ Source entry points:
 - [Managed runner](tests/Wafish.Performance/Runner/Program.cs).
 - [Operator guide](tests/Wafish.Performance/Runner/README.md#multiple-destinations-r48).
 - [Destination checks](tests/Wafish.Regression/BenchmarkReliabilityChecks.Destinations.cs).
+
+## R46: Administration WebAuthn — 2026-11-28
+
+Added opt-in passkeys and FIDO2 security keys for the configured DefaultJwt or CustomJwt administration account.
+Fido2 4.3.3 verifies signatures, origins, relying-party binding, user verification, and counters.
+Single-use ceremonies have bounded storage and two-minute expiry. Login challenges bind to a protected browser cookie.
+Enrollment binds to the active JWT session. Credential changes invalidate pending ceremonies and existing JWT sessions.
+
+Private atomic credential storage has an exclusive process lease, size limits, and a 20-credential maximum.
+Signature counters persist before session creation. Failed writes preserve existing access and credential state.
+Enrollment and removal require credential-management permission and fresh password/TOTP proof.
+Configured TOTP remains required for authenticator login. Password/TOTP login remains the recovery path.
+The React Account page supports enrollment and removal. Sign-in supports authenticators without a password.
+
+Verification:
+
+- Complete Release solution build: zero warnings and errors.
+- All 338 core regression checks and all 71 administration checks passed.
+- The authorization matrix includes all seven new routes across existing authentication modes.
+- Ten focused WebAuthn cases passed, including additional malformed CBOR and wrong-origin enrollment checks after the full suite.
+- Real signed assertions cover origin, RP, signature, user verification, user handle, replay, expiry, counter rollback, and cross-origin rejection.
+- Storage checks cover restart, corruption, exclusive ownership, capacity, stale writes, and failed enrollment, removal, and counter persistence.
+- Changed administration executable-line coverage: 338/350 (96.6%), counting partial ranges conservatively.
+- Frontend lint, 108 component checks, and all 36 browser checks passed.
+- Changed frontend executable-line coverage: 83/83 (100%).
+- The real browser virtual authenticator verifies enrollment, passwordless login, removal, recovery, cookies, and nested route prefixes.
+- All 24 package API checks, three isolated consumers, and compatibility rejection checks passed.
+- The first full administration run exposed shared test audit data. Isolated WebAuthn databases fixed test ownership; the full rerun passed.
+- Changed documentation links and whitespace checks passed.
+
+The feature adds APIs and configuration without removing existing declarations. It remains disabled by default.
+Only one configured account and one process per credential file are supported. It does not add shared multi-host sessions.
+Visitor external login remains separate. No packages were published, and no application was deployed.
+
+Source entry points:
+
+- [Configuration](src/Wafish.Administration/Infrastructure/DashboardWebAuthnOptions.cs).
+- [Verification service](src/Wafish.Administration/Infrastructure/Auth/DashboardWebAuthnService.cs).
+- [Credential storage](src/Wafish.Administration/Infrastructure/Auth/DashboardWebAuthnStore.cs).
+- [Administration API](src/Wafish.Administration/Modules/Dashboard/Controllers/DashboardWebAuthnController.cs).
+- [Browser adapter](src/Wafish.ReactUi/ClientApp/src/api/webauthn.ts).
+- [Security checks](tests/Wafish.Administration.Regression/WebAuthnChecks.Security.cs).
+- [Configuration and recovery guide](docs/administration-webauthn.md).

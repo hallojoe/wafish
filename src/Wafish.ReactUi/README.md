@@ -120,3 +120,8 @@ Nested rows edit child paths, query mappings, and header allowlists. Missing chi
 The external-login editor lists host-configured sites and their API token targets.
 Changing the site or selecting page mode clears incompatible token selections.
 Provider credentials remain in host configuration. Provider changes require a gateway restart.
+
+## Authenticators
+
+Configured JWT hosts can expose passkey enrollment, sign-in, and removal through the Account page.
+Changes require fresh credentials and a new sign-in. See [WebAuthn setup](../../docs/administration-webauthn.md).

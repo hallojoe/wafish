@@ -1,0 +1,55 @@
+# Replace placeholders locally. Never commit passwords, JWTs, or ceremony responses.
+@base = https://gateway.example.com/wafish
+@origin = https://gateway.example.com
+@token = REPLACE_WITH_CURRENT_JWT
+@password = REPLACE_WITH_CURRENT_PASSWORD
+@credentialId = REPLACE_WITH_CREDENTIAL_ID
+@challengeId = REPLACE_WITH_43_CHARACTER_CHALLENGE_ID
+
+### List authenticators
+GET {{base}}/api/webauthn/credentials
+Authorization: Bearer {{token}}
+
+### Read one authenticator
+GET {{base}}/api/webauthn/credentials/{{credentialId}}
+Authorization: Bearer {{token}}
+
+### Begin enrollment; supply twoFactorCode when configured
+POST {{base}}/api/webauthn/enrollment/options
+Authorization: Bearer {{token}}
+Origin: {{origin}}
+Content-Type: application/json
+
+{"name":"Laptop","password":"{{password}}","twoFactorCode":null}
+
+### Complete enrollment. Replace credential with navigator.credentials.create response data.
+# Binary fields must use base64url. Success revokes the JWT above.
+POST {{base}}/api/webauthn/enrollment/complete
+Authorization: Bearer {{token}}
+Origin: {{origin}}
+Content-Type: application/json
+
+{"challengeId":"{{challengeId}}","credential":{},"twoFactorCode":null}
+
+### Begin login. Retain the returned wafish_webauthn cookie for completion.
+POST {{base}}/api/webauthn/login/options
+Origin: {{origin}}
+Content-Type: application/json
+
+{"username":"operator"}
+
+### Complete login. Replace credential with navigator.credentials.get response data.
+# Send the browser cookie returned by login/options. Supply configured TOTP.
+POST {{base}}/api/webauthn/login/complete
+Origin: {{origin}}
+Content-Type: application/json
+
+{"challengeId":"{{challengeId}}","credential":{},"twoFactorCode":null}
+
+### Remove an authenticator. Success revokes existing JWT sessions.
+POST {{base}}/api/webauthn/credentials/remove
+Authorization: Bearer {{token}}
+Origin: {{origin}}
+Content-Type: application/json
+
+{"credentialId":"{{credentialId}}","password":"{{password}}","twoFactorCode":null}

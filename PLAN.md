@@ -72,26 +72,6 @@ Source entry points:
 - [Operator guide](docs/performance-budgets.md) — qualification, comparison, and exit codes.
 - [Benchmark session](tests/Wafish.Performance/Runner/BenchmarkSession.cs) — report metadata and configuration identity.
 
-<a id="r46"></a>
-
-## R46: Add WebAuthn authentication
-
-Status: TODO.
-
-Current: Administration supports configured credentials, sessions, and TOTP. It has no WebAuthn enrollment or challenge flow.
-
-Remaining: Add registered authenticators as an administration login method.
-Define credential storage, challenge expiry, revocation, and recovery behavior.
-
-Acceptance: Enrollment, login, expired challenges, revocation, and recovery have integration tests.
-Existing authentication modes and session revocation remain supported.
-
-Source entry points:
-
-- [Authentication controller](src/Wafish.Administration/Modules/Dashboard/Controllers/DashboardAuthController.cs) — login and second-factor endpoints.
-- [Session store](src/Wafish.Administration/Infrastructure/Auth/DashboardSessionStore.cs) — session lifecycle.
-- [React authentication](src/Wafish.ReactUi/ClientApp/src/components/auth.tsx) — sign-in flow.
-
 <a id="r37"></a>
 
 ## R37: Partition quotas by trusted tenant

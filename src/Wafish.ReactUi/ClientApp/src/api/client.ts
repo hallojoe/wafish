@@ -7,6 +7,7 @@ export interface AppConfig {
   locale: string;
   ai: boolean;
   mcp: boolean;
+  webAuthn?: boolean;
 }
 export const config: AppConfig = JSON.parse(
   document.getElementById("app-config")?.textContent ??
@@ -84,6 +85,7 @@ export class ApiError extends Error {
 export async function api<T = unknown>(
   path: string,
   init: RequestInit = {},
+  expireSessionOnUnauthorized = true,
 ): Promise<T> {
   const response = await fetch(config.apiBase + "/" + path.replace(/^\//, ""), {
     ...init,
@@ -107,7 +109,12 @@ export async function api<T = unknown>(
     field(data, "ok") === false ||
     Number(field(field(data, "data"), "failed") ?? 0) > 0
   ) {
-    if (response.status === 401 && !path.includes("login")) onUnauthorized();
+    if (
+      expireSessionOnUnauthorized &&
+      response.status === 401 &&
+      !path.includes("login")
+    )
+      onUnauthorized();
     throw new ApiError(
       response.status >= 400 ? response.status : code >= 400 ? code : 400,
       { ...object(data), ...object(field(data, "data")) },

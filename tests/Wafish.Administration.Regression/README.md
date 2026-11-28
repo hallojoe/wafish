@@ -90,3 +90,6 @@ Run `--need-six` for combined change-set permissions and destination maintenance
 The `--ai-requests` checks also cover OpenAI reasoning rejection, bounded retries, and mixed read/write tool exchanges.
 They verify unchanged saved settings, matching tool-call context, pending write confirmations, and visible provider failures.
 All provider responses are simulated on isolated loopback endpoints. No paid model requests are made.
+
+Use `--webauthn` for signed authenticator ceremonies, expiry, replay, permissions, persistence failures, and recovery.
+These tests include real ES256 signatures and bounded challenge and credential storage checks.

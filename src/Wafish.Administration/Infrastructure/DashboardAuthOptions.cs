@@ -8,6 +8,8 @@ namespace Wafish.Dashboard.Infrastructure;
 /// </summary>
 public class DashboardAuthOptions
 {
+    /// <summary>Optional registered authenticators for JWT administration login.</summary>
+    public DashboardWebAuthnOptions WebAuthn { get; set; } = new();
     /// <summary>Permissions for shared credentials. Null preserves administrator access; an empty array grants none.</summary>
     public Auth.DashboardPermission[]? Permissions { get; set; }
     /// <summary>Optional per-operation rule, evaluated after successful authentication.</summary>

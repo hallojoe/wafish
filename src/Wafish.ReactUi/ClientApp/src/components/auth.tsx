@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,6 +18,11 @@ import { useLocale } from "@/locales/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ErrorNotice, Field } from "@/components/workspace";
+import {
+  beginAuthenticatorLogin,
+  completeAuthenticatorLogin,
+  supportsWebAuthn,
+} from "@/api/webauthn";
 const Context = createContext({ logout: async () => {} });
 export const useAuth = () => useContext(Context);
 const schema = z.object({
@@ -32,6 +37,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
   const [error, setError] = useState<unknown>();
   const [twoFactor, setTwoFactor] = useState(false);
+  const [passkeyPending, setPasskeyPending] = useState(false);
+  const passkeyAbort = useRef<AbortController | null>(null);
+  useEffect(() => () => passkeyAbort.current?.abort(), []);
   const query = useQueryClient();
   const { t } = useLocale();
   const form = useForm<Login>({
@@ -91,6 +99,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (e) {
       setCredential({});
       setError(e);
+    }
+  }
+  async function passkeyLogin() {
+    setError(undefined);
+    setPasskeyPending(true);
+    const controller = new AbortController();
+    passkeyAbort.current = controller;
+    try {
+      const values = form.getValues();
+      if (!values.username.trim()) {
+        form.setFocus("username");
+        throw new Error("Enter your username.");
+      }
+      const ceremony = await beginAuthenticatorLogin(
+        values.username,
+        controller.signal,
+      );
+      if (ceremony.requiresTwoFactor && !values.twoFactorCode) {
+        setTwoFactor(true);
+        return;
+      }
+      await completeAuthenticatorLogin(
+        ceremony,
+        values.twoFactorCode,
+        controller.signal,
+      );
+      await api("api/auth/status", { signal: controller.signal });
+      query.clear();
+      setState("in");
+      form.reset();
+    } catch (e) {
+      if (!controller.signal.aborted) setError(e);
+    } finally {
+      if (!controller.signal.aborted) setPasskeyPending(false);
     }
   }
   async function logout() {
@@ -158,12 +200,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             )}
             <Button
               className="w-full"
-              disabled={form.formState.isSubmitting}
+              disabled={form.formState.isSubmitting || passkeyPending}
               type="submit"
             >
               {t("Sign in")}
               <ArrowRight />
             </Button>
+            {supportsWebAuthn() && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                disabled={form.formState.isSubmitting || passkeyPending}
+                onClick={passkeyLogin}
+              >
+                {t("Sign in with an authenticator")}
+              </Button>
+            )}
           </form>
           <div className="mt-6 flex items-center justify-between gap-3 text-xs text-muted-foreground">
             <span>{t("Credentials stay in this tab.")}</span>
