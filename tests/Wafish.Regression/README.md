@@ -224,3 +224,9 @@ Run `dotnet run --project tests/Wafish.Regression -c Release -- --group streamin
 Checks cover flush-policy validation, real Gzip/Brotli delivery, no-transform, cancellation, deadlines, ownership, and unchanged defaults.
 The local diagnostic reports output size, throughput, and managed allocation without buffering its output.
 Its timing is illustrative and does not qualify a performance baseline.
+
+### Discovery catalog
+
+Run `dotnet run --project tests/Wafish.Regression -c Release -- --group discovery-catalog`.
+Checks cover bounded loopback origins, atomic membership, invalid controls, synthetic failures, empty responses, and OpenAPI.
+Use `python3 scripts/check-service-discovery.py` for the isolated Aspire scenario, with the target AppHost stopped.

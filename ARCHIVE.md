@@ -12524,3 +12524,39 @@ Source entry points:
 - [Fault backend](tests/Wafish.Performance/Backend/Program.cs).
 - [Owned scenario checks](scripts/check-network-faults.py).
 - [Walkthrough](docs/network-faults.md).
+
+
+## R51: Optional HTTP JSON discovery sample — 2026-11-28
+
+Added `EnableServiceDiscovery` and a bounded loopback catalog for the two sample backends.
+The catalog accepts configured backend identifiers and explicit healthy, unavailable, or malformed modes.
+Empty healthy discovery removes destinations. Invalid controls leave the selection unchanged.
+The default topology and existing gRPC registration remain independent.
+
+The walkthrough and isolated verification script create real service-discovery bindings on a separate demo cluster.
+They cover membership changes, stable address-derived identities, refresh failures, stale rejection, and recovery.
+The script owns its temporary database, topology, routes, generated credential, and cleanup.
+No bindings are created automatically by the optional resource.
+
+Verification:
+
+- Release AppHost, sample, regression, and full solution builds passed with zero warnings and errors.
+- All 357 core regression checks passed. Two catalog checks cover validation, concurrency, HTTP responses, and OpenAPI.
+- Changed production executable-line coverage: 81/83 (97.6%), combining focused checks and instrumented Aspire starts.
+- Live discovery reached both backends, removed and restored destinations without changing their identities.
+- Malformed and unavailable catalogs exposed failures, retained fresh destinations, rejected stale traffic, and recovered.
+- Healthy empty discovery removed destinations without reporting a registry failure.
+- Original gRPC routes remained available. Disabling the profile restored the default topology.
+- The optional network-fault scenario and three sample deployment checks passed again.
+- Python syntax, changed Markdown links, and whitespace checks passed. No AppHosts remained running.
+
+The initial live check used an invalid one-second refresh. The final sample uses the schema's five-second minimum.
+No production plugin defaults changed. No packages were published or services deployed.
+
+Source entry points:
+
+- [Optional topology](Wafish.AppHost/AppHost.cs).
+- [Bounded catalog](samples/SampleDiscoveryCatalog/DiscoveryCatalog.cs).
+- [Catalog checks](tests/Wafish.Regression/DiscoveryCatalogChecks.cs).
+- [Owned live verification](scripts/check-service-discovery.py).
+- [Walkthrough](docs/service-discovery-sample.md).

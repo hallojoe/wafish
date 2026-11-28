@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../samples/SampleLocalService/SampleLocalService.csproj" />
+    <ProjectReference Include="../../samples/SampleDiscoveryCatalog/SampleDiscoveryCatalog.csproj" />
     <Compile Include="../../Wafish.AppHost/TopologyState.cs" Link="Samples/TopologyState.cs" />
     <Compile Include="../../Wafish.AppHost/SonarQubeHealthCheck.cs" Link="Samples/SonarQubeHealthCheck.cs" />
     <Compile Include="../../samples/SampleGateway/OperatorUrl.cs" Link="Samples/OperatorUrl.cs" />

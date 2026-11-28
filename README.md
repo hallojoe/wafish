@@ -383,6 +383,8 @@ The [cancellable streaming sample](docs/cancellable-streaming.md) demonstrates e
 
 The optional [network fault scenario](docs/network-faults.md) demonstrates retries, circuit recovery, stalled responses, and disconnects.
 
+The optional [HTTP JSON discovery sample](docs/service-discovery-sample.md) demonstrates membership changes, stale rejection, and recovery.
+
 ### Administration authenticators
 
 Optional passkeys and FIDO2 security keys support JWT administration login. Configured TOTP remains required.

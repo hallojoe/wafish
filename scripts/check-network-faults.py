@@ -64,7 +64,7 @@ def main():
             command('aspire', 'start', '--apphost', str(APPHOST), '--non-interactive', '--format', 'Json', '--',
                     '--TopologyId=' + topology, '--GatewayDataDirectory=' + directory,
                     '--EnableNetworkFaults=' + str(enabled).lower(), '--EnableRedis=false', '--EnableSecondGateway=false',
-                    '--EnableExternalLogin=false', '--EnableSonarQube=false')
+                    '--EnableExternalLogin=false', '--EnableSonarQube=false', '--EnableServiceDiscovery=false')
             names = ['gateway', 'backend-one', 'backend-two'] + (['fault-backend'] if enabled else [])
             for name in names:
                 aspire('wait', name)
