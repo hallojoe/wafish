@@ -58,6 +58,9 @@ public sealed record RateLimitExecutionConfig
     public int TokensPerPeriod { get; init; } = 100;
     public string ReplenishmentPeriod { get; init; } = "1s";
     public string RouteUid { get; init; } = string.Empty;
+    public string? QuotaGroup { get; init; }
+    /// <summary>Derived during compilation. User-supplied values are ignored.</summary>
+    public string? QuotaGroupPolicy { get; init; }
 }
 
 /// <summary>Compiled route-scoped configuration for the Redis distributed rate-limit plugin.</summary>

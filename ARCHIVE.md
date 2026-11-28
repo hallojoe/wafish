@@ -8,6 +8,42 @@ Current guides retain operating and compatibility requirements.
 Mixed documents are preserved as complete snapshots to prevent information loss.
 Headings and relative links have been adapted for this combined file. Code blocks retain their original content.
 
+## R36: Named local route quotas — 2026-11-28
+
+Implemented optional `quotaGroup` bindings in the existing local rate-limit plugin.
+Group members share permits across routes, with global, route, client-address, or identity-name partitions.
+Different groups and ungrouped bindings retain separate counters.
+
+The compiler validates bounded names and effective policies before persistence. Equivalent durations share policy identity.
+Preview allocates no counters. Conflicting route policies and retained-state conflicts reject configuration mutations.
+Route changes, binding deletion, and recreation do not reset consumed quotas.
+
+The runtime store retains one policy until all group partitions safely retire.
+Active or queued leases and consumed quotas survive cleanup. Stale requests cannot create competing policy counters.
+Named and ungrouped partitions share the existing 2,000-entry admission limit.
+The optional `IGroupedRateLimiterStore` interface preserves existing custom-store contracts.
+
+Verification on the implementation branch:
+
+- Release solution build passed with zero warnings and zero errors.
+- All 321 core regression checks passed, including seven new quota scenarios and nine lifetime stress scenarios.
+- All 61 administration checks passed.
+- All 24 package API checks and three isolated package consumers passed.
+- Package compatibility negative checks passed; reviewed API baselines were unchanged.
+- Focused changed-line coverage was 119/120 executable lines (99.2%), counting partial coverage conservatively.
+- Changed Markdown file links and Git whitespace checks passed.
+
+Counters remain process-local. Retained policies cannot change until their partitions retire, unless a new group name is selected.
+Cleanup requires eligible requests and idle partitions; removal alone does not immediately release policy ownership.
+
+Source entry points:
+
+- [Group compiler](src/Wafish.Plugin.RateLimit/RateLimitGroupCompiler.cs).
+- [Policy normalization](src/Wafish/Models/LocalQuotaGroupPolicy.cs).
+- [Limiter store](src/Wafish.Runtime/Infrastructure/State/InMemoryRateLimiterStore.cs).
+- [Named quota regressions](tests/Wafish.Regression/NamedQuotaChecks.cs).
+- [Configuration guide](src/Wafish.Plugin.RateLimit/README.md#named-route-quotas).
+
 ## Redirect plugin implementation — 2026-11-27
 
 Implemented `Wafish.Plugin.Redirect`, with route bindings and schema version 1.

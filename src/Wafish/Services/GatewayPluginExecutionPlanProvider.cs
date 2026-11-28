@@ -81,7 +81,7 @@ public sealed class GatewayPluginExecutionPlanProvider
             CompileBinding(bindings, "waf", route.RouteId, WebJson, waf);
             CompileBinding(bindings, "request-retry", route.RouteId, WebJson, retry);
             CompileBinding(bindings, "rate-limit", route.RouteId, EnumJson, rateLimit,
-                config => config with { RouteUid = StableUid.FromKey("route", route.RouteId) });
+                config => LocalQuotaGroupPolicy.Compile(config) with { RouteUid = StableUid.FromKey("route", route.RouteId) });
             CompileBinding(bindings, "rate-limit-redis", route.RouteId, WebJson, redisRateLimit);
             CompileBinding(bindings, "proxy-log", route.RouteId, WebJson, proxyLog);
             CompileBinding(bindings, "response-cache", route.RouteId, WebJson, responseCache);

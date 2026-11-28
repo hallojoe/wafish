@@ -13,7 +13,7 @@ Bindings attach configuration to a supported route or cluster scope.
 | `external-login` | Require visitor sessions and forward configured API tokens. | [External login](../../src/Wafish.Plugin.ExternalLogin/README.md) |
 | `redirect` | Return validated redirects, including HTTPS upgrades, without a backend. | [Redirect](../../src/Wafish.Plugin.Redirect/README.md) |
 | `waf` | Inspect configured request inputs and enforce allow/deny rules. | [WAF](../../src/Wafish.Plugin.Waf/README.md) |
-| `rate-limit` | Apply local rate-limit policies. | [Local rate limits](../../src/Wafish.Plugin.RateLimit/README.md) |
+| `rate-limit` | Apply local rate limits and named shared quotas. | [Local rate limits](../../src/Wafish.Plugin.RateLimit/README.md) |
 | `rate-limit-redis` | Coordinate rate-limit counters through Redis. | [Redis rate limits](../../src/Wafish.Plugin.RateLimit.Redis/README.md) |
 | `response-cache` | Cache eligible public responses within the process. | [Cache](../../src/Wafish.Plugin.Cache/README.md) |
 | `request-retry` | Retry eligible failures within bounded attempts and time. | [Retry](../../src/Wafish.Plugin.Retry/README.md) |
