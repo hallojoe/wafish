@@ -217,3 +217,10 @@ Run `--lifetime-stress` after changes to limiter ownership, queues, or partition
 Run `dotnet run --project tests/Wafish.Regression -c Release -- --group sample-streaming`.
 This group verifies bounded sample records through real HTTP and active cache, compression, and retry bindings.
 It checks early delivery, disconnect cancellation, no-transform enforcement, cache exclusion, and no replay after deadline interruption.
+
+### Streaming compression
+
+Run `dotnet run --project tests/Wafish.Regression -c Release -- --group streaming-compression`.
+Checks cover flush-policy validation, real Gzip/Brotli delivery, no-transform, cancellation, deadlines, ownership, and unchanged defaults.
+The local diagnostic reports output size, throughput, and managed allocation without buffering its output.
+Its timing is illustrative and does not qualify a performance baseline.

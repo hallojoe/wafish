@@ -14,8 +14,8 @@ public sealed class CompressionPolicyCompiler : IRoutePluginCompiler
     {
         var config = CompressionEncodingPolicy.Compile(JsonSerializer.Deserialize<CompressionExecutionConfig>(binding.ConfigJson, Json)
             ?? throw new ArgumentException("Compression configuration is required."));
-        if (binding.SchemaVersion != 1 && (config.AllowedEncodings != null || config.BrotliCompressionLevel != null || config.GzipCompressionLevel != null))
-            throw new ArgumentException("Encoding restrictions and per-encoding levels require schema 1.");
+        if (binding.SchemaVersion != 1 && (config.AllowedEncodings != null || config.BrotliCompressionLevel != null || config.GzipCompressionLevel != null || config.FlushAfterWrite))
+            throw new ArgumentException("Encoding restrictions, per-encoding levels, and streaming flushes require schema 1.");
         return new(binding, PluginExecutionStage.PostProxy, config, route);
     }
 }

@@ -65,3 +65,5 @@ External plugin code must cooperate with cancellation and resource ownership.
 - Administration permissions do not establish tenant ownership isolation.
 
 Read the [security boundaries](../security.md) before enabling production policies.
+
+Compression routes can opt into [incremental compressed delivery](../../src/Wafish.Plugin.Compression/README.md#incremental-compressed-responses) with `flushAfterWrite: true` and `minResponseSize: 0`.

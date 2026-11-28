@@ -164,3 +164,44 @@ Media-type rules, size thresholds, streaming behavior, exclusions, and compressi
 
 Source: [policy validation](../Wafish/Models/CompressionEncodingPolicy.cs), [compiler](CompressionPolicyCompiler.cs),
 and [policy regression checks](../../tests/Wafish.Regression/CompressionPolicyChecks.cs).
+
+## Incremental compressed responses
+
+Set `flushAfterWrite` for routes that need small compressed records delivered promptly:
+
+```json
+{
+  "enabled": true,
+  "minResponseSize": 0,
+  "flushAfterWrite": true,
+  "mimeTypes": ["application/x-ndjson", "text/event-stream"]
+}
+```
+
+The default is false. Existing routes retain their codec buffering and compression behavior.
+The setting requires `minResponseSize: 0`; invalid combinations fail before persistence, including disabled bindings.
+Each successful compressed write flushes the codec and destination. No additional response buffer is allocated.
+Gateway writes can combine or split backend records. This policy does not reconstruct backend flush boundaries.
+Clients must parse record framing across arbitrary network reads.
+
+MIME selection, allowed encodings, quality negotiation, no-transform, HEAD, ranges, existing encodings, and bodyless exclusions still apply.
+An explicit no-transform directive prevents compression even when this setting is enabled.
+Upgrade gateway hosts before enabling the setting. Older hosts do not implement this behavior.
+
+Flushes increase codec work and can reduce compression efficiency. Enable this setting on streaming routes that need prompt delivery.
+A local synthetic diagnostic used 2,048 writes of 960 repeated bytes into a non-buffering sink:
+
+| Codec | Flush each write | Output bytes | Processing throughput |
+| --- | --- | ---: | ---: |
+| Gzip | No | 14,320 | 849 MiB/s |
+| Gzip | Yes | 36,909 | 387 MiB/s |
+| Brotli | No | 48 | 374 MiB/s |
+| Brotli | Yes | 22,564 | 203 MiB/s |
+
+Input was 1,966,080 bytes. These short instrumented local results illustrate a tradeoff; they are not capacity or CI baselines.
+The highly repetitive payload favors whole-response compression. Results depend on data, codec level, write sizes, and hardware.
+Managed allocations remained approximately 5.3 KiB per response in this diagnostic. Native codec state is outside that measurement.
+Real HTTP checks verify early delivery, completed trailers, disconnect cancellation, cache exclusion, and retry deadlines for both codecs.
+The sample stream retains no-transform deliberately; its policy guide explains that bypass.
+
+See [streaming regression checks](../../tests/Wafish.Regression/StreamingCompressionChecks.cs) and [sample policy guidance](../../docs/cancellable-streaming.md).

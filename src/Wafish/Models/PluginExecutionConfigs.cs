@@ -135,6 +135,8 @@ public sealed record CompressionExecutionConfig
 {
     public bool Enabled { get; init; } = true;
     public int MinResponseSize { get; init; } = 1024;
+    /// <summary>Flush each compressed write for incremental delivery. Requires a zero minimum response size.</summary>
+    public bool FlushAfterWrite { get; init; }
     public string CompressionLevel { get; init; } = "Optimal";
     public string[]? AllowedEncodings { get; init; }
     public string? BrotliCompressionLevel { get; init; }
