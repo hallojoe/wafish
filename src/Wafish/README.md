@@ -146,3 +146,9 @@ See [configuration](../Wafish.Plugin.Compression/README.md#encoding-restrictions
 [RedisDualWindowPolicy](Models/RedisDualWindowPolicy.cs) validates paired limits and windows for the opt-in `DualWindow` algorithm.
 Execution plans retain validated immutable settings. Existing Redis algorithms retain their defaults.
 See [configuration and atomic admission](../Wafish.Plugin.RateLimit.Redis/README.md#combined-burst-and-sustained-quotas).
+
+## Trusted Redis tenant partitions
+
+[RedisTenantPartitionPolicy](Models/RedisTenantPartitionPolicy.cs) validates explicit claim trust and bounded tenant allowlists.
+Compiled immutable keys preserve existing tenants when provisioning changes. Omitted tenant options preserve client-IP quotas.
+See [tenant configuration and limits](../Wafish.Plugin.RateLimit.Redis/README.md#trusted-tenant-quotas).

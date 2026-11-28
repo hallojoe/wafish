@@ -205,3 +205,6 @@ See the [operator walkthrough](../../docs/blue-green.md).
 The `--benchmarks` group checks bounded destination lists, rejected topologies, and matching native/Wafish balancing policies.
 It verifies measured distribution across two backends for all four supported transports.
 Single-backend managed and external comparisons retain their existing checks.
+
+Use `--group tenant-quotas` for trusted Redis tenant identity, immutable key compilation, bounds, and configuration rejection.
+The `--redis` checks also verify tenant sharing, cardinality, isolation, and expiry against isolated standalone and cluster instances.

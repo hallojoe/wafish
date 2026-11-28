@@ -100,6 +100,7 @@ await registry.DefineGroupAsync("waf", WafBodyChecks.RunAsync);
 await registry.DefineGroupAsync("streaming", ResponseStreamingChecks.RunAsync);
 await registry.DefineGroupAsync("rate-limit", RedisFailureChecks.RunAsync);
 await registry.DefineGroupAsync("dual-quotas", RedisDualWindowChecks.RunAsync);
+await registry.DefineGroupAsync("tenant-quotas", RedisTenantChecks.RunAsync);
 await registry.DefineGroupAsync("named-quotas", NamedQuotaChecks.RunAsync);
 await registry.DefineGroupAsync("compression-metrics", CompressionMetricChecks.RunAsync);
 await registry.DefineGroupAsync("compression-policy", CompressionPolicyChecks.RunAsync);

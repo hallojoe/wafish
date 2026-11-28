@@ -76,6 +76,11 @@ public sealed record RedisRateLimitExecutionConfig
     public int BurstBalance { get; init; }
     public int? BurstLimit { get; init; }
     public int? BurstWindowSeconds { get; init; }
+    /// <summary>Optional authenticated tenant partition. Omission preserves client-IP quotas.</summary>
+    public RedisTenantPartitionOptions? TenantPartition { get; init; }
+    /// <summary>Derived during compilation. Serialized input cannot provide trusted keys.</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public RedisTenantPartitionPolicy? CompiledTenantPartition { get; init; }
 }
 
 public sealed record ProxyLogBindingExecutionConfig

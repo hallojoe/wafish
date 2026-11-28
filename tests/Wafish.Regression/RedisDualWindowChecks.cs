@@ -185,6 +185,7 @@ internal static class RedisDualWindowChecks
             Check(result.Available && !result.Allowed, "Cluster combined quota failed routing or sharing.");
         }
         Console.WriteLine("PASS: Live Redis Cluster admits both counters in one slot with ordinary and tagged keys");
+        await RedisTenantChecks.RunLiveAsync(first, second, endpoint);
     }
 
     private static async Task<DefaultHttpContext> Invoke(IDistributedRateLimitStore store, RedisRateLimitExecutionConfig policy, CancellationToken cancellation = default)
