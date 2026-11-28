@@ -165,3 +165,9 @@ Set `WAFISH_EXTERNALLOGIN_REDIS` to an isolated Redis instance to enable the liv
 Each check uses an isolated namespace and temporary key directory.
 The group verifies repeat login, refresh fencing, two gateway replicas, native policies, and administration isolation.
 Use the [Aspire browser sample](../../samples/SampleExternalLogin/README.md) for real Keycloak verification.
+
+## Named local quotas
+
+Run `dotnet run --project tests/Wafish.Regression -c Release --no-build -- --group named-quotas`.
+[NamedQuotaChecks.cs](NamedQuotaChecks.cs) verifies shared permits, client isolation, policy conflicts, route changes, cancellation, and bounded ownership.
+Real HTTP and SQLite checks verify rejection before persistence and counter retention after binding recreation.

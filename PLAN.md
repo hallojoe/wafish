@@ -85,26 +85,6 @@ Source entry points:
 - [Redis quota store](src/Wafish.Plugin.RateLimit.Redis/RedisLuaRateLimitStore.cs) — acquisition and Lua scripts.
 - [Redis plugin](src/Wafish.Plugin.RateLimit.Redis/RedisRateLimitPlugin.cs) — binding schema.
 
-<a id="r36"></a>
-
-## R36: Share local quotas across named route groups
-
-Status: TODO.
-
-Current: Local limiter keys support route partitions and a global partition, but no explicitly named quota groups.
-
-Remaining: Add a validated group name and shared policy ownership across selected routes.
-Define behavior for conflicting policies, route changes, and group removal.
-
-Acceptance: Grouped routes share permits while unrelated routes remain isolated.
-Configuration changes cannot reset an active group's quota unexpectedly.
-
-Source entry points:
-
-- [Local rate-limit middleware](src/Wafish.Plugin.RateLimit/Middleware/RateLimitMiddleware.cs) — partition and limiter key construction.
-- [Local limiter store](src/Wafish.Runtime/Infrastructure/State/InMemoryRateLimiterStore.cs) — limiter ownership and cleanup.
-- [Local plugin](src/Wafish.Plugin.RateLimit/RateLimitPlugin.cs) — binding schema.
-
 <a id="r40"></a>
 
 ## R40: Measure compression savings

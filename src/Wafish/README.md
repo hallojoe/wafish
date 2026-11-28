@@ -126,3 +126,11 @@ Internal route contracts expose prepared GET batches with explicit disposal and 
 External-login bindings participate in route validation and snapshot compilation.
 The compiler removes derived authentication metadata before recompilation and rejects duplicate bindings.
 Host registration and request enforcement belong to [Runtime](../Wafish.Runtime/README.md).
+
+## Named local quota contracts
+
+[LocalQuotaGroupPolicy](Models/LocalQuotaGroupPolicy.cs) validates and normalizes named quota settings during compilation.
+Policy fingerprints use effective algorithm settings and cannot be supplied by binding configuration.
+[IGroupedRateLimiterStore](Infrastructure/State/IGroupedRateLimiterStore.cs) adds optional group ownership without changing `IRateLimiterStore`.
+The runtime's rate-limit compiler checks policy conflicts before persistence. Preview does not allocate limiter state.
+See [configuration and limits](../Wafish.Plugin.RateLimit/README.md#named-route-quotas).

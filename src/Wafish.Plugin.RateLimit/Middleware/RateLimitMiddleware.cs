@@ -1,5 +1,3 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -7,7 +5,6 @@ using Wafish.Infrastructure.Middleware;
 using Wafish.Plugins;
 using Wafish.Infrastructure.State;
 using Wafish.Services;
-using Wafish.Storage;
 using Wafish.Models;
 using Wafish.Infrastructure;
 using System.Threading.RateLimiting;
@@ -73,11 +70,10 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
             return;
         }
 
-        var routeKey = routeId;
         var routeScopeId = routeUid;
 
         var partitionValue = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
-            System.Text.Encoding.UTF8.GetBytes(GetPartitionValue(context, config.PartitionKey, routeUid.Length > 0 ? routeUid : routeId))));
+            System.Text.Encoding.UTF8.GetBytes(GetPartitionValue(context, config.PartitionKey, config.QuotaGroup ?? (routeUid.Length > 0 ? routeUid : routeId)))));
 
         var configFingerprint = $"{config.Algorithm}:{config.PermitLimit}:{config.Window}:{config.QueueLimit}:{config.SegmentsPerWindow}:{config.TokenLimit}:{config.TokensPerPeriod}:{config.ReplenishmentPeriod}";
         var limiterKey = string.IsNullOrEmpty(routeScopeId)
@@ -85,11 +81,29 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
             : $"{routeScopeId}:{partitionValue}:{configFingerprint}";
 
         TryCleanup();
-        using var lease = await _limiterStore.AcquireAsync(limiterKey, () => CreateLimiter(limiterKey, config), context.RequestAborted);
+        RateLimitLease? acquired;
+        try
+        {
+            if (config.QuotaGroup is { } group)
+            {
+                if (_limiterStore is not IGroupedRateLimiterStore grouped) throw new NotSupportedException("The store cannot enforce named quotas.");
+                limiterKey = "group:" + group + ":" + partitionValue;
+                acquired = await grouped.AcquireGroupedAsync(group, config.QuotaGroupPolicy!, partitionValue,
+                    () => CreateLimiter(config), context.RequestAborted);
+            }
+            else acquired = await _limiterStore.AcquireAsync(limiterKey, () => CreateLimiter(config), context.RequestAborted);
+        }
+        catch (Exception error) when (error is RateLimitGroupPolicyConflictException or NotSupportedException)
+        {
+            context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+            context.Response.Headers.RetryAfter = "1";
+            await context.Response.WriteAsJsonAsync(new { error = "Quota group policy unavailable" }, cancellationToken: context.RequestAborted);
+            return;
+        }
+        using var lease = acquired;
 
         if (lease == null || !lease.IsAcquired)
         {
-            var clientIp = GetClientIp(context) ?? "unknown";
             _logger.LogWarning(
                 "Rate limit exceeded for {LimiterKey} (algorithm={Algorithm}, limit={PermitLimit}, window={Window})",
                 limiterKey, config.Algorithm, config.PermitLimit, config.Window);
@@ -118,7 +132,7 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
     private bool TryGetBindingConfig(
         string routeId,
         out string routeUid,
-        out RouteRateLimitConfig config)
+        out RateLimitExecutionConfig config)
     {
         routeUid = string.Empty;
         config = null!;
@@ -129,23 +143,11 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
         }
 
         routeUid = compiled.RouteUid;
-        config = new RouteRateLimitConfig
-        {
-            Enabled = true,
-            Algorithm = compiled.Algorithm,
-            PermitLimit = compiled.PermitLimit,
-            Window = compiled.Window,
-            QueueLimit = compiled.QueueLimit,
-            PartitionKey = compiled.PartitionKey,
-            SegmentsPerWindow = compiled.SegmentsPerWindow,
-            TokenLimit = compiled.TokenLimit,
-            TokensPerPeriod = compiled.TokensPerPeriod,
-            ReplenishmentPeriod = compiled.ReplenishmentPeriod
-        };
+        config = compiled;
         return true;
     }
 
-    private static RateLimiter CreateLimiter(string key, RouteRateLimitConfig config)
+    private static RateLimiter CreateLimiter(RateLimitExecutionConfig config)
     {
         var window = ParseTimeSpan(config.Window);
 
@@ -253,7 +255,7 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
         };
     }
 
-    private static int GetRetryAfterSeconds(RouteRateLimitConfig config, RateLimitLease? lease)
+    private static int GetRetryAfterSeconds(RateLimitExecutionConfig config, RateLimitLease? lease)
     {
         if (lease != null && lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
         {
@@ -268,17 +270,4 @@ public sealed class RateLimitMiddleware : GatewayMiddlewareBase
         return Math.Max(1, (int)Math.Ceiling(interval.TotalSeconds));
     }
 
-    private sealed class RouteRateLimitConfig
-    {
-        public bool Enabled { get; set; }
-        public RateLimitAlgorithm Algorithm { get; set; } = RateLimitAlgorithm.FixedWindow;
-        public int PermitLimit { get; set; } = 100;
-        public string Window { get; set; } = "1m";
-        public int QueueLimit { get; set; } = 0;
-        public string PartitionKey { get; set; } = "IpAddress";
-        public int SegmentsPerWindow { get; set; } = 4;
-        public int TokenLimit { get; set; } = 100;
-        public int TokensPerPeriod { get; set; } = 100;
-        public string ReplenishmentPeriod { get; set; } = "1s";
-    }
 }

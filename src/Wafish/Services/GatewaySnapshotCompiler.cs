@@ -62,8 +62,8 @@ public sealed class GatewaySnapshotCompiler : IGatewaySnapshotCompiler
         if (endpointBindings.GroupBy(b => (b.ScopeId, PluginId: b.PluginId.ToLowerInvariant())).Any(g => g.Count() > 1))
             throw new ArgumentException("A route can have only one enabled binding per endpoint policy.");
         var drafts = new List<CompiledRoutePlugin>();
-        // Endpoint policies validate drafts before persistence, including when the plugin is disabled.
-        foreach (var draft in sourceBindings.Where(b => (b.PluginId.Equals("redirect", StringComparison.OrdinalIgnoreCase) || b.PluginId.Equals("claims-transform", StringComparison.OrdinalIgnoreCase) || b.PluginId.Equals("route-authorization", StringComparison.OrdinalIgnoreCase) || b.PluginId.Equals("request-aggregation", StringComparison.OrdinalIgnoreCase) || b.PluginId.Equals("external-login", StringComparison.OrdinalIgnoreCase)) &&
+        // Route policies validate drafts before persistence, including when the plugin is disabled.
+        foreach (var draft in sourceBindings.Where(b => (b.PluginId.Equals("redirect", StringComparison.OrdinalIgnoreCase) || b.PluginId.Equals("claims-transform", StringComparison.OrdinalIgnoreCase) || b.PluginId.Equals("route-authorization", StringComparison.OrdinalIgnoreCase) || b.PluginId.Equals("request-aggregation", StringComparison.OrdinalIgnoreCase) || b.PluginId.Equals("external-login", StringComparison.OrdinalIgnoreCase) || b.PluginId.Equals("rate-limit", StringComparison.OrdinalIgnoreCase)) &&
                      (!b.Enabled || !_activationState.IsPluginEnabled(b.PluginId))))
         {
             var binding = ToSnapshot(draft, routeUidMap, clusterUidMap);

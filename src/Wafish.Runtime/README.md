@@ -159,3 +159,11 @@ Register `AddWafishExternalLogin` before building the host to enable visitor OID
 The runtime enforces route bindings before native authorization and the proxy pipeline.
 Internal child routes repeat visitor authorization. Administration authentication keeps its existing schemes.
 See the [plugin guide](../Wafish.Plugin.ExternalLogin/README.md) for site profiles, CSRF, and API token forwarding.
+
+## Shared local quota ownership
+
+The runtime registers the named quota compiler and an `IGroupedRateLimiterStore` implementation.
+[InMemoryRateLimiterStore](Infrastructure/State/InMemoryRateLimiterStore.cs) owns group policies and counters across route or binding changes.
+Named and ungrouped partitions share the 2,000-entry admission limit.
+Active leases and consumed quotas survive cleanup. Policy ownership ends only after every group partition safely retires.
+See [named quota configuration and retirement](../Wafish.Plugin.RateLimit/README.md#named-route-quotas).
